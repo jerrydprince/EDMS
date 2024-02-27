@@ -8,6 +8,7 @@ use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +74,20 @@ Route::middleware('auth')->group(function () {
         // document type
         Route::post('/create-document-type', [DocumentTypeController::class, 'createDocumentType']);
         Route::post('/configure-meta-data', [DocumentTypeController::class, 'configureMetaData']);
+
+        //manage users
+        Route::get('/manage-users', [AdminController::class, 'manageUsers']);
+        Route::get('/add-user', [AdminController::class, 'addUser']);
+
+        //user registration
+        Route::post('/user-registration', [RegistrationController::class, 'UsersRegistration']);
         
+    });
+
+    //dashboard
+    Route::prefix('dashboard')->group(function(){
+        route::get('/', [DashboardController::class, 'index']);
+        route::get('/branch', [DashboardController::class, 'Branch']);
     });
 
     //archiving
@@ -91,4 +105,9 @@ Route::middleware('auth')->group(function () {
 
     //Roles
     Route::get('/create-roles', [RoleController::class, 'createRoles']);
+
+    //email
+    Route::get('/auth-email-exist', [RegistrationController::class, 'checkMailExit']);
+    //phone
+    Route::get('/auth-phone-exist', [RegistrationController::class, 'checkPhoneExist']);
 });

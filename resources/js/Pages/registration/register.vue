@@ -325,9 +325,8 @@
 <script setup>
     import { ref, watch, computed } from 'vue'
     import { useForm } from '@inertiajs/vue3'
-    import { router } from '@inertiajs/vue3'
     import { useToast } from "primevue/usetoast";
-import axios from 'axios';
+    import axios from 'axios';
 
     const form1 = ref(true);
     const form2 = ref(false);

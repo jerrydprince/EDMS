@@ -1,5 +1,6 @@
  import Layout from "./Shared/Layout.vue"
  import Layout2 from "./Shared/Layout2.vue"
+ import Layout3 from "./Shared/Layout3.vue"
 
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -39,7 +40,9 @@ import { router } from '@inertiajs/vue3'
         page.then((module) => {
           if(window.location.pathname.startsWith('/register')){
             module.default.layout = module.default.layout || Layout2;
-          }else{
+          }else if(window.location.pathname.startsWith('/dashboard')){
+            module.default.layout = module.default.layout || Layout3;
+          }else if(window.location.pathname.startsWith('/admin')){
              module.default.layout = module.default.layout || Layout;
           }
          

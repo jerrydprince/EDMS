@@ -1,8 +1,9 @@
 <template>
-  <main class=" flex w-full hide_scroll">
+  <!-- <main class=" flex w-full hide_scroll"> -->
+  <main class="h-screen flex w-full  fixed top-0">
     <Navigation />
-    <section class="w-full">
-      <TopBar />
+    <section class="hide_scroll w-full overflow-y-scroll">
+      <TopBar :toggleSearchFunction="toggleSearchState"/>
       <slot />
     </section>
 
@@ -28,13 +29,26 @@
       </template>
     </Toast>
   </main>
+  <div class="top-0 absolute">
+      <searchResult
+        v-if="toggleSearch"
+        :toggleSearchFunction="toggleSearchState"
+      />
+    </div>
 </template>
 
   
 <script setup>
+  import { ref } from "vue";
 import TopBar from "./TopBar.vue";
 import Navigation from "./Navigation.vue";
+import searchResult from "@/components/Modals/SearchResult.vue";
 
+const toggleSearch = ref(false);
+
+  const toggleSearchState = () => {
+    toggleSearch.value = !toggleSearch.value;
+  };
 </script>
  
   

@@ -26,7 +26,8 @@
    }
     </style>
   </head>
-  <body class="w-full min-h-screen flex justify-start hide_scroll">
+  {{-- <body class="w-full min-h-screen flex justify-start hide_scroll"> --}}
+  <body class="min-h-screen flex items-center justify-start w-full">
    
   @inertia
     <!-- <div id="app">

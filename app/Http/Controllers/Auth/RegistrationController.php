@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Mail\VerificationCode;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\Registration;
 use App\Models\User;
 use Hash;
 
@@ -51,6 +52,8 @@ class RegistrationController extends Controller
             
            // Mail::to($request->email)->send(new VerificationCode($code));
             $request->session()->put(['email'=>$request->email]);
+            $data =$request->except('password');
+            $user->notify(new Registration($data));
         });
 
         return redirect()->back()->with('success',true);
@@ -93,4 +96,46 @@ class RegistrationController extends Controller
         }
         return response()->json(['success'=>true]);
     }
+
+    public function UsersRegistration(Request $request){
+      // dd($request->all());
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'gender' => 'required',
+            'grade_level' => 'required',
+            'email' => 'required|email|unique:users',
+            'department' => 'required'
+        ]);
+
+        DB::transaction(function () use ($request) {
+            //$code = $this->generateSixDigitCode();
+
+            $user = new User();
+            $user->first_name = $request->first_name;
+            $user->last_name = $request->last_name;
+            $user->gender = $request->gender;
+            $user->grade_level = $request->grade_level;
+            $user->email = $request->email;
+           // $user->verification_code = $code;
+            $user->password = Hash::make('password');
+            $user->department_id = $request->department;
+            $user->division_id = $request->division;
+            $user->unit_id = $request->unit;
+            $user->phone = $request->phone;
+            $user->save();
+
+            if($request->file){
+                $fileName = time().'_'.$request->file('file')->getClientOriginalName();
+                $path = $request->file('file')->move(public_path('users'), $fileName);
+
+                $user->profile_image = 'users/'.$fileName;
+                $user->save();
+            }
+
+        });
+
+        return redirect()->back()->with('success',true);
+    }
+
 }

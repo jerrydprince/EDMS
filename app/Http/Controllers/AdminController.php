@@ -11,6 +11,7 @@ use App\Models\Metadata;
 use App\Models\DocumentType;
 use App\Models\User;
 use App\Models\Folder;
+use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
@@ -285,6 +286,19 @@ class AdminController extends Controller
             ->get();
     return response()->json($unit);
     
+    }
+
+    public function manageUsers(){
+        $notifications = DB::table('notifications')->where('read_at',null)->get();
+        return inertia('users/ManageUsers', compact('notifications'));
+    }
+
+    public function addUser(){
+        $roles = Role::get();
+        $departments = Department::with(['division'=>function($query){
+            $query->with('unit');
+        }])->get();
+        return inertia('users/AddUser', compact('roles', 'departments'));
     }
 
    
