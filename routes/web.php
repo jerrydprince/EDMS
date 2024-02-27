@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,11 +36,12 @@ Route::middleware('guest')->group(function(){
     Route::post('/email-verification', [RegistrationController::class, 'emailVerifiation']);
     Route::get('/email-exist', [RegistrationController::class, 'checkMailExit']);
     Route::get('/phone-exist', [RegistrationController::class, 'checkPhoneExist']);
+
 });
 
 
 Route::middleware('auth')->group(function () {
-    Route::prefix('admin')->group(function(){
+    Route::prefix('admin')->middleware('role:super admin| role:admin')->group(function(){
         Route::get('/',[AdminController::class, 'index']);
         Route::get('/branch-setup',[AdminController::class, 'BranchSetup']);
         Route::get('/meta-data-setup', [AdminController::class, 'MetaDataSetup']);
@@ -81,11 +83,14 @@ Route::middleware('auth')->group(function () {
 
         //user registration
         Route::post('/user-registration', [RegistrationController::class, 'UsersRegistration']);
+
+         //roles
+         Route::get('/assign-role-to-super-admin', [AdminController::class, 'assignRoleToSuperAdmin']);
         
     });
 
     //dashboard
-    Route::prefix('dashboard')->group(function(){
+    Route::prefix('dashboard')->middleware('role:data entry|super admin')->group(function(){
         route::get('/', [DashboardController::class, 'index']);
         route::get('/branch', [DashboardController::class, 'Branch']);
     });
@@ -106,8 +111,14 @@ Route::middleware('auth')->group(function () {
     //Roles
     Route::get('/create-roles', [RoleController::class, 'createRoles']);
 
+    //permissions
+    Route::get('/create-permissions', [PermissionController::class, 'createPermission']);
+
     //email
     Route::get('/auth-email-exist', [RegistrationController::class, 'checkMailExit']);
     //phone
     Route::get('/auth-phone-exist', [RegistrationController::class, 'checkPhoneExist']);
+
+    //roles
+    Route::get('/assign-role-to-super-admin', [AdminController::class, 'assignRoleToSuperAdmin']);
 });

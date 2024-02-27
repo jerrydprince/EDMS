@@ -8,6 +8,7 @@ use App\Mail\VerificationCode;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\Registration;
+use Illuminate\Validation\Rule;
 use App\Models\User;
 use Hash;
 
@@ -52,7 +53,7 @@ class RegistrationController extends Controller
             
            // Mail::to($request->email)->send(new VerificationCode($code));
             $request->session()->put(['email'=>$request->email]);
-            $data =$request->except('password');
+            $data =$request->except('password','password_confirmation');
             $user->notify(new Registration($data));
         });
 
@@ -99,19 +100,40 @@ class RegistrationController extends Controller
 
     public function UsersRegistration(Request $request){
       // dd($request->all());
+      if($request->id){
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'gender' => 'required',
+            'grade_level' => 'required',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($request->id)
+            ],
+            'department' => 'required',
+            'phone' => [
+                'sometimes',
+                Rule::unique('users')->ignore($request->id)
+            ]
+        ]);
+      }else{
         $request->validate([
             'first_name' => 'required',
             'last_name' => 'required',
             'gender' => 'required',
             'grade_level' => 'required',
             'email' => 'required|email|unique:users',
-            'department' => 'required'
+            'department' => 'required',
+            'phone' => 'sometimes|unique:users'
         ]);
+      }
+        
 
         DB::transaction(function () use ($request) {
             //$code = $this->generateSixDigitCode();
 
-            $user = new User();
+            $user = $request->id? User::find($request->id) :new User();
             $user->first_name = $request->first_name;
             $user->last_name = $request->last_name;
             $user->gender = $request->gender;
@@ -123,6 +145,7 @@ class RegistrationController extends Controller
             $user->division_id = $request->division;
             $user->unit_id = $request->unit;
             $user->phone = $request->phone;
+            $user->is_approved = $request->is_approved;
             $user->save();
 
             if($request->file){
@@ -131,6 +154,10 @@ class RegistrationController extends Controller
 
                 $user->profile_image = 'users/'.$fileName;
                 $user->save();
+            }
+
+            if($request->role){
+                $user->assignRole($request->role);
             }
 
         });

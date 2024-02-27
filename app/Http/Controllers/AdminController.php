@@ -290,15 +290,30 @@ class AdminController extends Controller
 
     public function manageUsers(){
         $notifications = DB::table('notifications')->where('read_at',null)->get();
-        return inertia('users/ManageUsers', compact('notifications'));
+        $roles = Role::with(['users'=>function($query){
+            $query->take(4);
+        }])->get();
+        return inertia('users/ManageUsers', compact('notifications','roles'));
     }
 
-    public function addUser(){
+    public function addUser(Request $request){
         $roles = Role::get();
         $departments = Department::with(['division'=>function($query){
             $query->with('unit');
         }])->get();
-        return inertia('users/AddUser', compact('roles', 'departments'));
+        $user = User::where('email', $request->email)->first();
+        if(!$user){
+            $user = [];
+        }
+        if($request->notification_id){
+            $notification = DB::table('notifications')->where('id', $request->notification_id)->update(['read_at'=>now()]);
+        }
+        return inertia('users/AddUser', compact('roles', 'departments','user'));
+    }
+
+    public function assignRoleToSuperAdmin(){
+        auth()->user()->assignRole('super admin');
+       echo "success";
     }
 
    

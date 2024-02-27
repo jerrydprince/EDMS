@@ -14,7 +14,10 @@
       </div>
       <div class="flex items-center gap-4">
         <div class="flex">
-          <p class="text-[#2F68C5]" v-if="props.notifications">Account Requests <span class=" bg-red-600 text-white h-[22px] w-[22px] inline-block text-center rounded-full align-middle items-center text-sm">{{ props.notifications.length }}</span></p>
+          <a href="#" class="text-[#2F68C5]" v-if="props.notifications" @click="account_request = true">Account Request
+            <span v-if="props.notifications.length > 0"
+              class=" bg-red-600 text-white h-[22px] w-[22px] inline-block text-center rounded-full align-middle items-center text-sm">{{
+                props.notifications.length }}</span></a>
         </div>
         <button class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
           <Icon icon="material-symbols:download" width="20" />
@@ -63,16 +66,16 @@
         </div>
       </div>
 
-      <div class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
+      <div class="flex items-center border px-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
         <i class="pi pi-search text-gray-300" style="font-size: 1rem"></i>
-        <Input type="text" v-model="value" placeholder="Search Users" class="w-96 border-0 outline-none text-[#98A2B3]" />
+        <Input type="text" v-model="value" placeholder="Search Users" class="w-96 border-0 focus:outline-none outline-none text-[#98A2B3]" />
       </div>
     </section>
 
     <Divider class=" " />
 
     <div v-if="buttonToggle === 1">
-      <div v-for="(item, index) in data" :key="index" class="mb-5">
+      <div v-for="(item, index) in props.roles" :key="index" class="mb-5">
         <div class="flex items-start justify-between pl-7 pr-14">
           <div class="w-[25%]">
             <h1 class="text-xl font-semibold text-[#475467]">
@@ -81,7 +84,7 @@
             <p class="text-[#667085] mt-2">{{ item.description }}</p>
           </div>
           <div class=" ">
-            <DataTable v-model:selection="selectedProduct" :rows="4" :value="item.table.slice(0, 4)" dataKey="id" :pt="{
+            <DataTable v-model:selection="selectedProduct" :rows="4" :value="item.users" dataKey="id" :pt="{
               table: {
                 class: ' border border-border_primary border-solid mb-6 mt-2',
               },
@@ -92,7 +95,7 @@
               }" headerStyle="color: #667085; font-weight: 500;" style="width: 300px">
                 <template #body="slotProps">
                   <div class="font-medium">
-                    <p>{{ slotProps.data.name }}</p>
+                    <p>{{ slotProps.data.last_name+" "+slotProps.data.first_name }}</p>
 
                     <p class="text-[#667085]">{{ slotProps.data.email }}</p>
                   </div>
@@ -101,10 +104,20 @@
               <Column field="date" header="Date Added" :pt="{
                 bodyCell: { class: 'text-gray-500' },
               }" headerStyle="color: #667085; font-weight: 500;" style="width: 150px">
+                <template #body="slotProps">
+                  <div>
+                    <p>{{formatDate(slotProps.data.created_at, false)}}</p>
+                  </div>
+                </template>
               </Column>
-              <Column field="active" header="Last Active" :pt="{
+              <Column field="updated_at" header="Last Active" :pt="{
                 bodyCell: { class: 'text-gray-500' },
               }" headerStyle="color: #667085; font-weight: 500;" style="width: 150px">
+              <template #body="slotProps">
+                <div>
+                  <p>{{formatDate(slotProps.data.updated_at, true)}}</p>
+                </div>
+              </template>
               </Column>
               <Column field="" header="Actions" :pt="{
                 bodyCell: { class: 'text-gray-500' },
@@ -261,11 +274,13 @@
     </div>
   </main>
   <DeleteUsers v-if="deleteModal" @confirmed="handleDelete" @cancelled="cancelDelete" />
+  <AccountRequestModal v-model="account_request" :notifications="props.notifications" />
 </template>
 
 <script setup>
 import { ref, watch, defineProps } from "vue";
 import DeleteUsers from "../../components/Modals/DeleteUsers.vue";
+import AccountRequestModal from "../../components/Modals/AccountRequestModal.vue";
 import { Link } from '@inertiajs/vue3'
 
 const deleteModal = ref(false)
@@ -273,7 +288,8 @@ const buttonToggle = ref(1);
 const selectedProduct = ref();
 const searchQuery = ref('');
 const itemIdToDelete = ref(null);
-const props = defineProps(['notifications']);
+const props = defineProps(['notifications', 'roles']);
+const account_request = ref(false);
 
 const setActive = (buttonNumber) => {
   buttonToggle.value = buttonNumber;
@@ -281,402 +297,33 @@ const setActive = (buttonNumber) => {
     searchQuery.value = ''
   }
 };
-const data = [
-  {
-    name: "Super Admin",
-    description:
-      "This access level holds unparalleled authority, overseeing the entire system without restrictions",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-  {
-    name: "Administrator",
-    description:
-      "Focuses on document management. Configures workflows, archiving policies, and document-specific settings.",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
 
-  {
-    name: "Records Manager",
-    description:
-      "Specialized in records management, ensuring compliance with government regulations.",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-  {
-    name: "Unit Head",
-    description:
-      "Manages activities of a specific unit within a division, accesses unit files and shares documents with the division head and other unit heads.",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-  {
-    name: "Super Users",
-    description:
-      "Manages cross-department activities, oversees all files/documents, delegates tasks, tracks file activities",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
+const formatDate = (data, last_active)=>{
+  let newDate =data;
 
-  {
-    name: "Directors",
-    description:
-      "Manages departmental functions, shares files/documents with other directors, accesses department files",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-  {
-    name: "Division Heads",
-    description:
-      "Manages a specific division's activities, accesses division files and shares documents with the director and other division heads.",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-  {
-    name: "Data Entry Personnel",
-    description:
-      "Limited access for entering data into the system, including tasks like scanning and indexing documents.",
-    table: [
-      {
-        id: "1001",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1002",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1003",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1004",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1005",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-      {
-        id: "1006",
-        email: "dammyhills@ansel.com",
-        name: "Dammy Hills",
-        active: "Mar 2023",
-        date: "16 Nov 23",
-      },
-    ],
-  },
-];
+  // Convert the Laravel date string to a JavaScript Date object
+  let date = new Date(newDate);
+
+  // Get the day, month, and year from the Date object
+  let day = date.getDate();
+  let monthIndex = date.getMonth();
+  let year = date.getFullYear();
+
+  // Define an array of month names
+  let monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  // Format the date string
+  let formattedDate = `${day} ${monthNames[monthIndex]} ${year.toString().slice(-2)}`;
+  let formattedDate2 = ` ${monthNames[monthIndex]} ${year.toString().slice(-2)}`;
+
+  let new_date = last_active? formattedDate2: formattedDate
+
+  return new_date;
+
+}
 
 const showDeleteDialog = (itemId) => {
   itemIdToDelete.value = itemId;
@@ -697,7 +344,7 @@ const handleDelete = () => {
 const cancelDelete = () => {
   deleteModal.value = !deleteModal.value
 }
-const filteredItems = ref([...data]);
+//const filteredItems = ref([...data]);
 const handleFilterOption = (label) => {
   searchQuery.value = label;
 
@@ -761,5 +408,4 @@ const toggle = (event) => {
   background-color: white;
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-}
-</style>
+}</style>

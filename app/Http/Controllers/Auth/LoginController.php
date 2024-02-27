@@ -47,9 +47,21 @@ class LoginController extends Controller
         ]);
  
         if (Auth::attempt($credentials)) {
+            //check if user is approved
+            if(!auth()->user()->hasRole('super admin')){
+                if(!auth()->user()->is_approved){
+                    Auth::logout();
+                    return back()->withErrors([
+                        'email' => 'Please wait while we approve your account',
+                    ])->onlyInput('email');
+                }
+            }
+
             $request->session()->regenerate();
- 
-            return redirect()->intended('dashboard');
+            if(auth()->user()->hasRole('data entry')){
+                return redirect()->intended('dashboard');
+            }
+            return redirect()->intended('admin');
         }
  
         return back()->withErrors([
