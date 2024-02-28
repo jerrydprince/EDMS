@@ -316,5 +316,9 @@ class AdminController extends Controller
        echo "success";
     }
 
+    public function RoleUsers(Request $request){
+        $role = Role::with('users')->find($request->role_id);
+        return inertia('users/RoleUsers', compact('role'));
+    }
    
 }

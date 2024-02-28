@@ -15,12 +15,12 @@
       <div class="flex items-start justify-between pl-7 pr-14">
         <div class="w-[25%]">
           <h1 class="text-xl font-semibold text-[#475467]">
-            {{ item.name }}
+            {{ item.title }}
           </h1>
           <p class="text-[#667085] mt-2">{{ item.description }}</p>
         </div>
         <div class=" ">
-          <DataTable v-model:selection="selectedProduct" :rows="4" :value="item" dataKey="id" :pt="{
+          <DataTable v-model:selection="selectedProduct" :rows="4" :value="props.branches" dataKey="id" :pt="{
             table: {
               class: ' border border-border_primary border-solid mb-6 mt-2',
             },
@@ -31,7 +31,7 @@
             }" headerStyle="color: #667085; font-weight: 500;" style="width: 200px">
               <template #body="slotProps">
                 <div class="font-medium">
-                  <p>{{ slotProps.data.title }}</p>
+                  <p>{{ slotProps.data.name }}</p>
                 </div>
               </template>
             </Column>
@@ -51,12 +51,11 @@
     </div>
   </main>
 </template>
- 
+
 <script setup>
 import { ref, defineProps } from 'vue'
-
 const selectedProduct = ref();
-const props = defineProps(['branches'])
+const props = defineProps(['branches']);
 const data = [
   {
     name: "Department",
@@ -119,5 +118,5 @@ const data = [
 
 ];
 </script>
- 
+
 <style></style>

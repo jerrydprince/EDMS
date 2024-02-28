@@ -9,7 +9,7 @@
             <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
             <section>
                 <div v-for="(item, index) in main" :key="index" class="mb-1">
-                    <Link :href="item.path"
+                    <Link href="/dashboard/branch-overview"
                         class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
                     <Icon :icon="item.icon" width="25" />
                     <p class="text-lg">{{ item.name }}</p>

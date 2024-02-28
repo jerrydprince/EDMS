@@ -11,11 +11,12 @@ class DashboardController extends Controller
         return inertia('dashboard/index');
     }
 
-    public function Branch(){
-       $branches = Department::with(['division'=>function($query){
+    public function BranchesOverview(){
+       $branches = Department::with(['folder','division'=>function($query){
             $query->with('unit');
-       }])->find(auth()->user()->department_id);
+       }])->where('id', auth()->user()->department_id)->get();
       
         return inertia('dashboard/BranchesOverview', compact('branches'));
     }
+
 }

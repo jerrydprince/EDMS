@@ -2,9 +2,9 @@
   <main>
     <div class="lg:px-7 px-5 flex items-center justify-between pt-5">
       <div class="flex items-center gap-5">
-        <div class="border rounded-md p-3 py-4 cursor-pointer" @click="goBack">
+        <Link href="/admin/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
           <Icon icon="formkit:arrowleft" width="30" />
-        </div>
+        </Link>
         <div>
           <p class="text-3xl text-[#1D2939]">Add New User</p>
           <p class="text-gray-500 text-sm ">Setup User Accounts, Permissions and access levels</p>
@@ -214,6 +214,7 @@
 import { ref, defineProps, computed, watch, onMounted } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
+import {Link} from "@inertiajs/vue3";
 
 const props = defineProps(['roles', 'departments','user']);
 const department = ref([]);

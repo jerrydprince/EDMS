@@ -46,14 +46,21 @@
               <p>Account</p>
               <Icon icon="flowbite:angle-down-outline" class="" />
             </button>
-            <TieredMenu ref="menu" id="overlay_tmenu" :model="items" popup style="width: 200px">
+            <TieredMenu ref="menu" id="overlay_tmenu" :model="props.roles" popup style="width: 200px">
+              
               <template #item="{ item, props }">
-                <a v-ripple class="flex align-items-center gap-2 px-[15px] py-[8px]" v-bind="props.action"
-                  @click="handleFilterOption(item.label)">
+                <a v-if="item.label"  class="flex align-items-center gap-2 px-[15px] py-[8px]" v-bind="props.action">
                   <div v-if="item.icon">
                     <Icon :icon="item.icon" />
                   </div>
                   <span class="">{{ item.label }}</span>
+                </a>
+                <a v-else  class="flex align-items-center gap-2 px-[15px] py-[8px]" v-bind="props.action"
+                  @click="handleFilterOption(item.name)">
+                  <div v-if="item.icon">
+                    <Icon :icon="item.icon" />
+                  </div>
+                  <span class="">{{ capitalizeWords(item.name) }}</span>
                 </a>
               </template>
             </TieredMenu>
@@ -68,18 +75,18 @@
 
       <div class="flex items-center border px-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
         <i class="pi pi-search text-gray-300" style="font-size: 1rem"></i>
-        <Input type="text" v-model="value" placeholder="Search Users" class="w-96 border-0 focus:outline-none outline-none text-[#98A2B3]" />
+        <input type="text"  placeholder="Search Users" class="w-96 border-0 focus:outline-none outline-none text-[#98A2B3]" />
       </div>
     </section>
 
     <Divider class=" " />
 
-    <div v-if="buttonToggle === 1">
-      <div v-for="(item, index) in props.roles" :key="index" class="mb-5">
-        <div class="flex items-start justify-between pl-7 pr-14">
+    <div>
+      <div v-for="(item, index) in filteredRoleUsers" :key="index" class="mb-5">
+        <div v-if="!item.label"  class="flex items-start justify-between pl-7 pr-14">
           <div class="w-[25%]">
             <h1 class="text-xl font-semibold text-[#475467]">
-              {{ item.name }}
+              {{ capitalizeWords(item.name) }}
             </h1>
             <p class="text-[#667085] mt-2">{{ item.description }}</p>
           </div>
@@ -136,8 +143,8 @@
             </DataTable>
           </div>
         </div>
-        <div class="flex justify-end px-20">
-          <Link href="/user-details">
+        <div class="flex justify-end px-20" v-if="!item.label">
+          <Link :href="'/admin/role-users?role_id='+item.id">
           <button class="flex items-center gap-2 text-[#2F68C5]">
             <p>View All</p>
             <Icon icon="flowbite:angle-right-outline" />
@@ -147,7 +154,7 @@
       </div>
     </div>
 
-    <div v-if="buttonToggle === 2">
+    <!-- <div v-if="buttonToggle === 2">
       <div v-for="(item, index) in filteredItems" :key="index" class="mb-5">
         <div class="flex items-start justify-between pl-7 pr-14">
           <div class="w-[25%]">
@@ -200,7 +207,7 @@
           </div>
         </div>
         <div class="flex justify-end px-20">
-          <Link href="/user-details">
+          <Link href="/admin/role-users">
           <button class="flex items-center gap-2 text-[#2F68C5]">
             <p>View All</p>
             <Icon icon="flowbite:angle-right-outline" />
@@ -263,7 +270,7 @@
           </div>
         </div>
         <div class="flex justify-end px-40">
-          <Link href="/user-details">
+          <Link href="/admin/role-users">
           <button class="flex items-center gap-2 text-[#2F68C5]">
             <p>View All</p>
             <Icon icon="flowbite:angle-right-outline" />
@@ -271,14 +278,14 @@
           </Link>
         </div>
       </div>
-    </div>
+    </div> -->
   </main>
   <DeleteUsers v-if="deleteModal" @confirmed="handleDelete" @cancelled="cancelDelete" />
   <AccountRequestModal v-model="account_request" :notifications="props.notifications" />
 </template>
 
 <script setup>
-import { ref, watch, defineProps } from "vue";
+import { ref, watch, defineProps, computed, onMounted } from "vue";
 import DeleteUsers from "../../components/Modals/DeleteUsers.vue";
 import AccountRequestModal from "../../components/Modals/AccountRequestModal.vue";
 import { Link } from '@inertiajs/vue3'
@@ -290,6 +297,7 @@ const searchQuery = ref('');
 const itemIdToDelete = ref(null);
 const props = defineProps(['notifications', 'roles']);
 const account_request = ref(false);
+const newRoles = ref(props.roles);
 
 const setActive = (buttonNumber) => {
   buttonToggle.value = buttonNumber;
@@ -350,50 +358,23 @@ const handleFilterOption = (label) => {
 
 };
 
-watch(searchQuery, (newValue) => {
-  filteredItems.value = data.filter(item => {
-    return item.name.toLowerCase().includes(newValue.toLowerCase());
-  });
-  if (buttonToggle.value > 2) {
+// watch(searchQuery, (newValue) => {
+//   filteredItems.value = data.filter(item => {
+//     return item.name.toLowerCase().includes(newValue.toLowerCase());
+//   });
+//   if (buttonToggle.value > 2) {
 
-    searchQuery.value = ''
-  }
+//     searchQuery.value = ''
+//   }
 
-});
+// });
 const menu = ref(null);
-const items = ref([
-  {
-    label: "Filter",
-    icon: "octicon:filter-16",
-  },
-  {
-    label: "Super Admin",
-  },
-  {
-    label: "Administrator",
-  },
-  {
-    label: "Records Manager",
-  },
-  {
-    label: "Super User",
-  },
-  {
-    label: "Director",
-  },
-  ,
-  {
-    label: "Division Head",
-  },
-  {
-    label: "Unit Head",
-  },
-  {
-    label: "Data Entry Personnel",
-  },
-]);
 
-
+const capitalizeWords = (str)=> {
+  return str.replace(/\b\w/g, function(char) {
+    return char.toUpperCase();
+  });
+}
 
 const toggle = (event) => {
   menu.value.toggle(event);
@@ -401,6 +382,32 @@ const toggle = (event) => {
   console.log(queueMicrotask);
   buttonToggle.value = 2;
 };
+
+const items = {
+    label: "Filter",
+    icon: "octicon:filter-16",
+  }
+
+  const filteredRoleUsers = computed(()=>{
+
+    if(searchQuery.value !==''){
+      let searched = newRoles.value.filter((val)=>{
+        if(!val.label){
+          return val.name.toLowerCase() == searchQuery.value.toLocaleLowerCase();
+        }
+        
+      })
+      return searched;
+    }else{
+      return props.roles
+    }
+  })
+
+  onMounted(() => {
+    newRoles.value  = props.roles;
+    newRoles.value.unshift(items);
+  })
+
 </script>
 
 <style scoped>

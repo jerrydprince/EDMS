@@ -36,6 +36,9 @@ Route::middleware('guest')->group(function(){
     Route::post('/email-verification', [RegistrationController::class, 'emailVerifiation']);
     Route::get('/email-exist', [RegistrationController::class, 'checkMailExit']);
     Route::get('/phone-exist', [RegistrationController::class, 'checkPhoneExist']);
+    Route::get('/reset-pwd', function(){
+        return view('resetpwd');
+    });
 
 });
 
@@ -80,6 +83,7 @@ Route::middleware('auth')->group(function () {
         //manage users
         Route::get('/manage-users', [AdminController::class, 'manageUsers']);
         Route::get('/add-user', [AdminController::class, 'addUser']);
+        Route::get('/role-users', [AdminController::class, 'RoleUsers']);
 
         //user registration
         Route::post('/user-registration', [RegistrationController::class, 'UsersRegistration']);
@@ -92,7 +96,7 @@ Route::middleware('auth')->group(function () {
     //dashboard
     Route::prefix('dashboard')->middleware('role:data entry|super admin')->group(function(){
         route::get('/', [DashboardController::class, 'index']);
-        route::get('/branch', [DashboardController::class, 'Branch']);
+        route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
     });
 
     //archiving
