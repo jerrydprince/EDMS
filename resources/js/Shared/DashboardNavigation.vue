@@ -9,7 +9,7 @@
             <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
             <section>
                 <div v-for="(item, index) in main" :key="index" class="mb-1">
-                    <Link href="/dashboard/branch-overview"
+                    <Link :href="item.path"
                         class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
                     <Icon :icon="item.icon" width="25" />
                     <p class="text-lg">{{ item.name }}</p>
@@ -43,14 +43,14 @@
         <div class="border-t border-dashed pt-2 pb-4">
             <section>
                 <div class="mb-1">
-                    <Link href="/"
+                    <Link href="/dashboard/support"
                         class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
                     <Icon icon="system-uicons:support" width="30" />
                     <p class="text-lg">Support</p>
                     </Link>
                 </div>
                 <div class="mb-1">
-                    <Link href="/"
+                    <Link href="/dashboard/settings"
                         class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
                     <Icon icon="uiw:setting-o" width="25" />
                     <p class="text-lg">Settings</p>
@@ -68,17 +68,26 @@ import { Link } from '@inertiajs/vue3'
 import { usePage } from '@inertiajs/vue3'
 
 const page = usePage()
-const departments = computed(() => page.props.shared_departments)
+//const departments = computed(() => page.props.shared_departments)
+const department = computed(() => page.props.department)
+
+const branches = ref([])
 
 const setDepartments = () => {
-    for (let dept of departments.value) {
-        let data = {
-            name: dept.title,
-            path: "/branches/" + dept.id,
-            icon: "clarity:circle-line",
-        }
-        branches.value.push(data)
+    // for (let dept of departments.value) {
+    //     let data = {
+    //         name: dept.title,
+    //         path: "/branches/" + dept.id,
+    //         icon: "clarity:circle-line",
+    //     }
+    //     branches.value.push(data)
+    // }
+    let data = {
+        name: department.value.title,
+        path: "/dashboard/branches/"+department.value.id,
+        icon: "clarity:circle-line"
     }
+    branches.value.push(data)
 }
 
 const main = ref([
@@ -89,34 +98,11 @@ const main = ref([
     },
     {
       name: "Branches",
-      path: "/data-entry/branches-overview",
+      path: "/dashboard/branch-overview",
       icon: "material-symbols:database-outline"
     }
 ]);
 
-
-const branches = ref([
-{
-      name: "Communication",
-      path: "/data-entry/branches/communication",
-      icon: "clarity:circle-line",
-    },
-    {
-      name: "Tech Titans",
-      path: "/data-entry/branches/tech-titans",
-      icon: "clarity:circle-line",
-    },
-    {
-      name: "Information",
-      path: "/data-entry/branches/information",
-      icon: "clarity:circle-line",
-    },
-    {
-      name: "Management",
-      path: "/data-entry/branches/management",
-      icon: "clarity:circle-line",
-    },
-]);
 
 onMounted(() => {
     setDepartments()

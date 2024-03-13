@@ -89,12 +89,13 @@ import { usePage } from '@inertiajs/vue3'
 
 const page = usePage()
 const departments = computed(() => page.props.shared_departments)
+const branches = ref([]);
 
 const setDepartments = () => {
   for (let dept of departments.value) {
     let data = {
       name: dept.title,
-      path: "/branches/" + dept.id,
+      path: "/admin/branches/" + dept.id,
       icon: "clarity:circle-line",
     }
     branches.value.push(data)
@@ -150,10 +151,6 @@ const admin = ref([
     path: "/recycle-bin",
     icon: "ep:delete",
   },
-]);
-
-const branches = ref([
-
 ]);
 
 onMounted(() => {

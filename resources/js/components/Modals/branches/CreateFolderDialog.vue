@@ -13,19 +13,57 @@
 		</template>
 		<section class="-mb-6">
 			<Divider class="" />
-			<div class="px-6 w-full">
-				<div class="mb-5 mt-8">
+			<div class="px-6 w-full overflow-y-auto max-h-[60vh]">
+				<div class="mb-5 mt-4">
 					<p class="text-sm lg:text-base">
 						Folder Name <span class="text-red-600">*</span>
 					</p>
 					<InputText id="folder_name" class="mt-1 w-full" v-model="form.name" aria-describedby="username-help"
 						placeholder="Enter folder name" />
 				</div>
-				<div class="mb-5 mt-8">
+				<div class="mb-5 mt-4">
 					<p class="text-sm lg:text-base">Folder Number</p>
-					<InputText  id="folder_number" class="mt-1 w-full" v-model="form.number" aria-describedby="username-help"
+					<InputText id="folder_number" class="mt-1 w-full" v-model="form.number" aria-describedby="username-help"
 						placeholder="Enter folder number" />
 				</div>
+				<div class="mb-5 mt-4">
+					<p class="text-sm lg:text-base">Folder Type</p>
+					<InputText id="folderType" class="mt-1 w-full" v-model="form.type" aria-describedby="username-help"
+						placeholder="Enter folder type" />
+				</div>
+
+				<div class="mb-5 mt-4">
+					<p class="text-sm lg:text-base">Folder Year</p>
+					<input id="folderYear" type="date"
+						class="mt-1 border border-gray-300 outline-none p-3 rounded-md w-full" v-model="form.year" />
+				</div>
+
+				<div v-if="page.props.roles != 'data entry' && props?.department">
+					<div class="mb-5 mt-4">
+						<p class="text-sm lg:text-base">Department</p>
+						<select name="" id="department" disabled class="w-full rounded-lg" v-model="form.department">
+							<option :value="props.department.id" class=" text-gray-400">{{ department_title}}</option>
+						</select>
+					</div>
+
+					<div class="mb-5 mt-4">
+						<p class="text-sm lg:text-base">Division</p>
+						<select name="" id="division" class="w-full rounded-lg" v-model="form.division">
+							<option value="">Select Division</option>
+							<option v-for="div in division" :value="div.id">{{ div.title }}</option>
+						</select>
+					</div>
+
+					<div class="mb-5 mt-4">
+						<p class="text-sm lg:text-base">Unit</p>
+						<select name="" id="unit" class="w-full rounded-lg" v-model="form.unit">
+							<option value="">Select Unit</option>
+							<option v-for="unit in units" :value="unit.id">{{ unit.title }}</option>
+						</select>
+					</div>
+				</div>
+
+				
 			</div>
 			<Divider class="" />
 		</section>
@@ -46,18 +84,28 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps, computed } from "vue";
+import { defineEmits, defineProps, computed, onMounted, ref, watch } from "vue";
 import { useToast } from "primevue/usetoast";
+import { useForm, usePage } from '@inertiajs/vue3'
+import axios from "axios";
 
 const toast = useToast();
-const props = defineProps(["modelValue"]);
+const props = defineProps(["modelValue", "url", "department"]);
 const emit = defineEmits(["update:modelValue"]);
-import { useForm } from '@inertiajs/vue3'
+const page = usePage();
+const division = ref([])
+const department_title = ref()
+const units = ref([])
 
 const form = useForm({
-        name: "",
-        number:''
-    })
+	name: "",
+	number: '',
+	type: '',
+	year: '',
+	department:'',
+	division:'',
+	unit:''
+})
 
 const visible = computed({
 	get() {
@@ -85,6 +133,12 @@ const submitForm = () => {
 const submitForm = () => {
 	let folder_name = document.getElementById('folder_name');
 	let folder_number = document.getElementById('folder_number');
+	let folder_type = document.getElementById('folderType');
+	let folder_year = document.getElementById('folderYear');
+	let department = document.getElementById('department');
+	let division = document.getElementById('division');
+	let unit = document.getElementById('unit');
+
 	if (folder_name.value == '') {
 		folder_name.focus();
 		return false
@@ -93,13 +147,32 @@ const submitForm = () => {
 		folder_number.focus();
 		return false;
 	}
-	form.get('/create-folder', {onSuccess: page => {
+	if (folder_year.value == '') {
+		folder_year.focus();
+		return false;
+	}
+	if(page.props.roles != 'data entry' && props.department){
+		if (department.value == '') {
+			department.focus();
+			return false;
+		}
+		if (division.value == '') {
+			division.focus();
+			return false;
+		}
+		if (unit.value == '') {
+			unit.focus();
+			return false;
+		}
+	}
+	form.get(props.url, {
+		onSuccess: page => {
 			toast.add({
-					severity: "success",
-					summary: "Document Created",
-					detail: "You've successfully created a new document.",
-					life: 3000,
-				});
+				severity: "success",
+				summary: "Document Created",
+				detail: "You've successfully created a new document.",
+				life: 3000,
+			});
 			//	emit("update:modelValue", false);
 		},
 		onError: errors => {
@@ -107,4 +180,28 @@ const submitForm = () => {
 		},
 	})
 }
+
+const getUnit = ()=>{
+	let found = division.value.filter((val)=>{
+		return val.id == form.division
+	})
+	units.value = found;
+}
+
+watch(()=>form.division,()=>{
+	getUnit()
+})
+
+onMounted(()=>{
+	if(page.props.roles !='data entry' && props.department){
+
+		axios.get('/admin/get-division-with-unit',{params:{id: props.department.id}}).then((response)=>{
+			division.value = response.data;
+		})
+
+		form.department = props.department.id
+	department_title.value = props.department.title
+	}
+
+})
 </script>

@@ -42,7 +42,7 @@
                     </div>
                 </div>
                 <div class=" lg:text-end md:text-center sm:text-left pl-6 mr-14">
-                    <select name="" id="" class="border border-gray-300 px-4 py-2 rounded-lg w-2/3 text-gray-500" v-model="selectedDocType">
+                    <select name="" id="" class="border border-gray-300 px-4 py-2 rounded-lg w-2/3 text-gray-500 bg-white" v-model="selectedDocType">
                         <option value="">Select document type</option>
                         <option :value="doctype.id" v-for="(doctype, index) in props.doctypes" :key="index">{{ doctype.name }}</option>
                     </select>
@@ -66,9 +66,9 @@
                 </div>
                 <div class="lg:text-end pr-14">
                     <div
-                        class=" lg:flex text-xl "
+                        class=" lg:flex text-xl"
                     >
-                        <span class="text-gray-400 relative">
+                        <span class="text-gray-400 relative w-full">
                         <Icon
                             icon="iconamoon:search-light"
                             width="20"
@@ -490,7 +490,7 @@
                         <input type="file" name="" id="">
             </div> -->
             
-            <div class="flex items-center justify-center w-5/6 mx-auto mt-9">
+            <div class="flex items-center justify-center w-5/6 mx-auto mt-9 drop-area" @dragover.prevent @drop="handleDrop">
                 <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600" :class="selectedFolder.length == 0?'cursor-not-allowed':'cursor-pointer'">
                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
                         <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
@@ -651,17 +651,18 @@
 
         </div>
     </div>
-    <CreateFolderModal v-model="createFolder"/>
+    <CreateFolderDialog v-model="createFolder" :department="props.department" :url="page.props.roles !='data entry'? '/admin/create-folder':'/dashboard/create-folder'"/>
 
 </template>
 
 <script setup>
 import { ref, defineProps, watch, onMounted, onUpdated } from "vue";
-import CreateFolderModal from "../../components/Modals/CreateFolderModal.vue"
-import { useForm } from '@inertiajs/vue3'
+//import CreateFolderModal from "../../components/Modals/CreateFolderModal.vue"
+import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
+import { useForm, usePage } from '@inertiajs/vue3'
 import { useToast } from "primevue/usetoast";
 
-const props = defineProps(['doctypes','folders','thumbnails']);
+const props = defineProps(['doctypes','folders','thumbnails', 'department']);
 
 const checked = ref(false);
 const checked2 = ref(false);
@@ -689,6 +690,7 @@ const date = ref('')
 const number = ref('')
 const folderId = ref(null);
 const toast = useToast();
+const page = usePage()
 
 const metadata_strings = [
     {
@@ -821,17 +823,18 @@ const formatSize = (size) => {
 
         form.post('/archive-files',{
             onSuccess: page => {
-                alert('this is successfull');
+               
                 form.reset();
                 files.value = [];
                 //description.value = ''
-                text.value = ''
+               // text.value = ''
                // number.value = ''
-                date.value = ''
+               // date.value = ''
                 selectedDocType.value =''
                 selectedFolder.value.length = 0
                 selected_metadata_strings.value = []
-                folder_id = null
+                selectedDocType.value = ''
+               // folder_id = null
 
                 toast.add({
                     severity: "success",
@@ -870,6 +873,17 @@ const defaultDocTypes = ()=>{
             }
         }
      }
+}
+
+//handle file drop 
+const handleDrop = (event)=>{
+    event.preventDefault();
+    const newFiles = event.dataTransfer.files;
+    for(let i=0; i < newFiles.length; i++){
+        form.files.push(newFiles[i]);
+        files.value.push(newFiles[i])
+    }
+    uploadFiles()
 }
 
 watch(selectedDocType, (val)=>{
@@ -934,6 +948,7 @@ onMounted(()=>{
     //     console.log(`File added: ${file.name}`);
     //     });
     defaultDocTypes()
+   // alert(page.props.roles)
      })
   
 

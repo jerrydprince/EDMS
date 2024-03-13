@@ -11,7 +11,7 @@
           <Icon icon="gala:add" width="25" />
           <p>Create Workflow</p>
         </button>
-          <Link href="/archiving" class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
+          <Link :href="'/admin/archiving/'+department.id" class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
           <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
           <p>Upload Files</p>
           </Link>
@@ -256,7 +256,7 @@
               <div class="p-2 rounded-full bg-white w-fit">
                 <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
               </div>
-              <h1>{{file.name}}</h1>
+              <h1 class="truncate">{{file.name}}</h1>
               <div>
                 <Icon icon="majesticons:more-menu-vertical" width="30" />
               </div>
@@ -268,101 +268,19 @@
           </div>
         </div>
 
-        <DataTable v-if="files.length > 0 && !documentsGridView" v-model:selection="selectedDocument" paginator
-          :rows="10" :value="files" dataKey="id" :pt="{
-            table: {
-              class:
-                'w-full border border-border_primary border-solid mb-6 mt-2',
-            },
-          }" tableStyle="min-width: 60rem; border-radius: 30px;">
-          <Column selectionMode="multiple" headerStyle="width: 2rem; color: #667085;"></Column>
-          <Column field="name" header="File Name" :pt="{
-            bodyCell: { class: 'text-gray-700' },
-          }" headerStyle="color: #667085; font-weight: 500;">
-            <template #body="slotProps">
-              <div class="flex items-center font-medium gap-2">
-                <div class="p-2 rounded-full bg-gray-200">
-                  <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
-                </div>
-                {{ slotProps.data.name }}
-              </div>
-            </template>
-          </Column>
-          <Column field="date" header="Date Uploaded" :pt="{
-            bodyCell: { class: 'text-gray-500' },
-          }" headerStyle="color: #667085; font-weight: 500;">
-          </Column>
-          <Column field="size" header="File Size" :pt="{
-            bodyCell: { class: 'text-gray-500' },
-          }" headerStyle="color: #667085; font-weight: 500;">
-          </Column>
-          <Column field="uploaded_by" header="Uploaded By" :pt="{
-            bodyCell: { class: 'text-gray-500' },
-          }" headerStyle="color: #667085; font-weight: 500;">
-          </Column>
-
-          <Column field="actions" header="Actions" :pt="{
-            bodyCell: { class: 'text-gray-700' },
-          }" headerStyle="color: #667085; font-weight: 500;">
-            <template #body="{ data }">
-              <div class="flex items-center gap-4">
-                <div @click="toggle2($event, data)" aria-haspopup="true" aria-controls="overlay_menu">
-                  <div class="flex items-center font-normal h-full border border-gray-300 rounded-lg">
-                    <div>
-                      <div class="h-full">
-                        <Icon icon="majesticons:more-menu-vertical" width="30" />
-                      </div>
-                      <TieredMenu ref="menu2" id="overlay_menu" :model="menuItems" :popup="true">
-                        <template #item="{ item, props, hasSubmenu }">
-
-                          <a class="flex align-location-center" v-bind="props.action">
-                            <span :class="item.icon" />
-                            <span class="ml-2" @click="handleItemClick(item)">{{ item.label }}</span>
-                            <!-- <Badge v-if="item.badge" class="ml-auto" :value="item.badge" /> -->
-                            <i v-if="hasSubmenu" class="pi pi-angle-right ml-auto text-primary"></i>
-                          </a>
-                          <div v-if="hasSubmenu" class="submenu">
-                            <TieredMenu :model="item.submenuItems" :popup="true"></TieredMenu>
-                          </div>
-                        </template>
-                      </TieredMenu>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="cursor-pointer" @click="deleteArchive(data)">
-                  <Icon icon="uiw:delete" width="16" />
-                </div>
-              </div>
-            </template>
-
-            <template>
-              <div class="flex items-center gap-4  border border-[red]">
-                <div class="flex border ">
-                  <div class="flex items-center font-normal h-full border border-gray-300 rounded-lg ">
-
-
-
-                  </div>
-                </div>
-
-                <div class="cursor-pointer">
-                  <Icon icon="uiw:delete" width="16" />
-                </div>
-              </div>
-            </template>
-          </Column>
-        </DataTable>
+          <ListVue :files="files" :documentsGridView="documentsGridView" @docs="SetselectedDocument" 
+          @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
+          @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails"/>
       </div>
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" />
-    <BranchDetails v-model="branchDetailsModal" />
+    <CreateFolderDialog v-model="createFolderModal" :url="'/admin/create-folder'" :department="props.department"/>
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
     <GenerateEncriptionCode v-model="GenerateEncriptionModal" />
     <ChangeFormat v-model="ChangeFormatModal" :archive="selectedArchive" />
     <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive"/>
+    <BranchDetails v-model="branchDetailsModal" :file="selectedArchive"/>
 
   </main>
 </template>
@@ -377,7 +295,8 @@ import LockDocument from "../../components/Modals/branches/LockDocument.vue";
 import UnlockDocument from "../../components/Modals/branches/UnlockDocument.vue";
 import GenerateEncriptionCode from "../../components/Modals/branches/GenerateEncriptionCode.vue";
 import ChangeFormat from "../../components/Modals/branches/ChangeFormatModal.vue"
-import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue"
+import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
+import ListVue from '../dashboard/partials/ListVue.vue';
 import axios from "axios";
 
 const createFolderModal = ref(false);
@@ -438,7 +357,10 @@ const menuItems = ref([
     items: [
       {
         label: "Details",
-        icon: 'pi pi-info-circle'
+        icon: 'pi pi-info-circle',
+        command: ()=>{
+          branchDetailsModal.value = true;
+        }
       },
       {
         label: "Activity",
@@ -453,6 +375,31 @@ const menuItems = ref([
     ]
   },
 ]);
+
+const SetselectedDocument = (data)=>{
+  selectedDocument.value = data.value
+}
+
+const setSelectedArchive = (data)=>{
+  selectedArchive.value = data.value
+}
+
+const setFormatModal = (data)=>{
+  ChangeFormatModal.value = data
+}
+
+const setBranchDetails = (data)=>{
+  branchDetailsModal.value = data
+}
+
+const setFileRename = (data)=>{
+ console.log(data)
+  FileRenameModal.value = data
+}
+
+const setLock =(data)=>{
+  LockDocumentModal.value = data
+}
 
 const downloadFile = async () => {
   try {
@@ -492,15 +439,7 @@ const downloadFile = async () => {
 };
 
 
-const handleItemClick = (item) => {
 
-  if (item.label === 'Lock') {
-    LockDocumentModal.value = true
-  }
-  if (item.label === 'Change Format') {
-    ChangeFormatModal.value = true
-  }
-}
 const toggle = (event) => {
   menu.value.toggle(event);
 };
@@ -574,7 +513,8 @@ const files = computed(()=>{
         date: formatDate(file.updated_at),
         uploaded_by: file?.file_path[0]?.updated_by_name,
         path: file?.file_path[0]?.thumbnails,
-        id: file.id
+        id: file.id,
+        files: file?.file_path,
       }
       newarr.push(arr);
     }

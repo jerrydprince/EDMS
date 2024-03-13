@@ -529,7 +529,6 @@
 <script setup>
   import { ref } from "vue";
 import Emptystate from "@/assets/Emptystate.vue";
-import { useRouter } from 'vue-router';
 import CreateFolderDialog from "@/components/Modals/branches/CreateFolderDialog.vue";
 import BranchDetails from "@/components/Modals/branches/BranchDetails.vue";
 import LockDocument from "@/components/Modals/branches/LockDocument.vue";
@@ -537,7 +536,6 @@ import UnlockDocument from "@/components/Modals/branches/UnlockDocument.vue";
 import GenerateEncriptionCode from "@/components/Modals/branches/GenerateEncriptionCode.vue";
 import ChangeFormat from "@/components/Modals/branches/ChangeFormatModal.vue";
 import { onClickOutside } from '@vueuse/core'
-const router = useRouter();
 
 const goBack = () => {
   router.go(-1);

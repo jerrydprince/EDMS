@@ -83,7 +83,6 @@ const closeModal = () => {
 
 const submit = () => {
   form.post('/change-file-format',page => {
-    console.log(page)
   })
   emit("update:modelValue", false);
 };
@@ -97,8 +96,6 @@ const getFileExtension = computed(() => {
 const fileFormat = computed(() => {
   let arr = ["Image Format", "Document Format", "PDF Format", "Excel Format"];
   let index = arr.indexOf(currentFileFormat.value);
-  console.log(index)
-  console.log(currentFileFormat.value)
 
   if (index !== -1) {
     arr.splice(index, 1);
@@ -160,7 +157,7 @@ const downloadFile = async () => {
 };
 
 onMounted(() => {
-  console.log(fileFormat.value)
+ 
 })
 </script>
 <style scoped>

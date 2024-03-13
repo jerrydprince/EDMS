@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('folder', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('number');
+            $table->string('number');
             $table->string('department_id');
-            $table->string('division_id');
-            $table->string('unit_id');
+            $table->string('division_id')->nullable();
+            $table->string('unit_id')->nullable();
             $table->boolean('is_open')->default(1);
             $table->integer('file_count')->nullable();
             $table->timestamps();

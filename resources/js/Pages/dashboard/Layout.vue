@@ -156,9 +156,10 @@
   
   <script setup>
   import { ref, watch, onMounted } from "vue";
-  import searchResult from "@/components/Modals/SearchResult.vue";
-  import TopBar from "@/layouts/TopBar/Main.vue"
-  import { useRoute } from "vue-router";
+  //import searchResult from "@/components/Modals/SearchResult.vue";
+  import searchResult from "../../components/Modals/SearchResult.vue"
+  //import TopBar from "@/layouts/TopBar/Main.vue"
+  import TopBar from "../../Shared/TopBar.vue"
   import logo from "../../assets/logo.vue";
   const toggleSearch = ref(false);
   
@@ -166,7 +167,6 @@
     toggleSearch.value = !toggleSearch.value;
   };
   
-  const route = useRoute();
   
   const shouldShow = ref(false);
   

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Department;
+use Auth;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -39,7 +40,13 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'shared_departments' => fn () => Department::get()->take(4),
-            'base' => fn () => url('/')
+            'base' => fn () => url('/'),
+            'department' => fn () => Auth::check()? Auth::user()->department: [],
+            'department_div_unit' => fn () =>
+                $department = Auth::check()?Department::with(['division'=>function($query){
+                    $query->with('unit');
+                }])->where('id', Auth::user()->department_id)->first() : [],
+            'roles'=>Auth::check()? Auth::user()->roles->pluck('name')->toArray() :[]
         ]);
     }
 }

@@ -140,7 +140,10 @@ class RegistrationController extends Controller
             $user->grade_level = $request->grade_level;
             $user->email = $request->email;
            // $user->verification_code = $code;
-            $user->password = Hash::make('password');
+           if(!$request->id){
+             $user->password = Hash::make('password');
+           }
+           
             $user->department_id = $request->department;
             $user->division_id = $request->division;
             $user->unit_id = $request->unit;

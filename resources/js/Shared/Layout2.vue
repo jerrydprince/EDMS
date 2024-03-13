@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class=" grid grid-cols-12 max-h-screen overflow-y-hidden">
-            <!-- left section of the login page -->
-            <div class="col-span-6 bg-blue-500">
+            <!-- left section of the login page-->
+            <div class="col-span-6 bg-primary">
                 <div class="flex mt-16 flex-col w-11/12 ml-auto">
                     <div class="flex-1 min-h-[50vh] bg-transparent pr-6">
                         <svg width="60" height="60" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

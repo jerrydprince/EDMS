@@ -427,7 +427,6 @@
    import { ref } from "vue";
    import CreateFolderDialog from "@/components/Modals/branches/CreateFolderDialog.vue";
    import FolderDialog from "@/components/Modals/branches/FolderDialog.vue";
-   import { useRouter } from 'vue-router';
 
 
 
@@ -441,8 +440,6 @@
       FolderModal.value = true
    }
 
-
-   const router = useRouter();
 
 const goBack = () => {
   // Use Vue Router's go method with -1 to go back one step in the history

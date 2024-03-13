@@ -5,6 +5,7 @@ import { Icon } from "@iconify/vue";
 import Button from "primevue/button";
 import Panel from "primevue/panel";
 import InputText from "primevue/inputtext";
+import Calendar from 'primevue/calendar';
 import Menu from "primevue/menu";
 import Tree from "primevue/tree";
 import Timeline from "primevue/timeline";
@@ -50,4 +51,5 @@ export function registerGlobalComponents(app) {
   app.component("Checkbox", Checkbox);
   app.component("Sidebar", Sidebar);
   app.component('TieredMenu', TieredMenu);
+  app.component('Calendar', Calendar);
 }

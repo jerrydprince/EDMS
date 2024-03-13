@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\Auth\PasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,9 +37,7 @@ Route::middleware('guest')->group(function(){
     Route::post('/email-verification', [RegistrationController::class, 'emailVerifiation']);
     Route::get('/email-exist', [RegistrationController::class, 'checkMailExit']);
     Route::get('/phone-exist', [RegistrationController::class, 'checkPhoneExist']);
-    Route::get('/reset-pwd', function(){
-        return view('resetpwd');
-    });
+    Route::get('/password/reset/{email}', [PasswordController::class, 'passwordReset'])->name('password.reset');
 
 });
 
@@ -90,27 +89,53 @@ Route::middleware('auth')->group(function () {
 
          //roles
          Route::get('/assign-role-to-super-admin', [AdminController::class, 'assignRoleToSuperAdmin']);
+
+        //Branches
+        Route::get('/branches/{id}', [ArchiveController::class, 'Branches']);
+
+        //archiving
+        Route::post('/upload-files', [ArchiveController::class, 'uploadFiles']);
+        Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles']);
+        Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
+        Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
+        Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit']);
         
     });
 
+        //archiving
+       // Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
+        Route::post('/upload-files', [ArchiveController::class, 'uploadFiles']);
+        Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles']);
+        Route::get('/delete-archive', [ArchiveController::class, 'deleteArchives']);
+        Route::get('/download-file', [ArchiveController::class, 'downloadFile']);
+        Route::post('/duplicate-file', [ArchiveController::class, 'DuplicateFile']);
+        Route::post('/change-file-format', [ArchiveController::class, 'changeFileFormat']);
+
     //dashboard
     Route::prefix('dashboard')->middleware('role:data entry|super admin')->group(function(){
-        route::get('/', [DashboardController::class, 'index']);
-        route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
+
+        //archiving
+        Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
+        Route::get('/folder-view/{id}', [ArchiveController::class, 'folderView']);
+        Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
+
+        //branches
+        Route::get('/branches/{id}', [ArchiveController::class, 'userBranches']);
+
+         //support
+         Route::get('/support', [DashboardController::class, 'support']);
+
+         //settings
+         Route::get('/settings', [DashboardController::class, 'settings']);
+         Route::get('/profile', [DashboardController::class, 'settings']);
+         Route::get('/preferences', [DashboardController::class, 'settings']);
+         Route::get('/security', [DashboardController::class, 'settings']);
+         Route::get('/localisation', [DashboardController::class, 'settings']);
     });
 
-    //archiving
-    Route::get('/archiving', [ArchiveController::class, 'Archiving']);
-    Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
-    Route::post('/upload-files', [ArchiveController::class, 'uploadFiles']);
-    Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles']);
-    Route::get('/delete-archive', [ArchiveController::class, 'deleteArchives']);
-    Route::get('/download-file', [ArchiveController::class, 'downloadFile']);
-    Route::post('/duplicate-file', [ArchiveController::class, 'DuplicateFile']);
-    Route::post('/change-file-format', [ArchiveController::class, 'changeFileFormat']);
-
-    //Branches
-    Route::get('/branches/{id}', [ArchiveController::class, 'Branches']);
+   
 
     //Roles
     Route::get('/create-roles', [RoleController::class, 'createRoles']);
@@ -125,4 +150,7 @@ Route::middleware('auth')->group(function () {
 
     //roles
     Route::get('/assign-role-to-super-admin', [AdminController::class, 'assignRoleToSuperAdmin']);
+
+    //logout
+    Route::get('/log-out', [LoginController::class, 'logout']);
 });

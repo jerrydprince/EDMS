@@ -6,7 +6,7 @@ export default {
     "./resources/**/*.js",
     "./resources/**/*.vue",
     "./node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}",
-    "./node_modules/flowbite/**/*.js"
+   // "./node_modules/flowbite/**/*.js"
   ],
   theme: {
     extend: {
@@ -23,7 +23,7 @@ export default {
     },
   },
   plugins: [
-    require('flowbite/plugin')
+    //require('flowbite/plugin')
   ],
 }
 

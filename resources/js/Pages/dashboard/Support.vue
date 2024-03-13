@@ -14,25 +14,7 @@
   </div>
   <Divider />
 
-  <div
-    class="px-7 flex justify-between items-center text-[#344054] font-medium"
-  >
-    <button
-      class="flex items-center gap-2 border border-solid rounded-3xl border-gray-300 p-3"
-     @click="supportModal = true"
-    >
-      <Icon icon="simple-line-icons:earphones-alt" />
-      <p>Support Info</p>
-    </button>
-
-    <button
-      class="flex items-center gap-2 border border-solid rounded-lg px-5 border-gray-300 p-3"
-      @click="supportModal =true"
-      >
-      <Icon icon="ri:edit-line" />
-      <p>Configure</p>
-    </button>
-  </div>
+  
 
   <div class="justify-between flex items-center px-7 mt-10">
     <div class="p-5 border border-solid rounded-md w-96">

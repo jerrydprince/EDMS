@@ -438,10 +438,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
 import CreateFolderDialog from "@/components/Modals/branches/CreateFolderDialog.vue";
-
-const router = useRouter();
 
 const goBack = () => {
   router.go(-1);

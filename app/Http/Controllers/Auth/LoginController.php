@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Hash;
 
 class LoginController extends Controller
 {
@@ -47,6 +48,11 @@ class LoginController extends Controller
         ]);
  
         if (Auth::attempt($credentials)) {
+            //check if the user password is "password"
+            if (Hash::check('password', Auth::user()->password)) {
+                Auth::logout();
+                return redirect()->route('password.reset');
+            }
             //check if user is approved
             if(!auth()->user()->hasRole('super admin')){
                 if(!auth()->user()->is_approved){
@@ -86,4 +92,15 @@ class LoginController extends Controller
     //             'email' => 'The provided credentials do not match our records.',
     //     ])->onlyInput('email');
     // }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+    
+        $request->session()->invalidate();
+    
+        $request->session()->regenerateToken();
+    
+        return redirect('/login');
+    }
 }

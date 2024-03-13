@@ -1,6 +1,7 @@
  import Layout from "./Shared/Layout.vue"
  import Layout2 from "./Shared/Layout2.vue"
  import Layout3 from "./Shared/Layout3.vue"
+ import Layout4 from "./Shared/Layout4.vue"
 
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -44,6 +45,8 @@ import { router } from '@inertiajs/vue3'
             module.default.layout = module.default.layout || Layout3;
           }else if(window.location.pathname.startsWith('/admin')){
              module.default.layout = module.default.layout || Layout;
+          }else if(window.location.pathname.startsWith('/password')){
+            module.default.layout = module.default.layout || Layout4;
           }
          
         });
