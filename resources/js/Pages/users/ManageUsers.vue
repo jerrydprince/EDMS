@@ -131,9 +131,9 @@
               }" headerStyle="color: #667085; font-weight: 500;">
                 <template #body="slotProps">
                   <div class="flex gap-3 items-center">
-                    <div class="p-1 font-semibold border rounded-md border-gray-300">
+                    <Link :href="'/admin/edit-user?id='+slotProps.data.id" class="p-1 font-semibold border rounded-md border-gray-300 cursor-pointer">
                       <Icon icon="mingcute:pencil-2-line" width="25" />
-                    </div>
+                    </Link>
                     <div @click="showDeleteDialog(slotProps.data.id)" class=" cursor-pointer">
                       <Icon icon="mingcute:delete-2-line" width="25" />
                     </div>

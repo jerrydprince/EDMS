@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps, computed } from "vue";
+import { ref, defineEmits, defineProps, computed, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3'
 
@@ -113,8 +113,36 @@ const strings = ref([
   { label: "Text"},
   { label: "Date" },
   { label: "Number" },
-  { label: "Check List" },
+  // { label: "Check List" },
 ]);
+
+const metadata_strings = [
+    {
+        Description: `<div class="my-2 w-full">
+                <label for="description">Description</label>
+                <textarea name="description" @input='updateValue' v-model="description" :value="description" id="description" cols="30" rows="3" class="metadata-inputs border border-gray-200 rounded-lg block mt-2 w-full focus:border-blue-400 p-3"></textarea>
+            </div>`
+        },
+        {
+        Text: `<div class="my-2">
+                <label for="title">Text</label>
+                <input type="text" v-model="title" name="text" id="text" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+            </div>`
+        },
+        {
+        Date: `<div class="my-2">
+                <label for="date">Date</label>
+                <input type="date" v-model="date" name="date" id="date" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+            </div>`
+        },
+        {
+        Number: `<div class="my-2">
+                <label for="text">Document Number</label>
+                <input type="number" v-model="number" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
+            </div>`
+        }
+]
+
 const visible = computed({
   get() {
     return props.modelValue;
@@ -133,8 +161,18 @@ const closeModal = () => {
 const form = useForm({
   name:"",
   metadata_string:"",
-  is_default:false
+  is_default:false,
+  metadata_value: ''
 })
+
+const replaceId = (val)=>{
+  if(val){
+    let arr = val.split(" ");
+    
+    Object.values(form.metadata_value)[0].replace(/id="[^"]*"/, `id="${arr[0]}"`);
+
+  }
+}
 
 //submit meta form
 const submitForm = () => {
@@ -146,6 +184,9 @@ const submitForm = () => {
     document.getElementById('metadata_string').focus()
     return false
   }
+
+  replaceId(form.name)
+  //form.metadata_string.replace(/id="([^"]*)"/g, `id="${newValue}"`);
 
   form.post('/admin/create-metadata',{onSuccess: (status)=>{
    
@@ -162,4 +203,21 @@ const submitForm = () => {
   }})
     
 };
+
+const getmetadata = ()=>{
+  let data = metadata_strings.filter((field)=>{
+    return Object.values(field).some((value) => {
+        if(field[form.metadata_string]){
+          return field[form.metadata_string]
+        }
+    });
+  })
+
+  return data[0]
+}
+
+watch(()=>form.metadata_string, ()=>{
+  form.metadata_value = getmetadata()
+ 
+})
 </script>

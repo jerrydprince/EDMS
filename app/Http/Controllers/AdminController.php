@@ -11,7 +11,9 @@ use App\Models\Metadata;
 use App\Models\DocumentType;
 use App\Models\User;
 use App\Models\Folder;
+use App\Models\FileType;
 use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -23,13 +25,15 @@ class AdminController extends Controller
     }
 
     public function BranchSetup(){
-        $departments = Department::with(['documentType','division'=>function($query){
+        $departments = Department::with(['documentType','fileType:id,id','division'=>function($query){
             $query->with('unit');
         }])->withSum('folder','file_count')->withCount('user','division')->get();
 
         $department = $departments->count();
-        $division = $departments->pluck('division')->flatten()->count();
-        $unit = $departments->pluck('division.unit')->flatten()->count();
+        // $division = $departments->pluck('division')->flatten()->count();
+        // $unit = $departments->pluck('division.unit')->flatten()->count();
+        $division = $departments->sum('division_count');
+        $unit = $departments->pluck('division')->flatten()->pluck('unit')->flatten()->count();
         $users = User::count();
         $departments->each(function ($dept) {
             $dept->updated_at_formatted = $dept->updated_at->diffForHumans();
@@ -59,16 +63,6 @@ class AdminController extends Controller
         $metadatas = Metadata::get();
         
         return inertia('admin/MetaDataSetup', compact('metadatas'));
-    }
-
-    public function SetupDocumentType(){
-        $documentTypes = DocumentType::with('metadata')->get();
-
-        $documentTypes->each(function ($documentType) {
-            $documentType->updated_at_formatted = $documentType->updated_at->diffForHumans();
-            $documentType->metadata_count = count($documentType->metadata);
-        });
-        return inertia('admin/SetupDocumentType', compact('documentTypes'));
     }
 
     public function CreateDepartmentDivisionUnit(Request $request){
@@ -118,7 +112,7 @@ class AdminController extends Controller
     
     public function getDivision(Request $request){
         $department = Department::with(['division'=>function($query){
-            $query->with('documentType')->withSum('folder', 'file_count')->withCount('users','unit');
+            $query->with(['documentType','fileType'])->withSum('folder', 'file_count')->withCount('users','unit');
         }])->where('id', $request->id)->first();
         $department_name = $department->title;
         $division = $department->division;
@@ -147,7 +141,7 @@ class AdminController extends Controller
 
     public function getUnits(Request $request){
         $div = Division::with(['unit'=>function($query){
-            $query->with(['documentType'])->withSum('folder','file_count')->withCount('users');
+            $query->with(['documentType', 'fileType'])->withSum('folder','file_count')->withCount('users');
         }])->where('id', $request->id)->first();
         $division_name = $div->title;
         $units = $div->unit;
@@ -311,6 +305,93 @@ class AdminController extends Controller
         return inertia('users/AddUser', compact('roles', 'departments','user'));
     }
 
+    public function editUser(Request $request){
+        $user = User::with('roles')->find($request->id);
+        $user_roles = $user->roles->pluck('id');
+         $roles = Role::get();
+        $departments = Department::with(['division'=>function($query){
+            $query->with('unit');
+        }])->get();
+        $dpt = Department::find($user->department_id);
+        $division = '';
+        $unit = '';
+        if($user->division_id){
+          $division = Division::find($user->division_id);  
+        }
+
+        if($user->unit_id){
+            $unit = Unit::find($user->unit_id);
+        }
+     
+        return inertia('users/EditUser', compact('user', 'roles', 'departments', 'dpt', 'division', 'unit','user_roles'));
+    }
+
+    public function postEditUser(Request $request){
+        // dd($request->all());
+        if($request->id){
+          $request->validate([
+              'first_name' => 'required',
+              'last_name' => 'required',
+              'gender' => 'required',
+              'grade_level' => 'required',
+              'email' => [
+                  'required',
+                  'email',
+                  Rule::unique('users')->ignore($request->id)
+              ],
+              'department' => 'required',
+              'phone' => [
+                  'sometimes',
+                  Rule::unique('users')->ignore($request->id)
+              ]
+          ]);
+        }else{
+          $request->validate([
+              'first_name' => 'required',
+              'last_name' => 'required',
+              'gender' => 'required',
+              'grade_level' => 'required',
+              'email' => 'required|email|unique:users',
+              'department' => 'required',
+              'phone' => 'sometimes|unique:users'
+          ]);
+        }
+          
+  
+          DB::transaction(function () use ($request) {
+              //$code = $this->generateSixDigitCode();
+  
+              $user = User::find($request->id);
+              $user->first_name = $request->first_name;
+              $user->last_name = $request->last_name;
+              $user->gender = $request->gender;
+              $user->grade_level = $request->grade_level;
+              $user->email = $request->email;
+             
+              $user->department_id = $request->department;
+              $user->division_id = $request->division;
+              $user->unit_id = $request->unit;
+              $user->phone = $request->phone;
+              $user->is_approved = $request->is_approved;
+              $user->save();
+  
+              if($request->file){
+                  $fileName = time().'_'.$request->file('file')->getClientOriginalName();
+                  $path = $request->file('file')->move(public_path('users'), $fileName);
+  
+                  $user->profile_image = 'users/'.$fileName;
+                  $user->save();
+              }
+  
+              if($request->role){
+                  $user->syncRoles($request->role);
+              }
+  
+          });
+  
+          return redirect()->back()->with('success',true);
+      }
+
     public function assignRoleToSuperAdmin(){
         auth()->user()->assignRole('super admin');
        echo "success";
@@ -319,6 +400,57 @@ class AdminController extends Controller
     public function RoleUsers(Request $request){
         $role = Role::with('users')->find($request->role_id);
         return inertia('users/RoleUsers', compact('role'));
+    }
+
+    //get the file type
+    public function fileType(){
+        $filetypes = FileType::get();
+        $filetypes->each(function ($filetyp) {
+            $filetyp->updated_at_formatted = $filetyp->updated_at->diffForHumans();
+        });
+        return inertia('admin/FileType', compact('filetypes'));
+    }
+
+    public function createFileType(Request $request){
+        $request->validate([
+            'name'=>'required'
+        ]);
+
+        $filetype = $request->id? FileType::find($request->id) : new FileType();
+        $filetype->name = $request->name;
+        $filetype->description = $request->description;
+        $filetype->save();
+        return redirect()->back();
+    }
+
+    public function deleteFileType(Request $request){
+        FileType::find($request->id)->delete();
+        return redirect()->back();
+    }
+
+    public function assignFileTypesToBranch(Request $request){
+        if($request->branch == 'department'){
+            $department = Department::find($request->id);
+            $department->fileType()->sync($request->filetypes);
+            return redirect()->back();
+        }
+
+        if($request->branch == 'division'){
+            $division = Division::find($request->id);
+            $division->fileType()->sync($request->filetypes);
+            return redirect()->back();
+        }
+
+        if($request->branch == 'unit'){
+            $unit = Unit::find($request->id);
+            $unit->fileType()->sync($request->filetypes);
+            return redirect()->back();
+        }
+    }
+
+    public function getFileType(){
+        $fileTypes = FileType::get();
+        return response()->json($fileTypes);
     }
    
 }

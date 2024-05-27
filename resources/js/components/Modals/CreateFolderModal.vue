@@ -1,4 +1,6 @@
 <template>
+
+  <!-- create folder is now create file -->
     <Dialog
       v-model:visible="visible"
       modal
@@ -106,7 +108,7 @@
   </template>
   
   <script setup>
-  import { ref, defineEmits, defineProps, computed} from "vue";
+  import { ref, defineEmits, defineProps, computed, onMounted} from "vue";
   import { useToast } from "primevue/usetoast";
   import axios from "axios";
   import { useForm } from '@inertiajs/vue3'
@@ -152,7 +154,7 @@
             toast.add({
                 severity: "success",
                 summary: "Document Created",
-                detail: "You've successfully created a new document.",
+                detail: "You've successfully created a new folder.",
                 life: 3000,
             });
             emit("update:modelValue", false);

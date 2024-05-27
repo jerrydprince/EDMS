@@ -30,7 +30,7 @@
       </div>
 
       <div class=" flex gap-10 items-center">
-        <img src="@/assets/images/profile.svg" alt="">
+        <img src="/assets/images/profile.svg" alt="">
 
 
         <button class="bg-white border-gray-300 border py-2 px-4 rounded-lg relative cursor-pointer">
@@ -109,7 +109,7 @@
 
 <script setup>
 import { ref, defineProps } from 'vue';
-import VerifyEmail from '@/components/Modals/VerifyEmail.vue';
+import VerifyEmail from '../../../components/Modals/VerifyEmail.vue';
 
 const EmailModal = ref(false)
 const props = defineProps(['user'])

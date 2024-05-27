@@ -41,5 +41,24 @@ class Folder extends Model
         return $this->belongsTo(Division::class);
     }
     
+    /**
+     * Get the fileType associated with the Folder
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function fileType()
+    {
+        return $this->hasOne(FileType::class,'id', 'file_type_id');
+    }
+
+    /**
+     * Get all of the subfolder for the Folder
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function subfolder()
+    {
+        return $this->hasMany(SubFolder::class);
+    }
     
 }

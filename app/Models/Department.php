@@ -26,7 +26,7 @@ class Department extends Model
      */
     public function documentType()
     {
-        return $this->belongsToMany(documentType::class, 'departments_document_types');
+        return $this->belongsToMany(DocumentType::class, 'departments_document_types');
     }
 
     /**
@@ -57,6 +57,16 @@ class Department extends Model
     public function folder()
     {
         return $this->hasMany(Folder::class);
+    }
+
+    /**
+     * The fileType that belong to the Department
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function fileType()
+    {
+        return $this->belongsToMany(FileType::class, 'department_file_type');
     }
     
 }

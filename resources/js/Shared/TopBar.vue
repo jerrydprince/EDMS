@@ -12,9 +12,72 @@
         <Icon class="text-gray-500" icon="ion:moon-sharp" width="20" />
       </div>
       <Icon icon="iconamoon:notification" width="25" />
-      <div class="ml-1">
-        <Userplaceholder />
+
+      <!-- mini profile section starts here -->
+      <div class="ml-1 cursor-pointer">
+        <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
+          <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+        </div>
+
+        <div
+          class=" bg-red  mt-4 absolute w-[300px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-7"
+          v-if="Profile_option">
+          <div class=" flex items-center gap-3  p-4 border-b">
+            <div class="ml-1 w-10 h-10 overflow-hidden rounded-full">
+              <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+            </div>
+            <div>
+              <h1>{{ user.last_name+' '+user.first_name }}</h1>
+              <div class=" flex items-center text-xs gap-2 text-gray-500">
+                <p class=" ">{{user.email}} </p>
+                <Icon icon="iconoir:copy" />
+              </div>
+
+            </div>
+          </div>
+          <Link href="/dashboard/settings">
+            <div class=" border-b">
+              <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold "
+                @click=" Profile_option = false">
+                <Icon icon="lucide:user" width="25" />
+                <p>Profile Settings </p>
+              </div>
+            </div>
+          </Link>
+          <router-link to="/settings/organisation" v-if="!roles.includes('data entry')">
+            <div class=" border-b">
+              <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold "
+                @click=" Profile_option = false">
+                <Icon icon="gg:organisation" width="25" />
+                <p>Organization Settings </p>
+              </div>
+            </div>
+          </router-link>
+          <Link href="/dashboard/support">
+            <div class=" border-b">
+              <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold ">
+                <Icon icon="system-uicons:support" width="25" />
+                <p>Help & Support </p>
+              </div>
+            </div>
+          </Link>
+        
+          <div class=" border-b" @click='logOut'>
+            <div class=" flex items-center gap-2 p-3 rounded-md m-3 hover:bg-gray-100 font-semibold text-[#F04438] "
+              @click=" Profile_option = false">
+              <Icon icon="line-md:logout" width="25" />
+              <p>Logout </p>
+            </div>
+          </div>
+        
+        </div>
+
       </div>
+       <!-- mini profile section ends here -->
+
+      <!-- <div class="ml-1">
+        <Userplaceholder />
+      </div> -->
     </div>
     <div class="flex xl:hidden text-xl font-semibold items-center justify-between px-4 w-full">
       <div class="flex items-center gap-4">
@@ -126,7 +189,7 @@
 import { ref } from "vue";
 //mport { useRoute } from "vue-router";
 import logo from "../assets/logo.vue";
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
 import Userplaceholder from "../assets/Userimageholder.vue";
 import { defineProps } from 'vue';
 
@@ -137,6 +200,11 @@ const toggleSearch = () => {
 };
 const value1 = ref("");
 const navVisible = ref(false);
+const Profile_option = ref(false)
+const page = usePage()
+
+const user = page.props.user
+const roles = page.props.roles
 
 
 //const route = useRoute();
@@ -157,6 +225,14 @@ const main = ref([
     icon: "octicon:inbox-24",
   },
 ]);
+
+const logOut = () => {
+  axios.get('/log-out').then((response)=>{
+    if(response){
+      window.location.href = window.location.href
+    }
+  })
+}
 
 const admin = ref([
   {

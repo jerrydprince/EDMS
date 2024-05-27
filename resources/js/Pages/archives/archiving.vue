@@ -13,19 +13,23 @@
         <div class="flex items-center justify-center upload-document-txt">
             <div class="grid xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 gap-4 w-full items-center md:py-4 py-4">
                 <div class=" flex items-center">
+                  
                     <div>
+                        <Link :href="'/dashboard/folder-view/'+props.branch_type+'/'+folderId">
                         <svg class="border ml-[35px] mr-5 border-gray-300 p-2 w-10 h-10 rounded-lg" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M17.079 10.9989H4.92105M4.92105 10.9989L11 17.0778M4.92105 10.9989L11 4.91992" stroke="#363C46" stroke-width="1.73684" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
+                    </Link>
                     </div>
+                  
                     <div>
                         <h2 class=" text-2xl font-semibold">Upload Documents</h2>
                         <h4 class="text-gray-400 text-sm mt-1">Archive files into directories</h4>
                     </div>
                 </div>
                 <div class="lg:text-end md:text-center sm:text-center pl-6">
-                    <button class=" mr-6 text-green-700">Cancel</button>
-                    <button class=" bg-blue-600 text-white px-[64px] py-2 rounded-lg mr-[54px] hover:bg-blue-500 disabled:bg-blue-400" :disabled="files.length == 0 || selected_metadata_strings.length == 0" @click="submitForm">Save</button>
+                    <button class=" mr-6 text-green-700" @click="cancelForm">Cancel</button>
+                    <button class=" bg-primary text-white px-[64px] py-2 rounded-lg mr-[54px] hover:bg-primary_hover disabled:bg-primary_disabled" :disabled="files.length == 0 || selected_metadata_strings.length == 0" @click="submitForm">Upload</button>
                 </div>
             </div>
         </div>
@@ -50,7 +54,7 @@
             </div>
         </div>
         <!-- seventh div -->
-        <div class="flex items-center justify-center upload-document-txt ">
+        <!-- <div class="flex items-center justify-center upload-document-txt ">
             <div class="grid lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 gap-4 w-full items-center">
                 <div class="flex">
                     <div>
@@ -84,9 +88,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <!-- eight div -->
-        <div class=" mb-6">
+        <!-- <div class=" mb-6">
             <div class="mt-6 mr-[105px] text-end">
                 <button class=" px-6 py-1 border border-gray-200 rounded-3xl hover:bg-gray-100" @click="createFolder=true">
                     <span class="flex text-sm">
@@ -215,239 +219,10 @@
                             <p class="text-sm">{{ (folder?.file_count)? folder.file_count: 0 }} File(s)</p>
                         </div>
                     </div>
-                    <!-- <div class=" col-span-4 border border-gray-100 bg-gray-100 p-2 rounded-lg cursor-pointer flex">
-                        <div class="card flex justify-content-center items-center">
-                            <Checkbox v-model="checked2" :binary="true" />
-                        </div>
-                            <svg class=" ml-4" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.828125" width="47.5" height="46.9214" rx="5.53311" fill="white"/>
-                            <rect x="0.25" y="0.828125" width="47.5" height="46.9214" rx="5.53311" stroke="#EAECF0" stroke-width="0.5"/>
-                            <g filter="url(#filter0_i_653_12638)">
-                            <path d="M6.65063 23.8383V17.4791C6.79774 15.8943 7.8422 12.7246 10.8432 12.7246H18.8421C19.5041 12.7642 21.0597 13.0693 21.9865 13.9727C23.145 15.1019 26.3997 14.8047 27.3927 14.8641C28.3636 14.8166 34.086 14.8443 36.8259 14.8641C38.1499 14.8047 40.9081 15.6486 41.3494 19.4998V29.9597H6.65063V23.8383Z" fill="#858585"/>
-                            </g>
-                            <g filter="url(#filter1_dd_653_12638)">
-                            <rect width="13.1349" height="13.6586" rx="2.19612" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 9.94476 17.8008)" fill="white"/>
-                            <rect width="7.35702" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.0214 19.3203)" fill="#F4F4F4"/>
-                            <rect width="4.72167" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.1046 20.6348)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.1879 21.9512)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.2711 23.2656)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.3543 24.5801)" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter2_dd_653_12638)">
-                            <rect width="13.135" height="13.6586" rx="2.19612" transform="matrix(0.998634 0.0522452 -0.0524268 0.998625 18.0626 17.8066)" fill="white"/>
-                            <rect width="7.35702" height="0.768639" rx="0.38432" transform="matrix(0.998634 0.0522452 -0.0524268 0.998625 19.95 19.5566)" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter3_dd_653_12638)">
-                            <rect x="24.8104" y="17.2656" width="13.135" height="13.6586" rx="2.19612" fill="white"/>
-                            <rect x="26.7868" y="18.9141" width="7.35702" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="20.2324" width="2.08632" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="21.5488" width="4.72167" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="22.8672" width="6.58838" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="24.1855" width="3.73341" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="25.502" width="2.08632" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter4_i_653_12638)">
-                            <path d="M6.65063 23.7852H41.3494V31.5213C41.3494 33.9471 39.383 35.9136 36.9572 35.9136H11.0429C8.61711 35.9136 6.65063 33.9471 6.65063 31.5213V23.7852Z" fill="#595959"/>
-                            </g>
-                            <rect x="6.65063" y="20.709" width="34.6988" height="3.51378" fill="url(#paint0_linear_653_12638)" fill-opacity="0.5"/>
-                            <defs>
-                            <filter id="filter0_i_653_12638" x="6.65063" y="12.7246" width="34.6988" height="18.1919" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feOffset dy="0.957508"/>
-                            <feGaussianBlur stdDeviation="0.638339"/>
-                            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-                            <feBlend mode="normal" in2="shape" result="effect1_innerShadow_653_12638"/>
-                            </filter>
-                            <filter id="filter1_dd_653_12638" x="8.62709" y="16.9785" width="16.6073" height="17.0885" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.219612" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.439224"/>
-                            <feGaussianBlur stdDeviation="0.329418"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="1.31767"/>
-                            <feGaussianBlur stdDeviation="0.878448"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter2_dd_653_12638" x="15.1504" y="17.8066" width="18.2253" height="18.7184" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.878448"/>
-                            <feGaussianBlur stdDeviation="0.439224"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="2.19612"/>
-                            <feGaussianBlur stdDeviation="1.31767"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter3_dd_653_12638" x="22.6142" y="17.2656" width="17.5273" height="18.0504" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.878448"/>
-                            <feGaussianBlur stdDeviation="0.439224"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="2.19612"/>
-                            <feGaussianBlur stdDeviation="1.31767"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter4_i_653_12638" x="6.65063" y="22.5085" width="35.3371" height="13.4056" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feOffset dx="0.638339" dy="-1.27668"/>
-                            <feGaussianBlur stdDeviation="0.957508"/>
-                            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-                            <feBlend mode="normal" in2="shape" result="effect1_innerShadow_653_12638"/>
-                            </filter>
-                            <linearGradient id="paint0_linear_653_12638" x1="24" y1="21.4277" x2="24" y2="27.9761" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#595959" stop-opacity="0"/>
-                            <stop offset="1" stop-color="#595959"/>
-                            </linearGradient>
-                            </defs>
-                            </svg>
-                        <div class="ml-4">
-                            <h4 class=" text-lg ">Architecture Plan</h4>
-                            <p class="text-sm">16 Files</p>
-                        </div>
-                    </div> -->
-                    <!-- <div class=" col-span-4 border border-gray-100 bg-gray-100 p-2 rounded-lg cursor-pointer flex">
-                        <div class="card flex justify-content-center items-center">
-                            <Checkbox v-model="checked3" :binary="true" />
-                        </div>
-                            <svg class=" ml-4" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.828125" width="47.5" height="46.9214" rx="5.53311" fill="white"/>
-                            <rect x="0.25" y="0.828125" width="47.5" height="46.9214" rx="5.53311" stroke="#EAECF0" stroke-width="0.5"/>
-                            <g filter="url(#filter0_i_653_12638)">
-                            <path d="M6.65063 23.8383V17.4791C6.79774 15.8943 7.8422 12.7246 10.8432 12.7246H18.8421C19.5041 12.7642 21.0597 13.0693 21.9865 13.9727C23.145 15.1019 26.3997 14.8047 27.3927 14.8641C28.3636 14.8166 34.086 14.8443 36.8259 14.8641C38.1499 14.8047 40.9081 15.6486 41.3494 19.4998V29.9597H6.65063V23.8383Z" fill="#858585"/>
-                            </g>
-                            <g filter="url(#filter1_dd_653_12638)">
-                            <rect width="13.1349" height="13.6586" rx="2.19612" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 9.94476 17.8008)" fill="white"/>
-                            <rect width="7.35702" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.0214 19.3203)" fill="#F4F4F4"/>
-                            <rect width="4.72167" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.1046 20.6348)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.1879 21.9512)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.2711 23.2656)" fill="#F4F4F4"/>
-                            <rect width="6.58838" height="0.768639" rx="0.38432" transform="matrix(0.998042 -0.0625513 0.0631662 0.998003 12.3543 24.5801)" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter2_dd_653_12638)">
-                            <rect width="13.135" height="13.6586" rx="2.19612" transform="matrix(0.998634 0.0522452 -0.0524268 0.998625 18.0626 17.8066)" fill="white"/>
-                            <rect width="7.35702" height="0.768639" rx="0.38432" transform="matrix(0.998634 0.0522452 -0.0524268 0.998625 19.95 19.5566)" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter3_dd_653_12638)">
-                            <rect x="24.8104" y="17.2656" width="13.135" height="13.6586" rx="2.19612" fill="white"/>
-                            <rect x="26.7868" y="18.9141" width="7.35702" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="20.2324" width="2.08632" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="21.5488" width="4.72167" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="22.8672" width="6.58838" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="24.1855" width="3.73341" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            <rect x="26.7868" y="25.502" width="2.08632" height="0.768639" rx="0.38432" fill="#F4F4F4"/>
-                            </g>
-                            <g filter="url(#filter4_i_653_12638)">
-                            <path d="M6.65063 23.7852H41.3494V31.5213C41.3494 33.9471 39.383 35.9136 36.9572 35.9136H11.0429C8.61711 35.9136 6.65063 33.9471 6.65063 31.5213V23.7852Z" fill="#595959"/>
-                            </g>
-                            <rect x="6.65063" y="20.709" width="34.6988" height="3.51378" fill="url(#paint0_linear_653_12638)" fill-opacity="0.5"/>
-                            <defs>
-                            <filter id="filter0_i_653_12638" x="6.65063" y="12.7246" width="34.6988" height="18.1919" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feOffset dy="0.957508"/>
-                            <feGaussianBlur stdDeviation="0.638339"/>
-                            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-                            <feBlend mode="normal" in2="shape" result="effect1_innerShadow_653_12638"/>
-                            </filter>
-                            <filter id="filter1_dd_653_12638" x="8.62709" y="16.9785" width="16.6073" height="17.0885" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.219612" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.439224"/>
-                            <feGaussianBlur stdDeviation="0.329418"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="1.31767"/>
-                            <feGaussianBlur stdDeviation="0.878448"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter2_dd_653_12638" x="15.1504" y="17.8066" width="18.2253" height="18.7184" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.878448"/>
-                            <feGaussianBlur stdDeviation="0.439224"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="2.19612"/>
-                            <feGaussianBlur stdDeviation="1.31767"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter3_dd_653_12638" x="22.6142" y="17.2656" width="17.5273" height="18.0504" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect1_dropShadow_653_12638"/>
-                            <feOffset dy="0.878448"/>
-                            <feGaussianBlur stdDeviation="0.439224"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.03 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_653_12638"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feMorphology radius="0.439224" operator="erode" in="SourceAlpha" result="effect2_dropShadow_653_12638"/>
-                            <feOffset dy="2.19612"/>
-                            <feGaussianBlur stdDeviation="1.31767"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.0941176 0 0 0 0 0.156863 0 0 0 0.08 0"/>
-                            <feBlend mode="normal" in2="effect1_dropShadow_653_12638" result="effect2_dropShadow_653_12638"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_653_12638" result="shape"/>
-                            </filter>
-                            <filter id="filter4_i_653_12638" x="6.65063" y="22.5085" width="35.3371" height="13.4056" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feOffset dx="0.638339" dy="-1.27668"/>
-                            <feGaussianBlur stdDeviation="0.957508"/>
-                            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-                            <feBlend mode="normal" in2="shape" result="effect1_innerShadow_653_12638"/>
-                            </filter>
-                            <linearGradient id="paint0_linear_653_12638" x1="24" y1="21.4277" x2="24" y2="27.9761" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#595959" stop-opacity="0"/>
-                            <stop offset="1" stop-color="#595959"/>
-                            </linearGradient>
-                            </defs>
-                            </svg>
-                        <div class="ml-4">
-                            <h4 class=" text-lg ">Architecture Plan</h4>
-                            <p class="text-sm">16 Files</p>
-                        </div>
-                    </div> -->
+                    
                 </div>
             </div>
-        </div>
+        </div> -->
         <!-- third div -->
         <div class="flex items-center justify-center upload-document-txt">
             <div class="grid grid-cols-12 gap-4 w-full items-center">
@@ -466,8 +241,8 @@
 
                     </div>
                     <div>
-                        <h3 class=" text-xl font-semibold">Upload Files</h3>
-                        <h4 class="text-gray-600 text-sm mt-1">Select the file from your device to upload</h4>
+                        <h3 class=" text-xl font-semibold">Upload document</h3>
+                        <h4 class="text-gray-600 text-sm mt-1">Select the document from your device to upload</h4>
                     </div>
                 </div>
             </div>
@@ -550,7 +325,7 @@
                         </p>
                     </div>
                     </div>
-                   <svg class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
 
@@ -621,9 +396,9 @@
                         </div>
                     </div> -->
                     <div v-for="(mtdata, index) in selected_metadata_strings" class="col-span-6" gap-8>
-                        <div v-for="(md) in mtdata"  >
-                            <div v-html="md"></div>
-                        </div>
+                        <!-- <div v-for="(md) in mtdata.metadata_value"  > -->
+                            <div v-html="mtdata.metadata_value"></div>
+                        <!-- </div> -->
                     </div>
                 </div>
                 <div class="w-5/6 m-auto grid-cols-12 gap-8">
@@ -642,7 +417,7 @@
                 </div>
                 <div class="col-span-6 text-end">
                     <button class=" mr-6 text-green-700">Cancel</button>
-                    <button class=" bg-blue-600 text-white px-[64px] py-2 rounded-lg mr-[54px] hover:bg-blue-500 disabled:bg-blue-400"  :disabled="files.length == 0 || selected_metadata_strings.length == 0 " @click="submitForm">Save</button>
+                    <button class=" bg-primary text-white px-[64px] py-2 rounded-lg mr-[54px] hover:bg-primary_hover disabled:bg-primary_disabled"  :disabled="files.length == 0 || selected_metadata_strings.length == 0 " @click="submitForm">Upload</button>
                 </div>
             </div>
         </div>
@@ -651,18 +426,19 @@
 
         </div>
     </div>
-    <CreateFolderDialog v-model="createFolder" :department="props.department" :url="page.props.roles !='data entry'? '/admin/create-folder':'/dashboard/create-folder'"/>
+    <CreateFolderDialog v-model="createFolder" :department="props.branch" :url="page.props.roles !='data entry'? '/admin/create-folder':'/dashboard/create-folder'"/>
 
 </template>
 
 <script setup>
-import { ref, defineProps, watch, onMounted, onUpdated } from "vue";
+import { ref, defineProps, watch, onMounted } from "vue";
 //import CreateFolderModal from "../../components/Modals/CreateFolderModal.vue"
 import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm, usePage, Link } from '@inertiajs/vue3'
 import { useToast } from "primevue/usetoast";
+import { useTitle } from "@vueuse/core";
 
-const props = defineProps(['doctypes','folders','thumbnails', 'department']);
+const props = defineProps(['doctypes', 'thumbnails', 'branches', 'branch_type']);
 
 const checked = ref(false);
 const checked2 = ref(false);
@@ -680,9 +456,9 @@ const form = useForm({
   date:'',
   number:'',
   folder:null,
-  folder_id:null
-  //file_name:'',
-  //file_number:''
+  folder_id:null,
+  branch_type: '',
+  input_obj: []
 })
 const description = ref('')
 const text = ref('')
@@ -691,46 +467,59 @@ const number = ref('')
 const folderId = ref(null);
 const toast = useToast();
 const page = usePage()
+const branch_type = ref('')
+const selected_metadata = ref([]);
 
-const metadata_strings = [
-    {
-        description: `<div class="my-2 w-full">
-                <label for="description">Description</label>
-                <textarea name="description" v-model="description" :value="description" id="description" cols="30" rows="3" class=" border border-gray-200 rounded-lg block mt-2 w-full focus:border-blue-400 p-3"></textarea>
-            </div>`,
-        },
-        {
-        text: `<div class="my-2">
-                <label for="title">Title/Name</label>
-                <input type="text" v-model="text" name="text" id="text" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
-            </div>`,
-        },
-        {
-        date: `<div class="my-2">
-                <label for="date">Date</label>
-                <input type="date" v-model="date" name="date" id="date" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
-            </div>`,
-        },
-        {
-        number: `<div class="my-2">
-                <label for="numbers">Numbers</label>
-                <input type="number" v-model="number" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
-            </div>`
-    }
-]
+// const metadata_strings = [
+//     {
+//         description: `<div class="my-2 w-full">
+//                 <label for="description">Description</label>
+//                 <textarea name="description" v-model="description" :value="description" id="description" cols="30" rows="3" class=" border border-gray-200 rounded-lg block mt-2 w-full focus:border-blue-400 p-3"></textarea>
+//             </div>`,
+//         },
+//         {
+//         text: `<div class="my-2">
+//                 <label for="title">Title</label>
+//                 <input type="text" v-model="text" name="text" id="text" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+//             </div>`,
+//         },
+//         {
+//         date: `<div class="my-2">
+//                 <label for="date">Date</label>
+//                 <input type="date" v-model="date" name="date" id="date" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+//             </div>`,
+//         },
+//         {
+//         number: `<div class="my-2">
+//                 <label for="numbers">Document Number</label>
+//                 <input type="text" v-model="number" class=" border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
+//             </div>`
+//     }
+// ]
 
 const handleFileUpload = (event) =>{
     files.value = Array.from(event.target.files);
     uploadFiles()
 }
 
-const isImage = (mimeType)=> {
-      return mimeType && mimeType.startsWith('image');
-    }
 
 const getFileURL = (file) =>{
       if (file.type) {
-        return URL.createObjectURL(file);
+        if(file.type == 'image/jpeg' || file.type == 'image/jpeg' || file.type == 'image/png' || file.type == 'image/gif'){
+            return URL.createObjectURL(file); 
+        }
+       
+        if(file.type == 'application/pdf'){
+            return page.props.base+'/images/pdf.svg' 
+        }
+
+        if(file.type == 'application/msword' || file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'){
+            return page.props.base+'/images/word.svg'
+        }
+
+        if(file.type == 'application/vnd.ms-excel' || file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+            return page.props.base+'/images/excel.svg'
+        }
       } else {
         // If type is not available, manually determine file type based on extension
         const extension = file.name.split('.').pop();
@@ -768,59 +557,74 @@ const formatSize = (size) => {
         }})
     }
 
-    const getFolderId= (folder)=>{
-        folderId.value = folder.id;
-        form.folder_id = folder.id
-    }
 
     const submitForm = ()=>{
-        let description = document.getElementById('description')
-        let text = document.getElementById('text')
-        let date = document.getElementById('date')
-        let number = document.getElementById('numbers')
-        let file_name = document.getElementById('file_name');
-        let file_number = document.getElementById('file_number');
-        if(file_name != null){
-            if(file_name.value ==''){
-                file_name.focus();
-                return false
+        // let description = document.getElementById('description')
+        // let text = document.getElementById('text')
+        // let date = document.getElementById('date')
+        // let number = document.getElementById('numbers')
+        // let file_name = document.getElementById('file_name');
+        // let file_number = document.getElementById('file_number');
+        // if(file_name != null){
+        //     if(file_name.value ==''){
+        //         file_name.focus();
+        //         return false
+        //     }
+        // }
+        // if(file_number != null){
+        //     if(file_number.value ==''){
+        //         file_number.focus();
+        //         return false;
+        //     }
+        // }
+        // if(description != null){
+        //     if(description.value ==''){
+        //         description.focus();
+        //         return false
+        //     }
+        //     form.description = description.value
+        // }
+        // if(text != null){
+        //     if(text.value ==''){
+        //         text.focus();
+        //         return false
+        //     }
+        //     form.text = text.value
+        // }
+        // if(date != null){
+        //     if(date.value ==''){
+        //         date.focus();
+        //         return false
+        //     }
+        //     form.date = date.value
+        // }
+        // if(number != null){
+        //     if(number.value ==''){
+        //         number.focus();
+        //         return false
+        //     }
+        //     form.number = number.value
+        // }
+
+        let allInputs = document.getElementsByClassName('metadata-inputs');
+        let input_obj = []
+       
+        for(let i =0; i < allInputs.length; i++){
+            
+            if(allInputs[i].value == ''){
+                allInputs[i].focus();
+                return
             }
-        }
-        if(file_number != null){
-            if(file_number.value ==''){
-                file_number.focus();
-                return false;
+            
+            let key = allInputs[i].getAttribute('name');
+            let value = allInputs[i].value;
+            let arr = {
+                [key]: value
             }
-        }
-        if(description != null){
-            if(description.value ==''){
-                description.focus();
-                return false
-            }
-            form.description = description.value
-        }
-        if(text != null){
-            if(text.value ==''){
-                text.focus();
-                return false
-            }
-            form.text = text.value
-        }
-        if(date != null){
-            if(date.value ==''){
-                date.focus();
-                return false
-            }
-            form.date = date.value
-        }
-        if(number != null){
-            if(number.value ==''){
-                number.focus();
-                return false
-            }
-            form.number = number.value
+            input_obj.push(arr)
         }
 
+        form.input_obj = input_obj
         form.post('/archive-files',{
             onSuccess: page => {
                
@@ -831,11 +635,12 @@ const formatSize = (size) => {
                // number.value = ''
                // date.value = ''
                 selectedDocType.value =''
-                selectedFolder.value.length = 0
+                //selectedFolder.value.length = 0
                 selected_metadata_strings.value = []
                 selectedDocType.value = ''
                // folder_id = null
-
+               defaultDocTypes()
+               
                 toast.add({
                     severity: "success",
                     summary: "File Archived",
@@ -846,33 +651,34 @@ const formatSize = (size) => {
         } )
     }
 
-    //files to be reviewed
+const cancelForm = ()=>{
+    form.reset();
+    files.value = [];
+                selectedDocType.value =''
+                //selectedFolder.value.length = 0
+                selected_metadata_strings.value = []
+                selectedDocType.value = ''
+               // folder_id = null
+               defaultDocTypes()
+}
+
 const defaultDocTypes = ()=>{
     let defaultsDocs = [];
     for(let doc of props.doctypes){
         for(let metadata of doc.metadata){
             if(metadata.is_default){
-                defaultsDocs.push(metadata)
+                let filtered = defaultsDocs.find((val)=>{
+                    return val.id == metadata.id
+                })
+                if(!filtered){
+                    defaultsDocs.push(metadata)
+                }
             }
         }
     }
+ 
 
-    let strings = []
-    for(let mdata of defaultsDocs){
-        strings.push(mdata.string)
-    }
-
-    strings = [...new Set(strings)]
-
-    for (const obj of metadata_strings) {
-        const objKeys = Object.keys(obj);
-       
-        for(let i=0; i < strings.length; i++){
-            if(objKeys.includes(strings[i].toLowerCase())){
-                selected_metadata_strings.value.push(obj) 
-            }
-        }
-     }
+selected_metadata_strings.value = defaultsDocs;
 }
 
 //handle file drop 
@@ -894,32 +700,12 @@ watch(selectedDocType, (val)=>{
         return data.id ==val
     });
 
-    metadata = metadata.metadata;
-    let strings = []
-    for(let mdata of metadata){
-        strings.push(mdata.string)
-    }
+    selected_metadata_strings.value = metadata.metadata;
    
-    //get the matching metdata
-    for (const obj of metadata_strings) {
-        const objKeys = Object.keys(obj);
-       
-        for(let i=0; i < strings.length; i++){
-            if(objKeys.includes(strings[i].toLowerCase())){
-                selected_metadata_strings.value.push(obj) 
-            }
-        }
-     }
+    }else{
+        defaultDocTypes()
     }
     
-})
-
-watch(selectedFolder, (newVal, oldVal)=>{
-   if(selectedFolder.value.length > 1){
-    selectedFolder.value.shift()
-   }
-    selectedFolder.value=newVal
-    form.folder = selectedFolder
 })
 
 watch(description, (val)=>{
@@ -948,8 +734,17 @@ onMounted(()=>{
     //     console.log(`File added: ${file.name}`);
     //     });
     defaultDocTypes()
-   // alert(page.props.roles)
+
+    let url = new URL(window.location.href);
+    let url_arr = url.pathname.split('/');
+    let folderid = url_arr.pop()
+    folderId.value = folderid;
+    form.folder_id = folderid;
+    selectedFolder.value = folderid
+
+    //get the branch type
+    form.branch_type = url_arr[url_arr.length -1]
+    console.log(folderid)
      })
   
-
 </script>

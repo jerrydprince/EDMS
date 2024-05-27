@@ -11,7 +11,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#3B82F6",
+       // primary: "#3B82F6",
+        primary: '#0D6E1A',
+        primary_hover: 'rgb(38 137 52)',
+        primary_disabled: 'rgb(108 194 120)',
 				primary_bg: "#FCFCFD",
 				border_primary: "#E4E4E4",
 				success: "#ECFDF3",

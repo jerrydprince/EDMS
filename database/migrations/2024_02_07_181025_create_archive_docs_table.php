@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('archive_docs', function (Blueprint $table) {
             $table->id();
-            $table->string('description')->nullable();
-            $table->text('text')->nullable();
+            $table->text('description')->nullable();
+            $table->string('text')->nullable();
             $table->date('date')->nullable();
-            $table->bigInteger('number')->nullable();
+            $table->string('number')->nullable();
             $table->text('list')->nullable();
             $table->unsignedBigInteger('archive_id');
             $table->foreign('archive_id')->references('id')->on('archives');

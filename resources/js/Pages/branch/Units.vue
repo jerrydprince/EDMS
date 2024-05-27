@@ -76,27 +76,38 @@
     </div>
     <EditUnitModal v-model="editUnit" :unit="singleUnit" @close="editUnit=false"/>
     <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentUnit" :url="'/admin/add-document-type-to-unit'" />
+    <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'unit'" :branch_id="singleUnit?.id"/>
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 import EmptyState from "../../components/EmptyState.vue";
 import EditUnitModal from "../../components/Modals/EditUnitModal.vue";
 import AddDocumentTypesModal from "../../components/Modals/AddDocumentTypesModal.vue";
+import AddFileTypeModal from "../../components/Modals/AddFileTypeModal.vue";
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps(['units', 'division_name','documentTypes']);
 const editUnit = ref(false)
 const currentUnit = ref([]);
 const addDocType = ref(false);
+const selectedFileType = ref([]);
 
 const menu = ref();
 const singleUnit = ref(null)
+const addFileType = ref(false);
 const menuItems = ref([
   
   { label: "Edit", icon: "pi pi-pencil", command: ()=>{
     editUnit.value = true;
   } },
+  {
+    label: 'Add File Type',
+    icon: 'pi pi-file',
+    command: ()=>{
+      addFileType.value = true;
+    }
+  },
 //   { 
 //     label: "Duplicate", icon: "pi pi-clone",
 //     command: ()=>{
@@ -129,5 +140,15 @@ const addDocTypes = (val) =>{
   addDocType.value = true
   currentUnit.value = val
 }
+
+watch(singleUnit, ()=>{
+  if(singleUnit.value.file_type && singleUnit.value.file_type.length > 0){
+    let arr= []
+    for(let filetype of singleUnit.value.file_type){
+      arr.push(filetype.id);
+    }
+    selectedFileType.value = arr
+  }
+})
 
 </script>

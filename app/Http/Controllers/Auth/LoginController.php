@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Hash;
 
 class LoginController extends Controller
@@ -35,6 +36,34 @@ class LoginController extends Controller
         ];
     }
 
+    public function userBranchDetails($request){
+        if(auth()->check()){
+            if(auth()->user()->unit_id){
+             return [
+                    'branch' => 'unit',
+                    'branch_id' => auth()->user()->id,
+                    'branch_name' =>auth()->user()->unit->title
+             ];
+            }
+
+            if(auth()->user()->division_id){
+                return [
+                    'branch' => 'division',
+                    'branch_id' => auth()->user()->id,
+                    'branch_name' =>auth()->user()->division->title
+                ];
+            }
+
+            if(auth()->user()->department_id){
+                return [
+                    'branch' => 'department',
+                    'branch_id' => auth()->user()->id,
+                    'branch_name' =>auth()->user()->department->title
+                ];
+            }
+        }
+    }
+
     /**
      * Attempt to authenticate the request's credentials.
      *
@@ -51,7 +80,7 @@ class LoginController extends Controller
             //check if the user password is "password"
             if (Hash::check('password', Auth::user()->password)) {
                 Auth::logout();
-                return redirect()->route('password.reset');
+                return redirect()->route('password.reset', Crypt::encryptString($request->email));
             }
             //check if user is approved
             if(!auth()->user()->hasRole('super admin')){
@@ -62,6 +91,8 @@ class LoginController extends Controller
                     ])->onlyInput('email');
                 }
             }
+
+            session(['branch'=>$this->userBranchDetails($request)]);
 
             $request->session()->regenerate();
             if(auth()->user()->hasRole('data entry')){

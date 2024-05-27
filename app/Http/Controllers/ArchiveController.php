@@ -19,40 +19,66 @@ use Illuminate\Http\File;
 use thiagoalessio\TesseractOCR\TesseractOCR;
 use Spatie\PdfToImage\Pdf;
 use App\Models\Division;
+use App\Models\SubFolder;
+use Illuminate\Support\Facades\Log;
 
 class ArchiveController extends Controller
 {
-    public function Archiving($id){
+    public function Archiving($branch, $id){
         //$doctypes = DocumentType::with('metadata')->get();
-        $department = Department::with(['folder', 'documentType'=>function($query){
-            $query->with('metadata');
-        }])->where('id', $id)->first();
        
-        $doctypes = $department->documentType;
-        if(count($doctypes)==0){
-           if(auth()->user()->division_id){
-            $division = Division::with(['documentType'=> function($query){
+        if($branch == 'unit'){
+             $branches = Unit::with(['folder', 'documentType'=>function($query){
                 $query->with('metadata');
-            }])->find(auth()->user()->division_id);
-            $doctypes = $division->documentType;
-           }
+            }])->where('id', auth()->user()->unit_id)->first();
+           
         }
-        if(count($doctypes)==0){
-            if(auth()->user()->unit_id){
-             $unit = Unit::with(['documentType'=> function($query){
+
+        if($branch == 'division'){
+                $branches = Division::with(['folder', 'documentType'=>function($query){
                 $query->with('metadata');
-             }])->find(auth()->user()->division_id);
-             $doctypes = $unit->documentType;
-            }
-         }
+            }])->where('id', auth()->user()->division_id)->first();
+        }
+
+       if($branch == 'department'){
+                $branches = Department::with(['folder', 'documentType'=>function($query){
+                $query->with('metadata');
+            }])->where('id', auth()->user()->department_id)->first();
+        }
+       
+        $doctypes = isset($branches->documentType)? $branches->documentType : [];
+        // if(count($doctypes)==0){
+        //    if(auth()->user()->division_id){
+        //     $division = Division::with(['documentType'=> function($query){
+        //         $query->with('metadata');
+        //     }])->find(auth()->user()->division_id);
+        //     $doctypes = $division->documentType;
+        //    }
+
+        //    if(auth()->user()->unit_id){
+        //     $unit = Unit::with(['documentType'=> function($query){
+        //        $query->with('metadata');
+        //     }])->find(auth()->user()->division_id);
+        //     $doctypes = $unit->documentType;
+        //    }
+
+        //    if(auth()->user()->department_id){
+        //     $unit = Department::with(['documentType'=> function($query){
+        //        $query->with('metadata');
+        //     }])->find(auth()->user()->division_id);
+        //     $doctypes = $unit->documentType;
+        //    }
+        // }
+       
         //$folders = $this->getAllFolders(public_path('/Archives/Department/Division/Unit/'));
         $archives = session()->get('archives');
-        $folders =$department->folder;
         $thumbnails = request()->session()->get('thumbnails');
-        return inertia('archives/archiving', compact('doctypes', 'folders','archives','thumbnails', 'department'));
+        $branch_type = $branch;
+        return inertia('archives/archiving', compact('doctypes', 'archives','thumbnails', 'branches', 'branch_type'));
     }
 
     public function createFolder(Request $request){
+       
         $request->validate([
             'name' => 'required|unique:folder',
             'number' =>'required',
@@ -60,6 +86,8 @@ class ArchiveController extends Controller
         ]);
 
         DB::transaction(function () use($request) {
+            $folder2 = Folder::find($request->id);
+
             if(auth()->user()->hasRole('data entry')){
                 $department = auth()->user()->department_id;
                 $division = auth()->user()->division_id;
@@ -69,21 +97,11 @@ class ArchiveController extends Controller
                 $division = $request->division;
                 $unit = $request->unit;
             }
-          
 
-            $folder = new Folder();
-            $folder->name = $request->name;
-            $folder->number = $request->number;
-            $folder->year = $request->year;
-            $folder->type = $request->type;
-            $folder->department_id=$department;
-            $folder->division_id = $division;
-            $folder->unit_id = $unit;
-            $folder->save();
+            $fullPath = '';
 
-            //$path = public_path('/Archives/'.$department.'/'.$division.'/'.$unit.'/'.$request->name, 0777);
-           
-                    $baseDirectory = "Archives";
+            if(!$request->id){
+                $baseDirectory = "storage/Archives";
                     $subfolders = [$department, $division, $unit, $request->name];
                     if (!is_dir($baseDirectory)) {
                         mkdir($baseDirectory, 0777);
@@ -96,6 +114,48 @@ class ArchiveController extends Controller
                         }
                         $baseDirectory = $fullPath;
                     }
+            }else{
+                $fullPath = $folder2->path."/".$request->name;
+               
+                if (!is_dir($fullPath)) {
+                    mkdir($fullPath, 0777);
+                }
+            }
+
+            $folder = new Folder();
+            $folder->name = $request->name;
+            $folder->number = $request->number;
+            $folder->year = $request->year;
+            $folder->file_type_id = $request->type;
+            $folder->department_id=$department;
+            $folder->division_id = $division;
+            $folder->unit_id = $unit;
+            $folder->path = $fullPath;
+            $folder->description = $request->description;
+            if($request->id){
+                $folder->is_sub_folder = 1;
+            }else{
+                $folder->is_sub_folder = 0;
+            }
+            $folder->save();
+
+            if($request->id){
+               
+                $sub = new SubFolder();
+                $sub->path = $fullPath;
+                $sub->folder_id = $folder2->id;
+                $sub->name = $request->name;
+                $sub->number = $request->number;
+                $sub->year = $request->year;
+                $sub->file_type_id = $request->type;
+                $sub->department_id=$department;
+                $sub->division_id = $division;
+                $sub->unit_id = $unit;
+                $sub->description = $request->description;
+                $sub->my_id = $folder->id;
+                $sub->save();
+            }
+
        
         });
         return redirect()->back();
@@ -139,7 +199,7 @@ class ArchiveController extends Controller
         $image = $manager->read($sourcePath);
         $image->scale(width:480);
         /* $image->save(public_path($destinationPath.$fileName)); */
-        $image->save("storage".$destinationPath.$fileName);
+        $image->save($destinationPath.$fileName);
 
         return $destinationPath.$fileName;
     }
@@ -148,65 +208,97 @@ class ArchiveController extends Controller
         return preg_replace("/[a-zA-Z]/", "", $string);
     }
 
+    function convertToBytes($value)
+{
+    $value = trim($value);
+    $unit = strtolower(substr($value, -2));
+
+    switch ($unit) {
+        case 'KB':
+            return (int)$value * 1024;
+        case 'MB':
+            return (int)$value * 1024 * 1024;
+        case 'GB':
+            return (int)$value * 1024 * 1024 * 1024;
+        default:
+            return 0; // Invalid unit
+    }
+}
+
     public function uploadFiles(Request $request){
         // $request->validate([
         //     'files.*' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx|max:4096',
         // ]);
 
         $uploadedFiles = [];
+        
 
         if($request->file('files')){
-            $department = auth()->user()->department_id;
-            $division = auth()->user()->division_id;
-            $unit = auth()->user()->unit_id;
-            $folder = $request->folder[0];
+            // $department = auth()->user()->department_id;
+            // $division = auth()->user()->division_id;
+            // $unit = auth()->user()->unit_id;
+            $folder = Folder::find($request->folder_id);
             $request->session()->forget('thumbnails');
-           
+
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+          
             $filepath = [];
             $thumbnails = [];
 
-            $path = "";
-            $thumbnail_path ="";
 
-            if((!is_null($department) && $department != 0) && (!is_null($division) && $division != 0) && (!is_null($unit) && $unit !=0)){
-                $path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/";
-                $thumbnail_path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/thumbnails/";
-            }
-            if((!is_null($department) && $department != 0) && (!is_null($division) && $division != 0) && !(!is_null($unit) && $unit !=0)){
-                $path = "/Archives/".$department."/".$division."/".$folder."/";
-                $thumbnail_path = "/Archives/".$department."/".$division."/".$folder."/thumbnails/";
-            }
-            if((!is_null($department) && $department != 0) && !(!is_null($division) && $division != 0)){
-                $path = "/Archives/".$department."/".$folder."/";
-                $thumbnail_path = "/Archives/".$department."/".$folder."/thumbnails/";
-            }
+            // if((!is_null($department) && $department != 0) && (!is_null($division) && $division != 0) && (!is_null($unit) && $unit !=0)){
+            //     $path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/";
+            //     $thumbnail_path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/thumbnails/";
+            // }
+            // if((!is_null($department) && $department != 0) && (!is_null($division) && $division != 0) && !(!is_null($unit) && $unit !=0)){
+            //     $path = "/Archives/".$department."/".$division."/".$folder."/";
+            //     $thumbnail_path = "/Archives/".$department."/".$division."/".$folder."/thumbnails/";
+            // }
+            // if((!is_null($department) && $department != 0) && !(!is_null($division) && $division != 0)){
+            //     $path = "/Archives/".$department."/".$folder."/";
+            //     $thumbnail_path = "/Archives/".$department."/".$folder."/thumbnails/";
+            // }
 
             $total_size = 0;
 
             try {
                 foreach ($request->file('files') as $index=>$file) {
-                  
+                    $path = $folder->path.'/';
+                    $thumbnail_path = $folder->path.'/thumbnails/';
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+                 
                     //$path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/";
                     //$thumbnail_path = "/Archives/".$department."/".$division."/".$unit."/".$folder."/thumbnails/";
                     $fileName = time() . '_' . $file->getClientOriginalName();
                    /* $fileName = time() . '_.dat'; */
                     $size = $this->formatSize(filesize($file));
                   
-                    $total_size += $this->numberFilter($size);
+                    $total_size += filesize($file);
                     //create thumbnails
-                    if(!is_dir(public_path('storage'.$thumbnail_path))){
+                    if(!is_dir(public_path($thumbnail_path))){
                        /* mkdir(public_path("/Archives/".$department."/".$division."/".$unit."/".$folder.'/thumbnails'),0777,true); */
-                       mkdir("storage/Archives/".$department."/".$division."/".$unit."/".$folder.'/thumbnails',0777,true);
+                       mkdir($thumbnail_path,0777,true);
                     }
-                    $thumbnail = $this->createThumbnail($file, $thumbnail_path, 480, 520, $fileName);
+
+                    $thumbnail = '';
+                    if (in_array($extension, $allowedExtensions)) {
+                         $thumbnail = $this->createThumbnail($file, $thumbnail_path, 480, 520, $fileName);
+
+                        //  $storage_path = Storage::putFileAs(
+                        //     'public/'.$path, $file, $fileName
+                        //     );
+                        //$file->move(public_path($path),$fileName);
+                    }
+        
+                        $file->move(public_path($path),$fileName);
+                   
                     //$file->move(public_path($path),$fileName);
                     
                    // $storage_path = Storage::disk('local')->put('public/'.$path.$fileName, encrypt($fileName));
                   // $storage_path = Storage::put('public/'.$path, $file);
                   
-                  $storage_path = Storage::putFileAs(
-                    'public/'.$path, $file, $fileName
-                    );
+                 
                   
                    /*
                    $fileContent = $file->get();
@@ -218,16 +310,18 @@ class ArchiveController extends Controller
                    Storage::disk('local')->put('public/'.$path.$fileName, $encryptedContent);
                     */
                   // Storage::disk('local')->put('public/'.$path, encrypt($file));
-                    
+                    $path = str_replace('storage/', '', $path);
+                    $thumbnail = str_replace('storage/','', $thumbnail);
+
                     $paths = [
-                        'path'=>$path.$fileName,
+                        'path'=>'/'.$path.$fileName,
                         'created_at'=>\Carbon\Carbon::now(), 
                         'updated_at'=>\Carbon\Carbon::now(),
                         'updated_by' =>auth()->user()->id,
                         'updated_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
                         'file_name' => $fileName,
                         'file_size' => $size,
-                        'thumbnails' => $thumbnail
+                        'thumbnails' => '/'.$thumbnail
                     ];
                     array_push($filepath, $paths);
                     array_push($thumbnails,$thumbnail );
@@ -235,9 +329,11 @@ class ArchiveController extends Controller
                 FilePath::insert($filepath);
 
                 //add folder size
-                $folder = Folder::find($request->folder_id);
-                $folder->folder_size = $total_size? $total_size: 0;
-                $folder->save();
+                 //$folder = Folder::find($request->folder_id);
+                // $folder->folder_size = $total_size? $total_size: 0;
+                // $folder->save();
+               
+                $request->session()->put('file_size', $total_size);
 
                 $ids = FilePath::latest()->limit(count($filepath))->pluck('id');
                 $request->session()->put(['ids'=>$ids]);
@@ -273,14 +369,27 @@ class ArchiveController extends Controller
         $archive->updated_by = auth()->user()->id;
         $archive->save();
 
-        $doc_types = [
-            'description'=>$request->description,
-            'text' => $request->text,
-            'date' => $request->date,
-            'number' => $request->number,
-            'list'=> $request->list,
-            'archive_id' => $archive->id
-        ];
+        // $doc_types = [
+        //     'description'=>$request->description,
+        //     'text' => $request->text,
+        //     'date' => $request->date,
+        //     'number' => $request->number,
+        //     'list'=> $request->list,
+        //     'archive_id' => $archive->id
+        // ];
+        $doc_types = [];
+        foreach($request->input_obj as $values){
+           foreach($values as $key => $value){
+                $arr = [
+                'archive_keys' => $key,
+                'archive_values' => $value,
+                'archive_id' => $archive->id,
+                'created_at' => \Carbon\Carbon::now()
+            ];
+           }
+          
+          array_push($doc_types, $arr);
+        }
 
         ArchiveDocs::insert($doc_types);
 
@@ -288,9 +397,18 @@ class ArchiveController extends Controller
 
         $archive->filePath()->attach($file_path_ids);
 
-        $folder = Folder::find($request->folder_id);
-        $folder->file_count = $folder->file_count + 1;
-        $folder->save();
+        //$file_size_byte = $request->session()->get('file_size');
+
+       // $folder = Folder::find($request->folder);
+
+       // $folder_size_byte = $this->convertToBytes($folder->folder_size);
+        //$folder_size = $this->formatSize(($folder_size_byte+$file_size_byte));
+
+        //$folder->file_count = $folder->file_count + 1;
+       // $folder->folder_size = $folder_size;
+        //$folder->save();
+
+        $request->session()->forget('file_size');
 
         // $files = $request->session()->get('archives');
         // if($files){
@@ -307,7 +425,7 @@ class ArchiveController extends Controller
         //     $request->session()->forget('archives');
         // }
 
-        return redirect()->back();
+        return redirect()->route('folder-view',[$request->branch_type, $request->folder_id]);
     }
 
     public function deleteArchives(Request $request){
@@ -316,16 +434,24 @@ class ArchiveController extends Controller
         $file_path = $archive->filePath()->get();
         $total_size = 0;
         foreach ($file_path as $file) {
-            $total_size  += $this->numberFilter($file->file_size);
+            $total_size  += $this->convertToBytes($file->file_size);
            Storage::delete('public'.$file->path);
            Storage::delete('public'.$file->thumbnails);
            //unlink(public_path($file->thumbnails));
         }
         //update folder count
         $folder = Folder::find($archive->folder_id);
-        $folder->file_count = $folder->file_count-1;
-        $folder->folder_size  -= $total_size;
-        $folder->save();
+
+        //recalculate the folder size
+        $folder_size_byte = $this->convertToBytes($folder->folder_size);
+        $folder_size = $this->formatSize($folder_size_byte - $total_size);
+
+        if($folder){
+            $folder->file_count = $folder->file_count-1;
+            $folder->folder_size  = $folder_size;
+            $folder->save();
+        }
+        
 
         $archive->filePath()->detach();
         //dd($file_path->pluck('id'));
@@ -359,20 +485,28 @@ class ArchiveController extends Controller
             $file_path = $archive->filePath;
             $tempDocs = [];
             foreach($archiveDocs as $docs){
-                $arr = [
-                    'description'=> $docs->description,
-                    'text' => $docs->text,
-                    'date' => $docs->date,
-                    'number' => $docs->number,
-                    'list' => $docs->list,
-                    'archive_id' =>$new_archive->id,
-                    'created_at' => \Carbon\Carbon::now(),
-                    'updated_at' => \Carbon\Carbon::now(),
-                ];
+                if($docs->archive_keys =='title'){
+                     $arr = [
+                        'archive_keys' => $docs->archive_keys,
+                        'archive_values' => $docs->archive_values.'_copy',
+                        'archive_id' => $new_archive->id,
+                        'created_at' => \Carbon\Carbon::now()
+                    ];
+                }else{
+                    $arr = [
+                        'archive_keys' => $docs->archive_keys,
+                        'archive_values' => $docs->archive_values,
+                        'archive_id' => $new_archive->id,
+                        'created_at' => \Carbon\Carbon::now()
+                    ];
+                }
+               
                 array_push($tempDocs, $arr);
             }
+
             ArchiveDocs::insert($tempDocs);
     
+            $total_size = 0;
             foreach($file_path as $path){
                  //make a copy of the file
                $path_string = explode('/', $path->path);
@@ -394,12 +528,20 @@ class ArchiveController extends Controller
                 $newpath->thumbnails = $new_path_thumbnails;
                 $newpath->file_name = 'copied_'.$path->file_name;
                 $newpath->updated_by = auth()->user()->id;
+                $newpath->updated_by_name = auth()->user()->last_name." ".auth()->user()->first_name;
                 $newpath->save();
                 $new_archive->filePath()->attach($newpath);
+
+                $total_size  += $this->convertToBytes($path->file_size);
             }
     
             $folder = Folder::find($archive->folder_id);
+            //recalculate folder 
+            $folder_size_byte = $this->convertToBytes($folder->folder_size);
+            $folder_size = $this->formatSize($folder_size_byte + $total_size);
+
             $folder->file_count = $folder->file_count + 1;
+           // $folder->folder_size  += $total_size;
             $folder->save();
         });
 
@@ -433,21 +575,36 @@ class ArchiveController extends Controller
 
     public function PDFToImage($request){
         $archive = Archive::with(['filePath','department', 'division', 'unit'])->find($request->id);
-        $department = $archive->department->first()->id;
-        $unit = $archive->unit->first()->id;
-        $division = $archive->division->first()->id;
+        // $department = $archive->department->first()->id;
+        // $unit = isset($archive->unit)?? $archive->unit->first()->id;
+        // $division = isset($archive->division)?? $archive->division->first()->id;
         $folder = Folder::find($archive->folder_id);
 
         foreach($archive->filePath as $path){
             $thumbnail = $path->thumbnails;
             $name_array = explode('/',$thumbnail);
             $new_fileName = $name_array[count($name_array) - 1];
-            $current_path = "/Archives/".$department."/".$division."/".$unit."/".$folder->name."/convertedFiles/".$new_fileName;
-            $old_path = "/Archives/".$department."/".$division."/".$unit."/".$folder->name."/".$new_fileName;
+            $current_path = $path->path;
+            $name_array = array_slice($name_array, 0, -2);
+            $new_path = implode('/',$name_array);
+            $old_path = $new_path.'/'.$new_fileName;
+            // if($department && $division && $unit){
+            //     $current_path = "/Archives/".$department."/".$division."/".$unit."/".$folder->name."/convertedFiles/".$new_fileName;
+            //     $old_path = "/Archives/".$department."/".$division."/".$unit."/".$folder->name."/".$new_fileName;
+            // }
+
+            // if($department && $division){
+            //     $current_path = "/Archives/".$department."/".$division."/".$folder->name."/convertedFiles/".$new_fileName;
+            //     $old_path = "/Archives/".$department."/".$division."/".$folder->name."/".$new_fileName;
+            // }
+            // if($department && $unit){
+            //     $current_path = "/Archives/".$department."/".$unit."/".$folder->name."/convertedFiles/".$new_fileName;
+            //     $old_path = "/Archives/".$department."/".$unit."/".$folder->name."/".$new_fileName;
+            // }
             Storage::copy('public'.$old_path, 'public'.$current_path);
         }
 
-            $path->path = $current_path;
+            $path->path = $old_path;
             $path->file_name = $new_fileName;
             $path->save();
 
@@ -467,6 +624,36 @@ class ArchiveController extends Controller
         }
     }
 
+    public function renameFile(Request $request){
+        $file_path = FilePath::find($request->id);
+        $old_name = 'storage'.$file_path->path;
+        $path_array = explode('/', $file_path->path);
+        $file_name = $path_array[count($path_array) - 1];
+        $ext_array = explode('.',$file_name);
+        $ext_array[0] = $request->name;
+        $new_fileName = implode('.', $ext_array);
+        $path_array[count($path_array) -1] = $new_fileName;
+        $new_file_path = implode('/',$path_array);
+        $new_file_name = 'storage'.implode('/',$path_array);
+
+        if(file_exists(public_path($new_file_name))){
+            return redirect()->back()->with('error','The file name alread exist');
+        }else{
+            // rename($old_name, $new_file_name);
+            // $file_path->path = $new_file_path;
+            // $file_path->file_name = $new_fileName;
+            // $file_path->save();
+
+            $archive = Archive::find($request->id);
+            $archive = $archive->archiveDocs()->updateOrCreate(
+                ['id'=>$request->archive_docs_id], 
+                ['archive_keys'=>'title', 'archive_values' => $request->name]);
+
+            return redirect()->back();
+        }
+        
+    }
+
     // public function userArchiving(){
     //     $doctypes = DocumentType::with('metadata')->get();
     //     //$folders = $this->getAllFolders(public_path('/Archives/Department/Division/Unit/'));
@@ -476,20 +663,242 @@ class ArchiveController extends Controller
     //    // return inertia('dashboard/Branches', compact('doctypes', 'folders','archives','thumbnails'));
     // }
 
-    public function userBranches($id){
-        $department = Department::withCount(['user','archive'])->with(['folder', 'archive'=>function($query){
-             $query->with(['archiveDocs', 'filePath']);
-        }])->find($id);
-         return inertia('dashboard/Branches', compact('department'));
+    public function userBranches(){
+       
+        if(auth()->user()->hasRole('data entry')){
+            $branch = session('branch');
+            $unit = auth()->user()->unit_id;
+          if($unit){
+            // $branch = Unit::withCount(['users','archive'])->with(['folder'=>function($query){
+            //     $query->with(['fileType','subfolder']);
+            // }, 'fileType', 'archive'=>function($query){
+            //     $query->with(['archiveDocs', 'filePath']);
+            // }])->find($unit);
+            $branch = Unit::with(['folder'=>function($query){
+                $query->with(['fileType','subfolder']);
+            }, 'fileType'])->find($unit);
+            $branch_name = 'Unit';
+            $branch = Unit::find($unit);
+            $folder = Folder::with(['fileType', 'subfolder'])->where('unit_id', $unit)->latest()->paginate(20);
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+          }
+
+          $division = auth()->user()->division_id;
+          if($division){
+            // $branch = Division::withCount(['users','archive'])->with(['folder' =>function($query){
+            //     $query->with(['subfolder', 'fileType']);
+            // }, 'fileType', 'archive'=>function($query){
+            //     $query->with(['archiveDocs', 'filePath'])->latest();
+            // }])->find($division);
+            // $branch_name = 'Division';
+            // return inertia('dashboard/Branches', compact('branch', 'branch_name'));
+            $branch = Division::with(['folder'=>function($query){
+                $query->with(['fileType','subfolder']);
+            }, 'fileType'])->find($unit);
+            $branch_name = 'Division';
+            $branch = Divison::find($unit);
+            $folder = Folder::with(['fileType', 'subfolder'])->where('division_id', $division)->latest()->paginate(20);
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+          }
+          
+          $department = auth()->user()->department_id;
+            //  $department = Department::withCount(['user','archive'])->with(['folder' =>function($query){
+            //     $query->with(['subfolder']);
+            //  }, 'fileType', 'archive'=>function($query){
+            //     $query->with(['archiveDocs', 'filePath'])->latest();
+            // }])->find($department);
+            // return inertia('dashboard/Branches', compact('department'));
+            $branch = Department::with(['folder'=>function($query){
+                $query->with(['fileType','subfolder']);
+            }, 'fileType'])->find($department);
+            $branch_name = 'Department';
+            $branch = Department::find($department);
+            $folder = Folder::with(['fileType', 'subfolder'])->where('department_id', $department)->latest()->paginate(20);
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+        }
+       
      }
 
-    public function folderView($id){
-        $archives = Archive::with('filePath')->where('folder_id', $id)->where('department_id', auth()->user()->department_id)->get();
-        return inertia('dashboard/FolderView', compact('archives'));
+    public function folderView($branch, $id){
+       $archive_id = request()->archive_id;
+        $branch = strtolower($branch);
+       $folder = Folder::with(['subfolder'=>function($query){
+        $query->with('fileType');
+       }])->find($id);
+
+        if($branch == 'unit'){
+            $branch_id = request()->branch_id? request()->branch_id: auth()->user()->unit_id;
+            if(request()->archive_id){
+                $archives = Archive::with(['filePath', 'archiveDocs','department','division', 'unit'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('unit_id',  $branch_id)->latest()->paginate(20);
+            }else{
+                $archives = Archive::with(['filePath', 'archiveDocs','department','division', 'unit'])->where('folder_id', $id)->where('unit_id',  $branch_id)->latest()->paginate(20);
+            }
+
+            $is_folder_open = $folder->is_open;
+            $branch_type = 'unit';
+            $folder_name = $folder->name;
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder'));
+        }else
+
+        if($branch == 'division'){
+            $branch_id = request()->branch_id? request()->branch_id: auth()->user()->division_id;
+            if(request()->archive_id){
+                $archives = Archive::with(['filePath', 'archiveDocs'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('division_id',  $branch_id)->latest()->paginate(20);
+            }else{
+                $archives = Archive::with(['filePath', 'archiveDocs'])->where('folder_id', $id)->where('division_id',  $branch_id)->latest()->paginate(20);
+            }
+          
+            $is_folder_open = $folder->is_open;
+            $branch_type = 'division';
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
+        }else
+
+        $branch_id = request()->branch_id? request()->branch_id: auth()->user()->department_id;
+        if(request()->archive_id){
+            $archives = Archive::with(['filePath', 'archiveDocs'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id)->latest()->paginatge(20);
+        }else{
+            $archives = Archive::with(['filePath', 'archiveDocs'])->where('folder_id', $id)->where('department_id',  $branch_id)->latest()->paginate(20);
+        }
+     
+        $is_folder_open = $folder->is_open;
+        $branch_type = 'department';
+        return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
     }
 
     public function getDivisionWithUnit(Request $request){
         $division = Division::with('unit')->where('department_id', $request->id)->get();
         return response()->json($division);
     }
+
+    public function closeFolder($id){
+        Folder::where('id', $id)->update(['is_open'=>0]);
+        return redirect()->back();
+    }
+
+    public function deleteFolder($id){
+        $folder = Folder::find($id);
+        $folder->delete();
+        if($folder->path && is_dir($folder->path)){
+            if(rmdir($folder->path)){
+                return redirect()->back();
+            }
+        }
+    }
+
+    public function getBranchFileType(){
+        if(auth()->user()->unit_id){
+            $unit = Unit::with('fileType')->find(auth()->user()->unit_id);
+            $fileType= $unit->fileType;
+            return response()->json($fileType);
+        }
+
+        if(auth()->user()->division_id){
+            $division = Division::with('fileType')->find(auth()->user()->division_id);
+            $fileType= $division->fileType;
+            return response()->json($fileType);
+        }
+
+        if(auth()->user()->department_id){
+            $department = Department::with('fileType')->find(auth()->user()->department_id);
+            $fileType= $department->fileType;
+            return response()->json($fileType);
+        }
+    }
+
+    public function updateBranchMetadatas(Request $request){
+        ArchiveDocs::upsert($request->form, ['id', 'archive_id']);
+        return response()->json(['success'=>true]);
+    }
+
+    public function uploadNewDocument(Request $request){
+        if($request->file('files')){
+
+            $archive = Archive::with('filePath')->find($request->document_id);
+        
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+            $file_path = $archive->filePath->first()? $archive->filePath->first()->path: [];
+            $thumbnail = $archive->filePath->first()? $archive->filePath->first()->thumbnails: [];
+            // if($file_path && $thumbnail){
+            //      $file_arr = explode("/",$file_path);
+            //      array_pop($file_arr);
+            //     $path = implode('/', $file_arr);
+            //     $extension = strtolower($request->file('files')[0]->getClientOriginalExtension());
+            //     if(in_array($extension, $allowedExtensions)){
+            //         $thumbnail_path = $path.'/thumbnails/';
+            //     }
+            // }else{
+            //     $folder = Folder::find($request->folder_id);
+            //     $path = $folder->path.'/';
+            //     $thumbnail_path = $folder->path.'/thumbnails/';
+            // }
+
+                $folder = Folder::find($request->folder_id);
+               
+           
+            try {
+                $filepath = [];
+                $thumbnails = [];
+
+                foreach ($request->file('files') as $index=>$file) {
+                    $path = $folder->path.'/';
+                    $thumbnail_path = $folder->path.'/thumbnails/';
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+                 
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $size = $this->formatSize(filesize($file));
+                  
+                    //create thumbnails
+                    if(!is_dir($thumbnail_path)){
+                        mkdir($thumbnail_path,0777,true);
+                    }
+
+                    $thumbnail = '';
+                    if (in_array($extension, $allowedExtensions)) {
+                         $thumbnail = $this->createThumbnail($file, $thumbnail_path, 480, 520, $fileName);
+                       
+                    }
+        
+                    $file->move(public_path($path),$fileName);
+                   
+   
+                    $path = str_replace('storage/', '', $path);
+                    $thumbnail = str_replace('storage/','', $thumbnail);
+
+                    $paths = [
+                        'path'=>'/'.$path.$fileName,
+                        'created_at'=>\Carbon\Carbon::now(), 
+                        'updated_at'=>\Carbon\Carbon::now(),
+                        'updated_by' =>auth()->user()->id,
+                        'updated_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
+                        'file_name' => $fileName,
+                        'file_size' => $size,
+                        'thumbnails' => $thumbnail
+                    ];
+                   if($paths){
+                   
+                     array_push($filepath, $paths);
+                        //array_push($thumbnails,$thumbnail );
+                    }
+                    
+                }
+                if($file_path){
+                    foreach($archive->filePath as $path){
+                        $path->delete();
+                    }
+                    //$archive->filePath->delete();
+                }
+                FilePath::insert($filepath);
+                $file_path = FilePath::latest()->get()->take(count($filepath));
+                $ids = $file_path->pluck('id');
+               
+                $archive->filePath()->attach($ids);
+            } catch (Exception $e) {
+                dd($e);
+            }
+           
+        }
+    }
+
 }

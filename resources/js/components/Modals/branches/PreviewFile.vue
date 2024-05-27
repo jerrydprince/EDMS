@@ -73,7 +73,7 @@
             </button>
         </div>
       </div>
-      <div class=" absolute bottom-5 flex items-center px-10 w-full justify-between h-[85vh]">
+      <div class=" absolute bottom-5 flex items-center px-10 w-full justify-center h-[85vh]">
         <div
           class="text-2xl p-2 rounded-full bg-white cursor-pointer"
           :class="{ ' opacity-0': currentIndex === 0 }"
@@ -85,14 +85,17 @@
           <div
             v-for="(item, index) in file.files"
             :key="index"
-            class=" w-[40vw] h-[80vh]"
+            class=" w-[50vw] h-[80vh]"
             v-show="currentIndex === index"
            
           >
-            <img :src="page.props.base+'/storage'+item.path" alt=""  class=" w-full h-full object-contain"/>
+            <img v-if="fileType(item) == 'image'" :src="getFileExtension(item)" alt=""  class=" w-full h-full object-contain"/>
+            <object v-if="fileType(item) == 'pdf'" :data="page.props.base+'/storage/'+item.path" type="application/pdf" width="100%" height="100%">
+                <p>{{ page.props.base+'/storage'+item.path }} <a :href="page.props.base+'/storage'+item.path">click here to download the PDF file.</a></p>
+            </object>
           </div>
         </div>
-        <div
+        <div v-if="file.files"
           class="text-2xl p-2 rounded-full bg-white cursor-pointer"
           :class="{'opacity-0' : currentIndex === file.files.length - 1}"
           @click="moveItems(1)"
@@ -106,7 +109,7 @@
   <script setup>
   import { ref, computed, defineProps } from "vue";
   import { onClickOutside } from "@vueuse/core";
-  import image1 from "@/assets/images/document3.svg";
+  import image1 from "../../../assets/images/document3.svg";
   import { usePage } from "@inertiajs/vue3";
 
   const { togglePreviewFunction } = defineProps(["togglePreviewFunction","file"]);
@@ -137,6 +140,7 @@
       currentIndex.value = newIndex;
     }
   }
+
   const togglePreview = () => {
     togglePreviewFunction();
   };
@@ -146,6 +150,53 @@
   onClickOutside(modalRef, (event) => {
     (menuVisible.value = false), (submenu.value = false);
   });
+
+  const getFileExtension = (file)=>{
+    const f_path = file.path? file.path : file.name
+    const parts = f_path.split('.');
+ 
+    const extension = parts.pop();
+    console.log(extension)
+    if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
+        return page.props.base+'/storage'+file.path
+    }
+    
+    if(extension == 'pdf'){
+        return page.props.base+'/images/pdf.svg'
+    }
+
+    if(extension == 'doc' || extension == 'doctx'){
+        return page.props.base+'/images/word.svg'
+    }
+
+    if(extension == 'xlx' || extension == 'xlsx'){
+        return page.props.base+'/images/excel.svg'
+    }
+}
+
+const fileType = (file) =>{
+  const f_path = file.path? file.path : file.name
+    const parts = f_path.split('.');
+ 
+    const extension = parts.pop();
+    console.log(extension)
+    if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
+        return 'image'
+    }
+    
+    if(extension == 'pdf'){
+        return 'pdf'
+    }
+
+    if(extension == 'doc' || extension == 'doctx'){
+        return 'word'
+    }
+
+    if(extension == 'xlx' || extension == 'xlsx'){
+        return 'excel'
+    }
+}
+
   const menuItem = ref([
     {
       icon: "ic:outline-drive-file-rename-outline",

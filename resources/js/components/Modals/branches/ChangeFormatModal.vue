@@ -8,20 +8,20 @@
       <div
         class="w-full absolute shadow-2xl -mt-7  shadow-white bg-white pb-[5px] flex items-center justify-between px-5" @click="downloadFile">
         <div class=" flex items-center gap-3">
-          <img src="@/assets/images/file.svg" alt="" class="">
+          <img :src="page.props.base+'/images/file.svg'" alt="" class="">
           <p>{{ props.archive?.name }}</p>
         </div>
         <i class="pi pi-download font-semibold cursor-pointer"></i>
       </div>
       <Divider class=" bg-white" />
-      <img src="@/assets/images/change_format.svg" alt="" class=" -mt-16 w-70">
+      <img :src="page.props.base+'/images/change_format.svg'" alt="" class=" -mt-16 w-70">
       <div class=" text-center w-[75%] absolute bottom-5 shadow-2xl shadow-white  bg-white p-5">
         <h1 class=" text-2xl">Convert Format</h1>
         <p class=" opacity-70 my-2">Choose the conversion format for your file.</p>
         <div class=" flex  justify-between mt-5">
           <input type="text" class=" outline-none border w-32 rounded-md p-2 bg-slate-50" :placeholder="currentFileFormat"
             disabled>
-          <img src="@/assets/images/converter.svg" alt="" class=" px-[20px] py-[2px]  rounded-3xl border ">
+          <img :src="page.props.base+'/images/converter.svg'" alt="" class=" px-[20px] py-[2px]  rounded-3xl border ">
           <select @change="setSelectedFormat" class=" border w-32 rounded-md p-2 bg-slate-50 outline-none cursor-pointer">
             <option value="">Select format</option>
             <option v-for="format in fileFormat" :value="format">{{ format }}</option>
@@ -51,11 +51,12 @@
 <script setup>
 import { defineEmits, defineProps, computed, onMounted, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 
 const toast = useToast();
 const props = defineProps(["modelValue", "archive"]);
 const emit = defineEmits(["update:modelValue"]);
+const page = usePage();
 const form = useForm({
   current: '',
   to: '',
@@ -82,8 +83,14 @@ const closeModal = () => {
 };
 
 const submit = () => {
-  form.post('/change-file-format',page => {
-  })
+  form.post('/change-file-format',{onSuccess: ()=>{
+    toast.add({
+				severity: "success",
+				summary: "Format changed",
+				detail: "You've successfully changed document format",
+				life: 3000,
+			});
+  }})
   emit("update:modelValue", false);
 };
 
@@ -128,7 +135,7 @@ const downloadFile = async () => {
 
     // Extract the filename from the Content-Disposition header
     const contentDisposition = response.headers['content-disposition'];
-    const fileName = contentDisposition.split('filename=')[1];
+    const fileName = contentDisposition.split('filename=')[1].replace(/"/g, '').trim();;
 
     // Determine the content type based on the file extension
     const contentType = fileName.endsWith('.pdf') ? 'application/pdf' :

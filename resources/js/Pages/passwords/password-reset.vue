@@ -70,8 +70,9 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
-import { useForm } from "@inertiajs/vue3"
+import { ref, watch, computed, defineProps } from "vue";
+import { useForm } from "@inertiajs/vue3";
+import { useToast } from "primevue/usetoast";
 
     const eightCharacters = ref(false);
     const uppercase = ref(false);
@@ -81,10 +82,13 @@ import { useForm } from "@inertiajs/vue3"
     const isPasswordValid = ref(false)
     const passwordMismatch = ref(true)
     const email_msg = ref(null);
+    const props = defineProps(['email'])
+    const toast = useToast();
 
 const form = useForm({
         password:'',
-        password_confirmation: ''
+        password_confirmation: '',
+        email: props.email
     })
 
 const validatePassword = () => {
@@ -111,6 +115,26 @@ const validatePassword = () => {
         let isMisMatch = form.password == form.password_confirmation? true: false;
        return isMisMatch
     })
+
+    const submitForm = ()=>{
+        form.post('/password/reset',{onSuccess:()=>{
+            toast.add({
+                severity: "success",
+                summary: "Password reset",
+                detail: "You've successfully updated your password, you will be redirected shortly to the login page.",
+                life: 3000,
+            });
+            let countdown = 10;
+
+            const countdownTimer = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(countdownTimer);
+                window.location.href = '/login';
+            } 
+            }, 1000);
+        }})
+    }
 
     watch(() => form.password, ()=>{
          // Regular expressions for password validation

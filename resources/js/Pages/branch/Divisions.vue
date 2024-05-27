@@ -81,15 +81,17 @@
     <EditDivisionModal v-model="editDivision" :division="singleDivision" @close="editDivision = false"/>
     <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDivision" :url="'/admin/add-document-type-to-division'" />
     <AddDivisionModal v-model="addDivision" :department ="props.department" @close="addDivision = false"/>
+    <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'division'" :branch_id="singleDivision?.id"/>
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 import EmptyState from "../../components/EmptyState.vue";
 import AddUnit from "../../components/Modals/AddUnitsModal.vue";
 import EditDivisionModal from "../../components/Modals/EditDivisionModal.vue";
 import AddDocumentTypesModal from "../../components/Modals/AddDocumentTypesModal.vue";
 import AddDivisionModal from "../../components/Modals/AddDivisionModal.vue";
+import AddFileTypeModal from "../../components/Modals/AddFileTypeModal.vue";
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps(['division', 'department_name','documentTypes','department']);
@@ -99,12 +101,21 @@ const editDivision = ref(false)
 const addDocType = ref(false);
 const currentDivision = ref([])
 const addDivision = ref(false);
+const addFileType = ref(false);
+const selectedFileType = ref([]);
 
 const menu = ref();
 const menuItems = ref([
 { label: "Add Units", icon: "pi pi-plus", command: () =>{
     addUnit.value = true;
 } },
+{
+    label: 'Add File Type',
+    icon: 'pi pi-file',
+    command: ()=>{
+      addFileType.value = true;
+    }
+  },
   { label: "Units", icon: 'pi pi-eye', command: (event)=>{
     //window.location.href = '/admin/get-divisions?id='+singleDepartment.value.id
     window.open('/admin/get-units?id='+singleDivision.value.id, "_blank");
@@ -145,5 +156,14 @@ const addDocTypes = (val) =>{
   currentDivision.value = val
 }
 
+watch(singleDivision, ()=>{
+  if(singleDivision.value.file_type && singleDivision.value.file_type.length > 0){
+    let arr= []
+    for(let filetype of singleDivision.value.file_type){
+      arr.push(filetype.id);
+    }
+    selectedFileType.value = arr
+  }
+})
 
 </script>

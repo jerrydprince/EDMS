@@ -95,7 +95,7 @@
   </template>
   
   <script setup>
-  import { ref, defineEmits, defineProps, computed} from "vue";
+  import { ref, defineEmits, defineProps, computed, watch} from "vue";
   import { useToast } from "primevue/usetoast";
   import axios from "axios";
   import { useForm } from '@inertiajs/vue3'
@@ -118,24 +118,16 @@
     };
 
     const form = useForm({
-        name: props.archive?.file_path[0]?.file_name,
-        id: props.archive?.id
+        name: '',
+        id: '',
+        archive_docs_id: ''
     })
 
     
 
     const submitForm = () => {
-      let folder_name = document.getElementById('folder_name');
-      let folder_number = document.getElementById('folder_number');
-      if(folder_name.value == ''){
-        folder_name.focus();
-        return false
-      }
-      if(folder_number.value == ''){
-        folder_number.focus();
-        return false;
-      }
-        form.get('/create-folder',{onSuccess: ()=>{
+     
+        form.post('/dashboard/rename-file',{onSuccess: ()=>{
             toast.add({
                 severity: "success",
                 summary: "Document Created",
@@ -156,6 +148,11 @@
   //   { name: "Administrative Documents", key: "admin2" },
   // ]);
   
+  watch(()=> props.archive, ()=>{
+    form.name = props.archive?.title?.archive
+    form.id = props.archive?.id
+    form.archive_docs_id = props.archive?.title?.id
+  })
 
   </script>
   

@@ -33,8 +33,61 @@ class DocumentTypeController extends Controller
         return redirect()->to("/admin/setup-document-type");
     }
 
+    public function SetupDocumentType(){
+        $documentTypes = DocumentType::with('metadata')->get();
+
+        $documentTypes->each(function ($documentType) {
+            $documentType->updated_at_formatted = $documentType->updated_at->diffForHumans();
+            $documentType->metadata_count = count($documentType->metadata);
+        });
+        return inertia('admin/SetupDocumentType', compact('documentTypes'));
+    }
+
     public function configureMetaData(Request $request){
         DocumentType::find($request->id)->metadata()->sync($request->metadata);
         return redirect()->to('/admin/setup-document-type');
+    }
+
+    public function duplicateDocumentType(Request $request){
+        $document_type = DocumentType::with('metadata')->find($request->id);
+        $new_document_type = $document_type->replicate();
+        $new_document_type->save();
+        $new_document_type->metadata()->sync($document_type->metadata);
+        return redirect()->back();
+    }
+
+    public function deleteDocumentType(Request $request){
+        $document_type = DocumentType::with('metadata')->find($request->id);
+        //$document_type->metadata()->delete();
+        $document_type->delete();
+        return redirect()->back();
+    }
+
+    public function getDocumentType(){
+        $doctype = DocumentType::get();
+        return response()->json($doctype);
+    }
+
+    public function getBranchDocumentType(){
+        if(auth()->user()->unit_id){
+            $doctype = DocumentType::whereHas('unit', function($query){
+                $query->where('unit_id', auth()->user()->unit_id);
+            })->get();
+            return response()->json($doctype);
+        }
+
+        if(auth()->user()->division_id){
+            $doctype = DocumentType::with('metadata')->whereHas('unit', function($query){
+                $query->where('division_id', auth()->user()->division_id);
+            })->get();
+            return response()->json($doctype);
+        }
+
+        if(auth()->user()->department_id){
+            $doctype = DocumentType::whereHas('unit', function($query){
+                $query->where('department_id', auth()->user()->department_id);
+            })->get();
+            return response()->json($doctype);
+        }
     }
 }

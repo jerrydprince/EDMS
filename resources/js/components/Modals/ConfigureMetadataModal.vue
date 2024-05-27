@@ -18,8 +18,8 @@
           <Icon icon="uiw:setting-o" width="25" />
         </div>
         <div>
-          <p class="mb-1 font-medium text-lg">Create New Metadata</p>
-          <p class="text-gray-500 text-xs">Define Metadata Attributes</p>
+          <p class="mb-1 font-medium text-lg">Configure Metadata</p>
+          <p class="text-gray-500 text-xs">Define Document Metadata Attributes</p>
         </div>
       </div>
     </template>
@@ -44,7 +44,8 @@
             />
           </span>
         </div>
-        <div class="mt-4">
+        <div class=" h-72 overflow-y-scroll">
+          <div class="mt-4">
           <div
             v-for="mtdata of metadata"
             :key="mtdata.string"
@@ -64,6 +65,7 @@
               mtdata.name
             }}</label>
           </div>
+        </div>
         </div>
       </div>
       <Divider class="" />
@@ -135,7 +137,7 @@ const submitForm = () => {
 const isDisabled = (data) => {
   
   if(data.is_default == 1){
-    //selectedCategories.value.push(data.id)
+    selectedCategories.value.push(data.id)
     return true
   }else{
     return false

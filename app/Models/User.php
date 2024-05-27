@@ -62,7 +62,7 @@ class User extends Authenticatable
      */
     public function department()
     {
-        return $this->belongsTo(department::class);
+        return $this->belongsTo(Department::class);
     }
 
     /**
@@ -80,7 +80,7 @@ class User extends Authenticatable
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function division(): BelongsTo
+    public function division()
     {
         return $this->belongsTo(Division::class);
     }

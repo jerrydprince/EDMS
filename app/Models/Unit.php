@@ -48,4 +48,24 @@ class Unit extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * The fileType that belong to the Unit
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function fileType()
+    {
+        return $this->belongsToMany(FileType::class, 'unit_file_type');
+    }
+
+    /**
+     * Get all of the archive for the Department
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function archive()
+    {
+        return $this->hasMany(Archive::class);
+    }
 }

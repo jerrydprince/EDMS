@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="flex items-center gap-4">
-        <button class="flex gap-2 items-center text-[#3575DD] rounded-lg py-2 px-4">
+        <button class="flex gap-2 items-center text-[#3575DD] rounded-lg py-2 px-4" @click="cancelBtn">
           <p>Cancel</p>
         </button>
 
@@ -124,8 +124,10 @@
 
         <div class=" w-[45%] mt-5">
           <label for="phone" class=" font-medium">Phone</label>
-          <input type="number" ref="phone" v-model="form.phone" placeholder="phone number" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @blur="checkPhoneExist">
+          <!-- <input type="number" ref="phone" v-model="form.phone" placeholder="phone number" required
+            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @blur="checkPhoneExist"> -->
+            <input type="number" ref="phone" v-model="form.phone" placeholder="phone number" required
+            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
           <span class="text-red-400 text-sm my-2" v-if="phone_msg != ''">{{ phone_msg }}</span>
           <span class="text-red-400 text-sm my-2" v-if="form.errors.phone">{{ form.errors.phone }}</span>
         </div>
@@ -175,7 +177,7 @@
 
           <div class=" mt-5">
             <label for="Unit" class=" font-medium">Unit</label>
-            <select name="" id="" class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
+            <select v-model="form.unit" name="" id="" class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
               <option value="">Select from dropdown</option>
               <option v-for="(item, index) in getUnit" :value="item.id" :key="index">{{ item.title }}</option>
             </select>
@@ -371,6 +373,23 @@ const getDivision = computed(() => {
 const getUnit = computed(() => {
   return division.value[0]?.unit;
 })
+
+const cancelBtn = ()=>{
+    form.first_name= '',
+    form.last_name= '',
+    form.email= '',
+    form.department= '',
+    form.division= '',
+    form.unit= '',
+    form.image= '',
+    form.role= [],
+    form.file= [],
+    form.grade_level= '',
+    form.gender= '',
+    form.phone= '',
+    form.id='',
+    form.is_approved= 0
+}
 
 const submitForm = () => {
   if (!validateEmail(form.email)) {

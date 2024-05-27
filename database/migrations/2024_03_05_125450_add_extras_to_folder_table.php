@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('folder', function (Blueprint $table) {
             $table->date('year')->nullable();
-            $table->string('type')->nullable();
+            $table->string('file_type_id')->nullable();
         });
     }
 

@@ -44,8 +44,8 @@
                 <Actions />
                 <p class="text-xl lg:text-2xl font-medium">Quick Actions</p>
             </div>
-            <div
-                class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10">
+            <div class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10">
+                <Link :href="'admin/meta-data-setup'">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions1 class="absolute top-0 left-[6%]" />
                     <QuickActions1_1 class="absolute top-20 z-[999] left-[12%]" />
@@ -56,6 +56,7 @@
                         </p>
                     </div>
                 </div>
+                </Link>
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions2 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
@@ -65,6 +66,7 @@
                         </p>
                     </div>
                 </div>
+                <Link href="/admin/manage-users">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions3 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
@@ -74,6 +76,7 @@
                         </p>
                     </div>
                 </div>
+                </Link>
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions4 class="top-0 left-0 w-full object-cover" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
@@ -188,6 +191,7 @@ import QuickActions3 from "../../assets/Dashboard/QuickActions3.vue";
 import QuickActions4 from "../../assets/Dashboard/QuickActions4.vue";
 import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDialog.vue";
 import EmptyState from "../../components/EmptyState.vue";
+import { Link } from "@inertiajs/vue3";
 
 const props = defineProps(['departments']);
 

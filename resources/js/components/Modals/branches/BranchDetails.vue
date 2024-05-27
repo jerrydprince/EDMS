@@ -3,7 +3,7 @@
 
 		<div class=" flex justify-between items-center">
 			<div class=" flex justify-between gap-3 items-center">
-				<img src="@/assets/images/detail.svg" alt="">
+				<img src="/assets/images/detail.svg" alt="">
 				<h1 class=" text-[#1D2939] font-semibold text-xl">Details</h1>
 			</div>
 			<button class="" @click=" visible = false">
@@ -12,15 +12,15 @@
 		</div>
 		<Divider />
 		<div class=" flex items-start gap-3 text-[#1D2939] text-lg ">
-			<img src="@/assets/images/excel.svg" alt="" class=" p-3 rounded-full bg-[#EFFBF5]">
+			<img :src="getFileExtension(props.file)" alt="" class=" p-2 rounded-full bg-[#EFFBF5]" width="32">
 			<div>
-				<h1 class="w-64 whitespace-normal break-word">{{ props.file.name }}</h1>
-				<div
+				<h1 class="w-64 whitespace-normal break-word">{{ (props.file.title)? props.file.title.archive: props.file.name }}</h1>
+				<div @click="uploadDocument"
 					class="flex gap-2 w-44 items-center text-gray-700 border-gray-300 border-solid border rounded-lg text-sm  py-2 px-3 lg:px-4 cursor-pointer mt-2">
 					<div>
 						<i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
 					</div>
-					<p class=" text-xs text-[#344054]" @click="previewModal = true">Upload New Version</p>
+					<p class=" text-xs text-[#344054]" >Upload New Version</p>
 				</div>
 			</div>
 		</div>
@@ -58,7 +58,7 @@
 
 					<div class=" flex items-center justify-between">
 						<span class="text-[#98A2B3]">Document type</span>
-						<span class=" text-[#344054]">{{ fileDatails.document_type }}</span>
+						<span class=" text-[#344054]">{{ fileType }} Document</span>
 					</div>
 					<div class=" flex items-center justify-between">
 						<span class="text-[#98A2B3]">Size</span>
@@ -66,7 +66,7 @@
 					</div>
 					<div class=" flex items-center justify-between">
 						<span class="text-[#98A2B3]">Created</span>
-						<span class=" text-[#344054]">{{ props.file.created }}</span>
+						<span class=" text-[#344054]">{{ props.file.uploaded_by }}</span>
 					</div>
 					<div class=" flex items-center justify-between">
 						<span class="text-[#98A2B3]">Last Modified</span>
@@ -75,13 +75,19 @@
 				</div>
 
 				<!-- ======other info ===== -->
-				<h1 class=" text-lg mt-5 text-[#3B82F6]">Other Info</h1>
-				<div class=" my-2">
-					<h1 class="text-[#98A2B3]">Owner</h1>
+				<h1 class=" text-lg mt-5 text-[#3B82F6]">Metadata</h1>
+				<div class=" my-2" v-if="file.archive_docs">
+					<!-- <h1 class="text-[#98A2B3]">Owner</h1>
 					<div class=" flex items-center gap-2 mt-2">
-						<img src="@/assets/images/user.png" alt="" class=" w-8">
+						<img src="/assets/images/user.png" alt="" class=" w-8">
 						<h1 class=" text-sm text-[#344054] font-semibold">Dave Miye</h1>
-					</div>
+					</div> -->
+					<template v-for="meta in file.archive_docs">
+						<div class=" flex items-center justify-between py-2 border-b border-b-gray-200">
+							<span class="text-[#98A2B3] pr-2">{{meta.archive_keys}}</span>
+							<span class=" text-[#344054]">{{ meta.archive_values}}</span>
+						</div>
+					</template>
 				</div>
 
 				<!-- =========location ======= -->
@@ -89,13 +95,13 @@
 					<h1 class=" text-lg text-[#98A2B3] mt-5">Location</h1>
 
 					<div class=" flex items-center flex-wrap text-sm font-semibold gap-2 mt-2">
-						<h1>Accounting Department </h1>
+						<h1>{{file?.department?.title}} <span v-if="file.department">Department</span> </h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>Auditng Division</h1>
+						<h1>{{file?.division?.title}} <span v-if="file.division">Division</span></h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>Division Unit </h1>
+						<h1>{{file?.unit?.title}} <span v-if="file.unit">Unit</span> </h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>Architecture Folder </h1>
+						<h1>{{props.folder?.name}} </h1>
 
 					</div>
 				</div>
@@ -106,7 +112,7 @@
 			<!-- ==========activities ======== -->
 			<div v-for=" (activity, index) in activities" :key="index">
 				<div class=" flex gap-4 my-5" :class="{ 'expanded': expandedIndexes.includes(index) }">
-					<img src="@/assets/images/user.png" alt="" class=" w-7 h-7">
+					<img src="/assets/images/user.png" alt="" class=" w-7 h-7">
 					<div class=" text-sm cursor-pointer" @click="toggleExpandable(index)">
 						<p class=" font-semibold">{{ activity.activity }}</p>
 						<p>{{ activity.date }}</p>
@@ -141,23 +147,31 @@
 	<div>
 		<!-- <Preview v-if="togglePreview" :togglePreviewFunction="togglePreviewState" /> -->
 		<PreviewFile v-if="togglePreview"  :togglePreviewFunction="togglePreviewState" :file="props.file"/>
+		<UploadDocumentDialog v-model="isUploadDocument" :file="props.file" :folder="props.folder" @updateDocument="handleUpdateDocument"/>
 	</div>
 </template>
 
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
-import PreviewFile from "@/components/Modals/branches/PreviewFile.vue";
+import PreviewFile from "../../../components/Modals/branches/PreviewFile.vue";
 import { usePage } from '@inertiajs/vue3';
+import UploadDocumentDialog from "../UploadDocumentDialog.vue";
 
 const previewModal = ref(false)
-const props = defineProps(["modelValue", "file"]);
-const emit = defineEmits(["update:modelValue"]);
+const props = defineProps(["modelValue", "file", 'folder']);
+const emit = defineEmits(["update:modelValue", 'updateDocument']);
 const togglePreview = ref(false);
 const page = usePage();
+const fileType = ref('')
+const isUploadDocument = ref(false);
 
 const togglePreviewState = () => {
 	togglePreview.value = !togglePreview.value;
 };
+
+const uploadDocument = ()=>{
+	isUploadDocument.value = true;
+}
 
 const active = ref(0);
 const expandedIndexes = ref([])
@@ -216,7 +230,7 @@ const activities = ref([
 
 	{
 		date: "12 days ago",
-		image: "@/assets/images/user.png",
+		image: "/assets/images/user.png",
 		activity: "You created a new version of this file",
 		details: {
 			details_1: "Compliance document V1",
@@ -226,7 +240,7 @@ const activities = ref([
 	,
 	{
 		date: "12 days ago",
-		image: "@/assets/images/user.png",
+		image: "/assets/images/user.png",
 		activity: "You created a new version of this file",
 		details: {
 			details_1: "Compliance document V1",
@@ -236,7 +250,7 @@ const activities = ref([
 	},
 	{
 		date: "12 days ago",
-		image: "@/assets/images/user.png",
+		image: "/assets/images/user.png",
 		activity: "You created a new version of this file",
 		details: {
 			details_1: "Compliance document V1",
@@ -245,7 +259,7 @@ const activities = ref([
 	},
 	{
 		date: "12 days ago",
-		image: "@/assets/images/user.png",
+		image: "/assets/images/user.png",
 		activity: "You created a new version of this file",
 		details: {
 			details_1: "Compliance document V1",
@@ -255,7 +269,7 @@ const activities = ref([
 	},
 	{
 		date: "12 days ago",
-		image: "@/assets/images/user.png",
+		image: "/assets/images/user.png",
 		activity: "You created a new version of this file",
 		details: {
 			details_1: "Compliance document V1",
@@ -265,7 +279,41 @@ const activities = ref([
 	},
 ])
 
+const getFileExtension = (file)=>{
+    const f_path = file.path? file.path : file?.name
+   
+    if(f_path){
+       const parts = f_path.split('.');
 
+      const extension = parts.pop();
+
+      if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
+		fileType.value = 'Image'
+          return page.props.base+'/images/image.svg'
+      }
+      
+      if(extension == 'pdf'){
+		fileType.value = 'PDF'
+          return page.props.base+'/images/pdf.svg'
+      }
+
+      if(extension == 'doc' || extension == 'doctx'){
+		fileType = 'Word'
+          return page.props.base+'/images/word.svg'
+      }
+
+      if(extension == 'xlx' || extension == 'xlsx'){
+		fileType = 'Excel'
+          return page.props.base+'/images/excel.svg'
+      }
+    }
+   
+
+}
+
+const handleUpdateDocument = ()=>{
+	emit('updateDocument');
+}
 
 </script>
 

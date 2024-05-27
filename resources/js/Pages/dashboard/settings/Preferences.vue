@@ -31,7 +31,7 @@
         />
         <p>Light Mode</p>
             </div>
-            <img src="@/assets/images/themes/light_theme.svg" alt="" class=" p-4 bg-white w-80">
+            <img src="/assets/images/themes/light_theme.svg" alt="" class=" p-4 bg-white w-80">
             <p class="px-4 py-3 bg-white text-[#1D2939] font-semibold">Default Light</p>
          </div>
          <div class=" bg-[#F9FAFB] border rounded-md overflow-hidden ">
@@ -40,7 +40,7 @@
               <Icon icon="ph:moon-fill" width="20" class=" mt-1"/>
         <p>Dark Mode</p>
             </div>
-            <img src="@/assets/images/themes/dark_theme.svg" alt="" class=" p-4 bg-white w-80">
+            <img src="/assets/images/themes/dark_theme.svg" alt="" class=" p-4 bg-white w-80">
             <p class="px-4 py-3 bg-white text-[#1D2939] font-semibold">Default Dark</p>
          </div>
          <div class=" bg-[#F9FAFB] border rounded-md overflow-hidden ">
@@ -49,7 +49,7 @@
               <Icon icon="basil:desktop-outline"   width="20" class=" mt-1"/>
         <p>System</p>
             </div>
-            <img src="@/assets/images/themes/default.svg" alt="" class=" p-4 bg-white w-80">
+            <img src="/assets/images/themes/default.svg" alt="" class=" p-4 bg-white w-80">
             <p class="px-4 py-3 bg-white text-[#1D2939] font-semibold">Default System</p>
          </div>
         </div>

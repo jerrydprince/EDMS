@@ -379,7 +379,7 @@
             <div class="mt-2">
               <img
                 class="w-full rounded-md"
-                src="@/assets/images/document.png"
+                src="/assets/images/document.png"
                 alt="Document image"
               />
             </div>
@@ -411,7 +411,7 @@
             <div class="mt-2">
               <img
                 class="w-full rounded-md"
-                src="@/assets/images/document.png"
+                src="/assets/images/document.png"
                 alt="Document image"
               />
             </div>
@@ -425,8 +425,8 @@
 
 <script setup>
    import { ref } from "vue";
-   import CreateFolderDialog from "@/components/Modals/branches/CreateFolderDialog.vue";
-   import FolderDialog from "@/components/Modals/branches/FolderDialog.vue";
+   import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
+   import FolderDialog from "../../components/Modals/branches/FolderDialog.vue";
 
 
 

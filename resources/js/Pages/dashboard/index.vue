@@ -74,7 +74,7 @@
                     <Icon icon="carbon:warning-filled" width="20" class=" rotate-180 text-white" />
                   </div>
                   <p class=" w-80 opacity-80">{{ task.text }} <span class=" text-primary underline">{{ task.divsion
-                  }}</span></p>
+                      }}</span></p>
                 </div>
                 <button class=" text-primary" @click="resolveModal = true">Resolve</button>
               </div>
@@ -86,7 +86,7 @@
 
     <div class="  flex items-center pl-5 pt-5 relative justify-between border overflow-hidden rounded-xl   my-10">
       <div class=" flex items-center gap-10">
-        <img src="@/assets/images/tutorial.svg" alt="" class=" pb-5 w-80">
+        <img src="/assets/images/tutorial.svg" alt="" class=" pb-5 w-80">
         <div>
           <h1 class=" text-3xl">Archiving Tutorial</h1>
           <p class=" text-[#667085] opacity-50">Watch a quick video guide to streamline your archiving process.</p>
@@ -100,7 +100,7 @@
     <div class=" mb-10">
       <div class=" flex items-center w-full justify-between">
         <h1 class=" text-3xl  text-[#1D2939] mb-3">Recent Documents</h1>
-        <div class="flex items-center gap-5 text-sm" v-if="documents.length !== 0">
+        <div class="flex items-center gap-5 text-sm" v-if="files && files.length !== 0">
           <div class="bg-gray-100 flex items-center rounded-md p-1">
             <button class="bg-white shadow-md border-gray-300 rounded-lg py-1 px-4">
               <p>All</p>
@@ -110,7 +110,8 @@
               <Icon icon="icon-park-outline:down" width="16" />
             </button>
           </div>
-          <button class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
+          <button
+            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
             <Icon icon="ion:arrow-up" width="20" />
             <p>Name</p>
           </button>
@@ -123,113 +124,28 @@
           </button>
         </div>
       </div>
-      <div class=" border border-solid rounded-xl" v-if="documents.length === 0">
+      <div class=" border border-solid rounded-xl" v-if="files && files.length === 0">
         <EmptyState />
       </div>
 
       <div v-else>
         <div v-if="documentsGridView">
           <div>
-            <!-- <DataTable v-model:selection="selectedDocument" paginator :rows="20" :value="files" dataKey="id" :pt="{
-              table: {
-                class:
-                  'w-full border border-border_primary border-solid mb-6 mt-2',
-              },
-            }" tableStyle="min-width: 60rem; border-radius: 30px;">
-              <Column selectionMode="multiple" headerStyle="width: 2rem; color: #667085;"></Column>
-              <Column field="name" header="File Name" :pt="{
-                bodyCell: { class: 'text-gray-700' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-                <template #body="slotProps">
-                  <div class="flex items-center font-medium gap-2">
-                    <div class="p-2 rounded-full bg-gray-200">
-                      <Icon icon="vscode-icons:file-type-powerpoint" width="25" />
-                    </div>
 
-                    {{ slotProps.data.name }}
-                  </div>
-                </template>
-              </Column>
-              <Column field="date" header="Date Uploaded" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-              </Column>
-
-              <Column field="location" header="Location" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;" style="width: 200px;">
-              </Column>
-
-
-              <Column field="size" header="File Size" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-              </Column>
-              <Column field="uploaded_by" header="Uploaded By" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-              </Column>
-
-
-              <Column field="actions" header="Actions" :pt="{
-                bodyCell: { class: 'text-gray-700' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-                <template #body="slotProps">
-
-                  <div id="menu1" class="menu absolute right-28 z-50"
-                    v-if="menuVisible && selectedDocumentId === slotProps.data.id" ref="modalRef">
-                    <div class="w-[417px] h-[420px]  relative" :class="{ ' bottom-72': isPositionChanged }"
-                      @click="close">
-                      <div
-                        class="dropmenu w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute right-0 shadow-lg cursor-pointer">
-                        <div class="flex justify-between items-center hover:bg-[#F9FAFB] px-3 my-2"
-                          v-for="(item, index) in menuItem" :key="index" @click.stop @click="handleMenuItem(item)">
-                          <div class="flex items-center gap-2">
-                            <Icon :icon="item.icon" />
-                            <p>{{ item.label }}</p>
-                          </div>
-                          <Icon :icon="item.arrow" />
-                        </div>
-                      </div>
-
-                      <div
-                        class="w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute bottom-0 left-0 shadow-lg cursor-pointer"
-                        :class="{ ' bottom-28': isSecondPosition }" v-if="submenu" @click="close">
-                        <div class="flex items-center gap-2 hover:bg-[#F9FAFB] px-3 my-2"
-                          v-for="(item, index) in submenuItem" :key="index" @click="handleMenuItem(item)">
-                          <Icon :icon="item.icon" />
-                          <p>{{ item.label }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex gap-3 items-center">
-                    <div @click="toggleMenu(slotProps.data.id)" class="p-2 border cursor-pointer rounded-md">
-                      <Icon icon="simple-line-icons:options-vertical" />
-                    </div>
-                    <div class="cursor-pointer" @click="handleButtonClick">
-                      <Icon icon="uiw:delete" width="16" />
-                    </div>
-                  </div>
-
-                </template>
-              </Column>
-            </DataTable> -->
-
-            <ListVue :files="files" :documentsGridView="!documentsGridView" @docs="SetselectedDocument" 
-          @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
-          @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails"/>
+            <ListVue :files="files" :documentsGridView="!documentsGridView" @docs="SetselectedDocument"
+              @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
+              @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails" />
 
           </div>
         </div>
         <div v-else>
-          <div class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8" v-if="userDepartment">
-            <div v-for="dept in userDepartment.archive" class="bg-gray-200 p-2 rounded-md relative" :key="i">
+          <div class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8" v-if="branch">
+            <div v-for="dept in branch.archive" class="bg-gray-200 p-2 rounded-md relative" :key="i">
               <div class="flex items-center justify-between">
                 <div class="p-2 rounded-full bg-white w-fit">
                   <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
                 </div>
-                <h1 class="truncate">{{dept.file_path[0].file_name}}</h1>
+                <h1 class="truncate">{{ dept.file_path[0].file_name }}</h1>
                 <div class="flex gap-3 items-center">
                   <div @click="toggleMenu(i)" class="p-2 border cursor-pointer rounded-md">
                     <Icon icon="simple-line-icons:options-vertical" class="" />
@@ -254,8 +170,8 @@
 
                     <div
                       class="w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute bottom-0 left-0 shadow-lg cursor-pointer"
-                      :class="{ ' bottom-28': isSecondPosition }" :style="{ left: horizontalPosition ? '420px' : 'auto' }"
-                      v-if="submenu">
+                      :class="{ ' bottom-28': isSecondPosition }"
+                      :style="{ left: horizontalPosition ? '420px' : 'auto' }" v-if="submenu">
                       <div class="flex items-center gap-2 hover:bg-[#F9FAFB] px-3 my-2"
                         v-for="(item, index) in submenuItem" :key="index" @click="handleMenuItem(item)">
                         <Icon :icon="item.icon" />
@@ -267,7 +183,8 @@
               </div>
 
               <div class="mt-2">
-                <img class="w-full rounded-md" :src="page.props.base+'/storage'+dept.file_path[0]?.path" alt="Document image" />
+                <img class="w-full rounded-md" :src="page.props.base + '/storage' + dept.file_path[0]?.path"
+                  alt="Document image" />
               </div>
             </div>
           </div>
@@ -281,18 +198,18 @@
   <GenerateEncriptionCode v-model="GenerateEncriptionModal" />
   <ChangeFormat v-model="ChangeFormatModal" />
   <ResolveTask v-model="resolveModal" />
-  <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive"/>
+  <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive" />
 </template>
-  
+
 <script setup>
 import { ref, defineProps, computed } from "vue";
 import EmptyState from "../../components/EmptyState.vue";
 import ResolveTask from "../../components/Modals/ResolveTask.vue";
-import BranchDetails from "@/components/Modals/branches/BranchDetails.vue";
-import LockDocument from "@/components/Modals/branches/LockDocument.vue";
-import UnlockDocument from "@/components/Modals/branches/UnlockDocument.vue";
-import GenerateEncriptionCode from "@/components/Modals/branches/GenerateEncriptionCode.vue";
-import ChangeFormat from "@/components/Modals/branches/ChangeFormatModal.vue";
+import BranchDetails from "../../components/Modals/branches/BranchDetails.vue";
+import LockDocument from "../../components/Modals/branches/LockDocument.vue";
+import UnlockDocument from "../../components/Modals/branches/UnlockDocument.vue";
+import GenerateEncriptionCode from "../../components/Modals/branches/GenerateEncriptionCode.vue";
+import ChangeFormat from "../../components/Modals/branches/ChangeFormatModal.vue";
 import { onClickOutside } from "@vueuse/core";
 import { usePage } from '@inertiajs/vue3';
 import ListVue from '../dashboard/partials/ListVue.vue';
@@ -318,7 +235,7 @@ const horizontalPosition = ref(null);
 const FileRenameModal = ref(false);
 const selectedArchiveId = ref();
 const selectedArchive = ref();
-const props = defineProps(['userDepartment'])
+const props = defineProps(['branch'])
 const page = usePage();
 
 onClickOutside(modalRef, (event) => {
@@ -330,27 +247,27 @@ const close = () => {
     submenu.value = false
 }
 
-const SetselectedDocument = (data)=>{
+const SetselectedDocument = (data) => {
   selectedDocument.value = data.value
 }
 
-const setSelectedArchive = (data)=>{
+const setSelectedArchive = (data) => {
   selectedArchive.value = data.value
 }
 
-const setFormatModal = (data)=>{
+const setFormatModal = (data) => {
   ChangeFormatModal.value = data
 }
 
-const setBranchDetails = (data)=>{
+const setBranchDetails = (data) => {
   branchDetailsModal.value = data
 }
 
-const setFileRename = (data)=>{
+const setFileRename = (data) => {
   FileRenameModal.value = data
 }
 
-const setLock =(data)=>{
+const setLock = (data) => {
   LockDocumentModal.value = data
 }
 
@@ -367,9 +284,9 @@ const downloadFile = async () => {
 
     // Determine the content type based on the file extension
     const contentType = fileName.endsWith('.pdf') ? 'application/pdf' :
-                        fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-                        fileName.endsWith('.png') ? 'image/png' :
-                        'application/octet-stream'; // Default to binary data
+      fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
+        fileName.endsWith('.png') ? 'image/png' :
+          'application/octet-stream'; // Default to binary data
 
     // Create a blob object from the binary data
     const blob = new Blob([response.data], { type: contentType });
@@ -535,47 +452,26 @@ const steps = [
   },
 ];
 
-const documents = ref([
-  {
-    id: "1001",
-    name: "Communication.pdf",
-    uploaded_by: "Dave Miye",
-    size: "150 KB",
-    date: "16 Nov 23",
-    location: 'Finance Department'
-  },
-  {
-    id: "1002",
-    name: "Communication.pdf",
-    uploaded_by: "Dave Miye",
-    size: "150 KB",
-    date: "16 Nov 23",
-    location: 'Finance Department'
-  },
-  {
-    id: "1003",
-    name: "Communication.pdf",
-    uploaded_by: "Dave Miye",
-    size: "150 KB",
-    date: "16 Nov 23",
-    location: 'Finance Department'
-  },
-  {
-    id: "1004",
-    name: "Communication.pdf",
-    uploaded_by: "Dave Miye",
-    size: "150 KB",
-    date: "16 Nov 23",
-    location: 'Finance Department'
-  },
-]);
+
 const selectedDocument = ref([]);
 
-const files = computed(()=>{
+const getArchiveDocsVale = (data, search)=>{
+   
+   if(data){
+    for(let archive of data){
+        console.log(archive.archive_keys)
+        if(archive.archive_keys.toLowerCase() == search){
+            return archive.archive_values;
+        }
+    }
+   }
+}
+
+const files = computed(() => {
   let newarr = [];
 
-  if(props.userDepartment?.archive){
-    for(let file of props.userDepartment.archive){
+  if (props.branch.data) {
+    for (let file of props.branch.data) {
       let arr = {
         name: file?.file_path[0]?.file_name,
         size: file?.file_path[0]?.file_size,
@@ -585,7 +481,10 @@ const files = computed(()=>{
         path: file?.file_path[0]?.thumbnails,
         files: file?.file_path,
         id: file.id,
-        location: page.props.userDepartment.title+" Department"
+        location: page.props.branch.title + " Department",
+        amount: getArchiveDocsVale(file.archive_docs, 'amount'),
+        title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title'): file?.file_path[0]?.file_name,
+        description:getArchiveDocsVale(file.archive_docs, 'description')
       }
       newarr.push(arr);
     }
@@ -593,27 +492,27 @@ const files = computed(()=>{
   return newarr;
 })
 
-const formatDate =(inputDate)=> {
-    var date = new Date(inputDate);
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const formatDate = (inputDate) => {
+  var date = new Date(inputDate);
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    var day = date.getDate();
-    var month = months[date.getMonth()];
-    var year = date.getFullYear();
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+  var year = date.getFullYear();
 
-    day = day < 10 ? '0' + day : day;
+  day = day < 10 ? '0' + day : day;
 
-    var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
+  var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
 
-    return formattedDate;
+  return formattedDate;
 }
 </script>
-  
+
 <style scoped>
 .gradient {
 
   background: linear-gradient(217deg, rgba(255, 255, 255, 0.8), rgba(255, 0, 0, 0) 80%),
 
-    linear-gradient(336deg, rgba(13, 153, 255), rgba(0, 0, 255, 0) 30%);
+    linear-gradient(336deg, rgba(13, 110, 26), rgba(0, 0, 255, 0) 30%);
 }
 </style>

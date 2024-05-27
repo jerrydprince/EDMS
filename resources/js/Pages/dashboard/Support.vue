@@ -130,8 +130,8 @@
 
 <script setup>
 import { ref } from "vue";
-import SupportInfo from "@/components/Modals/SupportInfo.vue";
-import Help from "@/components/Modals/Help.vue";
+import SupportInfo from "../../components/Modals/SupportInfo.vue";
+import Help from "../../components/Modals/Help.vue";
 const helpModal = ref(false)
 const supportModal = ref(false);
 const expandedIndexes = ref([]);
@@ -177,8 +177,8 @@ const Documentation = [
 
 .gradient{
 
-background: linear-gradient(90deg, #3575DD, #6294E56B 60%),
+background: linear-gradient(90deg, rgb(13 110 26 ), rgb(108 194 120) 60%),
 
-linear-gradient(300deg, #3575DD, rgba(0,0,255,0) 40%);
+linear-gradient(300deg, rgb(13 110 26 ), rgba(0,0,255,0) 40%);
 }
 </style>

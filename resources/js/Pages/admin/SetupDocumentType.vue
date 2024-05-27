@@ -7,7 +7,7 @@
       <div @click="CreateDocType"
         class="mt-4 md:mt-0 flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-1 py-2 px-3 md:px-4 cursor-pointer">
         <Icon icon="ion:add-outline" width="25" />
-        <p class="text-sm md:text-base">Document Type</p>
+        <p class="text-sm md:text-base">Add Document Type</p>
       </div>
     </section>
     <section class="mt-4">
@@ -55,13 +55,13 @@
           }" headerStyle="color: #667085; font-weight: 500;">
             <template #body="{ data }">
               <div class="flex items-center gap-3">
-                <div class="flex">
+                <div class="flex cursor-pointer">
                   <div @click="setSingleDocType(data)"
                     class="flex gap-2 items-center pr-4 font-normal h-full border border-gray-300 rounded-lg px-2 py-1">
                     <div>
                       <Icon icon="uiw:setting-o" width="20" />
                     </div>
-                    <p class="font-medium">Configure Meta-data</p>
+                    <p class="font-medium">Configure Metadata</p>
                   </div>
                 </div>
                 <div class="flex">
@@ -70,7 +70,7 @@
                     <div class="h-full">
                       <Icon icon="majesticons:more-menu-vertical" width="30" />
                     </div>
-                    <Menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true" @click="Actions" />
+                    <Menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true" />
                   </div>
                 </div>
               </div>
@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, watch } from "vue";
+import { ref, defineProps, watch, reactive } from "vue";
 import CreateDocumentTypeDialog from "../../components/Modals/CreateDocumentTypeDialog.vue";
 import UpdateDocumentTypeDialog from "../../components/Modals/UpdateDocumentTypeDialog.vue";
 import ConfigureMetadataModal from "../../components/Modals/ConfigureMetadataModal.vue";
@@ -104,15 +104,37 @@ const props = defineProps(['documentTypes'])
 const singleDocType = ref([]);
 
 const menu = ref();
+const form = reactive({
+  id: ''
+})
 const menuItems = ref([
-  { label: "Edit", icon: "pi pi-pencil" },
-  { label: "Duplicate", icon: "pi pi-clone" },
-  { label: "Delete", icon: "pi pi-trash" },
+  { 
+    label: "Edit", 
+    icon: "pi pi-pencil" ,
+    command: ()=>{
+      updateDocumentType.value = true
+    }
+  },
+  { 
+    label: "Duplicate", 
+    icon: "pi pi-clone",
+    command: ()=>{
+      router.post('/admin/duplicate-document-type', form)
+    }
+  },
+  { 
+    label: "Delete",
+     icon: "pi pi-trash", 
+     command: ()=>{
+      router.get('/admin/delete-document-type', form)
+    }
+    },
 ]);
 
 const toggle = (event, data) => {
   menu.value.toggle(event);
   singleDocType.value = data;
+  form.id = singleDocType.value.id
 };
 
 
@@ -122,13 +144,18 @@ const items = ref([
   {
     label: "Metadata",
     icon: "",
-    link: "/admin/meta-data-setup",
+    link: "/admin/metadata-setup",
   },
   {
     label: "Document Type",
     icon: "material-symbols-light:info-outline",
     link: "/admin/setup-document-type",
   },
+  {
+    label: "File Type",
+    icon: "",
+    link: "/admin/file-type",
+  }
 ]);
 
 const CreateDocType = () => {
@@ -171,9 +198,8 @@ watch(createDocumentType, (val) => {
 })
 
 
-const Actions = (event) => {
-  if (event.target.text == 'Edit') {
-    updateDocumentType.value = true;
-  }
+const Actions = (data) => {
+
+ console.log(data)
 }
 </script>

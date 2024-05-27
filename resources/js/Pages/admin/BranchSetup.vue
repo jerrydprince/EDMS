@@ -145,13 +145,13 @@ div.td:first-child {
       </div>
       <div class="border border-solid border-gray-300 rounded-lg mt-3">
         <div v-if="props.department != 0">
-       
+
           <div class="card">
 
             <div class="relative overflow-x-auto">
 
               <DataTable v-model="expandedRows" :value="props.departments" dataKey="id" tableStyle="min-width: 60rem">
-             
+
               <Column field="title" header="Department"></Column>
               <Column header="Last updated" field="updated_at_formatted"></Column>
               <Column field="division_count" header="Divisions">
@@ -175,7 +175,7 @@ div.td:first-child {
               <Column field="" header="">
                 <template #body="{data}">
                   <div class="flex items-center gap-3">
-                    <div class="flex">
+                    <div class="flex cursor-pointer">
                       <div @click="addDocTypes(data)"
                         class="flex gap-2 items-center pr-4 font-normal h-full border border-gray-300 rounded-lg px-2 py-1">
                         <div>
@@ -192,7 +192,7 @@ div.td:first-child {
                         </div>
                         <Menu ref="menu"  id="overlay_menu" :model="menuItems" :popup="true" />
                       </div>
-                      
+
                     </div>
                   </div>
                 </template>
@@ -220,6 +220,7 @@ div.td:first-child {
     <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDepartment" :url="'/admin/add-document-type-to-department'" />
     <AddDivisionModal v-model="addDivision" :department ="singleDepartment" @close="addDivision = false"/>
     <EditDepartmentModal v-model="editDepartment" :department="singleDepartment" @close="editDepartment=false"/>
+    <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'department'" :branch_id="singleDepartment.id"/>
   </main>
 </template>
 
@@ -230,6 +231,7 @@ import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDial
 import ConfigureMetadataModal from "../../components/Modals/ConfigureMetadataModal.vue";
 import DocumentTypesModal from "../../components/Modals/DocumentTypesModal.vue";
 import AddDocumentTypesModal from "../../components/Modals/AddDocumentTypesModal.vue";
+import AddFileTypeModal from "../../components/Modals/AddFileTypeModal.vue";
 import AddDivisionModal from "../../components/Modals/AddDivisionModal.vue";
 import EditDepartmentModal from "../../components/Modals/EditDepartmentModal.vue";
 import { router } from '@inertiajs/vue3'
@@ -245,9 +247,11 @@ const singleDocType = ref([]);
 const singleDepartment = ref([])
 const documentTypes = ref(false);
 const addDocType = ref(false);
+const addFileType = ref(false);
 const currentDepartment = ref([])
 const addDivision = ref(false)
 const editDepartment = ref(false);
+const selectedFileType = ref([]);
 
 
 const updateModalStep = (value) => {
@@ -258,218 +262,218 @@ const updateModalStep = (value) => {
 //  // router.reload({ only: ['department','division','unit'] })
 // }
 
-const nodes = ref([
-  {
-    key: "0",
-    label: "Cybersecurity",
-    timestamp: "3 days",
-    children: [
-      {
-        key: "0-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "1 day",
-        type: "timeline",
-      },
-      {
-        key: "0-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "0-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 weeks",
-        type: "timeline",
-      },
-      {
-        key: "0-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-  {
-    key: "1",
-    label: "Business Administration",
-    timestamp: "2 days",
-    children: [
-      {
-        key: "1-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "2 days",
-        type: "timeline",
-      },
-      {
-        key: "1-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "1-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 minutes",
-        type: "timeline",
-      },
-      {
-        key: "1-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-  {
-    key: "2",
-    label: "Proposals",
-    timestamp: "5 days",
-    children: [
-      {
-        key: "2-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "1 day",
-        type: "timeline",
-      },
-      {
-        key: "2-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "2-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 weeks",
-        type: "timeline",
-      },
-      {
-        key: "2-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-  {
-    key: "3",
-    label: "Management",
-    timestamp: "3 Months",
-    children: [
-      {
-        key: "3-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "1 day",
-        type: "timeline",
-      },
-      {
-        key: "3-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "3-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 weeks",
-        type: "timeline",
-      },
-      {
-        key: "3-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-  {
-    key: "4",
-    label: "Budgeting",
-    timestamp: "3 Seconds",
-    children: [
-      {
-        key: "4-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "1 day",
-        type: "timeline",
-      },
-      {
-        key: "4-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "4-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 weeks",
-        type: "timeline",
-      },
-      {
-        key: "4-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-  {
-    key: "5",
-    label: "Communications",
-    timestamp: "3 Weeks",
-    children: [
-      {
-        key: "5-1",
-        label: "Public Relations",
-        data: "Ship Folder",
-        timestamp: "1 day",
-        type: "timeline",
-      },
-      {
-        key: "5-2",
-        label: "Community Development",
-        data: "Ship Folder",
-        timestamp: "5 days",
-        type: "timeline",
-      },
-      {
-        key: "5-3",
-        label: "Secretariat",
-        data: "Ship Folder",
-        timestamp: "2 weeks",
-        type: "timeline",
-      },
-      {
-        key: "5-4",
-        label: "Management",
-        data: "Ship Folder",
-        timestamp: "1 month",
-        type: "timeline",
-      },
-    ],
-  },
-]);
+// const nodes = ref([
+//   {
+//     key: "0",
+//     label: "Cybersecurity",
+//     timestamp: "3 days",
+//     children: [
+//       {
+//         key: "0-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "1 day",
+//         type: "timeline",
+//       },
+//       {
+//         key: "0-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "0-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 weeks",
+//         type: "timeline",
+//       },
+//       {
+//         key: "0-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+//   {
+//     key: "1",
+//     label: "Business Administration",
+//     timestamp: "2 days",
+//     children: [
+//       {
+//         key: "1-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "2 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "1-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "1-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 minutes",
+//         type: "timeline",
+//       },
+//       {
+//         key: "1-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+//   {
+//     key: "2",
+//     label: "Proposals",
+//     timestamp: "5 days",
+//     children: [
+//       {
+//         key: "2-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "1 day",
+//         type: "timeline",
+//       },
+//       {
+//         key: "2-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "2-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 weeks",
+//         type: "timeline",
+//       },
+//       {
+//         key: "2-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+//   {
+//     key: "3",
+//     label: "Management",
+//     timestamp: "3 Months",
+//     children: [
+//       {
+//         key: "3-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "1 day",
+//         type: "timeline",
+//       },
+//       {
+//         key: "3-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "3-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 weeks",
+//         type: "timeline",
+//       },
+//       {
+//         key: "3-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+//   {
+//     key: "4",
+//     label: "Budgeting",
+//     timestamp: "3 Seconds",
+//     children: [
+//       {
+//         key: "4-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "1 day",
+//         type: "timeline",
+//       },
+//       {
+//         key: "4-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "4-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 weeks",
+//         type: "timeline",
+//       },
+//       {
+//         key: "4-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+//   {
+//     key: "5",
+//     label: "Communications",
+//     timestamp: "3 Weeks",
+//     children: [
+//       {
+//         key: "5-1",
+//         label: "Public Relations",
+//         data: "Ship Folder",
+//         timestamp: "1 day",
+//         type: "timeline",
+//       },
+//       {
+//         key: "5-2",
+//         label: "Community Development",
+//         data: "Ship Folder",
+//         timestamp: "5 days",
+//         type: "timeline",
+//       },
+//       {
+//         key: "5-3",
+//         label: "Secretariat",
+//         data: "Ship Folder",
+//         timestamp: "2 weeks",
+//         type: "timeline",
+//       },
+//       {
+//         key: "5-4",
+//         label: "Management",
+//         data: "Ship Folder",
+//         timestamp: "1 month",
+//         type: "timeline",
+//       },
+//     ],
+//   },
+// ]);
 const menu = ref();
 const menuItems = ref([
   {label: 'Add Division', icon: 'pi pi-plus', command: ()=>{
@@ -479,20 +483,28 @@ const menuItems = ref([
     //window.location.href = '/admin/get-divisions?id='+singleDepartment.value.id
     window.open('/admin/get-divisions?id='+singleDepartment.value.id, "_blank");
   }},
+  {
+    label: 'Add File Type',
+    icon: 'pi pi-file',
+    command: ()=>{
+      addFileType.value = true;
+    }
+  },
   // { label: "Document types", icon: 'pi pi-eye', command: ()=>{
   //   documentTypes.value = true;
   // }},
   { label: "Edit", icon: "pi pi-pencil", command: ()=>{
-    editDepartment.value = true;
-  } },
-  // { 
+      editDepartment.value = true;
+    }
+  },
+  // {
   //   label: "Duplicate", icon: "pi pi-clone",
   //   command: ()=>{
   //     let data = {id: singleDepartment.value.id}
   //     router.post('/admin/duplicate-department',data);
   //   }
   //  },
-  { 
+  {
     label: "Delete", icon: "pi pi-trash",
     command: ()=>{
       let data = {id: singleDepartment.value.id}
@@ -515,45 +527,45 @@ const SelectedMetadataOptions = (val) => {
 
 const expandedRows = ref([]);
 
-const onRowExpand = (event) => { };
-const onRowCollapse = (event) => { };
+// const onRowExpand = (event) => { };
+// const onRowCollapse = (event) => { };
 
 const formatCurrency = (value) => {
   return value;
 };
-const getSeverity = (product) => {
-  switch (product.inventoryStatus) {
-    case "INSTOCK":
-      return "success";
+// const getSeverity = (product) => {
+//   switch (product.inventoryStatus) {
+//     case "INSTOCK":
+//       return "success";
 
-    case "LOWSTOCK":
-      return "warning";
+//     case "LOWSTOCK":
+//       return "warning";
 
-    case "OUTOFSTOCK":
-      return "danger";
+//     case "OUTOFSTOCK":
+//       return "danger";
 
-    default:
-      return null;
-  }
-};
-const getOrderSeverity = (order) => {
-  switch (order.status) {
-    case "DELIVERED":
-      return "success";
+//     default:
+//       return null;
+//   }
+// };
+// const getOrderSeverity = (order) => {
+//   switch (order.status) {
+//     case "DELIVERED":
+//       return "success";
 
-    case "CANCELLED":
-      return "danger";
+//     case "CANCELLED":
+//       return "danger";
 
-    case "PENDING":
-      return "warning";
+//     case "PENDING":
+//       return "warning";
 
-    case "RETURNED":
-      return "info";
+//     case "RETURNED":
+//       return "info";
 
-    default:
-      return null;
-  }
-};
+//     default:
+//       return null;
+//   }
+// };
 
 const addDocTypes = (val) =>{
   addDocType.value = true
@@ -569,7 +581,7 @@ const addDocTypes = (val) =>{
 //     let svg2 = `<svg width="4" height="12" viewBox="0 0 8 4" fill="none" xmlns="http://www.w3.org/2000/svg">
 //                                                 <path d="M6.79995 0.599976L3.99995 3.39998L1.19995 0.599976" stroke="#101828" stroke-width="0.933333" stroke-linecap="round" stroke-linejoin="round"/>
 //                                             </svg>`
-   
+
 //     if(element.classList.contains('hidden')){
 //         element.classList.remove('hidden')
 //         btn.innerHTML = svg2
@@ -577,7 +589,7 @@ const addDocTypes = (val) =>{
 //         element.classList.add('hidden')
 //         btn.innerHTML = svg1
 //     }
-    
+
 // }
 
 // watch the selectedmetadata and configure the metadata for the doctype
@@ -597,6 +609,16 @@ watch(selectedMetadata, (val) => {
         singleDocType.value = doctype
       }
     })
+  }
+})
+
+watch(singleDepartment, ()=>{
+  if(singleDepartment.value.file_type && singleDepartment.value.file_type.length > 0){
+    let arr= []
+    for(let filetype of singleDepartment.value.file_type){
+      arr.push(filetype.id);
+    }
+    selectedFileType.value = arr
   }
 })
 </script>

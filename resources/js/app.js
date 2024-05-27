@@ -1,3 +1,4 @@
+ 
  import Layout from "./Shared/Layout.vue"
  import Layout2 from "./Shared/Layout2.vue"
  import Layout3 from "./Shared/Layout3.vue"
@@ -11,15 +12,17 @@ import ToastService from 'primevue/toastservice';
 import "primeicons/primeicons.css";
 import "./assets/Fonts/Satoshi_Complete/Fonts/WEB/css/satoshi.css"
 import { registerGlobalComponents } from "./reusables/primeVue";
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
+//import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/vue3'
 
+
+
  createInertiaApp({
-//   resolve: name => {
-//     const pages = import.meta.glob('./Pages/**/*.vue', { eager: true })
-//     return pages[`./Pages/${name}.vue`]
-//   },
+  //   resolve: name => {
+  //     const pages = import.meta.glob('./Pages/**/*.vue', { eager: true })
+  //     return pages[`./Pages/${name}.vue`]
+  //   },
     progress: {
     // The delay after which the progress bar will appear, in milliseconds...
     delay: 250,
@@ -33,25 +36,28 @@ import { router } from '@inertiajs/vue3'
     // Whether the NProgress spinner will be shown...
     showSpinner: false,
     },
-    resolve: (name) => {
-        const page = resolvePageComponent(
-        `./Pages/${name}.vue`,
-        import.meta.glob("./Pages/**/*.vue")
-        );
-        page.then((module) => {
-          if(window.location.pathname.startsWith('/register')){
-            module.default.layout = module.default.layout || Layout2;
-          }else if(window.location.pathname.startsWith('/dashboard')){
-            module.default.layout = module.default.layout || Layout3;
-          }else if(window.location.pathname.startsWith('/admin')){
-             module.default.layout = module.default.layout || Layout;
-          }else if(window.location.pathname.startsWith('/password')){
-            module.default.layout = module.default.layout || Layout4;
-          }
-         
-        });
-        return page;
+    // resolve: (name) => {
+    //     const page = resolvePageComponent(
+    //     `./Pages/${name}.vue`,
+    //     import.meta.glob("./Pages/**/*.vue")
+    //     );
+   
+    resolve: name =>{
+      const page = require(`./Pages/${name}.vue`).default;
+      if(window.location.pathname.startsWith('/register')){
+       page.layout = page.layout || Layout2;
+      }else if(window.location.pathname.startsWith('/dashboard')){
+        page.layout = page.layout || Layout3;
+      }else if(window.location.pathname.startsWith('/admin')){
+         page.layout =page.layout || Layout;
+      }else if(window.location.pathname.startsWith('/password')){
+        page.layout = page.layout || Layout4;
+      }
+
+      return page
     },
+    
+
   setup({ el, App, props, plugin }) {
    const app = createApp({ render: () => h(App, props) }) 
         registerGlobalComponents(app)

@@ -11,13 +11,13 @@
     </div>
     <Divider class="-mt-1" />
 
-    <div v-for="(item, index) in data" :key="index" class="mb-5">
+    <div v-for="(item, index) in department" :key="index" class="mb-5">
       <div class="flex items-start justify-between pl-7 pr-14">
         <div class="w-[25%]">
           <h1 class="text-xl font-semibold text-[#475467]">
             {{ item.title }}
           </h1>
-          <p class="text-[#667085] mt-2">{{ item.description }}</p>
+          <p class="text-[#667085] mt-2">You have been assigned to these department for archiving of documents.</p>
         </div>
         <div class="w-4/6">
           <table class="w-full text-left">
@@ -35,23 +35,23 @@
               <tr class="border">
                 <td class="p-3 pl-5">
                   <Checkbox v-model="checked" :binary="true" class="mr-1" />
-                  {{ userDepartment.title }} Department
+                  {{ item.title }} Department
                 </td>
-                <td>{{ item.Doc_number }}</td>
-                <td>{{ formatDate(userDepartment.updated_at) }}</td>
+                <td>{{ item.archive_count }} Documents</td>
+                <td>{{ formatDate(item.updated_at) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
       <Divider />
-      <div v-for="(division, index) in item.division" :key="index" class="mb-5">
+      <div v-for="(division, index) in props.division" :key="index" class="mb-5">
         <div class="flex items-start justify-between pl-7 pr-14">
           <div class="w-[25%]">
             <h1 class="text-xl font-semibold text-[#475467]">
               {{ division.title }}
             </h1>
-            <p class="text-[#667085] mt-2">{{ division.description }}</p>
+            <p class="text-[#667085] mt-2">You have been assigned to these divisions for archiving of documents.</p>
           </div>
           <div class="w-4/6">
             <table class="w-full text-left">
@@ -69,10 +69,10 @@
                 <tr class="border">
                   <td class="p-3 pl-5">
                     <Checkbox v-model="checked" :binary="true" class="mr-1" />
-                    {{ userDepartment.division[0].title }} Division
+                    {{ division?.title }} Division
                   </td>
-                  <td>{{ division.Doc_number }}</td>
-                  <td>{{ formatDate(userDepartment.division[0].updated_at) }}</td>
+                  <td>{{ division.archive_count }} Documents</td>
+                  <td>{{ formatDate(division.updated_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -103,10 +103,10 @@
                 <tr class="border">
                   <td class="p-3 pl-5">
                     <Checkbox v-model="checked" :binary="true" class="mr-1" />
-                    {{ userDepartment.division[0].unit[0].title }}
+                    {{ props.unit?.title }}
                   </td>
-                  <td>56 Documents</td>
-                  <td>{{ formatDate(userDepartment.division[0].unit[0].updated_at) }}</td>
+                  <td>{{ props.unit?.archive_count }} Documents</td>
+                  <td>{{ formatDate(props.unit?.updated_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -119,7 +119,7 @@
 </template>
  
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, defineProps } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 const checked = ref(false);
@@ -127,112 +127,8 @@ const selectedProduct = ref();
 const page = usePage()
 const department = computed(() => page.props.department)
 const userDepartment = computed(() => page.props.department_div_unit)
+const props = defineProps(['department', 'division', 'unit']);
 
-const yemi = [
-  {
-    name: "Department",
-    description:
-      "You have been assigned to these department for archiving of documents.",
-    table: [
-      {
-        id: "1001",
-        name: "Auditing Department",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-      },
-    ],
-  },
-  {
-    name: "Divisions",
-    description:
-      "You have been assigned to these divisions for archiving of documents.",
-    table: [
-      {
-        id: "1001",
-        name: "Accounting Division",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-      },
-      {
-        id: "1002",
-        name: "Accounting Division",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-      },
-    ],
-  },
-
-  {
-    name: "Units",
-    description:
-      "You have been assigned to these units for archiving of documents.",
-    table: [
-      {
-        id: "1001",
-        name: "Auditing Unit",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-      },
-      {
-        id: "1002",
-        name: "Auditing Unit",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-      },
-    ],
-  },
-];
-
-const data = [
-  {
-    id: 1,
-    title: "Department",
-    description: "You have been assigned to these department for archiving of documents.",
-    name: "Auditing Department",
-    Doc_number: "56 Documents",
-    LastModified: "Mar 2023",
-    division: [
-      {
-        id: 20,
-        title: "Divisions",
-        description: "You have been assigned to these divisions for archiving of documents.",
-        head: 0,
-        name: "Auditing Division",
-        Doc_number: "56 Documents",
-        LastModified: "Mar 2023",
-        department_id: 1,
-        created_at: "2024-02-21T13:24:36.000000Z",
-        updated_at: "2024-02-21T13:24:36.000000Z",
-        unit: [
-          {
-            id: 13,
-            title: "Units",
-            description: "",
-            head: 0,
-            name: "Auditing Unit",
-            Doc_number: "56 Documents",
-            LastModified: "Mar 2023",
-            division_id: 20,
-            created_at: "2024-02-21T13:24:51.000000Z",
-            updated_at: "2024-02-21T13:24:51.000000Z",
-          },
-          {
-            id: 13,
-            title: "Units",
-            description: "",
-            head: 0,
-            name: "Auditing Unit",
-            Doc_number: "56 Documents",
-            LastModified: "Mar 2023",
-            division_id: 20,
-            created_at: "2024-02-21T13:24:51.000000Z",
-            updated_at: "2024-02-21T13:24:51.000000Z",
-          }
-        ],
-      },
-    ],
-  },
-];
 
 const formatDate =(inputDate)=> {
     var date = new Date(inputDate);

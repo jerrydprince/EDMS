@@ -281,13 +281,18 @@ const items = ref([
   {
     label: "Metadata",
     icon: "",
-    link: "/admin/meta-data-setup",
+    link: "/admin/metadata-setup",
   },
   {
     label: "Document Type",
     icon: "material-symbols-light:info-outline",
     link: "/admin/setup-document-type",
   },
+  {
+    label: "File Type",
+    icon: "",
+    link: "/admin/file-type",
+  }
 ]);
 
 //table actions

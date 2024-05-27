@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('folder', function (Blueprint $table) {
-            $table->bigInteger('folder_size')->nullable();
+            $table->string('folder_size')->nullable();
         });
     }
 

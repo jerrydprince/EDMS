@@ -6,8 +6,8 @@
 			<div class="flex items-center gap-3 -mb-6">
 				<Icon icon="solar:folder-bold" width="45" />
 				<div>
-					<p class="mb-1 font-medium text-lg">Create Folder</p>
-					<p class="text-gray-500 text-xs">Folders keep your documents organized</p>
+					<p class="mb-1 font-medium text-lg">Create File</p>
+					<p class="text-gray-500 text-xs">Files keep your documents organized</p>
 				</div>
 			</div>
 		</template>
@@ -16,39 +16,44 @@
 			<div class="px-6 w-full overflow-y-auto max-h-[60vh]">
 				<div class="mb-5 mt-4">
 					<p class="text-sm lg:text-base">
-						Folder Name <span class="text-red-600">*</span>
+						File Name <span class="text-red-600">*</span>
 					</p>
 					<InputText id="folder_name" class="mt-1 w-full" v-model="form.name" aria-describedby="username-help"
 						placeholder="Enter folder name" />
 				</div>
 				<div class="mb-5 mt-4">
-					<p class="text-sm lg:text-base">Folder Number</p>
+					<p class="text-sm lg:text-base">File Number</p>
 					<InputText id="folder_number" class="mt-1 w-full" v-model="form.number" aria-describedby="username-help"
 						placeholder="Enter folder number" />
 				</div>
 				<div class="mb-5 mt-4">
-					<p class="text-sm lg:text-base">Folder Type</p>
-					<InputText id="folderType" class="mt-1 w-full" v-model="form.type" aria-describedby="username-help"
-						placeholder="Enter folder type" />
+					<p class="text-sm lg:text-base">File Type</p>
+					<!-- <InputText id="folderType" class="mt-1 w-full" v-model="form.type" aria-describedby="username-help"
+						placeholder="Enter folder type" /> -->
+					<select name="filetype" v-model="form.type" class="w-full rounded-lg border border-gray-300 px-3 py-3">
+						<option value="">Select File type</option>
+						<option v-for="filetype in fileType" :value="filetype.id">{{ filetype.name }}</option>
+					</select>
 				</div>
 
 				<div class="mb-5 mt-4">
-					<p class="text-sm lg:text-base">Folder Year</p>
+					<p class="text-sm lg:text-base">File Year</p>
 					<input id="folderYear" type="date"
 						class="mt-1 border border-gray-300 outline-none p-3 rounded-md w-full" v-model="form.year" />
+					
 				</div>
 
 				<div v-if="page.props.roles != 'data entry' && props?.department">
 					<div class="mb-5 mt-4">
 						<p class="text-sm lg:text-base">Department</p>
-						<select name="" id="department" disabled class="w-full rounded-lg" v-model="form.department">
+						<select name="" id="department" disabled class="w-full rounded-lg border border-gray-300 px-3 py-3" v-model="form.department">
 							<option :value="props.department.id" class=" text-gray-400">{{ department_title}}</option>
 						</select>
 					</div>
 
 					<div class="mb-5 mt-4">
 						<p class="text-sm lg:text-base">Division</p>
-						<select name="" id="division" class="w-full rounded-lg" v-model="form.division">
+						<select name="" id="division" class="w-full rounded-lg border border-gray-300 px-3 py-3" v-model="form.division">
 							<option value="">Select Division</option>
 							<option v-for="div in division" :value="div.id">{{ div.title }}</option>
 						</select>
@@ -56,13 +61,17 @@
 
 					<div class="mb-5 mt-4">
 						<p class="text-sm lg:text-base">Unit</p>
-						<select name="" id="unit" class="w-full rounded-lg" v-model="form.unit">
+						<select name="" id="unit" class="w-full rounded-lg border border-gray-300 px-3 py-3" v-model="form.unit">
 							<option value="">Select Unit</option>
 							<option v-for="unit in units" :value="unit.id">{{ unit.title }}</option>
 						</select>
 					</div>
 				</div>
 
+				<div class="mb-5 mt-4">
+					<p class="text-sm lg:text-base">File Description</p>
+					<textarea name="" id="" class=" w-full border border-gray-300 rounded-md px-4 py-2" v-model="form.description" rows="3"></textarea>
+				</div>
 				
 			</div>
 			<Divider class="" />
@@ -84,18 +93,19 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps, computed, onMounted, ref, watch } from "vue";
+import { defineEmits, defineProps, computed, onMounted, ref, watch, onBeforeMount } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from '@inertiajs/vue3'
 import axios from "axios";
 
 const toast = useToast();
-const props = defineProps(["modelValue", "url", "department"]);
+const props = defineProps(["modelValue", "url", "department", 'fileType', 'folderId']);
 const emit = defineEmits(["update:modelValue"]);
 const page = usePage();
 const division = ref([])
 const department_title = ref()
 const units = ref([])
+const fileType = ref([]);
 
 const form = useForm({
 	name: "",
@@ -104,7 +114,9 @@ const form = useForm({
 	year: '',
 	department:'',
 	division:'',
-	unit:''
+	description:'',
+	unit:'',
+	id: ''
 })
 
 const visible = computed({
@@ -165,12 +177,14 @@ const submitForm = () => {
 			return false;
 		}
 	}
+	form.id = props.folderId
+	
 	form.get(props.url, {
 		onSuccess: page => {
 			toast.add({
 				severity: "success",
-				summary: "Document Created",
-				detail: "You've successfully created a new document.",
+				summary: "Folder Created",
+				detail: "You've successfully created a new Folder.",
 				life: 3000,
 			});
 			//	emit("update:modelValue", false);
@@ -178,6 +192,12 @@ const submitForm = () => {
 		onError: errors => {
 			emit("update:modelValue", true);
 		},
+	})
+}
+
+const getFileType = ()=>{
+	axios.get('/dashboard/get-branch-file-type').then((response)=>{
+		fileType.value = response.data
 	})
 }
 
@@ -203,5 +223,8 @@ onMounted(()=>{
 	department_title.value = props.department.title
 	}
 
+	getFileType()
 })
+
+
 </script>

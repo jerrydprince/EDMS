@@ -174,9 +174,9 @@
 
 <script setup>
   import {ref} from 'vue'
-  import TwoFactorsModal from '@/components/Modals/TwoFactorsModal.vue'
-  import PasswordModal from '@/components/Modals/PasswordModal.vue'
-  import DeleteSessionModal from '@/components/Modals/DeleteSession.vue'
+  import TwoFactorsModal from '../../../components/Modals/TwoFactorsModal.vue'
+  import PasswordModal from '../../../components/Modals/PasswordModal.vue'
+  import DeleteSessionModal from '../../../components/Modals/DeleteSession.vue'
   const password = ref(false)
   const twofactors = ref(false)
   const deleteSession = ref(false)

@@ -9,6 +9,8 @@ class ArchiveDocs extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['archive_keys', 'archive_values'];
+
     /**
      * Get the archive that owns the ArchiveDocs
      *

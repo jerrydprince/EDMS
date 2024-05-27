@@ -11,6 +11,9 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\MailController;
+use App\Http\Controllers\WorkFlowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +41,7 @@ Route::middleware('guest')->group(function(){
     Route::get('/email-exist', [RegistrationController::class, 'checkMailExit']);
     Route::get('/phone-exist', [RegistrationController::class, 'checkPhoneExist']);
     Route::get('/password/reset/{email}', [PasswordController::class, 'passwordReset'])->name('password.reset');
+    Route::post('/password/reset', [PasswordController::class, 'ResetUserPassword']);
 
 });
 
@@ -46,8 +50,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->middleware('role:super admin| role:admin')->group(function(){
         Route::get('/',[AdminController::class, 'index']);
         Route::get('/branch-setup',[AdminController::class, 'BranchSetup']);
-        Route::get('/meta-data-setup', [AdminController::class, 'MetaDataSetup']);
-        Route::get('/setup-document-type', [AdminController::class, 'SetupDocumentType']);
+        Route::get('/metadata-setup', [AdminController::class, 'MetaDataSetup']);
+       
         Route::post('/create-department-division-unit', [AdminController::class, 'CreateDepartmentDivisionUnit']);
         Route::post('/delete-department', [AdminController::class, 'deleteDepartment']);
         //Route::post('/duplicate-department', [AdminController::class, 'duplicateDepartment']);
@@ -73,15 +77,27 @@ Route::middleware('auth')->group(function () {
         Route::post('/create-metadata',[MetadataController::class, 'createMetaData']);
         Route::post('/delete-metadata', [MetadataController::class, 'deleteMetaData']);
         Route::get('/metadatas', [MetadataController::class, 'getMetadata']);
-        Route::get('/metadata-part', [MetadataController::class, 'getMetadataPart']);
+        Route::get('/metadata-part', [MetadataController::class, 'getMetadata']);
     
         // document type
         Route::post('/create-document-type', [DocumentTypeController::class, 'createDocumentType']);
+        Route::get('/setup-document-type', [DocumentTypeController::class, 'SetupDocumentType']);
         Route::post('/configure-meta-data', [DocumentTypeController::class, 'configureMetaData']);
+        Route::post('/duplicate-document-type', [DocumentTypeController::class, 'duplicateDocumentType']);
+        Route::get('/delete-document-type', [DocumentTypeController::class, 'deleteDocumentType']);
+
+        //file type
+        Route::get('/file-type', [AdminController::class, 'fileType']);
+        Route::post('/file-type', [AdminController::class, 'createFileType']);
+        Route::get('/get-file-type', [AdminController::class, 'getFileType']);
+        Route::get('/delete-file-type', [AdminController::class, 'deleteFileType']);
+        Route::post('/assign-file-type-to-department', [AdminController::class, 'assignFileTypesToBranch']);
 
         //manage users
         Route::get('/manage-users', [AdminController::class, 'manageUsers']);
         Route::get('/add-user', [AdminController::class, 'addUser']);
+        Route::get('/edit-user', [AdminController::class, 'editUser']);
+        Route::post('/edit-user', [AdminController::class, 'postEditUser']);
         Route::get('/role-users', [AdminController::class, 'RoleUsers']);
 
         //user registration
@@ -91,14 +107,21 @@ Route::middleware('auth')->group(function () {
          Route::get('/assign-role-to-super-admin', [AdminController::class, 'assignRoleToSuperAdmin']);
 
         //Branches
-        Route::get('/branches/{id}', [ArchiveController::class, 'Branches']);
+        Route::get('/branches', [ArchiveController::class, 'Branches']);
 
         //archiving
         Route::post('/upload-files', [ArchiveController::class, 'uploadFiles']);
         Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles']);
-        Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
+        Route::get('/archiving/{id}/{folder_id}', [ArchiveController::class, 'Archiving']);
         Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
+        Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder']);
         Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit']);
+
+        //Mails
+        Route::get('/mails', [MailController::class, 'mail']);
+
+        //workflow
+        Route::get('/workflow', [WorkFlowController::class, 'index']);
         
     });
 
@@ -110,30 +133,44 @@ Route::middleware('auth')->group(function () {
         Route::get('/download-file', [ArchiveController::class, 'downloadFile']);
         Route::post('/duplicate-file', [ArchiveController::class, 'DuplicateFile']);
         Route::post('/change-file-format', [ArchiveController::class, 'changeFileFormat']);
+        Route::post('/upload-new-document', [ArchiveController::class, 'uploadNewDocument']);
 
-    //dashboard
-    Route::prefix('dashboard')->middleware('role:data entry|super admin')->group(function(){
-        Route::get('/', [DashboardController::class, 'index']);
-        Route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
+        //dashboard
+        Route::prefix('dashboard')->middleware('role:data entry|super admin')->group(function(){
+            Route::get('/', [DashboardController::class, 'index']);
+            Route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
 
-        //archiving
-        Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
-        Route::get('/folder-view/{id}', [ArchiveController::class, 'folderView']);
-        Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
+            //archiving
+            Route::get('/archiving/{branch}/{folder_id}', [ArchiveController::class, 'Archiving']);
+            Route::get('/folder-view/{branch}/{id}', [ArchiveController::class, 'folderView'])->name('folder-view');
+            Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
+            Route::post('/close-folder/{id}', [ArchiveController::class, 'closeFolder']);
+            Route::post('/rename-file', [ArchiveController::class, 'renameFile']);
+            Route::post('/update-branch-metadata', [ArchiveController::class, 'updateBranchMetadatas']);
 
-        //branches
-        Route::get('/branches/{id}', [ArchiveController::class, 'userBranches']);
+            //branches
+            Route::get('/branches', [ArchiveController::class, 'userBranches']);
+            Route::get('/delete-folder/{id}', [ArchiveController::class, 'deleteFolder']);
 
-         //support
-         Route::get('/support', [DashboardController::class, 'support']);
+            //support
+            Route::get('/support', [DashboardController::class, 'support']);
 
-         //settings
-         Route::get('/settings', [DashboardController::class, 'settings']);
-         Route::get('/profile', [DashboardController::class, 'settings']);
-         Route::get('/preferences', [DashboardController::class, 'settings']);
-         Route::get('/security', [DashboardController::class, 'settings']);
-         Route::get('/localisation', [DashboardController::class, 'settings']);
-    });
+            //file type
+            Route::get('/get-branch-file-type', [ArchiveController::class, 'getBranchFileType']);
+
+            //settings
+            Route::get('/settings', [DashboardController::class, 'settings']);
+            Route::get('/profile', [DashboardController::class, 'settings']);
+            Route::get('/preferences', [DashboardController::class, 'settings']);
+            Route::get('/security', [DashboardController::class, 'settings']);
+            Route::get('/localisation', [DashboardController::class, 'settings']);
+
+            //metadata
+            Route::get('/metadatas', [MetadataController::class, 'getMetadata']);
+            Route::get('/branch-metdata', [MetadataController::class, 'getBranchMetadata']);
+
+           
+        });
 
    
 
@@ -153,4 +190,12 @@ Route::middleware('auth')->group(function () {
 
     //logout
     Route::get('/log-out', [LoginController::class, 'logout']);
+
+    //search
+    Route::get('/search', [SearchController::class, 'search']);
+    Route::get('/delete-from-recent-search', [SearchController::class, 'deleteFromRecentSearch']);
+
+    //Document type
+    Route::get('/get-document-type', [DocumentTypeController::class, 'getDocumentType']);
+    Route::get('/get-branch-document-type', [DocumentTypeController::class, 'getBranchDocumentType']);
 });

@@ -24,7 +24,7 @@
 			<Divider class="" />
 			<div class=" px-5">
 			<div class=" flex items-center gap-3 p-2 border-[1.5px] rounded-[50px] border-[#3B82F6] w-[70%]">
-			<img src="@/assets/images/word.png" alt="" class=" p-2 rounded-full bg-[#EBF9FF]">
+			<img src="/assets/images/word.png" alt="" class=" p-2 rounded-full bg-[#EBF9FF]">
 			<p>Auditing & Balancing sheet.docx</p>
 		</div>
 	</div>

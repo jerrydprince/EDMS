@@ -33,6 +33,7 @@
       <searchResult
         v-if="toggleSearch"
         :toggleSearchFunction="toggleSearchState"
+        @closeModal="closeModal"
       />
     </div>
   </template>
@@ -42,13 +43,17 @@
   import { ref } from "vue";
   import TopBar from "./DashboardTopBar.vue";
   import DashboardNavigation from "./DashboardNavigation.vue";
-  import searchResult from "@/components/Modals/SearchResult.vue";
+  import searchResult from "../components/Modals/SearchResult.vue";
 
   const toggleSearch = ref(false);
 
   const toggleSearchState = () => {
     toggleSearch.value = !toggleSearch.value;
   };
+
+  const closeModal = ()=> {
+    toggleSearch.value = false
+  }
   
   </script>
    

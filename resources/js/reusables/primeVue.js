@@ -25,6 +25,7 @@ import TabPanel from "primevue/tabpanel";
 import Checkbox from "primevue/checkbox";
 import Sidebar from "primevue/sidebar";
 import TieredMenu from "primevue/tieredmenu";
+import Editor from 'primevue/editor'
 
 
 export function registerGlobalComponents(app) {
@@ -51,5 +52,6 @@ export function registerGlobalComponents(app) {
   app.component("Checkbox", Checkbox);
   app.component("Sidebar", Sidebar);
   app.component('TieredMenu', TieredMenu);
+  app.component('Editor',Editor);
   app.component('Calendar', Calendar);
 }

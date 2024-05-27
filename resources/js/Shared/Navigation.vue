@@ -1,9 +1,10 @@
 <template>
   <!-- <section class="hidden lg:block w-1/5 border-r border-solid border-gray-200 sticky top-0  px-5 py-5"> -->
-    <section class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll">
+    <section class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"  :class="{ 'w-[7%]': shouldShow }">
     <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 ">
-      <logo />
-      <p>Ansel LTD</p>
+      <!-- <logo /> -->
+      <img src="../../../public/images/default-logo.png" alt="">
+      <!-- <p>IFEIS</p> -->
     </div>
     <div class="border-b border-dashed pb-4">
       <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
@@ -118,6 +119,11 @@ const main = ref([
     path: "/inbox",
     icon: "octicon:inbox-24",
   },
+  {
+    name: "Mails",
+    path: "/admin/mails",
+    icon: "ic:outline-mail"
+  },
 ]);
 
 const admin = ref([
@@ -138,7 +144,7 @@ const admin = ref([
   },
   {
     name: "Metadata Setup",
-    path: "/admin/meta-data-setup",
+    path: "/admin/metadata-setup",
     icon: "uiw:setting-o",
   },
   {

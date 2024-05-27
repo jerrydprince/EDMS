@@ -113,7 +113,7 @@
 
           <Link href="/branches-folder">
             <div class=" border rounded-md  p-2 bg-gray-100 cursor-pointer  ">
-              <img src="@/assets/images/folder.svg" alt="">
+              <img src="/assets/images/folder.svg" alt="">
             </div>
           </Link>
           <div>
@@ -171,7 +171,7 @@
             bodyCell: { class: 'text-gray-700' },
           }" headerStyle="color: #667085; font-weight: 500;">
             <template #body="{ data }">
-              <div class="flex items-center gap-4 border border-[red]">
+              <div class="flex items-center gap-4">
                 <!-- <div @click="toggle" aria-haspopup="true" aria-controls="overlay_menu" class="flex">
                   <div class="flex items-center font-normal h-full border border-gray-300 rounded-lg">
                     <div>

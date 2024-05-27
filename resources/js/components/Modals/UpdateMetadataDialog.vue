@@ -112,8 +112,35 @@
   const emit = defineEmits(["update:modelValue"]);
 
   const data = ref(props.data);
+
+  const metadata_strings = [
+    {
+        Description: `<div class="my-2 w-full">
+                <label for="description">Description</label>
+                <textarea name="description" v-model="description" :value="description" id="description" cols="30" rows="3" class="metadata-inputs border border-gray-200 rounded-lg block mt-2 w-full focus:border-blue-400 p-3"></textarea>
+            </div>`
+        },
+        {
+        Text: `<div class="my-2">
+                <label for="title">Text</label>
+                <input type="text" v-model="text" name="text" id="text" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+            </div>`
+        },
+        {
+        Date: `<div class="my-2">
+                <label for="date">Date</label>
+                <input type="date" v-model="date" name="date" id="date" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full">
+            </div>`
+        },
+        {
+        Number: `<div class="my-2">
+                <label for="text">Document Number</label>
+                <input type="number" v-model="number" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
+            </div>`
+        }
+]
   
-  const selectedCity = ref();
+
   const strings = ref([
   { label: "Description" },
   { label: "Text"},
@@ -140,7 +167,8 @@
     name: "",
     metadata_string: "",
     is_default:false,
-    id:null
+    id:null,
+    metadata_value: ''
   })
   
   //submit meta form
@@ -170,6 +198,21 @@
       
   };
 
+  const getmetadata = ()=>{
+  let data = metadata_strings.filter((field)=>{
+    return Object.values(field).some((value) => {
+        if(field[form.metadata_string]){
+          return field[form.metadata_string]
+        }
+    });
+  })
+
+  return data[0]
+}
+
+watch(()=>form.metadata_string, ()=>{
+  form.metadata_value = getmetadata()
+})
  
 
   onUpdated(()=>{

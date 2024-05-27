@@ -13,7 +13,7 @@
     <template #header>
 
         <div class=" flex flex-col items-center justify-center relative w-full">
-        <img src="@/assets/images/grid.svg" alt="" />
+        <img src="/assets/images/grid.svg" alt="" />
         <div class=" p-2 rounded border border-solid bg-white absolute" v-if="activePage===1">
             <Icon icon="mdi:email-outline" width="40" />
         </div>
