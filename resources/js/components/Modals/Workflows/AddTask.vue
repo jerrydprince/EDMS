@@ -55,13 +55,49 @@
    
     <div class=" mt-3">
         <h1 class="  font-semibold text-[#1D2939] mb-1">Assigned to</h1>
-    <div  class=" flex flex-wrap items-center gap-4 p-5 border border-gray-300 rounded-md">
-     <div class=" flex items-center gap-2 bg-[#f0f1f4] p-2 rounded-3xl border border-solid  border-gray-400" v-for="(item,index) in assignment" :key="index">
-       <img src="../../../assets/images/members/1.svg" alt="" class=" w-5">
-        <p class=" text-xs w-fit">{{ item.name }}</p>
-        <Icon icon="clarity:times-line"  class=" cursor-pointer"/>
-     </div>
-    </div>
+        <div class="border border-gray-300 rounded-md p-2">
+            <div class="flex gap-3 flex-wrap items-center">
+              <div v-if="Tags.length > 0" class="flex gap-2">
+                <div
+                  class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
+                  v-for="(tag, index) in Tags"
+                  :key="index"
+                >
+                  <img :src="tag.img" alt="" class="w-5" />
+                  <p class="text-xs w-fit">{{ tag.name }}</p>
+                  <div class=" bg-white border rounded-full p-0.5 text-sm">
+                  <Icon
+                    icon="clarity:times-line"
+                    class="cursor-pointer"
+                    @click="removeTag(tag)"
+                  />
+                </div>
+                </div>
+              </div>
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="searchInput"
+                  @input="filterRecipients"
+                  class="outline-none"
+                />
+                <div
+                  class="border border-solid py-3 bg-white rounded-md absolute z-50"
+                  v-if="searchInput && Suggestions.length > 0"
+                >
+                  <div
+                    class="flex items-center p-2 px-3 gap-2 hover:bg-primary/10"
+                    v-for="(suggestion, index) in Suggestions"
+                    :key="index"
+                    @click="updateTags(suggestion)"
+                  >
+                    <img :src="suggestion.img" alt="" class="w-8" />
+                    <p class="text-sm w-fit">{{ suggestion.name }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 </div>
 <div class="mt-3">
     <label for=""  class="  font-semibold text-[#1D2939] mb-1">Document Type</label>
@@ -118,21 +154,55 @@
 <script setup>
 import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
+import image from "../../../assets/images/members/1.svg";
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue"]);
 const selectedIndex = ref(null)
 
-const assignment = ref([
-    {
-        name: "Jenny Williams"
-    },
-    {
-        name: "Dave Miye"
-    },
-    {
-        name: "James Mitch"
-    }
-])
+const searchInput = ref("");
+const Tags = ref([]);
+const Suggestions = ref([]);
+const recipients = ref([
+  {
+    name: "Jenny Williams",
+    img: image,
+  },
+  {
+    name: "Dave Miye",
+    img: image,
+  },
+  {
+    name: "Obadimu charles",
+    img: image,
+  },
+  {
+    name: "Jefferson Chisom",
+    img: image
+  }
+]);
+const filterRecipients = () => {
+  const searchTerm = searchInput.value.toLowerCase();
+  Suggestions.value = recipients.value.filter((recipient) =>
+    recipient.name.toLowerCase().includes(searchTerm)
+  );
+};
+const updateTags = (suggestion) => {
+  searchInput.value = "";
+  Suggestions.value = [];
+
+  const tagExists = Tags.value.some((tag) => tag.name === suggestion.name);
+
+  if (!tagExists) {
+    Tags.value.push(suggestion);
+  }
+};
+
+const removeTag = (tagToRemove) => {
+  const index = Tags.value.findIndex((tag) => tag === tagToRemove);
+  if (index !== -1) {
+    Tags.value.splice(index, 1);
+  }
+};
 
 const visible = computed({
   get() {
@@ -146,11 +216,13 @@ const visible = computed({
 const closeModal = () => {
   emit("update:modelValue", false);
   selectedIndex.value = null
+  Tags.value = []
 };
 
 const submit = () => {
   emit("update:modelValue", false);
     selectedIndex.value = null
+    Tags.value = []
 //   toast.add({
 //     severity: "success",
 //     summary: '',

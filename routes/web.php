@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\WorkFlowController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,9 +120,27 @@ Route::middleware('auth')->group(function () {
 
         //Mails
         Route::get('/mails', [MailController::class, 'mail']);
+        Route::get('/mails/ReadMail/{emailId}', [MailController::class, 'readMail']);
+        Route::get('/mails/DraftMail/{emailId}', [MailController::class, 'draftMail']);
+        Route::post('/mails', [MailController::class, 'createMail']);
+        Route::get('/mails/archiveMails', [MailController::class, 'getArchiveMails']);
+        Route::get('/mails/SingleMail/{emailId}', [MailController::class, 'getSingleMail']);
+        Route::get('/mails/SingleDraftMail/{emailId}', [MailController::class, 'getSingleDraftMail']);
+        Route::get('/mails/starredMails', [MailController::class, 'getStarredMails']);
+        Route::post('/mails/archive/{emailId}', [MailController::class, 'archiveMail']);
+        Route::post('/mails/star/{emailId}', [MailController::class, 'starMail']);
+        Route::post('/mails/drafts', [MailController::class, 'isDraft']);
+        Route::get('/mails/drafts', [MailController::class, 'getDrafts']);
 
         //workflow
         Route::get('/workflow', [WorkFlowController::class, 'index']);
+        Route::post('/workflow', [WorkFlowController::class, 'createWorkFlow']);
+
+        //task
+        Route::post('/create-task', [WorkFlowController::class, 'createTask']);
+
+        //users
+        Route::get('/search-users', [UserController::class, 'searchUsers']);
         
     });
 

@@ -120,6 +120,11 @@ const main = ref([
     icon: "octicon:inbox-24",
   },
   {
+    name: "Workflow",
+    path: "/admin/workflow",
+    icon: "lucide:workflow"
+  },
+  {
     name: "Mails",
     path: "/admin/mails",
     icon: "ic:outline-mail"

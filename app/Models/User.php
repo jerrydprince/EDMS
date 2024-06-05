@@ -84,4 +84,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Division::class);
     }
+
+    /**
+     * The task that belong to the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function task()
+    {
+        return $this->belongsToMany(Task::class, 'user_task');
+    }
 }
