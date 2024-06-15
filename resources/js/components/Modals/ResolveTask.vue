@@ -35,12 +35,12 @@
     <section class=" px-6">
        <div>
         <h1 class=" opacity-60 text-lg">Task Name</h1>
-        <p class=" font-medium">Documents awaiting archiving in the <span class=" text-primary underline">Finance Department. </span></p>
+        <p class=" font-medium">{{ props.task.title }} </p>
        </div>
 
        <div class=" mt-5">
         <h1  class=" opacity-60 text-lg">Description</h1>
-        <p class=" mt-2 text-base bg-gray-100 p-5 rounded-lg  border-dashed border-[#b3b3b34d] border-[2px]">Review and archive assigned documents promptly to ensure seamless workflow.</p>
+        <p class=" mt-2 text-base bg-gray-100 p-5 rounded-lg  border-dashed border-[#b3b3b34d] border-[2px]">{{props.task.description}}</p>
        </div>
 
 
@@ -53,7 +53,9 @@
         </div>
         </button>
 
-        <p class=" font-semibold">2023-05-15</p>
+        <p class=" font-semibold">{{props.task.start}}</p> 
+        <span> - </span>
+        <p class=" font-semibold">{{props.task.end}}</p>
     </div>
        </div>
     </section>
@@ -62,8 +64,8 @@
         <div class=" flex flex-col w-full items-start">
         <h1 class=" opacity-70 text-lg">Document Types</h1>
         <div class=" flex gap-5 mt-3">
-        <button class=" font-semibold border-[2px] px-5 py-1.5  rounded-3xl">Invoice</button>
-        <button   class=" font-semibold border-[2px] px-5 py-1.5  rounded-3xl">Receipts</button>
+        <button class=" font-semibold border-[2px] px-5 py-1.5  rounded-3xl">{{props.task.document_type}}</button>
+        <!-- <button   class=" font-semibold border-[2px] px-5 py-1.5  rounded-3xl">Receipts</button> -->
     </div>
     </div>
     </template>
@@ -75,7 +77,7 @@ import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
 
 const toast = useToast();
-const props = defineProps(["modelValue"]);
+const props = defineProps(["modelValue", 'task']);
 const emit = defineEmits(["update:modelValue"]);
 
 const visible = computed({

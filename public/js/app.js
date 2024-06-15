@@ -19633,6 +19633,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Modals_Workflows_ArchiveDocument_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../components/Modals/Workflows/ArchiveDocument.vue */ "./resources/js/components/Modals/Workflows/ArchiveDocument.vue");
 /* harmony import */ var _components_Modals_Workflows_AddMember_vue__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../components/Modals/Workflows/AddMember.vue */ "./resources/js/components/Modals/Workflows/AddMember.vue");
 /* harmony import */ var _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @inertiajs/vue3 */ "./node_modules/@inertiajs/vue3/dist/index.esm.js");
+/* harmony import */ var _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_1.svg */ "./public/images/Emojis/Emoji_1.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_2.svg */ "./public/images/Emojis/Emoji_2.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_3.svg */ "./public/images/Emojis/Emoji_3.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_4.svg */ "./public/images/Emojis/Emoji_4.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_5.svg */ "./public/images/Emojis/Emoji_5.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_6.svg */ "./public/images/Emojis/Emoji_6.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_7.svg */ "./public/images/Emojis/Emoji_7.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_8.svg */ "./public/images/Emojis/Emoji_8.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_9.svg */ "./public/images/Emojis/Emoji_9.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_10.svg */ "./public/images/Emojis/Emoji_10.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_11.svg */ "./public/images/Emojis/Emoji_11.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_12.svg */ "./public/images/Emojis/Emoji_12.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_13.svg */ "./public/images/Emojis/Emoji_13.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../../../public/images/Emojis/Emoji_14.svg */ "./public/images/Emojis/Emoji_14.svg");
 
 
 
@@ -19646,9 +19660,23 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'Workflows',
-  props: ['userworkflows'],
+  props: ["userworkflows"],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose;
     __expose();
@@ -19660,10 +19688,22 @@ __webpack_require__.r(__webpack_exports__);
     var addTask = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var props = __props;
     var selectedWorkflow = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
+    var is_newworkflow = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+    var is_newTask = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+    var workflow_divs = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var reloadPage = function reloadPage() {
       _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_11__.router.reload({
         only: ['userworkflows']
       });
+      firstTask();
+      selectedIndex.value = 0;
+      is_newTask.value = false;
+
+      // const lastDiv = workflow_divs.value[0];
+      // if (lastDiv) {
+      //   lastDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // }
+      //selectedWorkflow.value = allWorkflows[0];
     };
     var members = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([{
       img: _assets_images_members_1_svg__WEBPACK_IMPORTED_MODULE_1__["default"]
@@ -19676,481 +19716,679 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       img: _assets_images_members_5_svg__WEBPACK_IMPORTED_MODULE_5__["default"]
     }]);
-    var workflows = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([{
-      flow_name: "Archiver Workflow",
-      icon: "mdi:folder",
-      Tasks: [{
-        status: "In Progress",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Under Review",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Completed",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Uncompleted",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }]
-    }, {
-      flow_name: "Bug Fixing",
-      icon: "mdi:folder",
-      Tasks: [{
-        status: "In Progress",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Under Review",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Completed",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Uncompleted",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }]
-    }, {
-      flow_name: "Doc. Review Overflow",
-      icon: "mdi:folder",
-      Tasks: [{
-        status: "In Progress",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Under Review",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Completed",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Uncompleted",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }]
-    }, {
-      flow_name: "Publications Workflow",
-      icon: "mdi:folder",
-      Tasks: [{
-        status: "In Progress",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Under Review",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Completed",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }, {
-        status: "Uncompleted",
-        todo: [{
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }, {
-          title: "Review and verify",
-          task: "Provide support and assistance to users regarding document archiving"
-        }]
-      }]
-    }]);
+    var setNewWorkflow = function setNewWorkflow() {
+      is_newworkflow.value = true;
+    };
+    var setNewTask = function setNewTask() {
+      is_newTask.value = true;
+    };
+
+    // const workflows = ref([
+    //   {
+    //     flow_name: "Archiver Workflow",
+    //     icon: "mdi:folder",
+    //     Tasks: [
+    //       {
+    //         status: "In Progress",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Under Review",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Completed",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Uncompleted",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     flow_name: "Bug Fixing",
+    //     icon: "mdi:folder",
+    //     Tasks: [
+    //       {
+    //         status: "In Progress",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Under Review",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Completed",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Uncompleted",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     flow_name: "Doc. Review Overflow",
+    //     icon: "mdi:folder",
+    //     Tasks: [
+    //       {
+    //         status: "In Progress",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Under Review",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Completed",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Uncompleted",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     flow_name: "Publications Workflow",
+    //     icon: "mdi:folder",
+    //     Tasks: [
+    //       {
+    //         status: "In Progress",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Under Review",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Completed",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         status: "Uncompleted",
+    //         todo: [
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //           {
+    //             title: "Review and verify",
+    //             task: "Provide support and assistance to users regarding document archiving",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    // ]);
+
     var SelectedFlow = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var menu = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
+    var getTaskReload = function getTaskReload() {
+      is_newworkflow.value = false;
+      _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_11__.router.reload({
+        only: ["userworkflows"]
+      });
+    };
     var handleTask = function handleTask(flow, index) {
-      console.log(flow);
       //SelectedFlow.value = flow;
       selectedIndex.value = index;
       selectedWorkflow.value = flow;
     };
     var emojis = [{
-      icon: "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"32\" height=\"32\" rx=\"16\" fill=\"#F9FAFB\"/>\n<path d=\"M24 17.2964C24 16.9907 22.7133 17.0742 22.6111 16.852C22.5089 16.6298 24.0369 14.8147 23.8147 14.4076C23.5924 14.0004 21.5542 14.9262 21.4258 14.7222C21.2978 14.5187 21.5556 13.1667 21.3333 13C21.1111 12.8333 19 15.1849 18.7036 14.9076C18.4076 14.6298 19.3889 10.2409 19.1862 10.1529C18.9836 10.0649 17.6667 10.7596 17.5004 10.7227C17.3342 10.6853 16.3031 8 16 8C15.6969 8 14.6658 10.6853 14.4996 10.7222C14.3333 10.7591 13.0164 10.0644 12.8138 10.1524C12.6111 10.2404 13.5924 14.6293 13.296 14.9071C13 15.1849 10.8889 12.8333 10.6667 13C10.4444 13.1667 10.7022 14.5187 10.5742 14.7222C10.4458 14.9258 8.40756 14 8.18533 14.4076C7.96311 14.8151 9.49156 16.6298 9.38889 16.852C9.28622 17.0742 8 16.9907 8 17.2964C8 17.6022 11.7502 19.6231 12 19.8613C12.2498 20.0991 10.7049 21.1067 10.9258 21.2964C11.1818 21.5169 12.632 20.9276 15.5556 20.8711V23.5556C15.5556 23.8013 15.7547 24 16 24C16.2458 24 16.4444 23.8013 16.4444 23.5556V20.8711C19.3676 20.9276 20.8182 21.5169 21.0742 21.2964C21.2947 21.1062 19.7502 20.0991 20 19.8613C20.2498 19.6231 24 17.6018 24 17.2964Z\" fill=\"#DD2E44\"/>\n</svg>\n"
+      image: _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_12__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_13__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_14__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_15__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_16__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_17__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_18__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_19__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_20__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_21__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_22__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_23__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_24__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_25__["default"]
     }];
     var sortTask = function sortTask() {
       var inp_progress = [];
       var under_review = [];
       var completed = [];
       var uncompleted = [];
-      if (selectedWorkflow.value.task && selectedWorkflow.value.task.length > 0) {
+      if (selectedWorkflow.value && selectedWorkflow.value.task && selectedWorkflow.value.task.length > 0) {
         selectedWorkflow.value.task.forEach(function (val) {
           if (val.progress == 0) {
             inp_progress.push({
               title: val.title,
-              task: val.description
+              task: val.description,
+              date: val.created_at,
+              id: val.id
             });
           }
           if (val.progress == 1) {
             under_review.push({
               title: val.title,
-              task: val.description
+              task: val.description,
+              date: val.created_at,
+              id: val.id
             });
           }
           if (val.progress == 2) {
             completed.push({
               title: val.title,
-              task: val.description
+              task: val.description,
+              date: val.created_at,
+              id: val.id
             });
           }
           if (val.progress == 3) {
             uncompleted.push({
               title: val.title,
-              task: val.description
+              task: val.description,
+              date: val.created_at,
+              id: val.id
             });
           }
         });
@@ -20179,7 +20417,7 @@ __webpack_require__.r(__webpack_exports__);
         var uncompleted = [];
         var workflow = props.userworkflows[0];
         var task = workflow.task;
-        console.log(task);
+        selectedWorkflow.value = workflow;
         task.forEach(function (tsk) {
           if (tsk.progress == 0) {
             inp_progress.push({
@@ -20223,12 +20461,28 @@ __webpack_require__.r(__webpack_exports__);
         };
       }
     };
+    var allWorkflows = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(function () {
+      return props.userworkflows;
+    });
     (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(selectedWorkflow, function () {
       sortTask();
     });
     (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
       firstTask();
-      console.log(SelectedFlow.value);
+    });
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(function () {
+      return props.userworkflows;
+    }, function () {
+      if (selectedWorkflow.value) {
+        if (is_newworkflow) {
+          selectedWorkflow.value = props.userworkflows[0];
+        } else {
+          var index = props.userworkflows.findIndex(function (val) {
+            return val.id == selectedWorkflow.value.id;
+          });
+          selectedWorkflow.value = props.userworkflows[index];
+        }
+      }
     });
     var __returned__ = {
       selectedIndex: selectedIndex,
@@ -20239,18 +20493,25 @@ __webpack_require__.r(__webpack_exports__);
       addTask: addTask,
       props: props,
       selectedWorkflow: selectedWorkflow,
+      is_newworkflow: is_newworkflow,
+      is_newTask: is_newTask,
+      workflow_divs: workflow_divs,
       reloadPage: reloadPage,
       members: members,
-      workflows: workflows,
+      setNewWorkflow: setNewWorkflow,
+      setNewTask: setNewTask,
       SelectedFlow: SelectedFlow,
       menu: menu,
+      getTaskReload: getTaskReload,
       handleTask: handleTask,
       emojis: emojis,
       sortTask: sortTask,
       firstTask: firstTask,
+      allWorkflows: allWorkflows,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       watch: vue__WEBPACK_IMPORTED_MODULE_0__.watch,
       onMounted: vue__WEBPACK_IMPORTED_MODULE_0__.onMounted,
+      computed: vue__WEBPACK_IMPORTED_MODULE_0__.computed,
       get image1() {
         return _assets_images_members_1_svg__WEBPACK_IMPORTED_MODULE_1__["default"];
       },
@@ -20273,6 +20534,48 @@ __webpack_require__.r(__webpack_exports__);
       AddMember: _components_Modals_Workflows_AddMember_vue__WEBPACK_IMPORTED_MODULE_10__["default"],
       get router() {
         return _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_11__.router;
+      },
+      get Emoji_1() {
+        return _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_12__["default"];
+      },
+      get Emoji_2() {
+        return _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_13__["default"];
+      },
+      get Emoji_3() {
+        return _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_14__["default"];
+      },
+      get Emoji_4() {
+        return _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_15__["default"];
+      },
+      get Emoji_5() {
+        return _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_16__["default"];
+      },
+      get Emoji_6() {
+        return _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_17__["default"];
+      },
+      get Emoji_7() {
+        return _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_18__["default"];
+      },
+      get Emoji_8() {
+        return _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_19__["default"];
+      },
+      get Emoji_9() {
+        return _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_20__["default"];
+      },
+      get Emoji_10() {
+        return _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_21__["default"];
+      },
+      get Emoji_11() {
+        return _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_22__["default"];
+      },
+      get Emoji_12() {
+        return _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_23__["default"];
+      },
+      get Emoji_13() {
+        return _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_24__["default"];
+      },
+      get Emoji_14() {
+        return _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_25__["default"];
       }
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
@@ -24251,7 +24554,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'index',
-  props: ['branch'],
+  props: ['branch', 'task'],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose;
     __expose();
@@ -24270,16 +24573,31 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var ChangeFormatModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var scrollContainer = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
     var horizontalPosition = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+    var selectedTask = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var FileRenameModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var selectedArchiveId = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var selectedArchive = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var props = __props;
     var page = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_8__.usePage)();
+    var sortOrder = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
+    var is_sorting = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     (0,_vueuse_core__WEBPACK_IMPORTED_MODULE_11__.onClickOutside)(modalRef, function (event) {
       menuVisible.value = false, submenu.value = false;
     });
     var close = function close() {
       menuVisible.value = false, submenu.value = false;
+    };
+    var sortDocuments = function sortDocuments() {
+      is_sorting.value = !is_sorting.value;
+      if (is_sorting.value) {
+        sortOrder.value = 'asc';
+      } else {
+        sortOrder.value = 'desc';
+      }
+    };
+    var setResolveModal = function setResolveModal(task) {
+      resolveModal.value = true;
+      selectedTask.value = task;
     };
     var SetselectedDocument = function SetselectedDocument(data) {
       selectedDocument.value = data.value;
@@ -24458,6 +24776,19 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       text: "Complete the process by confirming and uploading documents."
     }];
     var selectedDocument = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+
+    // const getArchiveDocsVale = (data, search)=>{
+
+    //    if(data){
+    //     for(let archive of data){
+    //         console.log(archive.archive_keys)
+    //         if(archive.archive_keys.toLowerCase() == search){
+    //             return archive.archive_values;
+    //         }
+    //     }
+    //    }
+    // }
+
     var getArchiveDocsVale = function getArchiveDocsVale(data, search) {
       if (data) {
         var _iterator = _createForOfIteratorHelper(data),
@@ -24465,9 +24796,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var archive = _step.value;
-            console.log(archive.archive_keys);
             if (archive.archive_keys.toLowerCase() == search) {
-              return archive.archive_values;
+              return [{
+                archive: archive.archive_values,
+                id: archive.id
+              }];
             }
           }
         } catch (err) {
@@ -24477,6 +24810,32 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       }
     };
+
+    // const files = computed(() => {
+    //   let newarr = [];
+
+    //   if (props.branch.data) {
+    //     for (let file of props.branch.data) {
+    //       let arr = {
+    //         name: file?.file_path[0]?.file_name,
+    //         size: file?.file_path[0]?.file_size,
+    //         date: formatDate(file.updated_at),
+    //         created: formatDate(file.created_at),
+    //         uploaded_by: file?.file_path[0]?.updated_by_name,
+    //         path: file?.file_path[0]?.thumbnails,
+    //         files: file?.file_path,
+    //         id: file.id,
+    //         location: page.props.branch.title + " Department",
+    //         amount: getArchiveDocsVale(file.archive_docs, 'amount'),
+    //         title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title'): file?.file_path[0]?.file_name,
+    //         description:getArchiveDocsVale(file.archive_docs, 'description')
+    //       }
+    //       newarr.push(arr);
+    //     }
+    //   }
+    //   return newarr;
+    // })
+
     var files = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(function () {
       var newarr = [];
       if (props.branch.data) {
@@ -24487,18 +24846,22 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             var _file$file_path$, _file$file_path$2, _file$file_path$3, _file$file_path$4, _file$file_path$5;
             var file = _step2.value;
             var arr = {
-              name: file === null || file === void 0 || (_file$file_path$ = file.file_path[0]) === null || _file$file_path$ === void 0 ? void 0 : _file$file_path$.file_name,
+              name: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0].archive : file === null || file === void 0 || (_file$file_path$ = file.file_path[0]) === null || _file$file_path$ === void 0 ? void 0 : _file$file_path$.file_name,
               size: file === null || file === void 0 || (_file$file_path$2 = file.file_path[0]) === null || _file$file_path$2 === void 0 ? void 0 : _file$file_path$2.file_size,
               date: formatDate(file.updated_at),
-              created: formatDate(file.created_at),
               uploaded_by: file === null || file === void 0 || (_file$file_path$3 = file.file_path[0]) === null || _file$file_path$3 === void 0 ? void 0 : _file$file_path$3.updated_by_name,
-              path: file === null || file === void 0 || (_file$file_path$4 = file.file_path[0]) === null || _file$file_path$4 === void 0 ? void 0 : _file$file_path$4.thumbnails,
+              //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
+              path: file.file_path && file.file_path.length > 0 ? file === null || file === void 0 || (_file$file_path$4 = file.file_path[0]) === null || _file$file_path$4 === void 0 ? void 0 : _file$file_path$4.path : '',
               files: file === null || file === void 0 ? void 0 : file.file_path,
               id: file.id,
-              location: page.props.branch.title + " Department",
-              amount: getArchiveDocsVale(file.archive_docs, 'amount'),
-              title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title') : file === null || file === void 0 || (_file$file_path$5 = file.file_path[0]) === null || _file$file_path$5 === void 0 ? void 0 : _file$file_path$5.file_name,
-              description: getArchiveDocsVale(file.archive_docs, 'description')
+              amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
+              title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file === null || file === void 0 || (_file$file_path$5 = file.file_path[0]) === null || _file$file_path$5 === void 0 ? void 0 : _file$file_path$5.file_name,
+              description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',
+              archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : '',
+              archive_docs: file.archive_docs,
+              department: file.department ? file.department : [],
+              division: file.division ? file.division : [],
+              unit: file.unit ? file.unit : []
             };
             newarr.push(arr);
           }
@@ -24520,6 +24883,26 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
       return formattedDate;
     };
+    var getFileExtension = function getFileExtension(file) {
+      var f_path = file.path ? file.path : file === null || file === void 0 ? void 0 : file.name;
+      console.log('this is the path ', file.path);
+      if (f_path) {
+        var parts = f_path.split('.');
+        var extension = parts.pop();
+        if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
+          return page.props.base + '/storage' + file.path;
+        }
+        if (extension == 'pdf') {
+          return page.props.base + '/images/pdf.svg';
+        }
+        if (extension == 'doc' || extension == 'doctx') {
+          return page.props.base + '/images/word.svg';
+        }
+        if (extension == 'xlx' || extension == 'xlsx') {
+          return page.props.base + '/images/excel.svg';
+        }
+      }
+    };
     var __returned__ = {
       documentsGridView: documentsGridView,
       selectedDocumentId: selectedDocumentId,
@@ -24536,12 +24919,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       ChangeFormatModal: ChangeFormatModal,
       scrollContainer: scrollContainer,
       horizontalPosition: horizontalPosition,
+      selectedTask: selectedTask,
       FileRenameModal: FileRenameModal,
       selectedArchiveId: selectedArchiveId,
       selectedArchive: selectedArchive,
       props: props,
       page: page,
+      sortOrder: sortOrder,
+      is_sorting: is_sorting,
       close: close,
+      sortDocuments: sortDocuments,
+      setResolveModal: setResolveModal,
       SetselectedDocument: SetselectedDocument,
       setSelectedArchive: setSelectedArchive,
       setFormatModal: setFormatModal,
@@ -24560,6 +24948,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       getArchiveDocsVale: getArchiveDocsVale,
       files: files,
       formatDate: formatDate,
+      getFileExtension: getFileExtension,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       computed: vue__WEBPACK_IMPORTED_MODULE_0__.computed,
       EmptyState: _components_EmptyState_vue__WEBPACK_IMPORTED_MODULE_1__["default"],
@@ -27317,10 +27706,15 @@ __webpack_require__.r(__webpack_exports__);
     var menuVisible = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var modalRef = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
     var submenu = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+    var selectedTask = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
     (0,_vueuse_core__WEBPACK_IMPORTED_MODULE_4__.onClickOutside)(modalRef, function (event) {
       menuVisible.value = false, submenu.value = false;
     });
     var props = __props;
+    var setSelectedTask = function setSelectedTask(task) {
+      selectedTask.value = task;
+      ArchiveDocumentModal.value = true;
+    };
     var menuItem = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([{
       icon: "icon-park-outline:add-one",
       label: "Add Task"
@@ -27358,19 +27752,49 @@ __webpack_require__.r(__webpack_exports__);
       var clientXPercentage = clientX / viewportWidth * 100;
       horizontalPosition.value = clientXPercentage >= 65;
     };
+    function parseLaravelDate(laravelDate) {
+      var currentDate = new Date();
+      var parsedDate = new Date(laravelDate);
+      var diff = currentDate.getTime() - parsedDate.getTime();
+      var seconds = Math.floor(diff / 1000);
+      var interval = Math.floor(seconds / 31536000);
+      if (interval >= 1) {
+        return interval + " y";
+      }
+      interval = Math.floor(seconds / 2592000);
+      if (interval >= 1) {
+        return interval + " m";
+      }
+      interval = Math.floor(seconds / 86400);
+      if (interval >= 1) {
+        return interval + " d";
+      }
+      interval = Math.floor(seconds / 3600);
+      if (interval >= 1) {
+        return interval + " hr";
+      }
+      interval = Math.floor(seconds / 60);
+      if (interval >= 1) {
+        return interval + " min";
+      }
+      return Math.floor(seconds) + " sec";
+    }
     var __returned__ = {
       addTask: addTask,
       ArchiveDocumentModal: ArchiveDocumentModal,
       menuVisible: menuVisible,
       modalRef: modalRef,
       submenu: submenu,
+      selectedTask: selectedTask,
       props: props,
+      setSelectedTask: setSelectedTask,
       menuItem: menuItem,
       submenuItem: submenuItem,
       handleMenuItem: handleMenuItem,
       horizontalPosition: horizontalPosition,
       selectedStatus: selectedStatus,
       toggleMenu: toggleMenu,
+      parseLaravelDate: parseLaravelDate,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       get onClickOutside() {
         return _vueuse_core__WEBPACK_IMPORTED_MODULE_4__.onClickOutside;
@@ -30295,7 +30719,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'ResolveTask',
-  props: ["modelValue"],
+  props: ["modelValue", 'task'],
   emits: ["update:modelValue"],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose,
@@ -31887,7 +32311,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'AssignTask',
   props: ["modelValue", "workflowId"],
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "reloadTask", "newTask"],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose,
       __emit = _ref.emit;
@@ -31902,6 +32326,7 @@ __webpack_require__.r(__webpack_exports__);
     var documentType = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
     var page = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_2__.usePage)();
     var file = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+    var toast = (0,primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.useToast)();
     var searchInput = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("");
     var Tags = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
     var Suggestions = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
@@ -31925,7 +32350,6 @@ __webpack_require__.r(__webpack_exports__);
     // ]);
 
     var handleFileUpload = function handleFileUpload(event) {
-      console.log(event.target.files[0]);
       file.value = event.target.files[0];
     };
     var filterRecipients = function filterRecipients() {
@@ -31973,7 +32397,6 @@ __webpack_require__.r(__webpack_exports__);
         }
       }).then(function (response) {
         Suggestions.value = response.data;
-        console.log(response.data);
       });
     };
     var submit = function submit() {
@@ -31990,7 +32413,6 @@ __webpack_require__.r(__webpack_exports__);
         return false;
       }
       if (Tags.value.length == 0) {
-        console.log(Tags);
         document.getElementById('search').focus();
         return false;
       }
@@ -31998,7 +32420,6 @@ __webpack_require__.r(__webpack_exports__);
       Tags.value.forEach(function (val) {
         userIds.push(val.id);
       });
-      console.log(userIds);
       var data = new FormData();
       data.append('title', title.value);
       data.append('start', startDate.value);
@@ -32015,18 +32436,19 @@ __webpack_require__.r(__webpack_exports__);
         description.value = '';
         file.value = null;
         documentType.value = '';
-        workflowId.value = '';
         userIds = [];
+        emit('reloadTask');
+        emit('newTask');
+        toast.add({
+          severity: "success",
+          summary: 'Task created successfully',
+          detail: "",
+          life: 3000
+        });
       });
       emit("update:modelValue", false);
       selectedIndex.value = null;
       Tags.value = [];
-      //   toast.add({
-      //     severity: "success",
-      //     summary: '',
-      //     detail: "",
-      //     life: 3000,
-      //   });
     };
     var __returned__ = {
       props: props,
@@ -32039,6 +32461,7 @@ __webpack_require__.r(__webpack_exports__);
       documentType: documentType,
       page: page,
       file: file,
+      toast: toast,
       searchInput: searchInput,
       Tags: Tags,
       Suggestions: Suggestions,
@@ -32085,12 +32508,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 /* harmony import */ var primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/usetoast */ "./node_modules/primevue/usetoast/usetoast.esm.js");
+/* harmony import */ var _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_1.svg */ "./public/images/Emojis/Emoji_1.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_2.svg */ "./public/images/Emojis/Emoji_2.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_3.svg */ "./public/images/Emojis/Emoji_3.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_4.svg */ "./public/images/Emojis/Emoji_4.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_5.svg */ "./public/images/Emojis/Emoji_5.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_6.svg */ "./public/images/Emojis/Emoji_6.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_7.svg */ "./public/images/Emojis/Emoji_7.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_8.svg */ "./public/images/Emojis/Emoji_8.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_9.svg */ "./public/images/Emojis/Emoji_9.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_10.svg */ "./public/images/Emojis/Emoji_10.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_11.svg */ "./public/images/Emojis/Emoji_11.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_12.svg */ "./public/images/Emojis/Emoji_12.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_13.svg */ "./public/images/Emojis/Emoji_13.svg");
+/* harmony import */ var _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../../../public/images/Emojis/Emoji_14.svg */ "./public/images/Emojis/Emoji_14.svg");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'NewWorkflow',
   props: ["modelValue"],
-  emits: ["update:modelValue", "reloadPage"],
+  emits: ["update:modelValue", "reloadPage", "newWorkflow"],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose,
       __emit = _ref.emit;
@@ -32102,17 +32553,33 @@ __webpack_require__.r(__webpack_exports__);
     var selectedEmoji = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
     var toast = (0,primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.useToast)();
     var emojis = [{
-      icon: "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"32\" height=\"32\" rx=\"16\" fill=\"#F9FAFB\"/>\n<path d=\"M24 17.2964C24 16.9907 22.7133 17.0742 22.6111 16.852C22.5089 16.6298 24.0369 14.8147 23.8147 14.4076C23.5924 14.0004 21.5542 14.9262 21.4258 14.7222C21.2978 14.5187 21.5556 13.1667 21.3333 13C21.1111 12.8333 19 15.1849 18.7036 14.9076C18.4076 14.6298 19.3889 10.2409 19.1862 10.1529C18.9836 10.0649 17.6667 10.7596 17.5004 10.7227C17.3342 10.6853 16.3031 8 16 8C15.6969 8 14.6658 10.6853 14.4996 10.7222C14.3333 10.7591 13.0164 10.0644 12.8138 10.1524C12.6111 10.2404 13.5924 14.6293 13.296 14.9071C13 15.1849 10.8889 12.8333 10.6667 13C10.4444 13.1667 10.7022 14.5187 10.5742 14.7222C10.4458 14.9258 8.40756 14 8.18533 14.4076C7.96311 14.8151 9.49156 16.6298 9.38889 16.852C9.28622 17.0742 8 16.9907 8 17.2964C8 17.6022 11.7502 19.6231 12 19.8613C12.2498 20.0991 10.7049 21.1067 10.9258 21.2964C11.1818 21.5169 12.632 20.9276 15.5556 20.8711V23.5556C15.5556 23.8013 15.7547 24 16 24C16.2458 24 16.4444 23.8013 16.4444 23.5556V20.8711C19.3676 20.9276 20.8182 21.5169 21.0742 21.2964C21.2947 21.1062 19.7502 20.0991 20 19.8613C20.2498 19.6231 24 17.6018 24 17.2964Z\" fill=\"#DD2E44\"/>\n</svg>\n"
+      image: _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_2__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_3__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_4__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_5__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_6__["default"]
     }, {
-      icon: "noto:eight-pointed-star"
+      image: _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_7__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_8__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_9__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_10__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_11__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_12__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_13__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_14__["default"]
+    }, {
+      image: _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_15__["default"]
     }];
     var handleSelectedEmoji = function handleSelectedEmoji(index, emoji) {
       selectedIndex.value = index;
@@ -32136,6 +32603,7 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
       emit('reloadPage');
+      emit('newWorkflow');
       title.value = '';
       closeModal();
     };
@@ -32178,6 +32646,48 @@ __webpack_require__.r(__webpack_exports__);
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       get useToast() {
         return primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.useToast;
+      },
+      get Emoji_1() {
+        return _public_images_Emojis_Emoji_1_svg__WEBPACK_IMPORTED_MODULE_2__["default"];
+      },
+      get Emoji_2() {
+        return _public_images_Emojis_Emoji_2_svg__WEBPACK_IMPORTED_MODULE_3__["default"];
+      },
+      get Emoji_3() {
+        return _public_images_Emojis_Emoji_3_svg__WEBPACK_IMPORTED_MODULE_4__["default"];
+      },
+      get Emoji_4() {
+        return _public_images_Emojis_Emoji_4_svg__WEBPACK_IMPORTED_MODULE_5__["default"];
+      },
+      get Emoji_5() {
+        return _public_images_Emojis_Emoji_5_svg__WEBPACK_IMPORTED_MODULE_6__["default"];
+      },
+      get Emoji_6() {
+        return _public_images_Emojis_Emoji_6_svg__WEBPACK_IMPORTED_MODULE_7__["default"];
+      },
+      get Emoji_7() {
+        return _public_images_Emojis_Emoji_7_svg__WEBPACK_IMPORTED_MODULE_8__["default"];
+      },
+      get Emoji_8() {
+        return _public_images_Emojis_Emoji_8_svg__WEBPACK_IMPORTED_MODULE_9__["default"];
+      },
+      get Emoji_9() {
+        return _public_images_Emojis_Emoji_9_svg__WEBPACK_IMPORTED_MODULE_10__["default"];
+      },
+      get Emoji_10() {
+        return _public_images_Emojis_Emoji_10_svg__WEBPACK_IMPORTED_MODULE_11__["default"];
+      },
+      get Emoji_11() {
+        return _public_images_Emojis_Emoji_11_svg__WEBPACK_IMPORTED_MODULE_12__["default"];
+      },
+      get Emoji_12() {
+        return _public_images_Emojis_Emoji_12_svg__WEBPACK_IMPORTED_MODULE_13__["default"];
+      },
+      get Emoji_13() {
+        return _public_images_Emojis_Emoji_13_svg__WEBPACK_IMPORTED_MODULE_14__["default"];
+      },
+      get Emoji_14() {
+        return _public_images_Emojis_Emoji_14_svg__WEBPACK_IMPORTED_MODULE_15__["default"];
       }
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
@@ -35339,54 +35849,55 @@ var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVN
 var _hoisted_5 = {
   "class": "px-3"
 };
-var _hoisted_6 = {
+var _hoisted_6 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Create New Workflow", -1 /* HOISTED */);
+var _hoisted_7 = {
   key: 0
 };
-var _hoisted_7 = ["onClick"];
-var _hoisted_8 = {
+var _hoisted_8 = ["onClick"];
+var _hoisted_9 = {
   "class": "flex items-center gap-3"
 };
-var _hoisted_9 = {
+var _hoisted_10 = {
   "class": "p-2 rounded-full bg-[#EBF3FE]"
 };
-var _hoisted_10 = {
+var _hoisted_11 = ["src"];
+var _hoisted_12 = {
   key: 1,
   "class": "flex flex-col items-center justify-center px-4 mt-10 mb-5"
 };
-var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_13 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: _assets_images_No_workflow_svg__WEBPACK_IMPORTED_MODULE_1__["default"],
   alt: "",
   "class": "w-full"
 }, null, -1 /* HOISTED */);
-var _hoisted_12 = {
+var _hoisted_14 = {
   "class": "text-center px-7 mt-4"
 };
-var _hoisted_13 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+var _hoisted_15 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
   "class": "font-semibold text-base"
 }, "No Workflow Found", -1 /* HOISTED */);
-var _hoisted_14 = {
+var _hoisted_16 = {
   "class": "text-center text-base opacity-80"
 };
-var _hoisted_15 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Create New Workflow", -1 /* HOISTED */);
-var _hoisted_16 = {
+var _hoisted_17 = {
   "class": "hide_scroll w-full overflow-y-scroll"
 };
-var _hoisted_17 = {
+var _hoisted_18 = {
   key: 0
 };
-var _hoisted_18 = {
+var _hoisted_19 = {
   "class": "flex items-center justify-between w-full px-7 pt-5"
 };
-var _hoisted_19 = {
+var _hoisted_20 = {
   "class": "flex items-center gap-3"
 };
-var _hoisted_20 = {
+var _hoisted_21 = {
   "class": "border rounded-full p-3"
 };
-var _hoisted_21 = {
+var _hoisted_22 = {
   "class": "text-3xl text-[#1D2939]"
 };
-var _hoisted_22 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_23 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "flex items-center gap-2"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "border rounded-md w-80 h-1"
@@ -35395,65 +35906,34 @@ var _hoisted_22 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 })]), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
   "class": "opacity-70"
 }, "13%")], -1 /* HOISTED */);
-var _hoisted_23 = {
+var _hoisted_24 = {
   "class": "flex items-center gap-10"
 };
-var _hoisted_24 = {
+var _hoisted_25 = {
   "class": "flex items-center"
 };
-var _hoisted_25 = ["src"];
-var _hoisted_26 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_26 = ["src"];
+var _hoisted_27 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "-ml-3 bg-[#E2ECFE] text-primary font-medium border-[2px] border-white py-1.5 px-2 rounded-full"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "+5")], -1 /* HOISTED */);
-var _hoisted_27 = {
+var _hoisted_28 = {
   key: 1,
   "class": "flex items-center h-[90vh] justify-center flex-col"
 };
-var _hoisted_28 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: _assets_images_no_task_svg__WEBPACK_IMPORTED_MODULE_2__["default"],
   alt: ""
 }, null, -1 /* HOISTED */);
-var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+var _hoisted_30 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
   "class": "font-semibold text-lg"
 }, "No Workflow Found", -1 /* HOISTED */);
-var _hoisted_30 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Let's get you started – create your first workflow now!", -1 /* HOISTED */);
-var _hoisted_31 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Create New Workflow", -1 /* HOISTED */);
+var _hoisted_31 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Let's get you started – create your first workflow now!", -1 /* HOISTED */);
+var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Create New Workflow", -1 /* HOISTED */);
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _$setup$selectedWorkf;
   var _component_Divider = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Divider");
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("main", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_2, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider), _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [$setup.workflows.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_6, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.props.userworkflows, function (flow, index) {
-    var _$setup$emojis$flow$e;
-    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
-      key: index,
-      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
-        ' bg-primary': $setup.selectedIndex === index
-      }, "mt-3 p-2 border rounded-md flex items-center justify-between cursor-pointer"]),
-      onClick: function onClick($event) {
-        return $setup.handleTask(flow, index);
-      }
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-      icon: (_$setup$emojis$flow$e = $setup.emojis[flow.emoji]) === null || _$setup$emojis$flow$e === void 0 ? void 0 : _$setup$emojis$flow$e.icon,
-      width: "25"
-    }, null, 8 /* PROPS */, ["icon"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
-      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["font-semibold text-[#1D2939]", {
-        ' text-white': $setup.selectedIndex === index
-      }])
-    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(flow.title), 3 /* TEXT, CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("small", {
-      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["opacity-70", {
-        ' text-white': $setup.selectedIndex === index
-      }])
-    }, "20 Tasks. Ongoing", 2 /* CLASS */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-      icon: "mi:options-vertical",
-      width: "25",
-      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
-        ' text-white': $setup.selectedIndex === index
-      })
-    }, null, 8 /* PROPS */, ["class"])])], 10 /* CLASS, PROPS */, _hoisted_7);
-  }), 128 /* KEYED_FRAGMENT */))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("click on the button below "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-    icon: "formkit:arrowdown",
-    "class": "inline-flex"
-  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" to create new workflow ")])])])), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("main", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_2, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider), _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "bg-[#EBF3FE] text-[#052B0A] font-semibold border-primary border-dashed border-[2px] px-2 py-4 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2",
     onClick: _cache[0] || (_cache[0] = function ($event) {
       return $setup.newWorkFlowModal = true;
@@ -35461,10 +35941,42 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "ic:outline-plus",
     width: "25"
-  }), _hoisted_15])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_16, [$setup.SelectedFlow ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+  }), _hoisted_6]), $setup.allWorkflows.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.allWorkflows, function (flow, index) {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+      key: index,
+      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
+        ' bg-primary': $setup.selectedIndex === index
+      }, "mt-3 p-2 border rounded-md flex items-center justify-between cursor-pointer"]),
+      onClick: function onClick($event) {
+        return $setup.handleTask(flow, index);
+      },
+      ref_for: true,
+      ref: "workflow_divs"
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+      src: $setup.emojis[flow.emoji] ? $setup.emojis[flow.emoji].image : '',
+      alt: ""
+    }, null, 8 /* PROPS */, _hoisted_11)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["font-semibold text-[#1D2939]", {
+        ' text-white': $setup.selectedIndex === index
+      }])
+    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(flow.title), 3 /* TEXT, CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("small", {
+      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["opacity-70", {
+        ' text-white': $setup.selectedIndex === index
+      }])
+    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(flow.task.length) + " Tasks. Ongoing", 3 /* TEXT, CLASS */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+      icon: "mi:options-vertical",
+      width: "25",
+      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
+        ' text-white': $setup.selectedIndex === index
+      })
+    }, null, 8 /* PROPS */, ["class"])])], 10 /* CLASS, PROPS */, _hoisted_8);
+  }), 128 /* KEYED_FRAGMENT */))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [_hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("click on the button below "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+    icon: "formkit:arrowdown",
+    "class": "inline-flex"
+  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" to create new workflow ")])])]))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_17, [$setup.SelectedFlow ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_21, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: $setup.SelectedFlow.icon,
     width: "30"
-  }, null, 8 /* PROPS */, ["icon"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.SelectedFlow.flow_name), 1 /* TEXT */), _hoisted_22])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_24, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.members, function (member, index) {
+  }, null, 8 /* PROPS */, ["icon"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_22, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.SelectedFlow.flow_name), 1 /* TEXT */), _hoisted_23])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_24, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_25, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.members, function (member, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       key: index,
       "class": "-ml-3 w-10 h-10 rounded-full"
@@ -35472,8 +35984,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       src: member.img,
       alt: "",
       "class": "h-full w-full object-cover"
-    }, null, 8 /* PROPS */, _hoisted_25)]);
-  }), 128 /* KEYED_FRAGMENT */)), _hoisted_26, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    }, null, 8 /* PROPS */, _hoisted_26)]);
+  }), 128 /* KEYED_FRAGMENT */)), _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "border-dashed ml-2 border p-2.5 rounded-full cursor-pointer",
     onClick: _cache[1] || (_cache[1] = function ($event) {
       return $setup.addmemberModal = true;
@@ -35488,7 +36000,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   }, " Assign Task ")])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["BoardContainer"], {
     flowTasks: $setup.SelectedFlow.Tasks
-  }, null, 8 /* PROPS */, ["flowTasks"])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_27, [_hoisted_28, _hoisted_29, _hoisted_30, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  }, null, 8 /* PROPS */, ["flowTasks"])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_28, [_hoisted_29, _hoisted_30, _hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "text-[#052B0A] font-semibold border-gray-300 border-[1px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2",
     onClick: _cache[3] || (_cache[3] = function ($event) {
       return $setup.newWorkFlowModal = true;
@@ -35496,18 +36008,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "ic:outline-plus",
     width: "25"
-  }), _hoisted_31])]))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["NewWorkflow"], {
+  }), _hoisted_32])]))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["NewWorkflow"], {
     modelValue: $setup.newWorkFlowModal,
     "onUpdate:modelValue": _cache[4] || (_cache[4] = function ($event) {
       return $setup.newWorkFlowModal = $event;
     }),
-    onReloadPage: $setup.reloadPage
+    onReloadPage: $setup.reloadPage,
+    onNewWorkflow: $setup.setNewWorkflow
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <AddTask v-model=\"addTask\" /> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["AssignTask"], {
     modelValue: $setup.assignTaskModal,
     "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
       return $setup.assignTaskModal = $event;
     }),
-    workflowId: (_$setup$selectedWorkf = $setup.selectedWorkflow) === null || _$setup$selectedWorkf === void 0 ? void 0 : _$setup$selectedWorkf.id
+    workflowId: (_$setup$selectedWorkf = $setup.selectedWorkflow) === null || _$setup$selectedWorkf === void 0 ? void 0 : _$setup$selectedWorkf.id,
+    onReloadTask: $setup.getTaskReload,
+    onNewTask: $setup.setNewTask
   }, null, 8 /* PROPS */, ["modelValue", "workflowId"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ArchiveDocument"], {
     modelValue: $setup.ArchiveDocumentModal,
     "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
@@ -40940,89 +41455,133 @@ var _hoisted_30 = {
 var _hoisted_31 = {
   "class": "text-primary underline"
 };
-var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"flex items-center pl-5 pt-5 relative justify-between border overflow-hidden rounded-xl my-10\" data-v-f2b170c4><div class=\"flex items-center gap-10\" data-v-f2b170c4><img src=\"/assets/images/tutorial.svg\" alt=\"\" class=\"pb-5 w-80\" data-v-f2b170c4><div data-v-f2b170c4><h1 class=\"text-3xl\" data-v-f2b170c4>Archiving Tutorial</h1><p class=\"text-[#667085] opacity-50\" data-v-f2b170c4>Watch a quick video guide to streamline your archiving process.</p></div></div><div class=\"w-72 h-80 absolute right-0 bottom-0 gradient\" data-v-f2b170c4></div></div>", 1);
-var _hoisted_33 = {
+var _hoisted_32 = ["onClick"];
+var _hoisted_33 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"flex items-center pl-5 pt-5 relative justify-between border overflow-hidden rounded-xl my-10\" data-v-f2b170c4><div class=\"flex items-center gap-10\" data-v-f2b170c4><img src=\"/assets/images/tutorial.svg\" alt=\"\" class=\"pb-5 w-80\" data-v-f2b170c4><div data-v-f2b170c4><h1 class=\"text-3xl\" data-v-f2b170c4>Archiving Tutorial</h1><p class=\"text-[#667085] opacity-50\" data-v-f2b170c4>Watch a quick video guide to streamline your archiving process.</p></div></div><div class=\"w-72 h-80 absolute right-0 bottom-0 gradient\" data-v-f2b170c4></div></div>", 1);
+var _hoisted_34 = {
   "class": "mb-10"
 };
-var _hoisted_34 = {
+var _hoisted_35 = {
   "class": "flex items-center w-full justify-between"
 };
-var _hoisted_35 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_36 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
     "class": "text-3xl text-[#1D2939] mb-3"
   }, "Recent Documents", -1 /* HOISTED */);
 });
-var _hoisted_36 = {
+var _hoisted_37 = {
   key: 0,
   "class": "flex items-center gap-5 text-sm"
 };
-var _hoisted_37 = {
+var _hoisted_38 = {
   "class": "bg-gray-100 flex items-center rounded-md p-1"
 };
-var _hoisted_38 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_39 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     "class": "bg-white shadow-md border-gray-300 rounded-lg py-1 px-4"
   }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "All")], -1 /* HOISTED */);
 });
-var _hoisted_39 = {
+var _hoisted_40 = {
   "class": "flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
 };
-var _hoisted_40 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_41 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Type", -1 /* HOISTED */);
 });
-var _hoisted_41 = {
-  "class": "flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4"
+var _hoisted_42 = {
+  key: 0,
+  "data-v-02777a1a": "",
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  "aria-hidden": "true",
+  role: "img",
+  width: "1em",
+  height: "1em",
+  viewBox: "0 0 24 24",
+  "class": "iconify iconify--tabler"
 };
-var _hoisted_42 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_43 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("path", {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "2",
+    d: "M12 5v14m6-8l-6-6m-6 6l6-6"
+  }, null, -1 /* HOISTED */);
+});
+var _hoisted_44 = [_hoisted_43];
+var _hoisted_45 = {
+  key: 1,
+  "data-v-02777a1a": "",
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  "aria-hidden": "true",
+  role: "img",
+  width: "1em",
+  height: "1em",
+  viewBox: "0 0 24 24",
+  "class": "iconify iconify--tabler"
+};
+var _hoisted_46 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("path", {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "2",
+    d: "M12 5v14m6-6l-6 6m-6-6l6 6"
+  }, null, -1 /* HOISTED */);
+});
+var _hoisted_47 = [_hoisted_46];
+var _hoisted_48 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Name", -1 /* HOISTED */);
 });
-var _hoisted_43 = {
+var _hoisted_49 = {
   key: 2
 };
-var _hoisted_44 = {
+var _hoisted_50 = {
   key: 3
 };
-var _hoisted_45 = {
+var _hoisted_51 = {
   key: 0,
   "class": "border border-solid rounded-xl"
 };
-var _hoisted_46 = {
+var _hoisted_52 = {
   key: 1
 };
-var _hoisted_47 = {
+var _hoisted_53 = {
   key: 0
 };
-var _hoisted_48 = {
+var _hoisted_54 = {
   key: 1
 };
-var _hoisted_49 = {
+var _hoisted_55 = {
   key: 0,
   "class": "grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8"
 };
-var _hoisted_50 = {
+var _hoisted_56 = {
   "class": "flex items-center justify-between"
 };
-var _hoisted_51 = {
+var _hoisted_57 = {
   "class": "p-2 rounded-full bg-white w-fit"
 };
-var _hoisted_52 = {
+var _hoisted_58 = {
   "class": "truncate"
 };
-var _hoisted_53 = {
+var _hoisted_59 = {
   "class": "flex gap-3 items-center"
 };
-var _hoisted_54 = {
+var _hoisted_60 = {
   "class": "dropmenu w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute right-0 shadow-lg cursor-pointer"
 };
-var _hoisted_55 = ["onClick"];
-var _hoisted_56 = {
+var _hoisted_61 = ["onClick"];
+var _hoisted_62 = {
   "class": "flex items-center gap-2"
 };
-var _hoisted_57 = ["onClick"];
-var _hoisted_58 = {
+var _hoisted_63 = ["onClick"];
+var _hoisted_64 = {
   "class": "mt-2"
 };
-var _hoisted_59 = ["src"];
+var _hoisted_65 = ["src"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("main", _hoisted_1, [_hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
@@ -41035,7 +41594,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }), 64 /* STABLE_FRAGMENT */))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "charm:circle-tick",
     width: "30"
-  })]), _hoisted_20]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_21, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_23, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.Tasks.length), 1 /* TEXT */), _hoisted_24]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_25, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  })]), _hoisted_20]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_21, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_23, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.length), 1 /* TEXT */), _hoisted_24]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_25, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     "class": "bg-slate-200 p-2 rounded-full",
     onClick: _cache[0] || (_cache[0] = function ($event) {
       return $setup.scroll(-20);
@@ -41049,31 +41608,31 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "flowbite:angle-down-solid"
-  })])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_26, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.Tasks, function (task, index) {
-    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  })])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_26, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.props.task, function (task, index) {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       key: index
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_27, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
       icon: "carbon:warning-filled",
       width: "20",
       "class": "rotate-180 text-white"
-    })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(task.text) + " ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(task.divsion), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <p class=\" w-80 opacity-80\">{{ task.text }} <span class=\" text-primary underline\">{{ task.divsion\r\n                      }}</span></p> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(task.title) + " ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(task.divsion), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
       "class": "text-primary",
-      onClick: _cache[2] || (_cache[2] = function ($event) {
-        return $setup.resolveModal = true;
-      })
-    }, "Resolve")])]);
-  }), 64 /* STABLE_FRAGMENT */))], 512 /* NEED_PATCH */)])])]), _hoisted_32, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_33, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [_hoisted_35, $setup.files && $setup.files.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [_hoisted_38, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_39, [_hoisted_40, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+      onClick: function onClick($event) {
+        return $setup.setResolveModal(task);
+      }
+    }, "Resolve", 8 /* PROPS */, _hoisted_32)])]);
+  }), 128 /* KEYED_FRAGMENT */))], 512 /* NEED_PATCH */)])])]), _hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_35, [_hoisted_36, $setup.files && $setup.files.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_37, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [_hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "icon-park-outline:down",
     width: "16"
-  })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_41, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-    icon: "ion:arrow-up",
-    width: "20"
-  }), _hoisted_42]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
-    onClick: _cache[3] || (_cache[3] = function ($event) {
+  })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    "class": "flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4",
+    onClick: $setup.sortDocuments
+  }, [!$setup.is_sorting ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_42, [].concat(_hoisted_44))) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_45, [].concat(_hoisted_47))), _hoisted_48]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    onClick: _cache[2] || (_cache[2] = function ($event) {
       return $setup.documentsGridView = !$setup.documentsGridView;
     }),
     "class": "flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4"
-  }, [$setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Icon, {
+  }, [!$setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Icon, {
     key: 0,
     icon: "lucide:list",
     width: "20"
@@ -41081,27 +41640,31 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     key: 1,
     icon: "system-uicons:grid",
     width: "20"
-  })), !$setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_43, "Grid")) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_44, "List"))])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), $setup.files && $setup.files.length === 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["EmptyState"])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_46, [$setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_47, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ListVue"], {
+  })), $setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_49, "Grid")) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_50, "List"))])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), $setup.files && $setup.files.length === 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_51, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["EmptyState"])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_52, [$setup.documentsGridView ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_53, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ListVue"], {
     files: $setup.files,
-    documentsGridView: !$setup.documentsGridView,
+    documentsGridView: $setup.documentsGridView,
     onDocs: $setup.SetselectedDocument,
     onChangeFormat: $setup.setFormatModal,
     onLock: $setup.setLock,
     onFileRename: $setup.setFileRename,
     onDownloadFile: $setup.downloadFile,
     onSelectedArchive: $setup.setSelectedArchive,
-    onBranchDetails: $setup.setBranchDetails
-  }, null, 8 /* PROPS */, ["files", "documentsGridView"])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_48, [$props.branch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_49, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($props.branch.archive, function (dept) {
-    var _dept$file_path$;
+    onBranchDetails: $setup.setBranchDetails,
+    onEditMetadata: _ctx.setEditmetadata,
+    onAddMetadata: _ctx.setAddMetadata,
+    archives: $setup.props.branch,
+    search: _ctx.search_text,
+    sort: $setup.sortOrder
+  }, null, 8 /* PROPS */, ["files", "documentsGridView", "onEditMetadata", "onAddMetadata", "archives", "search", "sort"])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_54, [$props.branch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_55, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($props.branch.data, function (dept) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       "class": "bg-gray-200 p-2 rounded-md relative",
       key: _ctx.i
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_51, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_57, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
       icon: "material-symbols-light:folder-outline",
       width: "20",
       color: "blue"
-    })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_52, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(dept.file_path[0].file_name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_53, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-      onClick: _cache[4] || (_cache[4] = function ($event) {
+    })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_58, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(dept.file_path[0].file_name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_59, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+      onClick: _cache[3] || (_cache[3] = function ($event) {
         return $setup.toggleMenu(_ctx.i);
       }),
       "class": "p-2 border cursor-pointer rounded-md"
@@ -41116,19 +41679,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       ref: "modalRef"
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
       "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["w-[417px] h-[420px] relative", $setup.isPositionChanged ? '-top-20' : 'top-52']),
-      onClick: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {}, ["stop"]))
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_54, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.menuItem, function (item, index) {
+      onClick: _cache[4] || (_cache[4] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {}, ["stop"]))
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_60, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.menuItem, function (item, index) {
       return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
         "class": "flex justify-between items-center hover:bg-[#F9FAFB] px-3 my-2",
         key: index,
         onClick: function onClick($event) {
           return $setup.handleMenuItem(item);
         }
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_62, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
         icon: item.icon
       }, null, 8 /* PROPS */, ["icon"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.label), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
         icon: item.arrow
-      }, null, 8 /* PROPS */, ["icon"])], 8 /* PROPS */, _hoisted_55);
+      }, null, 8 /* PROPS */, ["icon"])], 8 /* PROPS */, _hoisted_61);
     }), 128 /* KEYED_FRAGMENT */))]), $setup.submenu ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       key: 0,
       "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute bottom-0 left-0 shadow-lg cursor-pointer", {
@@ -41146,45 +41709,46 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         }
       }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
         icon: item.icon
-      }, null, 8 /* PROPS */, ["icon"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.label), 1 /* TEXT */)], 8 /* PROPS */, _hoisted_57);
-    }), 128 /* KEYED_FRAGMENT */))], 6 /* CLASS, STYLE */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)], 512 /* NEED_PATCH */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_58, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+      }, null, 8 /* PROPS */, ["icon"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.label), 1 /* TEXT */)], 8 /* PROPS */, _hoisted_63);
+    }), 128 /* KEYED_FRAGMENT */))], 6 /* CLASS, STYLE */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)], 512 /* NEED_PATCH */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_64, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <img class=\"w-full rounded-md\" :src=\"page.props.base + '/storage' + dept.file_path[0]?.path\"\r\n                  alt=\"Document image\" /> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+      src: $setup.getFileExtension(dept.file_path[0]),
       "class": "w-full rounded-md",
-      src: $setup.page.props.base + '/storage' + ((_dept$file_path$ = dept.file_path[0]) === null || _dept$file_path$ === void 0 ? void 0 : _dept$file_path$.path),
-      alt: "Document image"
-    }, null, 8 /* PROPS */, _hoisted_59)])]);
+      alt: "Document"
+    }, null, 8 /* PROPS */, _hoisted_65)])]);
   }), 128 /* KEYED_FRAGMENT */))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]))]))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["BranchDetails"], {
     modelValue: $setup.branchDetailsModal,
-    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
+    "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
       return $setup.branchDetailsModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["LockDocument"], {
     modelValue: $setup.LockDocumentModal,
-    "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
+    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
       return $setup.LockDocumentModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["UnlockDocument"], {
     modelValue: $setup.UnlockDocumentModal,
-    "onUpdate:modelValue": _cache[8] || (_cache[8] = function ($event) {
+    "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
       return $setup.UnlockDocumentModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["GenerateEncriptionCode"], {
     modelValue: $setup.GenerateEncriptionModal,
-    "onUpdate:modelValue": _cache[9] || (_cache[9] = function ($event) {
+    "onUpdate:modelValue": _cache[8] || (_cache[8] = function ($event) {
       return $setup.GenerateEncriptionModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ChangeFormat"], {
     modelValue: $setup.ChangeFormatModal,
-    "onUpdate:modelValue": _cache[10] || (_cache[10] = function ($event) {
+    "onUpdate:modelValue": _cache[9] || (_cache[9] = function ($event) {
       return $setup.ChangeFormatModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ResolveTask"], {
     modelValue: $setup.resolveModal,
-    "onUpdate:modelValue": _cache[11] || (_cache[11] = function ($event) {
+    "onUpdate:modelValue": _cache[10] || (_cache[10] = function ($event) {
       return $setup.resolveModal = $event;
-    })
-  }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["RenameFileDialog"], {
+    }),
+    task: $setup.selectedTask
+  }, null, 8 /* PROPS */, ["modelValue", "task"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["RenameFileDialog"], {
     modelValue: $setup.FileRenameModal,
-    "onUpdate:modelValue": _cache[12] || (_cache[12] = function ($event) {
+    "onUpdate:modelValue": _cache[11] || (_cache[11] = function ($event) {
       return $setup.FileRenameModal = $event;
     }),
     archive: $setup.selectedArchive
@@ -46330,18 +46894,13 @@ var _hoisted_19 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 var _hoisted_20 = {
   "class": "flex items-center gap-1"
 };
-var _hoisted_21 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "3d", -1 /* HOISTED */);
-var _hoisted_22 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Add Task", -1 /* HOISTED */);
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" ====== task  ====== "), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($props.flowTasks, function (task, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       "class": "bg-[#F2F4F7] rounded-md p-3 h-fit cursor-pointer",
       list: $props.flowTasks.Tasks,
-      key: index,
-      onClick: _cache[3] || (_cache[3] = function ($event) {
-        return $setup.ArchiveDocumentModal = true;
-      })
+      key: index
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(task.status), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("small", {
       "class": "rounded-full flex flex-col items-center justify-center h-5 w-5 text-white",
       style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)({
@@ -46401,7 +46960,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       "class": "",
       list: task.todo,
       "item-key": _ctx.title,
-      group: "demo"
+      group: "demo",
+      onClick: function onClick($event) {
+        return $setup.setSelectedTask(task);
+      }
     }, {
       item: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function (_ref) {
         var element = _ref.element;
@@ -46411,26 +46973,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         }), _hoisted_19]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
           icon: "uil:calender",
           width: "13"
-        }), _hoisted_21])])])])];
+        }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.parseLaravelDate(element.date)), 1 /* TEXT */)])])])])];
       }),
       _: 2 /* DYNAMIC */
-    }, 1032 /* PROPS, DYNAMIC_SLOTS */, ["list", "item-key"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-      "class": "bg-[white] hover:bg-[#EBF3FE] text-[#1D2939] hover:border-primary hover: font-semibold border-gray-300 border-dashed border-[2px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex items-center gap-2",
-      onClick: [_cache[1] || (_cache[1] = function ($event) {
-        return $setup.addTask = true;
-      }), _cache[2] || (_cache[2] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {}, ["stop"]))]
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-      icon: "ic:outline-plus",
-      width: "25"
-    }), _hoisted_22])], 8 /* PROPS */, _hoisted_2);
+    }, 1032 /* PROPS, DYNAMIC_SLOTS */, ["list", "item-key", "onClick"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div\r\n        class=\"bg-[white] hover:bg-[#EBF3FE] text-[#1D2939] hover:border-primary hover: font-semibold border-gray-300 border-dashed border-[2px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex items-center gap-2\"\r\n        @click=\"addTask = true\" @click.stop>\r\n        <Icon icon=\"ic:outline-plus\" width=\"25\" />\r\n        <h1>Add Task</h1>\r\n      </div> ")], 8 /* PROPS */, _hoisted_2);
   }), 128 /* KEYED_FRAGMENT */))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["AddTask"], {
     modelValue: $setup.addTask,
-    "onUpdate:modelValue": _cache[4] || (_cache[4] = function ($event) {
+    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
       return $setup.addTask = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["ArchiveDocument"], {
     modelValue: $setup.ArchiveDocumentModal,
-    "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
       return $setup.ArchiveDocumentModal = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"])], 64 /* STABLE_FRAGMENT */);
@@ -50365,58 +50919,64 @@ var _hoisted_7 = {
   "class": "px-6"
 };
 var _hoisted_8 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
     "class": "opacity-60 text-lg"
-  }, "Task Name"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-    "class": "font-medium"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Documents awaiting archiving in the "), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "text-primary underline"
-  }, "Finance Department. ")])], -1 /* HOISTED */);
+  }, "Task Name", -1 /* HOISTED */);
 });
-var _hoisted_9 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "mt-5"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
-    "class": "opacity-60 text-lg"
-  }, "Description"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-    "class": "mt-2 text-base bg-gray-100 p-5 rounded-lg border-dashed border-[#b3b3b34d] border-[2px]"
-  }, "Review and archive assigned documents promptly to ensure seamless workflow.")], -1 /* HOISTED */);
-});
+var _hoisted_9 = {
+  "class": "font-medium"
+};
 var _hoisted_10 = {
   "class": "mt-5"
 };
 var _hoisted_11 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
     "class": "opacity-60 text-lg"
-  }, "Timeline", -1 /* HOISTED */);
+  }, "Description", -1 /* HOISTED */);
 });
 var _hoisted_12 = {
-  "class": "flex items-center gap-3"
+  "class": "mt-2 text-base bg-gray-100 p-5 rounded-lg border-dashed border-[#b3b3b34d] border-[2px]"
 };
 var _hoisted_13 = {
+  "class": "mt-5"
+};
+var _hoisted_14 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+    "class": "opacity-60 text-lg"
+  }, "Timeline", -1 /* HOISTED */);
+});
+var _hoisted_15 = {
+  "class": "flex items-center gap-3"
+};
+var _hoisted_16 = {
   "class": ""
 };
-var _hoisted_14 = {
+var _hoisted_17 = {
   "class": "p-2 bg-gray-50 rounded-full mt-2"
 };
-var _hoisted_15 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-    "class": "font-semibold"
-  }, "2023-05-15", -1 /* HOISTED */);
+var _hoisted_18 = {
+  "class": "font-semibold"
+};
+var _hoisted_19 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " - ", -1 /* HOISTED */);
 });
-var _hoisted_16 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "flex flex-col w-full items-start"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+var _hoisted_20 = {
+  "class": "font-semibold"
+};
+var _hoisted_21 = {
+  "class": "flex flex-col w-full items-start"
+};
+var _hoisted_22 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
     "class": "opacity-70 text-lg"
-  }, "Document Types"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "flex gap-5 mt-3"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
-    "class": "font-semibold border-[2px] px-5 py-1.5 rounded-3xl"
-  }, "Invoice"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
-    "class": "font-semibold border-[2px] px-5 py-1.5 rounded-3xl"
-  }, "Receipts")])], -1 /* HOISTED */);
+  }, "Document Types", -1 /* HOISTED */);
 });
+var _hoisted_23 = {
+  "class": "flex gap-5 mt-3"
+};
+var _hoisted_24 = {
+  "class": "font-semibold border-[2px] px-5 py-1.5 rounded-3xl"
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   var _component_Divider = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Divider");
@@ -50461,15 +51021,15 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       })])])];
     }),
     footer: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [_hoisted_16];
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_21, [_hoisted_22, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_24, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.document_type), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <button   class=\" font-semibold border-[2px] px-5 py-1.5  rounded-3xl\">Receipts</button> ")])])];
     }),
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider, {
         "class": "-mt-1"
-      }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_7, [_hoisted_8, _hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+      }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.title), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_12, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.description), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
         icon: "uil:calender",
         width: "25"
-      })])]), _hoisted_15])])])];
+      })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.start), 1 /* TEXT */), _hoisted_19, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_20, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.task.end), 1 /* TEXT */)])])])];
     }),
     _: 1 /* STABLE */
   }, 8 /* PROPS */, ["visible"]);
@@ -53739,6 +54299,7 @@ var _hoisted_10 = {
   "class": "grid grid-cols-7 gap-5 my-5"
 };
 var _hoisted_11 = ["onClick"];
+var _hoisted_12 = ["src"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   var _component_Divider = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Divider");
@@ -53810,7 +54371,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             return $setup.handleSelectedEmoji(index, emoji.icon);
           }
         }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-          "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["p-1 bg-[#3575DD] rounded-full w-fit absolute right-1 opacity-0", {
+          "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["p-1 bg-primary rounded-full w-fit absolute right-1 opacity-0", {
             'opacity-100': $setup.selectedIndex === index
           }])
         }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
@@ -53822,10 +54383,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)({
             borderColor: $setup.selectedIndex === index ? '#3575DD' : '#F9FAFB'
           })
-        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
-          icon: emoji.icon,
-          width: "25"
-        }, null, 8 /* PROPS */, ["icon"])], 4 /* STYLE */)], 8 /* PROPS */, _hoisted_11);
+        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+          src: emoji.image,
+          alt: ""
+        }, null, 8 /* PROPS */, _hoisted_12)], 4 /* STYLE */)], 8 /* PROPS */, _hoisted_11);
       }), 64 /* STABLE_FRAGMENT */))])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider, {
         "class": "-mb-2"
       })];
@@ -53907,7 +54468,7 @@ var _hoisted_14 = {
 };
 var _hoisted_15 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
-    "class": "text-lg text-[#3B82F6]"
+    "class": "text-lg text-[#3B82F6] uppercase"
   }, "File Details", -1 /* HOISTED */);
 });
 var _hoisted_16 = {
@@ -53915,18 +54476,18 @@ var _hoisted_16 = {
 };
 var _hoisted_17 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "text-[#98A2B3]"
+    "class": "text-[#98A2B3] uppercase"
   }, "Document type", -1 /* HOISTED */);
 });
 var _hoisted_18 = {
-  "class": "text-[#344054]"
+  "class": "text-[#344054] uppercase"
 };
 var _hoisted_19 = {
   "class": "flex items-center justify-between"
 };
 var _hoisted_20 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "text-[#98A2B3]"
+    "class": "text-[#98A2B3] uppercase"
   }, "Size", -1 /* HOISTED */);
 });
 var _hoisted_21 = {
@@ -53937,22 +54498,22 @@ var _hoisted_22 = {
 };
 var _hoisted_23 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "text-[#98A2B3]"
+    "class": "text-[#98A2B3] uppercase"
   }, "Created", -1 /* HOISTED */);
 });
 var _hoisted_24 = {
-  "class": "text-[#344054]"
+  "class": "text-[#344054] uppercase"
 };
 var _hoisted_25 = {
   "class": "flex items-center justify-between"
 };
 var _hoisted_26 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "text-[#98A2B3]"
+    "class": "text-[#98A2B3] uppercase"
   }, "Last Modified", -1 /* HOISTED */);
 });
 var _hoisted_27 = {
-  "class": "text-[#344054]"
+  "class": "text-[#344054] uppercase"
 };
 var _hoisted_28 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
@@ -53967,10 +54528,10 @@ var _hoisted_30 = {
   "class": "flex items-center justify-between py-2 border-b border-b-gray-200"
 };
 var _hoisted_31 = {
-  "class": "text-[#98A2B3] pr-2"
+  "class": "text-[#98A2B3] pr-2 uppercase"
 };
 var _hoisted_32 = {
-  "class": "text-[#344054]"
+  "class": "text-[#344054] uppercase"
 };
 var _hoisted_33 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
@@ -53981,23 +54542,23 @@ var _hoisted_34 = {
   "class": "flex items-center flex-wrap text-sm font-semibold gap-2 mt-2"
 };
 var _hoisted_35 = {
-  key: 0
+  "class": "uppercase"
 };
-var _hoisted_36 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_36 = {
+  key: 0,
+  "class": "uppercase"
+};
+var _hoisted_37 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
     "class": "pi pi-angle-right text-[#101828] text-lg"
   })], -1 /* HOISTED */);
 });
-var _hoisted_37 = {
-  key: 0
+var _hoisted_38 = {
+  "class": "uppercase"
 };
-var _hoisted_38 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
-    "class": "pi pi-angle-right text-[#101828] text-lg"
-  })], -1 /* HOISTED */);
-});
 var _hoisted_39 = {
-  key: 0
+  key: 0,
+  "class": "uppercase"
 };
 var _hoisted_40 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
@@ -54005,27 +54566,42 @@ var _hoisted_40 = /*#__PURE__*/_withScopeId(function () {
   })], -1 /* HOISTED */);
 });
 var _hoisted_41 = {
+  "class": "uppercase"
+};
+var _hoisted_42 = {
+  key: 0,
+  "class": "uppercase"
+};
+var _hoisted_43 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+    "class": "pi pi-angle-right text-[#101828] text-lg"
+  })], -1 /* HOISTED */);
+});
+var _hoisted_44 = {
+  "class": "uppercase"
+};
+var _hoisted_45 = {
   key: 1
 };
-var _hoisted_42 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_46 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
     src: "/assets/images/user.png",
     alt: "",
     "class": "w-7 h-7"
   }, null, -1 /* HOISTED */);
 });
-var _hoisted_43 = ["onClick"];
-var _hoisted_44 = {
+var _hoisted_47 = ["onClick"];
+var _hoisted_48 = {
   "class": "font-semibold"
 };
-var _hoisted_45 = {
+var _hoisted_49 = {
   key: 0,
   "class": "text-center"
 };
-var _hoisted_46 = {
+var _hoisted_50 = {
   "class": "flex items-center ml-5"
 };
-var _hoisted_47 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_51 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
     "class": "pi pi-file",
     style: {
@@ -54039,16 +54615,16 @@ var _hoisted_47 = /*#__PURE__*/_withScopeId(function () {
     "class": "-ml-[2px]"
   }, "__")])], -1 /* HOISTED */);
 });
-var _hoisted_48 = {
+var _hoisted_52 = {
   "class": "ml-1"
 };
-var _hoisted_49 = {
+var _hoisted_53 = {
   "class": "text-[10px] mt-2"
 };
-var _hoisted_50 = {
+var _hoisted_54 = {
   "class": "text-[10px] mt-1"
 };
-var _hoisted_51 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_55 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     "class": "border p-1 text-[6px] rounded-sm mt-2"
   }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
@@ -54069,7 +54645,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     "show-close-icon": false,
     position: "right",
-    "class": "w-full relative"
+    "class": "w-full relative",
+    style: {
+      "width": "400px"
+    }
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       var _$props$file, _$props$file2, _$props$file3, _$setup$props$folder;
@@ -54126,19 +54705,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         })
       }, null, 8 /* PROPS */, _hoisted_13)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" =====file details ====== "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [_hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [_hoisted_17, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.fileType) + " Document", 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [_hoisted_20, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.file.size), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [_hoisted_23, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_24, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.file.uploaded_by), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_25, [_hoisted_26, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.props.file.date), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" ======other info ===== "), _hoisted_28, $props.file.archive_docs ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <h1 class=\"text-[#98A2B3]\">Owner</h1>\r\n\t\t\t\t\t<div class=\" flex items-center gap-2 mt-2\">\r\n\t\t\t\t\t\t<img src=\"/assets/images/user.png\" alt=\"\" class=\" w-8\">\r\n\t\t\t\t\t\t<h1 class=\" text-sm text-[#344054] font-semibold\">Dave Miye</h1>\r\n\t\t\t\t\t</div> "), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($props.file.archive_docs, function (meta) {
         return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(meta.archive_keys), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_32, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(meta.archive_values), 1 /* TEXT */)]);
-      }), 256 /* UNKEYED_FRAGMENT */))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" =========location ======= "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file = $props.file) === null || _$props$file === void 0 || (_$props$file = _$props$file.department) === null || _$props$file === void 0 ? void 0 : _$props$file.title) + " ", 1 /* TEXT */), $props.file.department ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_35, "Department")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_36, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file2 = $props.file) === null || _$props$file2 === void 0 || (_$props$file2 = _$props$file2.division) === null || _$props$file2 === void 0 ? void 0 : _$props$file2.title) + " ", 1 /* TEXT */), $props.file.division ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_37, "Division")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_38, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file3 = $props.file) === null || _$props$file3 === void 0 || (_$props$file3 = _$props$file3.unit) === null || _$props$file3 === void 0 ? void 0 : _$props$file3.title) + " ", 1 /* TEXT */), $props.file.unit ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_39, "Unit")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_40, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$setup$props$folder = $setup.props.folder) === null || _$setup$props$folder === void 0 ? void 0 : _$setup$props$folder.name), 1 /* TEXT */)])])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_41, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" ==========activities ======== "), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.activities, function (activity, index) {
+      }), 256 /* UNKEYED_FRAGMENT */))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" =========location ======= "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_35, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file = $props.file) === null || _$props$file === void 0 || (_$props$file = _$props$file.department) === null || _$props$file === void 0 ? void 0 : _$props$file.title) + " ", 1 /* TEXT */), $props.file.department ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_36, "Department")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_37, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_38, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file2 = $props.file) === null || _$props$file2 === void 0 || (_$props$file2 = _$props$file2.division) === null || _$props$file2 === void 0 ? void 0 : _$props$file2.title) + " ", 1 /* TEXT */), $props.file.division ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_39, "Division")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_40, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_41, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$props$file3 = $props.file) === null || _$props$file3 === void 0 || (_$props$file3 = _$props$file3.unit) === null || _$props$file3 === void 0 ? void 0 : _$props$file3.title) + " ", 1 /* TEXT */), $props.file.unit ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_42, "Unit")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_44, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_$setup$props$folder = $setup.props.folder) === null || _$setup$props$folder === void 0 ? void 0 : _$setup$props$folder.name), 1 /* TEXT */)])])])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" ==========activities ======== "), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.activities, function (activity, index) {
         return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
           key: index
         }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
           "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["flex gap-4 my-5", {
             'expanded': $setup.expandedIndexes.includes(index)
           }])
-        }, [_hoisted_42, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+        }, [_hoisted_46, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
           "class": "text-sm cursor-pointer",
           onClick: function onClick($event) {
             return $setup.toggleExpandable(index);
           }
-        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_44, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.activity), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.date), 1 /* TEXT */), $setup.expandedIndexes.includes(index) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [_hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.details.details_2), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_50, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.details.details_2), 1 /* TEXT */)])]), _hoisted_51])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_43)], 2 /* CLASS */)]);
+        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_48, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.activity), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.date), 1 /* TEXT */), $setup.expandedIndexes.includes(index) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_49, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [_hoisted_51, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_53, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.details.details_2), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_54, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(activity.details.details_2), 1 /* TEXT */)])]), _hoisted_55])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_47)], 2 /* CLASS */)]);
       }), 128 /* KEYED_FRAGMENT */))]))];
     }),
     _: 1 /* STABLE */
@@ -58529,7 +59108,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.p-submenu-list[data-v-45b10cb7] {\r\n    background: red;\n}\n.no-focus[data-v-45b10cb7]:focus{\r\n    outline: none;\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.p-submenu-list[data-v-45b10cb7] {\r\n  background: red;\n}\n.no-focus[data-v-45b10cb7]:focus {\r\n  outline: none;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -59860,6 +60439,216 @@ module.exports = TypeError;
 /** @type {import('./uri')} */
 module.exports = URIError;
 
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_1.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_1.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_1.svg?5fd79cea8fbcf22171b39f339c192e9a");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_10.svg":
+/*!*******************************************!*\
+  !*** ./public/images/Emojis/Emoji_10.svg ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_10.svg?3c0937f3fd384da973904275bed27b54");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_11.svg":
+/*!*******************************************!*\
+  !*** ./public/images/Emojis/Emoji_11.svg ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_11.svg?ce45c9fc96229af6118f66c075722f6e");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_12.svg":
+/*!*******************************************!*\
+  !*** ./public/images/Emojis/Emoji_12.svg ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_12.svg?803501b6fcd9f0759dbaed1274cc624a");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_13.svg":
+/*!*******************************************!*\
+  !*** ./public/images/Emojis/Emoji_13.svg ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_13.svg?14d89b5ef6da1f131b82036454706fcc");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_14.svg":
+/*!*******************************************!*\
+  !*** ./public/images/Emojis/Emoji_14.svg ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_14.svg?612f1178547430d91c237bc893625b82");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_2.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_2.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_2.svg?f373b50687c7bf1660db552427638eff");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_3.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_3.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_3.svg?4aec66c424ece172665450dafc22f62f");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_4.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_4.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_4.svg?80a1ccd51f3ff94578223b6eed03e528");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_5.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_5.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_5.svg?d6438bcf51f88b432c3e245a02d2b540");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_6.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_6.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_6.svg?89466096960994abfad12c3b15131d74");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_7.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_7.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_7.svg?17d0aef99d81b42b0ea5e4d2384daab5");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_8.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_8.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_8.svg?69deedd4263cc442ab6ef10a4d3e3bbd");
+
+/***/ }),
+
+/***/ "./public/images/Emojis/Emoji_9.svg":
+/*!******************************************!*\
+  !*** ./public/images/Emojis/Emoji_9.svg ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/Emoji_9.svg?6113842f1cd2fa34a31e6ebe2b8011a3");
 
 /***/ }),
 

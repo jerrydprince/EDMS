@@ -1,5 +1,5 @@
 <template>
-	<Sidebar v-model:visible="visible" :show-close-icon="false" position="right" class="w-full relative ">
+	<Sidebar v-model:visible="visible" :show-close-icon="false" position="right" class="w-full relative " style="width: 400px;">
 
 		<div class=" flex justify-between items-center">
 			<div class=" flex justify-between gap-3 items-center">
@@ -54,23 +54,23 @@
 
 				<!-- =====file details ====== -->
 				<div class=" text-sm mt-5 h-32 flex flex-col justify-between ">
-					<h1 class=" text-lg text-[#3B82F6]">File Details</h1>
+					<h1 class=" text-lg text-[#3B82F6] uppercase">File Details</h1>
 
 					<div class=" flex items-center justify-between">
-						<span class="text-[#98A2B3]">Document type</span>
-						<span class=" text-[#344054]">{{ fileType }} Document</span>
+						<span class="text-[#98A2B3] uppercase">Document type</span>
+						<span class=" text-[#344054] uppercase">{{ fileType }} Document</span>
 					</div>
 					<div class=" flex items-center justify-between">
-						<span class="text-[#98A2B3]">Size</span>
+						<span class="text-[#98A2B3] uppercase">Size</span>
 						<span class=" text-[#344054]">{{ props.file.size }}</span>
 					</div>
 					<div class=" flex items-center justify-between">
-						<span class="text-[#98A2B3]">Created</span>
-						<span class=" text-[#344054]">{{ props.file.uploaded_by }}</span>
+						<span class="text-[#98A2B3] uppercase">Created</span>
+						<span class=" text-[#344054] uppercase">{{ props.file.uploaded_by }}</span>
 					</div>
 					<div class=" flex items-center justify-between">
-						<span class="text-[#98A2B3]">Last Modified</span>
-						<span class=" text-[#344054]">{{ props.file.date }}</span>
+						<span class="text-[#98A2B3] uppercase">Last Modified</span>
+						<span class=" text-[#344054] uppercase">{{ props.file.date }}</span>
 					</div>
 				</div>
 
@@ -84,8 +84,8 @@
 					</div> -->
 					<template v-for="meta in file.archive_docs">
 						<div class=" flex items-center justify-between py-2 border-b border-b-gray-200">
-							<span class="text-[#98A2B3] pr-2">{{meta.archive_keys}}</span>
-							<span class=" text-[#344054]">{{ meta.archive_values}}</span>
+							<span class="text-[#98A2B3] pr-2 uppercase">{{meta.archive_keys}}</span>
+							<span class=" text-[#344054] uppercase">{{ meta.archive_values}}</span>
 						</div>
 					</template>
 				</div>
@@ -95,13 +95,13 @@
 					<h1 class=" text-lg text-[#98A2B3] mt-5">Location</h1>
 
 					<div class=" flex items-center flex-wrap text-sm font-semibold gap-2 mt-2">
-						<h1>{{file?.department?.title}} <span v-if="file.department">Department</span> </h1>
+						<h1 class="uppercase">{{file?.department?.title}} <span class="uppercase" v-if="file.department">Department</span> </h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>{{file?.division?.title}} <span v-if="file.division">Division</span></h1>
+						<h1 class="uppercase">{{file?.division?.title}} <span class="uppercase" v-if="file.division">Division</span></h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>{{file?.unit?.title}} <span v-if="file.unit">Unit</span> </h1>
+						<h1 class="uppercase">{{file?.unit?.title}} <span class="uppercase" v-if="file.unit">Unit</span> </h1>
 						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1>{{props.folder?.name}} </h1>
+						<h1 class="uppercase">{{props.folder?.name}} </h1>
 
 					</div>
 				</div>

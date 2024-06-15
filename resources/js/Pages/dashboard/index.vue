@@ -54,7 +54,7 @@
         <div class=" px-5">
           <div class="flex items-center justify-between pt-5">
             <div>
-              <h1 class=" font-semibold text-4xl text-[#1D2939]">{{ Tasks.length }}</h1>
+              <h1 class=" font-semibold text-4xl text-[#1D2939]">{{ props.task.length }}</h1>
               <p class=" font-semibold opacity-60 text-[#1D2939] mt-3">Pending Tasks</p>
             </div>
             <div class=" flex flex-col ">
@@ -67,16 +67,18 @@
             </div>
           </div>
           <div class=" mt-5 border rounded-lg p-5 h-44 overflow-y-auto hide_scroll " ref="scrollContainer">
-            <div v-for="(task, index) in Tasks" :key="index">
+            <div v-for="(task, index) in props.task" :key="index">
               <div class=" flex items-center justify-between mb-3">
                 <div class=" flex gap-5 items-center">
                   <div class=" bg-gray-300 p-2 rounded-full">
                     <Icon icon="carbon:warning-filled" width="20" class=" rotate-180 text-white" />
                   </div>
-                  <p class=" w-80 opacity-80">{{ task.text }} <span class=" text-primary underline">{{ task.divsion
+                  <!-- <p class=" w-80 opacity-80">{{ task.text }} <span class=" text-primary underline">{{ task.divsion
+                      }}</span></p> -->
+                      <p class=" w-80 opacity-80">{{ task.title }} <span class=" text-primary underline">{{ task.divsion
                       }}</span></p>
                 </div>
-                <button class=" text-primary" @click="resolveModal = true">Resolve</button>
+                <button class=" text-primary" @click="setResolveModal(task)">Resolve</button>
               </div>
             </div>
           </div>
@@ -110,16 +112,26 @@
               <Icon icon="icon-park-outline:down" width="16" />
             </button>
           </div>
-          <button
+          <button class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4"
+          @click="sortDocuments">
+          <svg v-if="!is_sorting" data-v-02777a1a="" xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em"
+            viewBox="0 0 24 24" class="iconify iconify--tabler">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 5v14m6-8l-6-6m-6 6l6-6"></path>
+          </svg>
+          <svg v-else data-v-02777a1a="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" class="iconify iconify--tabler">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 5v14m6-6l-6 6m-6-6l6 6"></path>
+          </svg>
+          <p>Name</p>
+        </button>
+          <button @click="documentsGridView = !documentsGridView" 
             class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
-            <Icon icon="ion:arrow-up" width="20" />
-            <p>Name</p>
-          </button>
-          <button @click="documentsGridView = !documentsGridView"
-            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
-            <Icon v-if="documentsGridView" icon="lucide:list" width="20" />
+            <Icon v-if="!documentsGridView" icon="lucide:list" width="20" />
             <Icon v-else icon="system-uicons:grid" width="20" />
-            <p v-if="!documentsGridView">Grid</p>
+            <p v-if="documentsGridView">Grid</p>
             <p v-else>List</p>
           </button>
         </div>
@@ -132,15 +144,16 @@
         <div v-if="documentsGridView">
           <div>
 
-            <ListVue :files="files" :documentsGridView="!documentsGridView" @docs="SetselectedDocument"
-              @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
-              @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails" />
+            <ListVue :files="files" :documentsGridView="documentsGridView" @docs="SetselectedDocument" 
+          @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
+          @selectedArchive="setSelectedArchive"  @branchDetails="setBranchDetails" @editMetadata="setEditmetadata"
+          @addMetadata="setAddMetadata" :archives="props.branch" :search="search_text" :sort="sortOrder"/>
 
           </div>
         </div>
         <div v-else>
           <div class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8" v-if="branch">
-            <div v-for="dept in branch.archive" class="bg-gray-200 p-2 rounded-md relative" :key="i">
+            <div v-for="dept in branch.data" class="bg-gray-200 p-2 rounded-md relative" :key="i">
               <div class="flex items-center justify-between">
                 <div class="p-2 rounded-full bg-white w-fit">
                   <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
@@ -183,8 +196,9 @@
               </div>
 
               <div class="mt-2">
-                <img class="w-full rounded-md" :src="page.props.base + '/storage' + dept.file_path[0]?.path"
-                  alt="Document image" />
+                <!-- <img class="w-full rounded-md" :src="page.props.base + '/storage' + dept.file_path[0]?.path"
+                  alt="Document image" /> -->
+                  <img :src="getFileExtension(dept.file_path[0])" class="w-full rounded-md" alt="Document">
               </div>
             </div>
           </div>
@@ -197,7 +211,7 @@
   <UnlockDocument v-model="UnlockDocumentModal" />
   <GenerateEncriptionCode v-model="GenerateEncriptionModal" />
   <ChangeFormat v-model="ChangeFormatModal" />
-  <ResolveTask v-model="resolveModal" />
+  <ResolveTask v-model="resolveModal" :task="selectedTask" />
   <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive" />
 </template>
 
@@ -231,12 +245,15 @@ const GenerateEncriptionModal = ref(false);
 const ChangeFormatModal = ref(false);
 const scrollContainer = ref(null);
 const horizontalPosition = ref(null);
+const selectedTask = ref();
 
 const FileRenameModal = ref(false);
 const selectedArchiveId = ref();
 const selectedArchive = ref();
-const props = defineProps(['branch'])
+const props = defineProps(['branch', 'task'])
 const page = usePage();
+const sortOrder = ref('')
+const is_sorting = ref(false)
 
 onClickOutside(modalRef, (event) => {
   (menuVisible.value = false), (submenu.value = false);
@@ -245,6 +262,22 @@ onClickOutside(modalRef, (event) => {
 const close = () => {
   menuVisible.value = false,
     submenu.value = false
+}
+
+const sortDocuments = () => {
+  is_sorting.value = !is_sorting.value
+
+  if (is_sorting.value) {
+    sortOrder.value = 'asc'
+  } else {
+    sortOrder.value = 'desc'
+  }
+
+}
+
+const setResolveModal = (task) =>{
+  resolveModal.value = true;
+  selectedTask.value = task
 }
 
 const SetselectedDocument = (data) => {
@@ -455,36 +488,77 @@ const steps = [
 
 const selectedDocument = ref([]);
 
+// const getArchiveDocsVale = (data, search)=>{
+   
+//    if(data){
+//     for(let archive of data){
+//         console.log(archive.archive_keys)
+//         if(archive.archive_keys.toLowerCase() == search){
+//             return archive.archive_values;
+//         }
+//     }
+//    }
+// }
+
 const getArchiveDocsVale = (data, search)=>{
    
    if(data){
     for(let archive of data){
-        console.log(archive.archive_keys)
+       
         if(archive.archive_keys.toLowerCase() == search){
-            return archive.archive_values;
+            return [{archive: archive.archive_values, id: archive.id}]
         }
     }
    }
 }
 
-const files = computed(() => {
+// const files = computed(() => {
+//   let newarr = [];
+
+//   if (props.branch.data) {
+//     for (let file of props.branch.data) {
+//       let arr = {
+//         name: file?.file_path[0]?.file_name,
+//         size: file?.file_path[0]?.file_size,
+//         date: formatDate(file.updated_at),
+//         created: formatDate(file.created_at),
+//         uploaded_by: file?.file_path[0]?.updated_by_name,
+//         path: file?.file_path[0]?.thumbnails,
+//         files: file?.file_path,
+//         id: file.id,
+//         location: page.props.branch.title + " Department",
+//         amount: getArchiveDocsVale(file.archive_docs, 'amount'),
+//         title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title'): file?.file_path[0]?.file_name,
+//         description:getArchiveDocsVale(file.archive_docs, 'description')
+//       }
+//       newarr.push(arr);
+//     }
+//   }
+//   return newarr;
+// })
+
+const files = computed(()=>{
   let newarr = [];
 
-  if (props.branch.data) {
-    for (let file of props.branch.data) {
+  if(props.branch.data){
+    for(let file of props.branch.data){
       let arr = {
-        name: file?.file_path[0]?.file_name,
+        name: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title')[0].archive: file?.file_path[0]?.file_name,
         size: file?.file_path[0]?.file_size,
         date: formatDate(file.updated_at),
-        created: formatDate(file.created_at),
         uploaded_by: file?.file_path[0]?.updated_by_name,
-        path: file?.file_path[0]?.thumbnails,
+        //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
+        path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.path: '',
         files: file?.file_path,
         id: file.id,
-        location: page.props.branch.title + " Department",
-        amount: getArchiveDocsVale(file.archive_docs, 'amount'),
-        title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title'): file?.file_path[0]?.file_name,
-        description:getArchiveDocsVale(file.archive_docs, 'description')
+        amount: getArchiveDocsVale(file.archive_docs, 'amount')? getArchiveDocsVale(file.archive_docs, 'amount')[0]:'',
+        title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title')[0]: file?.file_path[0]?.file_name,
+        description:getArchiveDocsVale(file.archive_docs, 'description')? getArchiveDocsVale(file.archive_docs, 'description')[0]: '',
+        archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title')? getArchiveDocsVale(file.archive_docs, 'title')[0]:'',
+        archive_docs: file.archive_docs,
+        department:file.department? file.department: [],
+        division: file.division? file.division: [],
+        unit: file.unit? file.unit: []
       }
       newarr.push(arr);
     }
@@ -505,6 +579,34 @@ const formatDate = (inputDate) => {
   var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
 
   return formattedDate;
+}
+
+const getFileExtension = (file)=>{
+    const f_path = file.path? file.path : file?.name
+    console.log('this is the path ', file.path)
+    if(f_path){
+       const parts = f_path.split('.');
+
+      const extension = parts.pop();
+
+      if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
+        return page.props.base+'/storage'+file.path
+      }
+      
+      if(extension == 'pdf'){
+          return page.props.base+'/images/pdf.svg'
+      }
+
+      if(extension == 'doc' || extension == 'doctx'){
+          return page.props.base+'/images/word.svg'
+      }
+
+      if(extension == 'xlx' || extension == 'xlsx'){
+          return page.props.base+'/images/excel.svg'
+      }
+    }
+   
+
 }
 </script>
 

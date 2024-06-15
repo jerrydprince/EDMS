@@ -48,7 +48,9 @@ class WorkFlowController extends Controller
         $task->description = $request->description;
         $task->workflow_id = $request->workflow_id;
         $task->document_type = $request->documentType;
-        $task->file_path = $path.'/'.$fileName;
+        if($request->file('file')){
+            $task->file_path = $path.'/'.$fileName;
+        }
         $task->save();
 
         $ids = explode(',', $request->userIds);

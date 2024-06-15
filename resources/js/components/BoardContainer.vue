@@ -2,7 +2,7 @@
   <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 pb-7 gap-5 px-7">
     <!-- ====== task  ====== -->
     <div class="bg-[#F2F4F7] rounded-md p-3 h-fit cursor-pointer" v-for="(task, index) in flowTasks"
-      :list="flowTasks.Tasks" :key="index" @click="ArchiveDocumentModal = true">
+      :list="flowTasks.Tasks" :key="index" >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <h1 class="font-semibold text-lg">{{ task.status }}</h1>
@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <draggable class=" " :list="task.todo" :item-key="title" group="demo">
+      <draggable class=" " :list="task.todo" :item-key="title" group="demo" @click="setSelectedTask(task)">
         <template #item="{ element }">
           <div class="bg-white rounded-md shadow-md mt-3">
             <div class="p-2 border-b">
@@ -68,19 +68,19 @@
                 </div>
                 <div class="flex items-center gap-1">
                   <Icon icon="uil:calender" width="13" />
-                  <span>3d</span>
+                  <span>{{ parseLaravelDate(element.date) }}</span>
                 </div>
               </div>
             </div>
           </div>
         </template>
       </draggable>
-      <div
+      <!-- <div
         class="bg-[white] hover:bg-[#EBF3FE] text-[#1D2939] hover:border-primary hover: font-semibold border-gray-300 border-dashed border-[2px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex items-center gap-2"
         @click="addTask = true" @click.stop>
         <Icon icon="ic:outline-plus" width="25" />
         <h1>Add Task</h1>
-      </div>
+      </div> -->
     </div>
   </div>
 
@@ -100,6 +100,7 @@ const ArchiveDocumentModal = ref(false);
 const menuVisible = ref(false);
 const modalRef = ref(null);
 const submenu = ref(false);
+const selectedTask = ref([])
 
 onClickOutside(modalRef, (event) => {
   (menuVisible.value = false), (submenu.value = false);
@@ -108,6 +109,11 @@ onClickOutside(modalRef, (event) => {
 const props = defineProps({
   flowTasks: Object,
 });
+
+const setSelectedTask = (task)=>{
+  selectedTask.value = task
+  ArchiveDocumentModal.value = true
+}
 
 const menuItem = ref([
   {
@@ -156,6 +162,43 @@ const toggleMenu = (status) => {
   const clientXPercentage = (clientX / viewportWidth) * 100;
   horizontalPosition.value = clientXPercentage >= 65;
 };
+
+function parseLaravelDate(laravelDate) {
+    const currentDate = new Date();
+    const parsedDate = new Date(laravelDate);
+
+    const diff = currentDate.getTime() - parsedDate.getTime();
+    const seconds = Math.floor(diff / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) {
+        return interval + " y";
+    }
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) {
+        return interval + " m";
+    }
+
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) {
+        return interval + " d";
+    }
+
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+        return interval + " hr";
+    }
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+        return interval + " min";
+    }
+
+    return Math.floor(seconds) + " sec";
+}
+
+
 </script>
 
 <style></style>

@@ -123,7 +123,7 @@ import axios from "axios";
 import {usePage} from '@inertiajs/vue3'
 
 const props = defineProps(["modelValue", "workflowId"]);
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "reloadTask", "newTask"]);
 const selectedIndex = ref(null)
 const startDate = ref(null);
 const endDate = ref(null);
@@ -132,6 +132,7 @@ const description = ref('');
 const documentType = ref('');
 const page = usePage()
 const file = ref(null)
+const toast = useToast()
 
 
 const searchInput = ref("");
@@ -157,7 +158,6 @@ const Suggestions = ref([]);
 // ]);
 
 const handleFileUpload = (event)=> {
-  console.log(event.target.files[0])
       file.value = event.target.files[0];
     
   }
@@ -206,7 +206,6 @@ const closeModal = () => {
 const searchUsers = ()=>{
   axios.get('/admin/search-users',{params:{search: searchInput.value}}).then((response)=>{
     Suggestions.value = response.data
-    console.log(response.data)
   })
 }
 
@@ -224,7 +223,6 @@ const submit = () => {
     return false
   }
   if(Tags.value.length == 0){
-    console.log(Tags)
     document.getElementById('search').focus();
     return false;
   }
@@ -234,7 +232,6 @@ const submit = () => {
     userIds.push(val.id);
   })
  
-console.log(userIds)
       let data = new FormData();
       data.append('title', title.value);
       data.append('start', startDate.value);
@@ -252,20 +249,22 @@ console.log(userIds)
     description.value = ''
     file.value = null
     documentType.value = '';
-    workflowId.value = '';
     userIds = []
 
+    emit('reloadTask');
+    emit('newTask')
+    toast.add({
+      severity: "success",
+      summary: 'Task created successfully',
+      detail: "",
+      life: 3000,
+    });
   })
 
   emit("update:modelValue", false);
   selectedIndex.value = null
   Tags.value = []
-  //   toast.add({
-  //     severity: "success",
-  //     summary: '',
-  //     detail: "",
-  //     life: 3000,
-  //   });
+  
 };
 </script>
 

@@ -21,19 +21,26 @@
         </div>
       </div>
       <div class="px-3">
-        <div v-if="workflows.length !== 0">
-          <div v-for="(flow, index) in props.userworkflows" :key="index" :class="{ ' bg-primary': selectedIndex === index }"
+        <div
+          class="bg-[#EBF3FE] text-[#052B0A] font-semibold border-primary border-dashed border-[2px] px-2 py-4 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2"
+          @click="newWorkFlowModal = true">
+          <Icon icon="ic:outline-plus" width="25" />
+          <h1>Create New Workflow</h1>
+        </div>
+
+        <div v-if="allWorkflows.length !== 0">
+          <div v-for="(flow, index) in allWorkflows" :key="index" :class="{ ' bg-primary': selectedIndex === index }"
             class="mt-3 p-2 border rounded-md flex items-center justify-between cursor-pointer"
-            @click="handleTask(flow, index)">
+            @click="handleTask(flow, index)" ref="workflow_divs">
             <div class="flex items-center gap-3">
               <div class="p-2 rounded-full bg-[#EBF3FE]">
-                <Icon :icon="emojis[flow.emoji]?.icon" width="25" />
+                <img :src="emojis[flow.emoji]? emojis[flow.emoji].image: ''" alt="">
               </div>
               <div>
                 <h1 class="font-semibold text-[#1D2939]" :class="{ ' text-white': selectedIndex === index }">
                   {{ flow.title }}
                 </h1>
-                <small class="opacity-70" :class="{ ' text-white': selectedIndex === index }">20 Tasks. Ongoing</small>
+                <small class="opacity-70" :class="{ ' text-white': selectedIndex === index }">{{ flow.task.length }} Tasks. Ongoing</small>
               </div>
             </div>
             <div>
@@ -51,12 +58,7 @@
             </p>
           </div>
         </div>
-        <div
-          class="bg-[#EBF3FE] text-[#052B0A] font-semibold border-primary border-dashed border-[2px] px-2 py-4 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2"
-          @click="newWorkFlowModal = true">
-          <Icon icon="ic:outline-plus" width="25" />
-          <h1>Create New Workflow</h1>
-        </div>
+        
       </div>
     </section>
     <section class="hide_scroll w-full overflow-y-scroll">
@@ -118,15 +120,15 @@
       </div>
     </section>
   </main>
-  <NewWorkflow v-model="newWorkFlowModal" @reloadPage="reloadPage" />
+  <NewWorkflow v-model="newWorkFlowModal" @reloadPage="reloadPage" @newWorkflow="setNewWorkflow" />
   <!-- <AddTask v-model="addTask" /> -->
-  <AssignTask v-model="assignTaskModal" :workflowId="selectedWorkflow?.id" />
+  <AssignTask v-model="assignTaskModal" :workflowId="selectedWorkflow?.id" @reloadTask="getTaskReload" @newTask="setNewTask"/>
   <ArchiveDocument v-model="ArchiveDocumentModal" />
   <AddMember v-model="addmemberModal" />
 </template>
 
 <script setup>
-import { ref, watch, defineProps, onMounted } from "vue";
+import { ref, watch, defineProps, onMounted, computed } from "vue";
 import image1 from "../../assets/images/members/1.svg";
 import image2 from "../../assets/images/members/2.svg";
 import image3 from "../../assets/images/members/3.svg";
@@ -140,17 +142,44 @@ import ArchiveDocument from "../../components/Modals/Workflows/ArchiveDocument.v
 import AddMember from "../../components/Modals/Workflows/AddMember.vue";
 import { router } from '@inertiajs/vue3';
 
+import Emoji_1 from '../../../../public/images/Emojis/Emoji_1.svg'
+import Emoji_2 from '../../../../public/images/Emojis/Emoji_2.svg'
+import Emoji_3 from '../../../../public/images/Emojis/Emoji_3.svg'
+import Emoji_4 from '../../../../public/images/Emojis/Emoji_4.svg'
+import Emoji_5 from '../../../../public/images/Emojis/Emoji_5.svg'
+import Emoji_6 from '../../../../public/images/Emojis/Emoji_6.svg'
+import Emoji_7 from '../../../../public/images/Emojis/Emoji_7.svg'
+import Emoji_8 from '../../../../public/images/Emojis/Emoji_8.svg'
+import Emoji_9 from '../../../../public/images/Emojis/Emoji_9.svg'
+import Emoji_10 from '../../../../public/images/Emojis/Emoji_10.svg'
+import Emoji_11 from '../../../../public/images/Emojis/Emoji_11.svg'
+import Emoji_12 from '../../../../public/images/Emojis/Emoji_12.svg'
+import Emoji_13 from '../../../../public/images/Emojis/Emoji_13.svg'
+import Emoji_14 from '../../../../public/images/Emojis/Emoji_14.svg'
+
 const selectedIndex = ref(0);
 const assignTaskModal = ref(false)
 const ArchiveDocumentModal = ref(false);
 const addmemberModal = ref(false);
 const newWorkFlowModal = ref(false);
 const addTask = ref(false);
-const props = defineProps(['userworkflows'])
+const props = defineProps(["userworkflows"])
 const selectedWorkflow = ref();
+const is_newworkflow = ref(false);
+const is_newTask = ref(false);
+const workflow_divs = ref();
 
 const reloadPage = () => {
   router.reload({ only: ['userworkflows'] })
+  firstTask()
+  selectedIndex.value = 0;
+  is_newTask.value = false
+
+  // const lastDiv = workflow_divs.value[0];
+  // if (lastDiv) {
+  //   lastDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // }
+  //selectedWorkflow.value = allWorkflows[0];
 }
 
 
@@ -171,629 +200,663 @@ const members = ref([
     img: image5,
   },
 ]);
-const workflows = ref([
-  {
-    flow_name: "Archiver Workflow",
-    icon: "mdi:folder",
-    Tasks: [
-      {
-        status: "In Progress",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Under Review",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Completed",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Uncompleted",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    flow_name: "Bug Fixing",
-    icon: "mdi:folder",
-    Tasks: [
-      {
-        status: "In Progress",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Under Review",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Completed",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Uncompleted",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    flow_name: "Doc. Review Overflow",
-    icon: "mdi:folder",
-    Tasks: [
-      {
-        status: "In Progress",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Under Review",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Completed",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Uncompleted",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    flow_name: "Publications Workflow",
-    icon: "mdi:folder",
-    Tasks: [
-      {
-        status: "In Progress",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Under Review",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Completed",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-      {
-        status: "Uncompleted",
-        todo: [
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-          {
-            title: "Review and verify",
-            task: "Provide support and assistance to users regarding document archiving",
-          },
-        ],
-      },
-    ],
-  },
-]);
+
+const setNewWorkflow = ()=>{
+  is_newworkflow.value = true;
+}
+
+const setNewTask = ()=>{
+  is_newTask.value = true;
+}
+
+// const workflows = ref([
+//   {
+//     flow_name: "Archiver Workflow",
+//     icon: "mdi:folder",
+//     Tasks: [
+//       {
+//         status: "In Progress",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Under Review",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Completed",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Uncompleted",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     flow_name: "Bug Fixing",
+//     icon: "mdi:folder",
+//     Tasks: [
+//       {
+//         status: "In Progress",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Under Review",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Completed",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Uncompleted",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     flow_name: "Doc. Review Overflow",
+//     icon: "mdi:folder",
+//     Tasks: [
+//       {
+//         status: "In Progress",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Under Review",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Completed",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Uncompleted",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     flow_name: "Publications Workflow",
+//     icon: "mdi:folder",
+//     Tasks: [
+//       {
+//         status: "In Progress",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Under Review",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Completed",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//       {
+//         status: "Uncompleted",
+//         todo: [
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//           {
+//             title: "Review and verify",
+//             task: "Provide support and assistance to users regarding document archiving",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ]);
 
 const SelectedFlow = ref();
 
 const menu = ref();
 
+const getTaskReload = ()=>{
+  is_newworkflow.value = false;
+  router.reload({ only: ["userworkflows"] })
+  
+}
+
 const handleTask = (flow, index) => {
-  console.log(flow)
   //SelectedFlow.value = flow;
   selectedIndex.value = index;
   selectedWorkflow.value = flow
 };
 
 const emojis = [
-  {
-    icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="32" height="32" rx="16" fill="#F9FAFB"/>
-<path d="M24 17.2964C24 16.9907 22.7133 17.0742 22.6111 16.852C22.5089 16.6298 24.0369 14.8147 23.8147 14.4076C23.5924 14.0004 21.5542 14.9262 21.4258 14.7222C21.2978 14.5187 21.5556 13.1667 21.3333 13C21.1111 12.8333 19 15.1849 18.7036 14.9076C18.4076 14.6298 19.3889 10.2409 19.1862 10.1529C18.9836 10.0649 17.6667 10.7596 17.5004 10.7227C17.3342 10.6853 16.3031 8 16 8C15.6969 8 14.6658 10.6853 14.4996 10.7222C14.3333 10.7591 13.0164 10.0644 12.8138 10.1524C12.6111 10.2404 13.5924 14.6293 13.296 14.9071C13 15.1849 10.8889 12.8333 10.6667 13C10.4444 13.1667 10.7022 14.5187 10.5742 14.7222C10.4458 14.9258 8.40756 14 8.18533 14.4076C7.96311 14.8151 9.49156 16.6298 9.38889 16.852C9.28622 17.0742 8 16.9907 8 17.2964C8 17.6022 11.7502 19.6231 12 19.8613C12.2498 20.0991 10.7049 21.1067 10.9258 21.2964C11.1818 21.5169 12.632 20.9276 15.5556 20.8711V23.5556C15.5556 23.8013 15.7547 24 16 24C16.2458 24 16.4444 23.8013 16.4444 23.5556V20.8711C19.3676 20.9276 20.8182 21.5169 21.0742 21.2964C21.2947 21.1062 19.7502 20.0991 20 19.8613C20.2498 19.6231 24 17.6018 24 17.2964Z" fill="#DD2E44"/>
-</svg>
-`
-  },
-  {
-    icon: "noto:eight-pointed-star"
-  },
-  {
-    icon: "noto:eight-pointed-star"
-  },
-  {
-    icon: "noto:eight-pointed-star"
-  },
-  {
-    icon: "noto:eight-pointed-star"
-  },
-  {
-    icon: "noto:eight-pointed-star"
-  },
-
+    {
+        image:Emoji_1
+    },
+    {
+      image:Emoji_2
+    },
+    {
+      image:Emoji_3
+    },
+    {
+      image:Emoji_4
+    },
+    {
+      image:Emoji_5
+    },
+    {
+      image:Emoji_6
+    },
+    {
+      image:Emoji_7
+    },
+    {
+      image:Emoji_8
+    },
+    {
+      image:Emoji_9
+    },
+    {
+      image:Emoji_10
+    },
+    {
+      image:Emoji_11
+    },
+    {
+      image:Emoji_12
+    },
+    {
+      image:Emoji_13
+    },
+    {
+      image:Emoji_14
+    }
 ]
+
 
 const sortTask = ()=>{
   let inp_progress = [];
@@ -801,33 +864,41 @@ const sortTask = ()=>{
   let completed = [];
   let uncompleted = [];
 
-  if(selectedWorkflow.value.task && selectedWorkflow.value.task.length > 0){
+  if(selectedWorkflow.value && selectedWorkflow.value.task && selectedWorkflow.value.task.length > 0){
     selectedWorkflow.value.task.forEach((val)=>{
       if(val.progress == 0){
         inp_progress.push({
           title: val.title,
-          task: val.description
+          task: val.description,
+          date: val.created_at,
+          id: val.id
       })
       }
 
       if(val.progress == 1){
         under_review.push({
           title: val.title,
-          task: val.description
+          task: val.description,
+          date: val.created_at,
+          id: val.id
       })
       }
 
       if(val.progress == 2){
         completed.push({
           title: val.title,
-          task: val.description
+          task: val.description,
+          date: val.created_at,
+          id: val.id
       })
       }
 
       if(val.progress == 3){
         uncompleted.push({
           title: val.title,
-          task: val.description
+          task: val.description,
+          date: val.created_at,
+          id: val.id
       })
       }
     })
@@ -865,7 +936,8 @@ const firstTask = ()=>{
 
     let workflow = props.userworkflows[0];
     let task = workflow.task;
-    console.log(task)
+    selectedWorkflow.value = workflow
+    
     task.forEach((tsk)=>{
       if(tsk.progress == 0){
         inp_progress.push({
@@ -922,6 +994,10 @@ const firstTask = ()=>{
   }
 }
 
+const allWorkflows = computed(()=>{
+  return props.userworkflows
+})
+
 
 watch(selectedWorkflow, ()=>{
   sortTask()
@@ -929,8 +1005,19 @@ watch(selectedWorkflow, ()=>{
 
 onMounted(()=>{
   firstTask()
-  console.log(SelectedFlow.value)
 })
+
+watch(()=>props.userworkflows, ()=>{
+  if(selectedWorkflow.value){
+    if(is_newworkflow){
+      selectedWorkflow.value = props.userworkflows[0]
+    }else{
+      let index = props.userworkflows.findIndex((val)=> val.id == selectedWorkflow.value.id);
+      selectedWorkflow.value = props.userworkflows[index]
+    }
+  }
+})
+
 
 </script>
 
