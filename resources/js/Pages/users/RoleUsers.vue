@@ -2,7 +2,7 @@
   <main>
     <div class="lg:px-7 px-5 flex items-center justify-between pt-5">
       <div class="flex items-center gap-5">
-        <Link href="/admin/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
+        <Link href="/dashboard/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
           <Icon icon="formkit:arrowleft" width="30" />
         </Link>
         <div>
@@ -16,7 +16,7 @@
           <p>Download CSV</p>
         </button>
 
-        <Link href="/admin/add-user" class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4">
+        <Link href="/dashboard/add-user" class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4">
           <Icon icon="material-symbols:add" width="20" />
           <p>Add User</p>
         </Link>
@@ -73,29 +73,35 @@
         </template>
         </Column>
         <Column field="" header="Actions" :pt="{
-          bodyCell: { class: 'text-gray-500' },
-        }" headerStyle="color: #667085; font-weight: 500;">
-          <template #body="slotProps">
-            <div class="flex gap-3 items-center">
-              <div class="p-1 font-semibold border rounded-md border-gray-300">
-                <Icon icon="mingcute:pencil-2-line" width="25" />
-              </div>
-              <div @click=" handleDelete(slotProps.data.id)">
-                <Icon icon="mingcute:delete-2-line" width="25" />
-              </div>
-            </div>
-          </template>
-        </Column>
+                bodyCell: { class: 'text-gray-500' },
+              }" headerStyle="color: #667085; font-weight: 500;">
+                <template #body="slotProps">
+                  <div class="flex gap-3 items-center">
+                    <Link :href="'/dashboard/edit-user?id='+slotProps.data.id" class="p-1 font-semibold border rounded-md border-gray-300 cursor-pointer">
+                      <Icon icon="mingcute:pencil-2-line" width="25" />
+                    </Link>
+                    <div @click="showDeleteDialog(slotProps.data.id)" class=" cursor-pointer">
+                      <Icon icon="mingcute:delete-2-line" width="25" />
+                    </div>
+                  </div>
+                </template>
+              </Column>
       </DataTable>
     </div>
-
+    <DeleteUsers v-if="deleteModal" @confirmed="handleDelete" @cancelled="cancelDelete" />
   </main>
 </template>
 
 <script setup>
 import { ref, defineProps } from "vue";
-import { Link } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
+import DeleteUsers from "../../components/Modals/DeleteUsers.vue";
+import axios from "axios";
+
 const selectedProduct = ref();
+const deleteModal = ref(false)
+
+const itemIdToDelete = ref(null);
 const goBack = () => {
   router.go(-1);
 };
@@ -126,6 +132,23 @@ const formatDate = (data, last_active)=>{
 
   return new_date;
 
+}
+
+const showDeleteDialog = (itemId) => {
+  itemIdToDelete.value = itemId;
+  deleteModal.value = !deleteModal.value
+};
+
+const handleDelete = (id) => {
+  axios.get('/dashboard/delete-user/'+itemIdToDelete.value).then((response)=>{
+    itemIdToDelete.value = null;
+    deleteModal.value = !deleteModal.value
+    router.reload({only:['role']})
+  })
+};
+
+const cancelDelete = () => {
+  deleteModal.value = !deleteModal.value
 }
 
 const capitalizeWords = (str)=> {

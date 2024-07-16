@@ -374,7 +374,7 @@ const submitForm = (modal) => {
       division: divisionForm,
       unit: unitForm
     }
-    router.post('/admin/create-department-division-unit', data, {
+    router.post('/dashboard/create-department-division-unit', data, {
       onSuccess: function () {
         emit("update:modelValue", false);
         emit("update:step", 1)
@@ -451,7 +451,7 @@ if (props.step === 1) {
     unit: unitForm,
     heads: selectedHead.value
   }
-  router.post('/admin/create-department-division-unit', data, {
+  router.post('/dashboard/create-department-division-unit', data, {
     onSuccess: function () {
       emit("update:modelValue", false);
       emit("update:step", 1)
@@ -508,7 +508,7 @@ watch(() => departmentForm.head, (val)=>{
 
 const debouncedSearch = debounce(() => {
   if(departmentForm.head !==''){
-    axios.get('/admin/search-department-head',{params:{name:departmentForm.head, 'type':'department'}}).then((response)=>{
+    axios.get('/dashboard/search-department-head',{params:{name:departmentForm.head, 'type':'department'}}).then((response)=>{
       departmentHead.value = response.data
     })
   }else{

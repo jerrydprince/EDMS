@@ -61,7 +61,7 @@
         </section>
 
         <div v-if="arrayMails.length !== 0">
-            <section class=" mt-7 relative">
+            <section class="px-7 mt-7 relative">
                 <div>
                     <!-- <DataTable
             v-model:selection="selectedDocument"
@@ -156,8 +156,8 @@
 </DataTable>
 -->
 
-                    <table class="w-full mb-7">
-                        <thead class=" bg-gray-100 rounded-md overflow-hidden ">
+                    <table class="w-full">
+                        <thead class=" bg-gray-100 rounded-md overflow-hidden h-12">
                             <tr class="text-left">
                                 <th class="py-3 pl-5">
                                     <!-- <input type="checkbox" v-model="allChecked" @change="toggleAll" class="h-5 w-5" /> -->
@@ -166,6 +166,7 @@
                                 <th>Subject</th>
                                 <!-- <th>Message</th> -->
                                 <th>Date</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody v-if="clickedButton === 'Drafts'">
@@ -366,7 +367,7 @@ const fetchdraftsMails = async () => {
         console.error('Error fetching data:', error);
     }
 };
-console.log('Selected Item before:', selectedItem.value);
+
 
 
 

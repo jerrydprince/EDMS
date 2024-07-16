@@ -121,7 +121,7 @@
   };
   
   const submitForm = () => {
-    form.post('/admin/create-document-type',{onSuccess: ()=>{
+    form.post('/dashboard/create-document-type',{onSuccess: ()=>{
         toast.add({
           severity: "success",
           summary: "Document Created",

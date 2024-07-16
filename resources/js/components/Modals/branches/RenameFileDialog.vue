@@ -127,11 +127,11 @@
 
     const submitForm = () => {
      
-        form.post('/dashboard/rename-file',{onSuccess: ()=>{
+        form.post('/data-entry/rename-file',{onSuccess: ()=>{
             toast.add({
                 severity: "success",
                 summary: "Document Created",
-                detail: "You've successfully created a new document.",
+                detail: "Document renamed successfully.",
                 life: 3000,
             });
             emit("update:modelValue", false);

@@ -162,7 +162,7 @@ const closeModal = () => {
 
 const submitForm = (modal = "Department") => {
     divisionForm.division_id = props.division.id
-    divisionForm.post('/admin/add-unit-to-division',{onSuccess: ()=>{
+    divisionForm.post('/dashboard/add-unit-to-division',{onSuccess: ()=>{
         emit("close", true);
         divisionForm.reset();
         selectedHead.value.length = 0;
@@ -205,7 +205,7 @@ watch(() => divisionForm.head, (val)=>{
 
 const debouncedSearch = debounce(() => {
   if(divisionForm.head !==''){
-    axios.get('/admin/search-unit-head',{params:{name:divisionForm.head, 'type':'unit'}}).then((response)=>{
+    axios.get('/dashboard/search-unit-head',{params:{name:divisionForm.head, 'type':'unit'}}).then((response)=>{
       unitHead.value = response.data
     })
   }else{

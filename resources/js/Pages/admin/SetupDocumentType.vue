@@ -119,14 +119,14 @@ const menuItems = ref([
     label: "Duplicate", 
     icon: "pi pi-clone",
     command: ()=>{
-      router.post('/admin/duplicate-document-type', form)
+      router.post('/dashboard/duplicate-document-type', form)
     }
   },
   { 
     label: "Delete",
      icon: "pi pi-trash", 
      command: ()=>{
-      router.get('/admin/delete-document-type', form)
+      router.get('/dashboard/delete-document-type', form)
     }
     },
 ]);
@@ -144,17 +144,17 @@ const items = ref([
   {
     label: "Metadata",
     icon: "",
-    link: "/admin/metadata-setup",
+    link: "/dashboard/metadata-setup",
   },
   {
     label: "Document Type",
     icon: "material-symbols-light:info-outline",
-    link: "/admin/setup-document-type",
+    link: "/dashboard/setup-document-type",
   },
   {
     label: "File Type",
     icon: "",
-    link: "/admin/file-type",
+    link: "/dashboard/file-type",
   }
 ]);
 
@@ -180,7 +180,7 @@ watch(selectedMetadata, (val) => {
       metadata: selectedMetadata.value
     }
 
-    router.post('/admin/configure-meta-data', data, {
+    router.post('/dashboard/configure-meta-data', data, {
       onSuccess: () => {
         //refresh singledocType variable to ensure all is in sync
         let doctype = props.documentTypes.find((val) => {

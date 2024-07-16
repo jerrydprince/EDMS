@@ -113,7 +113,8 @@ import pagination from "./pagination.vue";
 
 
 const props = defineProps(['files', 'documentsGridView', 'archives', 'search','sort']);
-const emit = defineEmits(['docs', 'fileRename', 'lock', 'changeFormat', 'downloadFile', 'selectedArchive', 'branchDetails','editMetadata', 'addMetadata']);
+const emit = defineEmits(['docs', 'fileRename', 'lock', 'changeFormat', 'downloadFile', 'selectedArchive', 'branchDetails',
+'editMetadata', 'addMetadata', 'fileActivity', 'fileVersion', 'lockDocs', 'share', 'folder_id', 'branch_type']);
 const selectedDocument = ref()
 const menu2 = ref();
 const selectedArchiveId = ref();
@@ -142,7 +143,7 @@ const continuousPageNumbering = (number)=>{
 
 const getFileExtension = (file)=>{
     const f_path = file.path? file.path : file?.name
-    console.log('this is the path ', file.path)
+    
     if(f_path){
        const parts = f_path.split('.');
 
@@ -250,6 +251,9 @@ const menuItems = ref([
     <path d="M6.15833 11.2577L11.85 14.5743M11.8417 5.42435L6.15833 8.74102M16.5 4.16602C16.5 5.54673 15.3807 6.66602 14 6.66602C12.6193 6.66602 11.5 5.54673 11.5 4.16602C11.5 2.7853 12.6193 1.66602 14 1.66602C15.3807 1.66602 16.5 2.7853 16.5 4.16602ZM6.5 9.99935C6.5 11.3801 5.38071 12.4993 4 12.4993C2.61929 12.4993 1.5 11.3801 1.5 9.99935C1.5 8.61864 2.61929 7.49935 4 7.49935C5.38071 7.49935 6.5 8.61864 6.5 9.99935ZM16.5 15.8327C16.5 17.2134 15.3807 18.3327 14 18.3327C12.6193 18.3327 11.5 17.2134 11.5 15.8327C11.5 14.452 12.6193 13.3327 14 13.3327C15.3807 13.3327 16.5 14.452 16.5 15.8327Z" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     `,
+    command: ()=>{
+      emit('share');
+    }
   },
   {
     label: 'Change Format',
@@ -279,23 +283,32 @@ const menuItems = ref([
       {
         label: "Activity",
         icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M18.3333 10H15L12.5 17.5L7.5 2.5L5 10H1.66666" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
+        <path d="M18.3333 10H15L12.5 17.5L7.5 2.5L5 10H1.66666" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        `,
+        command: () => {
+          emit('fileActivity', true);
+        }
       },
       {
         label: "File Versions",
         icon: `<svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M1.66666 10.0833L10 14.25L18.3333 10.0833M10 1.75L1.66666 5.91667L10 10.0833L18.3333 5.91667L10 1.75Z" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
+            <path d="M1.66666 10.0833L10 14.25L18.3333 10.0833M10 1.75L1.66666 5.91667L10 10.0833L18.3333 5.91667L10 1.75Z" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          `,
+        command: () => {
+          emit('fileVersion',true);
+        }
       },
       {
         label: "Lock",
         icon: `<svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M4.83333 9.16602V5.83268C4.83333 4.72761 5.27232 3.66781 6.05372 2.8864C6.83512 2.105 7.89493 1.66602 9 1.66602C10.1051 1.66602 11.1649 2.105 11.9463 2.8864C12.7277 3.66781 13.1667 4.72761 13.1667 5.83268V9.16602M3.16667 9.16602H14.8333C15.7538 9.16602 16.5 9.91221 16.5 10.8327V16.666C16.5 17.5865 15.7538 18.3327 14.8333 18.3327H3.16667C2.24619 18.3327 1.5 17.5865 1.5 16.666V10.8327C1.5 9.91221 2.24619 9.16602 3.16667 9.16602Z" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
+        <path d="M4.83333 9.16602V5.83268C4.83333 4.72761 5.27232 3.66781 6.05372 2.8864C6.83512 2.105 7.89493 1.66602 9 1.66602C10.1051 1.66602 11.1649 2.105 11.9463 2.8864C12.7277 3.66781 13.1667 4.72761 13.1667 5.83268V9.16602M3.16667 9.16602H14.8333C15.7538 9.16602 16.5 9.91221 16.5 10.8327V16.666C16.5 17.5865 15.7538 18.3327 14.8333 18.3327H3.16667C2.24619 18.3327 1.5 17.5865 1.5 16.666V10.8327C1.5 9.91221 2.24619 9.16602 3.16667 9.16602Z" stroke="#1D2939" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        `,
+        command: () =>{
+          emit('lockDocs')
+        }       
       }
     ]
   },
@@ -375,15 +388,19 @@ const filteredFiles = computed(() => {
     }
 
     const search = props.search.toLowerCase();
-    return props.files.filter((val) => {
-        const title = val.title?.archive;
-        const amount = val.amount?.archive;
-        const description = val.description?.archive;
+    
+    // return props.files.filter((val) => {
+    //     const title = val.title?.archive;
+    //     const amount = val.amount?.archive;
+    //     const description = val.description?.archive;
 
-        return [title, amount, description].some((prop) =>
-            typeof prop === 'string' && prop.toLowerCase().includes(search)
-        );
-    });
+    //     return [title, amount, description].some((prop) =>
+    //         typeof prop === 'string' && prop.toLowerCase().includes(search)
+    //     );
+    // });
+    router.get('/data-entry/folder-view/'+props.branch_type+'/'+props.folder_id, {search: search_text.value}, {onSuccess: page =>{
+
+    }})
 });
 
 

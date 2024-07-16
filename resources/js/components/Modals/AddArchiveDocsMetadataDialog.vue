@@ -162,7 +162,7 @@ const submitForm = () => {
         form.push(arr)
     }
 
-    axios.post('/dashboard/update-branch-metadata', { form: form }).then((response) => {
+    axios.post('/data-entry/update-branch-metadata', { form: form }).then((response) => {
         emit('formsubmited', true);
         emit("update:modelValue", false);
     })
@@ -182,7 +182,7 @@ const allMetadatas = () => {
 }
 
 const getDocType = () => {
-    axios.get('/dashboard/branch-metdata').then((response) => {
+    axios.get('/data-entry/branch-metdata').then((response) => {
         branchDocType.value = response.data
     })
 }

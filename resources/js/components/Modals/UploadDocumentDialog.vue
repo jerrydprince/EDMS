@@ -147,11 +147,11 @@
         form.post('/upload-new-document', {onSuccess: ()=>{
             emit('updateDocument');
             toast.add({
-				severity: "success",
-				summary: "Document uploaded",
-				detail: "Document uploaded successfully",
-				life: 3000,
-			});
+              severity: "success",
+              summary: "Document uploaded",
+              detail: "Document uploaded successfully",
+              life: 3000,
+            });
             form.reset()
             closeModal();
         }})

@@ -59,5 +59,25 @@ class Archive extends Model
    {
        return $this->belongsToMany(FilePath::class, 'archive_file_path');
    }
+
+   /**
+    * Get all of the fileActivity for the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+   public function fileActivity()
+   {
+       return $this->hasMany(FileActivity::class);
+   }
+
+   /**
+    * Get all of the versions for the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+   public function version()
+   {
+       return $this->hasMany(Version::class);
+   }
     
 }

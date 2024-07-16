@@ -95,7 +95,7 @@ const submit = () => {
 };
 
 const getFileExtension = computed(() => {
-  let extension_split = props.archive?.name.split('.');
+  let extension_split = props.archive?.path.split('.');
   let extension = extension_split ? extension_split[extension_split.length - 1] : [];
   return extension
 })

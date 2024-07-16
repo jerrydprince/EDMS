@@ -110,15 +110,15 @@
 
 		<div v-else>
 			<!-- ==========activities ======== -->
-			<div v-for=" (activity, index) in activities" :key="index">
+			<div v-for=" (activity, index) in props.file.file_activity" :key="index">
 				<div class=" flex gap-4 my-5" :class="{ 'expanded': expandedIndexes.includes(index) }">
-					<img src="/assets/images/user.png" alt="" class=" w-7 h-7">
+					<img :src="getFileExtension(props.file)" alt="" class=" w-7 h-7">
 					<div class=" text-sm cursor-pointer" @click="toggleExpandable(index)">
-						<p class=" font-semibold">{{ activity.activity }}</p>
-						<p>{{ activity.date }}</p>
+						<p class=" font-semibold">{{ activity.details }}</p>
+						<p>{{ moment(activity.date).fromNow() }}</p>
 						<div v-if="expandedIndexes.includes(index)" class=" text-center">
 
-							<div class=" flex items-center  ml-5">
+							<!-- <div class=" flex items-center  ml-5">
 								<div>
 									<i class="pi pi-file  " style="font-size: 0.7rem"></i>
 									<div class=" flex items-center text-[#D0D5DD] ml-2 ">
@@ -130,12 +130,12 @@
 									<p class="text-[10px] mt-2">{{ activity.details.details_2 }}</p>
 									<p class="text-[10px] mt-1"> {{ activity.details.details_2 }}</p>
 								</div>
-							</div>
+							</div> -->
 
-							<button class=" border p-1 text-[6px] rounded-sm mt-2">
+							<!-- <button class=" border p-1 text-[6px] rounded-sm mt-2">
 								<i class="pi pi-download" style="font-size: 0.4rem"></i>
 								<span> Download Previous version</span>
-							</button>
+							</button> -->
 						</div>
 					</div>
 				</div>
@@ -156,6 +156,7 @@ import { defineEmits, defineProps, computed, ref } from "vue";
 import PreviewFile from "../../../components/Modals/branches/PreviewFile.vue";
 import { usePage } from '@inertiajs/vue3';
 import UploadDocumentDialog from "../UploadDocumentDialog.vue";
+import moment from 'moment';
 
 const previewModal = ref(false)
 const props = defineProps(["modelValue", "file", 'folder']);

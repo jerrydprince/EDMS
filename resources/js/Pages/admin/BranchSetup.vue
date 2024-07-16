@@ -217,7 +217,7 @@ div.td:first-child {
       :doctype="singleDocType" />
     <CreateDepartmentDialog v-model="departmentalModal" :step="step" @update:step="updateModalStep" />
     <DocumentTypesModal v-model="documentTypes" />
-    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDepartment" :url="'/admin/add-document-type-to-department'" />
+    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDepartment" :url="'/dashboard/add-document-type-to-department'" />
     <AddDivisionModal v-model="addDivision" :department ="singleDepartment" @close="addDivision = false"/>
     <EditDepartmentModal v-model="editDepartment" :department="singleDepartment" @close="editDepartment=false"/>
     <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'department'" :branch_id="singleDepartment.id"/>
@@ -480,8 +480,8 @@ const menuItems = ref([
     addDivision.value = true
   }},
   { label: "Divisions", icon: 'pi pi-eye', command: (event)=>{
-    //window.location.href = '/admin/get-divisions?id='+singleDepartment.value.id
-    window.open('/admin/get-divisions?id='+singleDepartment.value.id, "_blank");
+    //window.location.href = '/dashboard/get-divisions?id='+singleDepartment.value.id
+    window.open('/dashboard/get-divisions?id='+singleDepartment.value.id, "_blank");
   }},
   {
     label: 'Add File Type',
@@ -501,14 +501,14 @@ const menuItems = ref([
   //   label: "Duplicate", icon: "pi pi-clone",
   //   command: ()=>{
   //     let data = {id: singleDepartment.value.id}
-  //     router.post('/admin/duplicate-department',data);
+  //     router.post('/dashboard/duplicate-department',data);
   //   }
   //  },
   {
     label: "Delete", icon: "pi pi-trash",
     command: ()=>{
       let data = {id: singleDepartment.value.id}
-      router.post('/admin/delete-department', data)
+      router.post('/dashboard/delete-department', data)
     }
    },
   { label: "Change Log", icon: "pi pi-chart-pie" },
@@ -600,7 +600,7 @@ watch(selectedMetadata, (val) => {
       metadata: selectedMetadata.value
     }
 
-    router.post('/admin/configure-meta-data', data, {
+    router.post('/dashboard/configure-meta-data', data, {
       onSuccess: () => {
         //refresh singledocType variable to ensure all is in sync
         let doctype = props.documentTypes.find((val) => {

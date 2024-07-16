@@ -45,7 +45,7 @@
                 <p class="text-xl lg:text-2xl font-medium">Quick Actions</p>
             </div>
             <div class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10">
-                <Link :href="'admin/meta-data-setup'">
+                <Link :href="'admin/metadata-setup'">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions1 class="absolute top-0 left-[6%]" />
                     <QuickActions1_1 class="absolute top-20 z-[999] left-[12%]" />
@@ -66,7 +66,7 @@
                         </p>
                     </div>
                 </div>
-                <Link href="/admin/manage-users">
+                <Link href="/dashboard/manage-users">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions3 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
@@ -127,10 +127,12 @@
                                     <path d="M11.25 6.75012V14.6251H14.625V6.75012H11.25ZM10.6875 5.62512H15.1875C15.3367 5.62512 15.4798 5.68439 15.5852 5.78987C15.6907 5.89536 15.75 6.03844 15.75 6.18762V15.1876C15.75 15.3368 15.6907 15.4799 15.5852 15.5854C15.4798 15.6909 15.3367 15.7501 15.1875 15.7501H10.6875C10.5383 15.7501 10.3952 15.6909 10.2898 15.5854C10.1843 15.4799 10.125 15.3368 10.125 15.1876V6.18762C10.125 6.03844 10.1843 5.89536 10.2898 5.78987C10.3952 5.68439 10.5383 5.62512 10.6875 5.62512Z" fill="black"/>
                                 </svg>
                             </div>
-                            <div class="ml-2">
-                                <h5 class=" font-semibold text-sm">{{dept.title}}</h5>
-                                <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
-                            </div>
+                            <Link :href="'/dashboard/branches/department/'+dept.id">
+                                <div class="ml-2">
+                                    <h5 class=" font-semibold text-sm">{{dept.title}}</h5>
+                                    <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
+                                </div>
+                            </Link>
                             <div class="ml-4">
                                 <button class=" px-3 py-2 border border-gray-400 rounded-md right">
                                     <svg width="2" height="10" viewBox="0 0 2 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,18 +154,22 @@
                                             </svg>
                                             
                                         </button>
-                                        <div class="ml-2">
-                                            <h5 class=" font-semibold text-sm">{{division.title}}</h5>
-                                            <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
-                                        </div>
+                                        <Link :href="'/dashboard/branches/division/'+division.id">
+                                            <div class="ml-2">
+                                                <h5 class=" font-semibold text-sm">{{division.title}}</h5>
+                                                <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
+                                            </div>
+                                        </Link>
                                     </div>
                                     <div class="inner-menu border-l border-gray-300 ml-6 -mt-3 pb-3 hidden" :id="dept.title+'_'+division.title+'_'+index">
                                         <ul>
                                             <li v-for="(unit, ind) in division.unit" :key="ind" class="pt-2 cursor-pointer hover:bg-gray-50 left-line">
-                                                <div class="ml-10">
-                                                    <h5 class=" font-semibold text-sm">{{unit.title}}</h5>
-                                                    <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
-                                                </div>
+                                                <Link :href="'/dashboard/branches/unit/'+unit.id">
+                                                    <div class="ml-10">
+                                                        <h5 class=" font-semibold text-sm">{{unit.title}}</h5>
+                                                        <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
+                                                    </div>
+                                                </Link>
                                             </li>
                                         </ul>
                                     </div>

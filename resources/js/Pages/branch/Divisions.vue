@@ -79,7 +79,7 @@
     </div>
     <AddUnit v-model="addUnit" :division="singleDivision" @close="addUnit= false"/>
     <EditDivisionModal v-model="editDivision" :division="singleDivision" @close="editDivision = false"/>
-    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDivision" :url="'/admin/add-document-type-to-division'" />
+    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentDivision" :url="'/dashboard/add-document-type-to-division'" />
     <AddDivisionModal v-model="addDivision" :department ="props.department" @close="addDivision = false"/>
     <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'division'" :branch_id="singleDivision?.id"/>
 </template>
@@ -117,8 +117,8 @@ const menuItems = ref([
     }
   },
   { label: "Units", icon: 'pi pi-eye', command: (event)=>{
-    //window.location.href = '/admin/get-divisions?id='+singleDepartment.value.id
-    window.open('/admin/get-units?id='+singleDivision.value.id, "_blank");
+    //window.location.href = '/dashboard/get-divisions?id='+singleDepartment.value.id
+    window.open('/dashboard/get-units?id='+singleDivision.value.id, "_blank");
   }},
   { label: "Edit", icon: "pi pi-pencil", command: ()=>{
     editDivision.value = true
@@ -127,14 +127,14 @@ const menuItems = ref([
 //     label: "Duplicate", icon: "pi pi-clone",
 //     command: ()=>{
 //         let data = {id: singleDivision.value.id}
-//         router.post('/admin/duplicate-division',data);
+//         router.post('/dashboard/duplicate-division',data);
 //     }
 //  },
   { 
     label: "Delete", icon: "pi pi-trash",
     command: ()=>{
         let data = {id: singleDivision.value.id}
-        router.post('/admin/delete-division', data);
+        router.post('/dashboard/delete-division', data);
     } 
     },
   { label: "Change Log", icon: "pi pi-chart-pie" },

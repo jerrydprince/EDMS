@@ -1,1031 +1,382 @@
 <template>
-  <main class="h-screen flex w-full">
-    <section
-      class="w-[30%] border-r border-solid border-gray-200 sticky top-0 h-screen py-5 overflow-y-scroll hide_scroll">
-      <div class="px-3">
-        <h1 class="text-3xl">Workflows</h1>
-        <p class="text-[#344054]">Choose between workflows</p>
-      </div>
-      <Divider />
-      <div class="flex items-center justify-between text-sm">
-        <div class="bg-gray-100 justify-between flex items-center w-full mx-3 rounded-md p-1">
-          <button class="bg-white shadow-md border-gray-300 rounded-lg py-1 px-3">
-            <p>All <small>(12) </small></p>
-          </button>
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-3">
-            <p>Opened <small>(12) </small></p>
-          </button>
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-3">
-            <p>Closed <small>(12) </small></p>
-          </button>
+  <main class="p-7">
+    <div class="bg-white border border-gray-200 rounded-xl lg:flex items-start p-7 w-full justify-between">
+      <div class="flex items-start gap-5">
+        <div class="p-3 border rounded-full">
+          <Icon icon="lucide:workflow" width="30" />
         </div>
-      </div>
-      <div class="px-3">
-        <div
-          class="bg-[#EBF3FE] text-[#052B0A] font-semibold border-primary border-dashed border-[2px] px-2 py-4 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2"
-          @click="newWorkFlowModal = true">
-          <Icon icon="ic:outline-plus" width="25" />
-          <h1>Create New Workflow</h1>
-        </div>
-
-        <div v-if="allWorkflows.length !== 0">
-          <div v-for="(flow, index) in allWorkflows" :key="index" :class="{ ' bg-primary': selectedIndex === index }"
-            class="mt-3 p-2 border rounded-md flex items-center justify-between cursor-pointer"
-            @click="handleTask(flow, index)" ref="workflow_divs">
-            <div class="flex items-center gap-3">
-              <div class="p-2 rounded-full bg-[#EBF3FE]">
-                <img :src="emojis[flow.emoji]? emojis[flow.emoji].image: ''" alt="">
-              </div>
-              <div>
-                <h1 class="font-semibold text-[#1D2939]" :class="{ ' text-white': selectedIndex === index }">
-                  {{ flow.title }}
-                </h1>
-                <small class="opacity-70" :class="{ ' text-white': selectedIndex === index }">{{ flow.task.length }} Tasks. Ongoing</small>
-              </div>
+        <div>
+          <h1 class="text-4xl">Workflow Dashboard</h1>
+          <div class="text-sm flex items-center gap-5 mt-4">
+            <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
+              <Icon icon="mynaui:key" />
+              <p>Director</p>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm">
+        <div class="bg-gray-100 flex items-center rounded-md p-1">
+          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignmentButton = 1"
+            :class="{ activeButton: assignmentButton === 1 }">
+            <p>Assigned to Me</p>
+          </button>
+          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignmentButton = 2"
+            :class="{ activeButton: assignmentButton === 2 }">
+            <p>Assigned by Me</p>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end px-7 mt-5">
+      <div class="flex items-center gap-2 text-white bg-primary px-3 py-2 rounded-md" v-if="assignmentButton === 2"
+        @click="AssignModal = true">
+        <Icon icon="ion:add-outline" width="25" />
+        <button>Assign Task</button>
+      </div>
+    </div>
+    <div class="bg-white mt-10 border border-gray-200 rounded-xl p-7 w-full">
+      <div class="lg:flex items-center justify-between">
+        <div class="flex gap-3 items-center justify-between text-sm">
+          <div class="bg-gray-100 flex items-center rounded-md p-1">
+            <button class="rounded-lg py-1 px-4" @click="activeButton('')"
+              :class="{ activeButton: buttonSwitch === 1 }">
+              <p>All Tasks</p>
+            </button>
             <div>
-              <Icon icon="mi:options-vertical" width="25" :class="{ ' text-white': selectedIndex === index }" />
-            </div>
-          </div>
-        </div>
-        <div v-else class=" flex flex-col items-center justify-center px-4 mt-10 mb-5 ">
-
-          <img src="../../assets/images/No_workflow.svg" alt="" class=" w-full" />
-          <div class=" text-center px-7 mt-4">
-            <h1 class="font-semibold text-base">No Workflow Found</h1>
-            <p class=" text-center text-base opacity-80">click on the button below
-              <Icon icon="formkit:arrowdown" class="inline-flex " /> to create new workflow
-            </p>
-          </div>
-        </div>
-        
-      </div>
-    </section>
-    <section class="hide_scroll w-full overflow-y-scroll">
-      <div v-if="SelectedFlow">
-        <div class="flex items-center justify-between w-full px-7 pt-5">
-          <div class="flex items-center gap-3">
-            <div class="border rounded-full p-3">
-              <Icon :icon="SelectedFlow.icon" width="30" />
-            </div>
-            <div>
-              <h1 class="text-3xl text-[#1D2939]">
-                {{ SelectedFlow.flow_name }}
-              </h1>
-              <div class="flex items-center gap-2">
-                <div class="border rounded-md w-80 h-1">
-                  <div class="h-full w-[13%] bg-primary"></div>
-                </div>
-                <p class="opacity-70">13%</p>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="flex items-center gap-10">
-              <div class="flex items-center">
-                <div v-for="(member, index) in members" :key="index" class="-ml-3 w-10 h-10 rounded-full">
-                  <img :src="member.img" alt="" class="h-full w-full object-cover" />
-                </div>
-
-                <div
-                  class="-ml-3 bg-[#E2ECFE] text-primary font-medium border-[2px] border-white py-1.5 px-2 rounded-full">
-                  <p>+5</p>
-                </div>
-                <div class="border-dashed ml-2 border p-2.5 rounded-full cursor-pointer" @click="addmemberModal = true">
-                  <Icon icon="ic:baseline-plus" class="opacity-50" />
-                </div>
-              </div>
-              <button class="border border-gray-300 text-[#344054] rounded p-2 px-5 font-medium"
-                @click="assignTaskModal = true">
-                Assign Task
+              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
+                @click="activeButton('Pending')" :class="{ activeButton: buttonSwitch === 2 }">
+                <p>Pending</p>
               </button>
             </div>
+
+            <div>
+              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
+                @click="activeButton('In Progress')" :class="{ activeButton: buttonSwitch === 3 }">
+                <p>In Progress</p>
+              </button>
+            </div>
+
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+              @click="activeButton('Under Review')" :class="{ activeButton: buttonSwitch === 4 }">
+              <p>Under Review</p>
+            </button>
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+              @click="activeButton('Completed')" :class="{ activeButton: buttonSwitch === 5 }">
+              <p>Completed</p>
+            </button>
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+              @click="activeButton('Uncompleted')" :class="{ activeButton: buttonSwitch === 6 }">
+              <p>Uncompleted</p>
+            </button>
           </div>
         </div>
-        <Divider />
-        <div>
-          <BoardContainer :flowTasks="SelectedFlow.Tasks" />
+
+        <div class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
+          <i class="pi pi-search text-gray-300" style="font-size: 1rem"></i>
+          <Input type="text" v-model="value" placeholder="Search Tasks"
+            class="w-96 border-0 outline-none text-[#98A2B3]" />
         </div>
       </div>
-      <div v-else class="flex items-center h-[90vh] justify-center flex-col">
-        <img src="../../assets/images/no_task.svg" alt="" />
-        <h1 class="font-semibold text-lg">No Workflow Found</h1>
-        <p>Let's get you started – create your first workflow now!</p>
-        <div
-          class=" text-[#052B0A] font-semibold border-gray-300  border-[1px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2"
-          @click="newWorkFlowModal = true">
-          <Icon icon="ic:outline-plus" width="25" />
-          <h1>Create New Workflow</h1>
-        </div>
+
+      <!-- Assigned by me table -->
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2">
+        <table class="min-w-max w-full border">
+          <thead class="bg-gray-100">
+            <tr class="text-left">
+              <th class="pl-5 py-5">Task Title2</th>
+              <th>Date Assigned</th>
+              <th>Deadline</th>
+              <th>Assigned By</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in filteredTask" :key="index" class="hover:bg-gray-50 cursor-pointer border-b">
+              <td class="align-middle pl-5">
+                <div class="flex items-center gap-2">
+                  <div>
+                    <p>
+                      {{
+              item.description.length > 20
+                ? `${item.description.substring(0, 20)}...`
+                : item.description
+            }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+
+              <td class="align-middle">
+                <div class="">
+                  <p>{{ formatDate(item.created_at) }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p>{{ formatDate(item.due_date) }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p class="bg-[#FEFBF6] px-5 py-1 rounded-3xl" :style="{
+              color:
+                item.priority === '1'
+                  ? '#FFBC53'
+                  : item.priority === '2'
+                    ? '#FF3737'
+                    : item.priority === '3'
+                      ? '#F67E5A'
+                      : 'black',
+            }">
+                    {{ item.priority == 1? "Low": (item.priority == 2? 'Medium' : 'High') }}
+                  </p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <p class="bg-slate-50 rounded-3xl w-fit px-3 py-1" :style="{
+              color:
+                item.status === 'Completed'
+                  ? '#0D6E1A'
+                  : item.status === 'Under Review'
+                    ? '#FB6514'
+                    : item.status === 'In Progress'
+                      ? '#F79009'
+                      : item.status === 'Uncompleted'
+                        ? '#F04438'
+                        : '#F04438',
+            }">
+                  {{ item.status }}
+                </p>
+              </td>
+              <td class="align-top py-3">
+                <div class="flex items-center gap-3">
+                  <router-link :to="{ name: 'view-task', params: { taskId: item.id } }">
+                    <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
+                      <Icon icon="ph:eye" />
+                      <p class="text-sm">View Task</p>
+                    </button>
+                  </router-link>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </section>
+
+      <!-- Assigned to me table  -->
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1">
+        <table class="min-w-max w-full border">
+          <thead class="bg-gray-100">
+            <tr class="text-left">
+              <th class="pl-5 py-5">Task Title2</th>
+              <th>Date Assigned</th>
+              <th>Deadline</th>
+              <th>Assigned By</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in filteredTask" :key="index" class="hover:bg-gray-50 cursor-pointer border-b">
+              <td class="align-middle pl-5">
+                <div class="flex items-center gap-2">
+                  <div>
+                    <p>
+                      {{
+              item.description.length > 20
+                ? `${item.description.substring(0, 20)}...`
+                : item.description
+            }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+
+              <td class="align-middle">
+                <div class="">
+                  <p>{{ formatDate(item.created_at) }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p>{{ formatDate(item.due_date) }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="flex items-center gap-2">
+                  <p class="bg-[#FEFBF6] px-5 py-1 rounded-3xl" :style="{
+              color:
+                item.priority === '1'
+                  ? '#FFBC53'
+                  : item.priority === '2'
+                    ? '#FF3737'
+                    : item.priority === '3'
+                      ? '#F67E5A'
+                      : 'black',
+            }">
+                    {{ item.priority == 1? "Low": (item.priority == 2? 'Medium' : 'High') }}
+                  </p>
+                </div>
+              </td>
+              <td class="align-middle">
+                <p class="bg-slate-50 rounded-3xl w-fit px-3 py-1" :style="{
+              color:
+                item.status === 'Completed'
+                  ? '#0D6E1A'
+                  : item.status === 'Under Review'
+                    ? '#FB6514'
+                    : item.status === 'In Progress'
+                      ? '#F79009'
+                      : item.status === 'Uncompleted'
+                        ? '#F04438'
+                        : '#F04438',
+            }">
+                  {{ item.status }}
+                </p>
+              </td>
+              <td class="align-top py-3">
+                <div class="flex items-center gap-3">
+                  <router-link :to="{ name: 'view-task', params: { taskId: item.id } }">
+                    <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
+                      <Icon icon="ph:eye" />
+                      <p class="text-sm">View Task</p>
+                    </button>
+                  </router-link>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-5">
+        <!-- <paginator
+          :totalItems="totalItems"
+          :itemsPerPage="itemsPerPage"
+          v-model="currentPage"
+        /> -->
+      </div>
+    </div>
   </main>
-  <NewWorkflow v-model="newWorkFlowModal" @reloadPage="reloadPage" @newWorkflow="setNewWorkflow" />
-  <!-- <AddTask v-model="addTask" /> -->
-  <AssignTask v-model="assignTaskModal" :workflowId="selectedWorkflow?.id" @reloadTask="getTaskReload" @newTask="setNewTask"/>
-  <ArchiveDocument v-model="ArchiveDocumentModal" />
-  <AddMember v-model="addmemberModal" />
+  <AssignTask v-model="AssignModal" />
 </template>
 
 <script setup>
-import { ref, watch, defineProps, onMounted, computed } from "vue";
-import image1 from "../../assets/images/members/1.svg";
-import image2 from "../../assets/images/members/2.svg";
-import image3 from "../../assets/images/members/3.svg";
-import image4 from "../../assets/images/members/4.svg";
-import image5 from "../../assets/images/members/5.svg";
-import BoardContainer from "../../components/BoardContainer.vue"
-import NewWorkflow from "../../components/Modals/Workflows/NewWorkflow.vue";
-// import AddTask from "../../components/Modals/Workflows/AddTask.vue";
-import AssignTask from "../../components/Modals/Workflows/AssignTask.vue"
-import ArchiveDocument from "../../components/Modals/Workflows/ArchiveDocument.vue";
-import AddMember from "../../components/Modals/Workflows/AddMember.vue";
-import { router } from '@inertiajs/vue3';
+import { ref, computed, defineProps, watch } from "vue";
+//import paginator from "@/reusables/paginations.vue";
+import AssignTask from "../../components/Modals/Workflows/AssignTask.vue";
+const AssignModal = ref(false)
+const assignmentButton = ref(1);
+const buttonToggle = ref(1);
+const currentPage = ref(1);
+const itemsPerPage = 10;
+const tasks = ref([])
+const props = defineProps(['created_task'])
 
-import Emoji_1 from '../../../../public/images/Emojis/Emoji_1.svg'
-import Emoji_2 from '../../../../public/images/Emojis/Emoji_2.svg'
-import Emoji_3 from '../../../../public/images/Emojis/Emoji_3.svg'
-import Emoji_4 from '../../../../public/images/Emojis/Emoji_4.svg'
-import Emoji_5 from '../../../../public/images/Emojis/Emoji_5.svg'
-import Emoji_6 from '../../../../public/images/Emojis/Emoji_6.svg'
-import Emoji_7 from '../../../../public/images/Emojis/Emoji_7.svg'
-import Emoji_8 from '../../../../public/images/Emojis/Emoji_8.svg'
-import Emoji_9 from '../../../../public/images/Emojis/Emoji_9.svg'
-import Emoji_10 from '../../../../public/images/Emojis/Emoji_10.svg'
-import Emoji_11 from '../../../../public/images/Emojis/Emoji_11.svg'
-import Emoji_12 from '../../../../public/images/Emojis/Emoji_12.svg'
-import Emoji_13 from '../../../../public/images/Emojis/Emoji_13.svg'
-import Emoji_14 from '../../../../public/images/Emojis/Emoji_14.svg'
-
-const selectedIndex = ref(0);
-const assignTaskModal = ref(false)
-const ArchiveDocumentModal = ref(false);
-const addmemberModal = ref(false);
-const newWorkFlowModal = ref(false);
-const addTask = ref(false);
-const props = defineProps(["userworkflows"])
-const selectedWorkflow = ref();
-const is_newworkflow = ref(false);
-const is_newTask = ref(false);
-const workflow_divs = ref();
-
-const reloadPage = () => {
-  router.reload({ only: ['userworkflows'] })
-  firstTask()
-  selectedIndex.value = 0;
-  is_newTask.value = false
-
-  // const lastDiv = workflow_divs.value[0];
-  // if (lastDiv) {
-  //   lastDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // }
-  //selectedWorkflow.value = allWorkflows[0];
-}
-
-
-const members = ref([
-  {
-    img: image1,
-  },
-  {
-    img: image2,
-  },
-  {
-    img: image3,
-  },
-  {
-    img: image4,
-  },
-  {
-    img: image5,
-  },
-]);
-
-const setNewWorkflow = ()=>{
-  is_newworkflow.value = true;
-}
-
-const setNewTask = ()=>{
-  is_newTask.value = true;
-}
-
-// const workflows = ref([
-//   {
-//     flow_name: "Archiver Workflow",
-//     icon: "mdi:folder",
-//     Tasks: [
-//       {
-//         status: "In Progress",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Under Review",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Completed",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Uncompleted",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     flow_name: "Bug Fixing",
-//     icon: "mdi:folder",
-//     Tasks: [
-//       {
-//         status: "In Progress",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Under Review",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Completed",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Uncompleted",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     flow_name: "Doc. Review Overflow",
-//     icon: "mdi:folder",
-//     Tasks: [
-//       {
-//         status: "In Progress",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Under Review",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Completed",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Uncompleted",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     flow_name: "Publications Workflow",
-//     icon: "mdi:folder",
-//     Tasks: [
-//       {
-//         status: "In Progress",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Under Review",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Completed",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//       {
-//         status: "Uncompleted",
-//         todo: [
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//           {
-//             title: "Review and verify",
-//             task: "Provide support and assistance to users regarding document archiving",
-//           },
-//         ],
-//       },
-//     ],
-//   },
-// ]);
-
-const SelectedFlow = ref();
-
-const menu = ref();
-
-const getTaskReload = ()=>{
-  is_newworkflow.value = false;
-  router.reload({ only: ["userworkflows"] })
-  
-}
-
-const handleTask = (flow, index) => {
-  //SelectedFlow.value = flow;
-  selectedIndex.value = index;
-  selectedWorkflow.value = flow
+const buttonSwitch = ref(1);
+const clickedButton = ref("");
+const activeButton = (event) => {
+  if (event === "") {
+    buttonSwitch.value = 1;
+    taskByStatus("")
+  }
+  if (event === "Pending") {
+    buttonSwitch.value = 2;
+    taskByStatus('pending');
+  }
+  if (event === "In Progress") {
+    buttonSwitch.value = 3;
+    taskByStatus('in progress')
+  }
+  if (event === "Under Review") {
+    buttonSwitch.value = 4;
+    taskByStatus('under review')
+  }
+  if (event === "Completed") {
+    buttonSwitch.value = 5;
+    taskByStatus('completed')
+  }
+  if (event === "Uncompleted") {
+    buttonSwitch.value = 6;
+    taskByStatus('uncompleted')
+  }
+  clickedButton.value = event;
 };
 
-const emojis = [
-    {
-        image:Emoji_1
-    },
-    {
-      image:Emoji_2
-    },
-    {
-      image:Emoji_3
-    },
-    {
-      image:Emoji_4
-    },
-    {
-      image:Emoji_5
-    },
-    {
-      image:Emoji_6
-    },
-    {
-      image:Emoji_7
-    },
-    {
-      image:Emoji_8
-    },
-    {
-      image:Emoji_9
-    },
-    {
-      image:Emoji_10
-    },
-    {
-      image:Emoji_11
-    },
-    {
-      image:Emoji_12
-    },
-    {
-      image:Emoji_13
-    },
-    {
-      image:Emoji_14
-    }
-]
-
-
-const sortTask = ()=>{
-  let inp_progress = [];
-  let under_review = [];
-  let completed = [];
-  let uncompleted = [];
-
-  if(selectedWorkflow.value && selectedWorkflow.value.task && selectedWorkflow.value.task.length > 0){
-    selectedWorkflow.value.task.forEach((val)=>{
-      if(val.progress == 0){
-        inp_progress.push({
-          title: val.title,
-          task: val.description,
-          date: val.created_at,
-          id: val.id
-      })
-      }
-
-      if(val.progress == 1){
-        under_review.push({
-          title: val.title,
-          task: val.description,
-          date: val.created_at,
-          id: val.id
-      })
-      }
-
-      if(val.progress == 2){
-        completed.push({
-          title: val.title,
-          task: val.description,
-          date: val.created_at,
-          id: val.id
-      })
-      }
-
-      if(val.progress == 3){
-        uncompleted.push({
-          title: val.title,
-          task: val.description,
-          date: val.created_at,
-          id: val.id
-      })
-      }
-    })
-  }
-
-  SelectedFlow.value = {
-    Tasks:[
-    {
-      status: 'In Progress',
-      todo: inp_progress
-    },
-    {
-      status: 'Under Review',
-      todo: under_review
-    },
-    {
-      status: 'Completed',
-      todo: completed
-    },
-    {
-      status: 'Uncompleted',
-      todo: uncompleted
-    }
-    ]
-  }
- 
+const taskByStatus = (status)=>{
+  axios.get('/dashboard/task-by-status',{params:{status: status}}).then((response)=>{
+    tasks.value = response.data.data;
+  })
 }
 
-const firstTask = ()=>{
-  if(props.userworkflows && props.userworkflows.length > 0){
-    let inp_progress = [];
-    let under_review = [];
-    let completed = [];
-    let uncompleted = [];
+const formatDate =(inputDate)=> {
+    var date = new Date(inputDate);
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    let workflow = props.userworkflows[0];
-    let task = workflow.task;
-    selectedWorkflow.value = workflow
-    
-    task.forEach((tsk)=>{
-      if(tsk.progress == 0){
-        inp_progress.push({
-          title: tsk.title,
-          task: tsk.description
-      })
-      }
+    var day = date.getDate();
+    var month = months[date.getMonth()];
+    var year = date.getFullYear();
 
-      if(tsk.progress == 1){
-        under_review.push({
-          title: tsk.title,
-          task: tsk.description
-      })
-      }
+    day = day < 10 ? '0' + day : day;
 
-      if(tsk.progress == 2){
-        completed.push({
-          title: tsk.title,
-          task: tsk.description
-      })
-    
-      }
+    var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
 
-      if(task.progress == 3){
-        uncompleted.push({
-          title: tsk.title,
-          task: tsk.description
-      })
-     
-      }
-    })
-
-      SelectedFlow.value = {
-        Tasks:[
-        {
-          status: 'In Progress',
-          todo: inp_progress
-        },
-        {
-          status: 'Under Review',
-          todo: under_review
-        },
-        {
-          status: 'Completed',
-          todo: completed
-        },
-        {
-          status: 'Uncompleted',
-          todo: uncompleted
-        }
-        ]
-      }
-
-  }
+    return formattedDate;
 }
 
-const allWorkflows = computed(()=>{
-  return props.userworkflows
-})
+const filteredItems = computed(() => {
+  if (clickedButton.value === '') {
+    return items.value;
+  }
+  return items.value.filter(item =>
+    item.status.toLowerCase() === clickedButton.value.toLowerCase()
+  );
+});
 
-
-watch(selectedWorkflow, ()=>{
-  sortTask()
-})
-
-onMounted(()=>{
-  firstTask()
-})
-
-watch(()=>props.userworkflows, ()=>{
-  if(selectedWorkflow.value){
-    if(is_newworkflow){
-      selectedWorkflow.value = props.userworkflows[0]
-    }else{
-      let index = props.userworkflows.findIndex((val)=> val.id == selectedWorkflow.value.id);
-      selectedWorkflow.value = props.userworkflows[index]
-    }
+const filteredTask = computed(()=>{
+  if(tasks.value.length > 0){
+    return tasks.value.data
+  }else{
+    return props.created_task?.data
   }
 })
+const pageStart = ref(1);
+const pageEnd = ref(1);
+const displayedItems = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
+  pageStart.value = startIndex;
+  pageEnd.value = endIndex;
+
+  return filteredItems.value.slice(startIndex, endIndex);
+});
+
+watch(()=>props.created_task, ()=>{
+  alert('yes')
+},{deep: true})
 
 </script>
 
-<style>
-.grid-item {
-  display: inline-block;
-  vertical-align: top;
-  width: calc(25% - 1.25rem);
-  /* Adjust width based on grid column count and gap */
+<style scoped>
+.activeButton {
+  background-color: white;
+  border-radius: 5px;
+  color: black;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 </style>

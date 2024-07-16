@@ -106,14 +106,14 @@
     //   label: "Duplicate", 
     //   icon: "pi pi-clone",
     //   command: ()=>{
-    //     router.post('/admin/duplicate-document-type', form)
+    //     router.post('/dashboard/duplicate-document-type', form)
     //   }
     // },
     { 
       label: "Delete",
        icon: "pi pi-trash", 
        command: ()=>{
-        router.get('/admin/delete-file-type/', form)
+        router.get('/dashboard/delete-file-type/', form)
       }
       },
   ]);
@@ -131,17 +131,17 @@
     {
       label: "Metadata",
       icon: "",
-      link: "/admin/meta-data-setup",
+      link: "/dashboard/meta-data-setup",
     },
     {
       label: "Document Type",
       icon: "material-symbols-light:info-outline",
-      link: "/admin/setup-document-type",
+      link: "/dashboard/setup-document-type",
     },
     {
         label: "File Type",
         icon: "",
-        link: "/admin/file-type",
+        link: "/dashboard/file-type",
     }
   ]);
   

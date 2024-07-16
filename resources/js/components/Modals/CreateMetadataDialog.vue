@@ -188,7 +188,7 @@ const submitForm = () => {
   replaceId(form.name)
   //form.metadata_string.replace(/id="([^"]*)"/g, `id="${newValue}"`);
 
-  form.post('/admin/create-metadata',{onSuccess: (status)=>{
+  form.post('/dashboard/create-metadata',{onSuccess: (status)=>{
    
     if(status){
       toast.add({

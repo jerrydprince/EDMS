@@ -18,4 +18,6 @@ class FilePath extends Model
    {
        return $this->belongsToMany(Archive::class, 'archive_file_path');
    }
+
+   protected $fillable = ['path', 'file_name', 'file_size', 'updated_by', 'updated_by_name', 'restored_by_name'];
 }

@@ -145,7 +145,7 @@ const isDisabled = (data) => {
 } 
 
 onMounted(()=>{
-  axios.get('/admin/metadata-part').then((response)=>{
+  axios.get('/dashboard/metadata-part').then((response)=>{
     metadata.value = response.data
   })
 })

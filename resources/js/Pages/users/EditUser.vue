@@ -2,7 +2,7 @@
     <main>
       <div class="lg:px-7 px-5 flex items-center justify-between pt-5">
         <div class="flex items-center gap-5">
-          <Link href="/admin/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
+          <Link href="/dashboard/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
             <Icon icon="formkit:arrowleft" width="30" />
           </Link>
           <div>
@@ -15,11 +15,11 @@
             <p>Cancel</p>
           </button>
   
-          <button
+          <button @click="submitForm"
             class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4 hover:bg-blue-400 disabled:bg-blue-300"
             :disabled="!isFormReady">
   
-            <p>Edit User</p>
+            <p>Edit user</p>
           </button>
   
         </div>
@@ -29,18 +29,18 @@
       <section class=" px-7 ">
         <div class=" flex items-center justify-between">
           <p class="  text-xl font-medium">Choose Access Level</p>
-          <button
+          <!-- <button
             class="flex gap-2 items-center text-[#344054] border border-solid font-semibold border-gray-300  rounded-lg py-2 px-4">
             <Icon icon="mynaui:edit" width="20" />
             <p>Edit Acces Level</p>
-          </button>
+          </button> -->
         </div>
         <div class="  grid grid-cols-4 gap-3 mt-5">
           <div v-for=" (item, index) in props.roles" :key="index">
-            <div :style="{ borderColor: form.role.includes(index) ? '#3B82F6' : '#EAECF0' }"
+            <div :style="{ borderColor: form.role.includes(item.name) ? '#3B82F6' : '#EAECF0' }"
               class="flex items-center border p-3 gap-3 rounded-md h-full "
-              :class="{ 'bg-[#F8FBF9]': form.role.includes(index) }">
-              <Checkbox v-model="form.role" :value="item.id" />
+              :class="{ 'bg-[#F8FBF9]': form.role.includes(item.name) }">
+              <Checkbox v-model="form.role" :value="item.name" />
               <div>
                 <p class=" text-lg font-medium">{{ capitalize(item.name) }}</p>
                 <p class=" text-xs">{{ item.description }}</p>
@@ -398,7 +398,7 @@
     // }
 
         form.id = props.user.id
-    form.post('/admin/edit-user', {
+    form.post('/dashboard/edit-user', {
       onSuccess: (response) => {
         previewUrl.value = ''
         let msg = form.id? 'Edited': 'added';

@@ -35,8 +35,8 @@
                             </div>
                         </div>
                         <div class="relative">
-                            <input type="text" v-model="formData.recipient" @input="filterRecipients"
-                                class="outline-none" required />
+                            <input type="text" v-model="form.recipient" @input="filterRecipients"
+                                class="outline-none w-full" required />
                             <div class="border border-solid py-3 bg-white rounded-md absolute z-50"
                                 v-if="searchInput && Suggestions.length > 0">
                                 <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
@@ -77,8 +77,8 @@
                                 </div>
                             </div>
                             <div class="relative">
-                                <input type="text" v-model="formData.bcc" @input="filterBlindCopy"
-                                    class="outline-none" />
+                                <input type="text" v-model="form.bcc" @input="filterBlindCopy"
+                                    class="outline-none w-full" />
                                 <div class="border border-solid py-3 bg-white rounded-md absolute z-50"
                                     v-if="BlindInput && Suggestions.length > 0">
                                     <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
@@ -114,7 +114,7 @@
                                 </div>
                             </div>
                             <div class="relative">
-                                <input type="text" v-model="formData.cc" @input="filterCarbonCopy"
+                                <input type="text" v-model="form.cc" @input="filterCarbonCopy"
                                     class="outline-none" />
                                 <div class="border border-solid py-3 bg-white rounded-md absolute z-50"
                                     v-if="CarbonInput && Suggestions.length > 0">
@@ -135,12 +135,12 @@
             </div>
             <div class="flex items-center border-b pb-2 mt-3">
                 <h1>Subject:</h1>
-                <input type="text" v-model="formData.subject" class="outline-none border-0 pl-2 w-full" required />
+                <input type="text" v-model="form.subject" class="outline-none border-0 pl-2 w-full" required />
             </div>
 
             <div>
                 <!-- <textarea  v-model="formData.body" name="" id="" cols="30" rows="10"></textarea> -->
-                <Editor v-model="formData.body" editorStyle="height: 40vh" class=" border-0 mt-10"
+                <Editor v-model="form.body" editorStyle="height: 40vh" class=" border-0 mt-10"
                     placeholder="Type Message here..." required />
                 <input type="file" style="display: none;" ref="fileInput" @change="handleFileChange" />
             </div>
@@ -176,6 +176,7 @@ import { defineEmits, defineProps, onMounted, computed, ref, watch } from "vue";
 import axios from "axios";
 import image from '../../../assets/images/members/1.svg'
 import { useToast } from "primevue/usetoast";
+import { router, useForm } from '@inertiajs/vue3';
 
 const Message = ref('')
 const Bcc = ref(false)
@@ -188,7 +189,7 @@ const toast = useToast();
 const props = defineProps(["modelValue", "data"]);
 // console.log("recipient", props?.data?.recipient);
 const emit = defineEmits(["update:modelValue"]);
-const form = new FormData()
+//const form = new FormData()
 
 const formData = ref({
     recipient: '',
@@ -198,7 +199,13 @@ const formData = ref({
     cc: ''
 });
 
-
+const form = useForm({
+    recipient: '',
+    subject: '',
+    body: '',
+    bcc: '',
+    cc: ''
+})
 
 
 const functionCalled = ref(false);
@@ -230,7 +237,7 @@ const CarbonCopy = ref([]);
 
 
 watch(props, () => {
-    console.log("from watcher", props);
+   
     if (props?.data) {
         const newFormData = {
             recipient: props?.data?.recipient ?? '',
@@ -260,7 +267,6 @@ const handleFileChange = (event) => {
     }
 };
 const fromLinkModel = (linkData) => {
-    console.log("emitted", linkData);
     const anchorElement = document.createElement('a');
     anchorElement.href = `https://${linkData?.link}`;
     anchorElement.target = '_blank';
@@ -384,43 +390,43 @@ const visible = computed({
 //     return true;
 // };
 const submitForm = async () => {
-    // if (!validateForm()) {
-    //     return;
-    //   }
-    try {
-        form.append("recipient", formData.value.recipient)
-        form.append("body", formData.value.body)
-        form.append("subject", formData.value.subject)
-        form.append("cc", formData.value.cc)
-        form.append("bcc", formData.value.bcc)
+  
+    //try {
+        // form.append("recipient", formData.value.recipient)
+        // form.append("body", formData.value.body)
+        // form.append("subject", formData.value.subject)
+        // form.append("cc", formData.value.cc)
+        // form.append("bcc", formData.value.bcc)
 
-        console.log("after", formData.value);
-        console.log("after form", form);
-
-        const response = await axios.post('/admin/mails', form,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+        router.post('/dashboard/mails',form, {onSuccess: page =>{
+            toast.add({
+                severity: "success",
+                summary: "Message Sent",
+                detail: "Your message has been sent successfully.",
+                life: 3000,
             });
-        console.log('Response:', response.data); // Log the response
-        formData.value = {}
-    } catch (error) {
-        console.error('Error:', error.message);
-    }
-    toast.add({
-        severity: "success",
-        summary: "Message Sent",
-        detail: "Your message has been sent successfully.",
-        life: 3000,
-    });
-    functionCalled.value = true;
-    emit("update:modelValue", false);
+            
+            functionCalled.value = true;
+            emit("update:modelValue", false);
+        }})
+
+    //     const response = await axios.post('/dashboard/mails', form,
+    //         {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data'
+    //             }
+    //         });
+        
+    //     formData.value = {}
+    // } catch (error) {
+    //     console.error('Error:', error.message);
+    // }
+    
 };
 const closeModal = async () => {
     try {
         if (functionCalled.value === false && formData.value !== null) {
-            const response = await axios.post('/admin/mails/drafts', formData.value);
+            const response = await axios.post('/dashboard/mails/drafts', formData.value);
             console.log('Response:', response.data); // Log the response
         }
     } catch (error) {

@@ -13,7 +13,7 @@
 
       <div class="mx-auto flex" v-if="props.archives && props.archives.links && props.archives.per_page <= props.archives.total">
         <template v-for="link in props.archives.links">
-            <Link :class="{'hidden': link.label.includes('Previous') || link.label.includes('Next')}" :href="link.url"><span class="w-[30px] h-[30px] rounded-full text-[#0D6E1A]  flex items-end justify-center p-1 cursor-pointer mx-1" :class="link.active? 'bg-[#b5d1b0]':'bg-[#E7F2E8]'">{{ link.label }}</span></Link>
+            <Link  :class="{'hidden': link.label.includes('Previous') || link.label.includes('Next')}" :href="link.url"><span class="w-[30px] h-[30px] rounded-full text-[#0D6E1A]  flex items-end justify-center p-1 cursor-pointer mx-1" :class="link.active? 'bg-[#b5d1b0]':'bg-[#E7F2E8]'">{{ link.label }}</span></Link>
         </template>
       </div>
 
@@ -36,6 +36,6 @@
     const props = defineProps(['archives'])
 
     watch(()=> props.archives, ()=>{
-        console.log('i am changed')
+        
     })
 </script>

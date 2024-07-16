@@ -211,7 +211,7 @@ const roles = page.props.roles
 const main = ref([
   {
     name: "Admin",
-    path: "/admin",
+    path: "/dashboard",
     icon: "lucide:home",
   },
   {

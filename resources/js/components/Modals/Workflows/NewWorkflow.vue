@@ -32,18 +32,18 @@
 
         <section class=" px-6">
             <label class=" text-[#344054] font-semibold">Workflow Name</label>
-            <input type="text" id="title" v-model="title" class=' border-solid border-gray-300 mt-1 p-2 border rounded-md outline-none w-full text-sm' placeholder="Title of workflow" required>
+            <input type="text" class=' border-solid border-gray-300 mt-1 p-2 border rounded-md outline-none w-full text-sm' placeholder="Title of workflow" required>
         
             <div class=" text-[#344054] font-semibold mt-5">
                 <h1>Workflow Emoji</h1>
                 <p class=" opacity-60 font-normal">Select emoji that describes workflow</p>
                 <div class=" grid grid-cols-7 gap-5 my-5">
-                  <div v-for="(emoji,index) in emojis"  :key="index" class=" relative " @click="handleSelectedEmoji(index, emoji.icon)" >
+                  <div v-for="(emoji,index) in emojis"  :key="index" class=" relative " @click="handleSelectedEmoji(index)" >
                     <div class=" p-1 bg-primary rounded-full w-fit absolute right-1 opacity-0" :class="{'opacity-100' : selectedIndex === index}">
                         <Icon icon="icon-park-solid:correct" class=" text-white" width="10" />
                     </div>
-                    <div class=" bg-gray-100 rounded-full p-3 w-fit border "    :style="{ borderColor:  selectedIndex === index ? '#3575DD' : '#F9FAFB' }" >
-                      <img :src="emoji.image" alt="">
+                    <div class=" bg-gray-100 rounded-full p-3 w-fit border "    :style="{ borderColor:  selectedIndex === index ? '#0D6E1A' : '#F9FAFB' }" >
+                    <img :src="emoji.image" alt="">
                 </div>
                   </div>
                 </div>
@@ -55,7 +55,7 @@
 		<template #footer>
 			
             <Button
-            @click="createWorkflow"
+            @click="submit"
 				label="Create Workflow"
 				class=""
 				:pt="{
@@ -73,28 +73,24 @@
 <script setup>
 import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
-
-import Emoji_1 from '../../../../../public/images/Emojis/Emoji_1.svg'
-import Emoji_2 from '../../../../../public/images/Emojis/Emoji_2.svg'
-import Emoji_3 from '../../../../../public/images/Emojis/Emoji_3.svg'
-import Emoji_4 from '../../../../../public/images/Emojis/Emoji_4.svg'
-import Emoji_5 from '../../../../../public/images/Emojis/Emoji_5.svg'
-import Emoji_6 from '../../../../../public/images/Emojis/Emoji_6.svg'
-import Emoji_7 from '../../../../../public/images/Emojis/Emoji_7.svg'
-import Emoji_8 from '../../../../../public/images/Emojis/Emoji_8.svg'
-import Emoji_9 from '../../../../../public/images/Emojis/Emoji_9.svg'
-import Emoji_10 from '../../../../../public/images/Emojis/Emoji_10.svg'
-import Emoji_11 from '../../../../../public/images/Emojis/Emoji_11.svg'
-import Emoji_12 from '../../../../../public/images/Emojis/Emoji_12.svg'
-import Emoji_13 from '../../../../../public/images/Emojis/Emoji_13.svg'
-import Emoji_14 from '../../../../../public/images/Emojis/Emoji_14.svg'
+import Emoji_1 from '../../../assets/images/Emojis/Emoji_1.svg'
+import Emoji_2 from '../../../assets/images/Emojis/Emoji_2.svg'
+import Emoji_3 from '../../../assets/images/Emojis/Emoji_3.svg'
+import Emoji_4 from '../../../assets/images/Emojis/Emoji_4.svg'
+import Emoji_5 from '../../../assets/images/Emojis/Emoji_5.svg'
+import Emoji_6 from '../../../assets/images/Emojis/Emoji_6.svg'
+import Emoji_7 from '../../../assets/images/Emojis/Emoji_7.svg'
+import Emoji_8 from '../../../assets/images/Emojis/Emoji_8.svg'
+import Emoji_9 from '../../../assets/images/Emojis/Emoji_9.svg'
+import Emoji_10 from '../../../assets/images/Emojis/Emoji_10.svg'
+import Emoji_11 from '../../../assets/images/Emojis/Emoji_11.svg'
+import Emoji_12 from '../../../assets/images/Emojis/Emoji_12.svg'
+import Emoji_13 from '../../../assets/images/Emojis/Emoji_13.svg'
+import Emoji_14 from '../../../assets/images/Emojis/Emoji_14.svg'
 
 const props = defineProps(["modelValue"]);
-const emit = defineEmits(["update:modelValue", "reloadPage", "newWorkflow"]);
+const emit = defineEmits(["update:modelValue"]);
 const selectedIndex = ref(null)
-const title = ref('');
-const selectedEmoji = ref('')
-const toast = useToast();
 const emojis = [
     {
         image:Emoji_1
@@ -140,35 +136,8 @@ const emojis = [
     }
 ]
 
-const handleSelectedEmoji = (index, emoji) =>{
-    selectedIndex.value = index;
-    selectedEmoji.value = emoji;
-}
-
-const createWorkflow = ()=>{
-  if(title !=null && title.value ===""){  
-    document.getElementById('title').focus();
-    return false;
-  }
-
-  let data = {
-    title: title.value,
-    emoji: selectedIndex.value
-  }
-
-  axios.post('/admin/workflow', data).then((response)=>{
-    toast.add({
-      severity: "success",
-      summary: 'Workflow created successfully',
-      detail: "",
-      life: 3000,
-    });
-  })
-
-  emit('reloadPage')
-  emit('newWorkflow');
-  title.value = ''
-  closeModal()
+const handleSelectedEmoji = (index) =>{
+    selectedIndex.value = index
 }
 
 const visible = computed({

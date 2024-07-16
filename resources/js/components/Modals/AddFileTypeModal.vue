@@ -85,7 +85,7 @@ const submitForm = () => {
         branch: props.branch
     }
    
-    router.post('/admin/assign-file-type-to-department', data, {onSuccess: (status)=>{
+    router.post('/dashboard/assign-file-type-to-department', data, {onSuccess: (status)=>{
         //selectDocType()
        // selectedFileTypes.value.length = 0;
         toast.add({
@@ -126,7 +126,7 @@ const filteredMetadata = computed(()=>{
 })
 
 const getFileType = ()=>{
-    axios.get('/admin/get-file-type').then((response)=>{
+    axios.get('/dashboard/get-file-type').then((response)=>{
         fileTypes.value = response.data;
     })
 }

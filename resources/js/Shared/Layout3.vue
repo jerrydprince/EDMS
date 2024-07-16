@@ -41,8 +41,8 @@
     
   <script setup>
   import { ref } from "vue";
-  import TopBar from "./DashboardTopBar.vue";
-  import DashboardNavigation from "./DashboardNavigation.vue";
+  import TopBar from "./DataEntryTopBar.vue";
+  import DashboardNavigation from "./DataEntryNavigation.vue";
   import searchResult from "../components/Modals/SearchResult.vue";
 
   const toggleSearch = ref(false);

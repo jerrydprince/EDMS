@@ -73,7 +73,7 @@
 
   
   const submitForm = () => {
-    form.post('/admin/file-type', {
+    form.post('/dashboard/file-type', {
       onSuccess: () => {
         form.reset()
         toast.add({

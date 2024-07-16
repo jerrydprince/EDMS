@@ -97,7 +97,7 @@ const configureMetadataModal = () => {
 };
 
 const submitForm = () => {
-  form.post('/admin/create-document-type', {
+  form.post('/dashboard/create-document-type', {
     onSuccess: () => {
       toast.add({
         severity: "success",

@@ -9,6 +9,8 @@ class Task extends Model
 {
     use HasFactory;
 
+    protected $table = "task";
+
     /**
      * The user that belong to the Task
      *
@@ -20,12 +22,24 @@ class Task extends Model
     }
 
     /**
-     * Get the workflow that owns the Task
+     * Get all of the taskdocs for the Task
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function workflow()
+    public function taskdocs()
     {
-        return $this->belongsTo(Workflow::class);
+        return $this->hasMany(TaskDocs::class);
     }
+
+    /**
+     * Get the assignedBy associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function assignedBy()
+    {
+        return $this->hasOne(User::class, 'id', 'assigned_by');
+    }
+
+
 }

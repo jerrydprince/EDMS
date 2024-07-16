@@ -99,7 +99,7 @@ const closeModal = () => {
 
 const submitForm = (modal = "Department") => {
    // form.id = props.department.id
-    form.post('/admin/edit-division',{onSuccess: ()=>{
+    form.post('/dashboard/edit-division',{onSuccess: ()=>{
         toast.add({
             severity: "success",
             summary: `${modal} Created`,

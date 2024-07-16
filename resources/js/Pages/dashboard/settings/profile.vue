@@ -15,7 +15,7 @@
           <p>Cancel</p>
         </button>
 
-        <button class="py-2 bg-[#3575DD] px-10 border-0 text-white font-light hover:bg-[#3575DD]/90 rounded-lg">
+        <button class="py-2 bg-[#3575DD] px-10 border-0 text-white font-light hover:bg-[#3575DD]/90 rounded-lg" @click="uploadImage">
           <p>Save</p>
         </button>
       </div>
@@ -24,19 +24,20 @@
   <Divider class=" " />
   <div class="lg:px-7 px-5 ">
     <div class=" flex items-center  gap-36 ">
-      <div>
+       <div>
         <h1 class=" text-lg font-semibold">Profile Picture</h1>
         <p class="#667085 text-base font-light">Min 400x400px, PNG or JPEG formats</p>
-      </div>
+       </div>
 
-      <div class=" flex gap-10 items-center">
-        <img src="/assets/images/profile.svg" alt="">
+       <div class=" flex gap-10 items-center">
+         <img :src="url" ref="profile_img" alt="" class="rounded-full border border-gray-200 h-[80px] w-[80px]"/>
 
 
-        <button class="bg-white border-gray-300 border py-2 px-4 rounded-lg relative cursor-pointer">
-          <input type="file" class="opacity-0 absolute w-full cursor-pointer" />Upload
-        </button>
-      </div>
+         <button class="bg-white border-gray-300 border py-2 px-4 rounded-lg relative cursor-pointer" @click="uploadProfileImage">
+          Upload
+         </button>
+        <input type="file" @change="handleFileUpload" value="" class="opacity-0 absolute w-full cursor-pointer"  id="profile_img_file" />
+       </div>
     </div>
 
     <Divider class=" " />
@@ -49,8 +50,10 @@
 
 
       <div class=" flex gap-10 items-center">
-        <input type="text" class=" outline-none p-2 border border-gray-300 rounded-md" :value="props.user.last_name" disabled>
-        <input type="text" class=" outline-none p-2 border border-gray-300 rounded-md" :value="props.user.first_name" disabled>
+        <input type="text" class=" outline-none p-2 border border-gray-300 rounded-md" :value="props.user.last_name"
+          disabled>
+        <input type="text" class=" outline-none p-2 border border-gray-300 rounded-md" :value="props.user.first_name"
+          disabled>
       </div>
     </div>
 
@@ -68,17 +71,18 @@
           <input type="text" class=" outline-none p-2  w-[400px]" :value="props.user.email" disabled>
         </div>
         <div class=" " v-tooltip.bottom="{
-          value: `Verify your mail as soon as possible`,
-          pt: {
-            arrow: {
-              style: {
-                borderRightColor: '',
+            value: `Verify your mail as soon as possible`,
+            pt: {
+              arrow: {
+                style: {
+                  borderRightColor: '',
+                },
               },
+              text: 'bg-[#1D2939] text-[10px] p-2 text-white font-medium  rounded',
             },
-            text: 'bg-[#1D2939] text-[10px] p-2 text-white font-medium  rounded',
-          },
-        }">
-          <Icon icon="ic:baseline-error" class=" text-[#F79009] cursor-pointer " width="30" @click="EmailModal = true" />
+          }">
+          <Icon icon="ic:baseline-error" class=" text-[#F79009] cursor-pointer " width="30"
+            @click="EmailModal = true" />
         </div>
 
       </div>
@@ -108,11 +112,55 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 import VerifyEmail from '../../../components/Modals/VerifyEmail.vue';
+import { useForm, usePage } from '@inertiajs/vue3'
+import { useToast } from "primevue/usetoast";
 
 const EmailModal = ref(false)
 const props = defineProps(['user'])
+const file = ref(null)
+const profile_img = ref('')
+const url = ref('')
+const toast = useToast();
+const page = usePage()
+
+const form = useForm({
+  file: null
+})
+
+
+
+const uploadProfileImage = () => {
+  document.getElementById('profile_img_file').click();
+}
+
+const handleFileUpload = (event)=>{
+  file.value = event.target.files[0];
+  form.file = file.value
+  url.value =  URL.createObjectURL(file.value); 
+}
+
+const uploadImage = ()=>{
+  form.post('/data-entry/update-profile-image',{onSuccess: ()=>{
+    toast.add({
+                    severity: "success",
+                    summary: "File Uploaded",
+                    detail: "You have successfully uploaded a profile image.",
+                    life: 3000,
+                });
+  }})
+}
+
+watch(()=>props.user, ()=>{
+  if(props.user && props.user.profile_image){
+    url.value = page.props.base+'/'+props.user.profile_image;
+  }
+  
+},
+{immediate:true})
+
+
 </script>
 
 <style></style>

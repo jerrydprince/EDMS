@@ -2,7 +2,7 @@
   <main>
     <div class="lg:px-7 px-5 flex items-center justify-between pt-5">
       <div class="flex items-center gap-5">
-        <Link href="/admin/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
+        <Link href="/dashboard/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
           <Icon icon="formkit:arrowleft" width="30" />
         </Link>
         <div>
@@ -37,10 +37,10 @@
       </div>
       <div class="  grid grid-cols-4 gap-3 mt-5">
         <div v-for=" (item, index) in props.roles" :key="index">
-          <div :style="{ borderColor: form.role.includes(index) ? '#3B82F6' : '#EAECF0' }"
+          <div :style="{ borderColor: form.role.includes(item.name) ? '#3B82F6' : '#EAECF0' }"
             class="flex items-center border p-3 gap-3 rounded-md h-full "
-            :class="{ 'bg-[#F8FBF9]': form.role.includes(index) }">
-            <Checkbox v-model="form.role" :value="item.id" />
+            :class="{ 'bg-[#F8FBF9]': form.role.includes(item.name) }">
+            <Checkbox v-model="form.role" :value="item.name" />
             <div>
               <p class=" text-lg font-medium">{{ capitalize(item.name) }}</p>
               <p class=" text-xs">{{ item.description }}</p>
@@ -250,6 +250,7 @@ const form = useForm(
 
 )
 
+
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   form.file = file
@@ -310,6 +311,7 @@ const checkMailExist = () => {
     if (response.data.success) {
       email_msg.value = null;
       isEmailExist.value = false;
+      form.error = ''
     }
   })
 }
@@ -333,6 +335,7 @@ const checkPhoneExist = () => {
     if (response.data.success) {
       phone_msg.value = null;
       isPhoneExist.value = false;
+      form.phone = ''
     }
   })
 }
@@ -414,7 +417,7 @@ const submitForm = () => {
     }
   }
 
-  form.post('/admin/user-registration', {
+  form.post('/dashboard/user-registration', {
     onSuccess: (response) => {
       previewUrl.value = ''
       let msg = form.id? 'approved': 'added';

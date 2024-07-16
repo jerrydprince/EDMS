@@ -94,7 +94,7 @@ const visible = computed({
 });
 
 const submitForm = () => {
-  form.post('/admin/file-type',{onSuccess: ()=>{
+  form.post('/dashboard/file-type',{onSuccess: ()=>{
       toast.add({
         severity: "success",
         summary: "Document Created",

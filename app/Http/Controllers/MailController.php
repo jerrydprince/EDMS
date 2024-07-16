@@ -46,6 +46,8 @@ class MailController extends Controller
         $newMail->recipient = $request->recipient;
         $newMail->subject = $request->subject;
         $newMail->body = $request->body;
+        $newMail->sender = auth()->user()->first_name." ".auth()->user()->last_name;
+        $newMail->sender_id = auth()->user()->id;
         $newMail->save();
         if($request->hasFile('doc')){
             $file = $request->file('doc');
@@ -76,7 +78,7 @@ class MailController extends Controller
         }
         // return Redirect::route('mails.Mails');
         if ($send) {
-            return $newMail;
+            return redirect()->back()->with($newMail);
         } else {
             response()->json([
                 'message' => 'An error occured'

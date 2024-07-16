@@ -21,6 +21,10 @@ use Spatie\PdfToImage\Pdf;
 use App\Models\Division;
 use App\Models\SubFolder;
 use Illuminate\Support\Facades\Log;
+use App\Models\FileActivity;
+use App\Models\Version;
+use App\Models\User;
+use App\Modesl\Share;
 
 class ArchiveController extends Controller
 {
@@ -393,6 +397,12 @@ class ArchiveController extends Controller
 
         ArchiveDocs::insert($doc_types);
 
+        //create an activity
+        $archive_id = $archive->id;
+        $details = "New file created by ".auth()->user()->first_name.' '.auth()->user()->last_name;
+
+        $this->logFileActivity($archive_id, $details);
+        
         $file_path_ids = $request->session()->get('ids');
 
         $archive->filePath()->attach($file_path_ids);
@@ -505,6 +515,11 @@ class ArchiveController extends Controller
             }
 
             ArchiveDocs::insert($tempDocs);
+            
+            //create file activity
+            $details = "File duplicate was made by ".auth()->user()->first_name." ".auth()->user()->last_name;
+            $archive_id = $archive->id;
+            $this->logFileActivity($archive_id, $details);
     
             $total_size = 0;
             foreach($file_path as $path){
@@ -611,46 +626,81 @@ class ArchiveController extends Controller
         return true;
     }
 
+    public function logFileActivity($archive_id, $details){
+        FileActivity::create([
+            'archive_id' => $archive_id,
+            'details' => $details,
+            'date' => \Carbon\Carbon::now()
+        ]);
+        return true;        
+    }
+
     public function changeFileFormat(Request $request){
         $current = $request->current;
         $to = $request->to;
         if($current == 'Image Format' && $to == 'PDF Format'){
             $this->imageToPDF($request);
+
+            // FileActivity::create([
+            //     'archive_id' => $archive->id,
+            //     'details' => 'File format changed from '.$current." to ".$to." format",
+            //     'date' => \Carbon\Carbon::now()
+            // ])
+            //$this->logFileActivity($archive_id, $details)
             return redirect()->back();
         }
         if($current == 'PDF Format' && $to == 'Image Format'){
             $this->PDFToImage($request);
+
+            // FileActivity::create([
+            //     'archive_id' => $archive->id,
+            //     'details' => 'File format changed from '.$current." to ".$to." format",
+            //     'date' => \Carbon\Carbon::now()
+            // ])
+            //$this->logFileActivity($archive_id, $details)
             return redirect()->back();
         }
     }
 
     public function renameFile(Request $request){
-        $file_path = FilePath::find($request->id);
-        $old_name = 'storage'.$file_path->path;
-        $path_array = explode('/', $file_path->path);
-        $file_name = $path_array[count($path_array) - 1];
-        $ext_array = explode('.',$file_name);
-        $ext_array[0] = $request->name;
-        $new_fileName = implode('.', $ext_array);
-        $path_array[count($path_array) -1] = $new_fileName;
-        $new_file_path = implode('/',$path_array);
-        $new_file_name = 'storage'.implode('/',$path_array);
+        // $file_path = FilePath::find($request->id);
+        // $old_name = 'storage'.$file_path->path;
+        // $path_array = explode('/', $file_path->path);
+        // $file_name = $path_array[count($path_array) - 1];
+        // $ext_array = explode('.',$file_name);
+        // $ext_array[0] = $request->name;
+        // $new_fileName = implode('.', $ext_array);
+        // $path_array[count($path_array) -1] = $new_fileName;
+        // $new_file_path = implode('/',$path_array);
+        // $new_file_name = 'storage'.implode('/',$path_array);
 
-        if(file_exists(public_path($new_file_name))){
-            return redirect()->back()->with('error','The file name alread exist');
-        }else{
+        //if(file_exists(public_path($new_file_name))){
+           // return redirect()->back()->with('error','The file name alread exist');
+       // }else{
             // rename($old_name, $new_file_name);
             // $file_path->path = $new_file_path;
             // $file_path->file_name = $new_fileName;
             // $file_path->save();
 
             $archive = Archive::find($request->id);
+            $file_name = $archive->archiveDocs->filter(function($arch){
+                if($arch->archive_keys == 'title'){
+                    return $arch;
+                }
+            });
+            
             $archive = $archive->archiveDocs()->updateOrCreate(
                 ['id'=>$request->archive_docs_id], 
-                ['archive_keys'=>'title', 'archive_values' => $request->name]);
+                ['archive_keys'=>'title', 'archive_values' => $request->name]
+            );
+      
+                $archive_id = $request->id;
+                $details = "File name changed from '{$file_name->first()->archive_values}' to '{$request->name}', 
+                action carried out by ".auth()->user()->first_name.' '.auth()->user()->last_name;
+                $this->logFileActivity($archive_id, $details) ;            
 
             return redirect()->back();
-        }
+       // }
         
     }
 
@@ -665,89 +715,175 @@ class ArchiveController extends Controller
 
     public function userBranches(){
        
-        if(auth()->user()->hasRole('data entry')){
-            $branch = session('branch');
-            $unit = auth()->user()->unit_id;
-          if($unit){
-            // $branch = Unit::withCount(['users','archive'])->with(['folder'=>function($query){
-            //     $query->with(['fileType','subfolder']);
-            // }, 'fileType', 'archive'=>function($query){
-            //     $query->with(['archiveDocs', 'filePath']);
-            // }])->find($unit);
+        $search = request()->search;
+            // if(request()->search){
+            //     $search = request()->search;
+       
+            //     // Build the query
+            //     $folder = Folder::with(['fileType', 'subfolder'])
+            //         ->where(function($query) use ($search) {
+            //             $query->where('name', 'like', '%' . $search . '%')
+            //                 ->orWhere('number', 'like', '%' . $search . '%')
+            //                 ->orWhereHas('fileType', function($query) use($search) {
+            //                     $query->where('name', 'like', '%' . $search . '%');
+            //                 });
+            //         })
+            //         ->latest()
+            //         ->paginate(20)
+            //         ->withQueryString();
+            
+            //             //return redirect()->back()->with('folder',$folder);
+            //            // return inertia('dashboard/Branches', compact('folder'));
+            //            return $folder;
+            // }
+
+            
+            if(request()->branch){
+                $branch_id = request()->id;
+                $branch_name = ucfirst(request()->branch);
+             
+            }else{ 
+                if(auth()->user()->unit_id){
+                    $branch_id = auth()->user()->unit_id;
+                    $branch_name = 'Unit';
+                }else
+                if(auth()->user()->division_id){
+                    $branch_id = auth()->user()->division_id;
+                    $branch_name = "Division";
+                }else
+                if(auth()->user()->department_id){
+                    $branch_id = auth()->user()->department_id;
+                    $branch_name = "Department";
+                }
+            }
+
+            $folder = Folder::with(['fileType', 'subfolder']);
+
+          if($branch_name == 'Unit'){
+           
             $branch = Unit::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
-            }, 'fileType'])->find($unit);
-            $branch_name = 'Unit';
-            $branch = Unit::find($unit);
-            $folder = Folder::with(['fileType', 'subfolder'])->where('unit_id', $unit)->latest()->paginate(20);
+            }, 'fileType'])->find($branch_id);
+            //$branch_name = 'Unit';
+            $branch = Unit::find($branch_id);
+            //$folder = $query->where('unit_id', $branch_id)->latest()->paginate(20);
+            $folder->where('unit_id', $branch_id);
+
+            if($search){
+                $folder->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhereHas('fileType', function($query) use($search) {
+                                $query->where('name', 'like', '%' . $search . '%');
+                            });
+            }
+          
+            $folder = $folder->latest()->paginate(20);
+           
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
           }
 
-          $division = auth()->user()->division_id;
-          if($division){
-            // $branch = Division::withCount(['users','archive'])->with(['folder' =>function($query){
-            //     $query->with(['subfolder', 'fileType']);
-            // }, 'fileType', 'archive'=>function($query){
-            //     $query->with(['archiveDocs', 'filePath'])->latest();
-            // }])->find($division);
-            // $branch_name = 'Division';
-            // return inertia('dashboard/Branches', compact('branch', 'branch_name'));
+         // $division = request()->id? request()->id: auth()->user()->division_id;
+          if($branch_name == 'Division'){
+           
+           
             $branch = Division::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
-            }, 'fileType'])->find($unit);
-            $branch_name = 'Division';
-            $branch = Divison::find($unit);
-            $folder = Folder::with(['fileType', 'subfolder'])->where('division_id', $division)->latest()->paginate(20);
+            }, 'fileType'])->find($branch_id);
+           // $branch_name = 'Division';
+            $branch = Division::find($branch_id);
+            $folder = $folder->where('division_id', $branch_id);
+
+             if($search){
+                $folder->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhereHas('fileType', function($query) use($search) {
+                                $query->where('name', 'like', '%' . $search . '%');
+                            });
+            }
+
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
           }
           
-          $department = auth()->user()->department_id;
-            //  $department = Department::withCount(['user','archive'])->with(['folder' =>function($query){
-            //     $query->with(['subfolder']);
-            //  }, 'fileType', 'archive'=>function($query){
-            //     $query->with(['archiveDocs', 'filePath'])->latest();
-            // }])->find($department);
-            // return inertia('dashboard/Branches', compact('department'));
-            $branch = Department::with(['folder'=>function($query){
+          $department = request()->id? request()->id: auth()->user()->department_id;
+           if($department){
+             $branch = Department::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($department);
-            $branch_name = 'Department';
+          
             $branch = Department::find($department);
-            $folder = Folder::with(['fileType', 'subfolder'])->where('department_id', $department)->latest()->paginate(20);
+            $folder = $folder->where('department_id', $department);
+           }
+
+           if($search){
+                $folder->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhereHas('fileType', function($query) use($search) {
+                                $query->where('name', 'like', '%' . $search . '%');
+                            });
+            }
+           
+            $folder = $folder->latest()->paginate(20)->withQueryString();
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
-        }
-       
+    
      }
 
     public function folderView($branch, $id){
+
        $archive_id = request()->archive_id;
         $branch = strtolower($branch);
-       $folder = Folder::with(['subfolder'=>function($query){
+       $folder = Folder::with(['fileType', 'subfolder'=>function($query){
         $query->with('fileType');
        }])->find($id);
 
+       $archive = Archive::with(['filePath', 'fileActivity', 'archiveDocs','department','division', 'unit', 'version' => function($query){
+                $query->latest();
+            }]);
+
         if($branch == 'unit'){
             $branch_id = request()->branch_id? request()->branch_id: auth()->user()->unit_id;
-            if(request()->archive_id){
-                $archives = Archive::with(['filePath', 'archiveDocs','department','division', 'unit'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('unit_id',  $branch_id)->latest()->paginate(20);
+            if(!is_null($archive_id)){
+                $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('unit_id',  $branch_id);
+                
             }else{
-                $archives = Archive::with(['filePath', 'archiveDocs','department','division', 'unit'])->where('folder_id', $id)->where('unit_id',  $branch_id)->latest()->paginate(20);
+                $archives =        $archive->where('folder_id', $id)->where('unit_id',  $branch_id);
+              
+            }
+            $search = request('search');
+            if ($search) {
+                $archive->whereHas('archiveDocs', function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+                });
             }
 
+            $archives = $archive->latest()->paginate(20);
             $is_folder_open = $folder->is_open;
             $branch_type = 'unit';
             $folder_name = $folder->name;
-            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder'));
+            $folder_id = $id;
+           // $document_type = $archives->archiveDocs->unique('archive_keys');
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder', 'folder_id'));
         }else
 
         if($branch == 'division'){
             $branch_id = request()->branch_id? request()->branch_id: auth()->user()->division_id;
             if(request()->archive_id){
-                $archives = Archive::with(['filePath', 'archiveDocs'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('division_id',  $branch_id)->latest()->paginate(20);
+                $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('division_id',  $branch_id);
             }else{
-                $archives = Archive::with(['filePath', 'archiveDocs'])->where('folder_id', $id)->where('division_id',  $branch_id)->latest()->paginate(20);
+                $archives =        $archive->where('folder_id', $id)->where('division_id',  $branch_id);
             }
-          
+
+            $search = request('search');
+            if ($search) {
+                $archive->whereHas('archiveDocs', function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+            $archives = $archive->latest()->paginate(20);
             $is_folder_open = $folder->is_open;
             $branch_type = 'division';
             return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
@@ -755,11 +891,21 @@ class ArchiveController extends Controller
 
         $branch_id = request()->branch_id? request()->branch_id: auth()->user()->department_id;
         if(request()->archive_id){
-            $archives = Archive::with(['filePath', 'archiveDocs'])->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id)->latest()->paginatge(20);
+            $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id);
         }else{
-            $archives = Archive::with(['filePath', 'archiveDocs'])->where('folder_id', $id)->where('department_id',  $branch_id)->latest()->paginate(20);
+            $archives =        $archive->where('folder_id', $id)->where('department_id',  $branch_id);
+        }
+
+        $search = request('search');
+        if ($search) {
+            $archive->whereHas('archiveDocs', function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('amount', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%");
+            });
         }
      
+        $archives = $archive->latest()->paginate;
         $is_folder_open = $folder->is_open;
         $branch_type = 'department';
         return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
@@ -813,11 +959,13 @@ class ArchiveController extends Controller
     public function uploadNewDocument(Request $request){
         if($request->file('files')){
 
-            $archive = Archive::with('filePath')->find($request->document_id);
+            $archive = Archive::with(['filePath','archiveDocs'])->find($request->document_id);
         
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            $file_path_id = '';
 
             $file_path = $archive->filePath->first()? $archive->filePath->first()->path: [];
+            
             $thumbnail = $archive->filePath->first()? $archive->filePath->first()->thumbnails: [];
             // if($file_path && $thumbnail){
             //      $file_arr = explode("/",$file_path);
@@ -894,11 +1042,188 @@ class ArchiveController extends Controller
                 $ids = $file_path->pluck('id');
                
                 $archive->filePath()->attach($ids);
+
+
+                $this->createNewVersions($archive);
+               
+
             } catch (Exception $e) {
-                dd($e);
+                //dd($e);
+                return response()->json($e);
             }
            
         }
+    }
+
+    public function createNewVersions($archive){
+        if($archive->filePath){
+            //create versions
+           $version = new Version();
+           $version->versions = json_encode($archive);
+           $version->archive_id = $archive->id;
+           $version->save();
+
+           return true;
+       }
+       return false;
+    }
+
+    public function restoreFileVersion(Request $request){
+
+        DB::beginTransaction();
+        try {
+            $archive = Archive::with(['archiveDocs', 'filePath'])->find($request->id);
+            
+            //create a new archive
+            $this->createNewVersions($archive);
+
+            //delete old entry
+            foreach($archive->filePath as $path){
+                $path->delete();
+            }
+            foreach($archive->archiveDocs as $docs){
+                $docs->delete();
+            }
+
+            //restore file
+            foreach($request->input('files') as $file){
+                $id = FilePath::create([
+                    'path' => $file['path'],
+                    'file_name' => $file['file_name'],
+                    'file_size' => $file['file_size'],
+                    'updated_by' =>$file['updated_by'],
+                    'updated_by_name' => $file['updated_by_name'],
+                    'restored_by_name' => auth()->user()->first_name." ".auth()->user()->last_name,
+                ]);
+            
+                $archive->filePath()->attach($id);
+            }
+
+            foreach($request->archive_docs as $docs){
+                $id = ArchiveDocs::create([
+                    'archive_id' => $docs['archive_id'],
+                    'archive_keys' => $docs['archive_keys'],
+                    'archive_values' => $docs['archive_values'],
+                ]);
+
+            }
+
+             //delete this version 
+             $version = Version::find($request->file_version_id);
+             $version->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with(['success'=>true]);
+        } catch (\Exception $e) {
+           DB::rollback();
+           return redirect()->back()->with(['error'=>true]);
+        }
+      
+
+    }
+
+    public function lockDocument(Request $request){
+        $archive = Archive::find($request->id);
+        $archive->is_locked = 1;
+        $archive->save();
+        return redirect()->back()->with(['success'=>true]);
+    }
+
+    public function deleteFileVersion(Request $request){
+        $version = Version::find($request->id);
+        $version->delete();
+        return redirect()->back();
+        //return response()->json(['success'=>true], 200);
+    }
+
+    public function shareFileSearch(Request $request){
+        $unit = auth()->user()->unit_id;
+        $division = auth()->user()->division_id;
+        $department = auth()->user()->department_id;
+
+        $search = $request->search;
+
+        if($search){
+            //  $users = User::where(function($query) use ($search) {
+            //     $query->where('first_name', 'LIKE', '%' . $search . '%');
+            // })->orWhere(function($query) use ($unit, $division, $department) {
+            //     if ($unit !== null) {
+            //         $query->orWhere('unit_id', $unit);
+            //     }
+            //     if ($division !== null) {
+            //         $query->orWhere('division_id', $division);
+            //     }
+            //     if ($department !== null) {
+            //         $query->orWhere('department_id', $department);
+            //     }
+            // })->get();
+
+            if($unit){
+                $query = User::where('unit_id', $unit);
+            }
+
+            if($division){
+                $query = User::where('division_id', $division);
+            }
+
+            if($department){
+                $query = User::where('department_id', $department);
+            }
+
+            $query->where('first_name','LIKE','%'.$search.'%')
+                ->orWhere('last_name', 'LIKE', '%'.$search.'%');
+            
+            $users = $query->get();
+        }else{
+            $users = [];
+        }
+       
+        
+        return response()->json($users);
+    }
+
+    public function shareFile(Request $request){
+        if($request->ids){
+            $data = [];
+
+            foreach($request->ids as $id){
+                $arr = [
+                    'sharing_id' => auth()->user()->id,
+                    'shared_id' => $id,
+                    'archive_id' => $request->archive_id,
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
+                ];
+                array_push($data, $arr);
+            }
+        }
+        Share::insert($data);
+
+        return redirect()->back()->with(['success'=>true]);
+    }
+
+    public function folderSearch(Request $request) {
+        $search = $request->search;
+    
+        // Build the query
+        $folder = Folder::with(['fileType', 'subfolder'])
+            ->where(function($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('number', 'like', '%' . $search . '%')
+                    ->orWhereHas('fileType', function($query) use($search) {
+                        $query->where('name', 'like', '%' . $search . '%');
+                    });
+            })
+            ->latest()
+            ->paginate(20);
+    
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()->with('folder',$folder);
+            }else{
+                return response()->json($folder);
+            }
+        
     }
 
 }

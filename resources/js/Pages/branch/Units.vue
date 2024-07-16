@@ -75,7 +75,7 @@
         </main>
     </div>
     <EditUnitModal v-model="editUnit" :unit="singleUnit" @close="editUnit=false"/>
-    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentUnit" :url="'/admin/add-document-type-to-unit'" />
+    <AddDocumentTypesModal v-model="addDocType" :doctypes="props.documentTypes" :branch="currentUnit" :url="'/dashboard/add-document-type-to-unit'" />
     <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'unit'" :branch_id="singleUnit?.id"/>
 </template>
 
@@ -112,14 +112,14 @@ const menuItems = ref([
 //     label: "Duplicate", icon: "pi pi-clone",
 //     command: ()=>{
 //         let data = {id:singleUnit.value.id}
-//         router.post('/admin/duplicate-unit',data)
+//         router.post('/dashboard/duplicate-unit',data)
 //     } 
 //     },
   { 
     label: "Delete", icon: "pi pi-trash",
     command: ()=>{
         let data = {id:singleUnit.value.id}
-        router.post('/admin/delete-unit', data)
+        router.post('/dashboard/delete-unit', data)
     }
  },
   { label: "Change Log", icon: "pi pi-chart-pie" },

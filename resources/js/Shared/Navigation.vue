@@ -96,7 +96,7 @@ const setDepartments = () => {
   for (let dept of departments.value) {
     let data = {
       name: dept.title,
-      path: "/admin/branches/" + dept.id,
+      path: "/dashboard/branches/" + dept.id,
       icon: "clarity:circle-line",
     }
     branches.value.push(data)
@@ -106,7 +106,7 @@ const setDepartments = () => {
 const main = ref([
   {
     name: "Admin",
-    path: "/admin",
+    path: "/dashboard",
     icon: "lucide:home",
   },
   {
@@ -121,12 +121,12 @@ const main = ref([
   },
   {
     name: "Workflow",
-    path: "/admin/workflow",
+    path: "/dashboard/workflow",
     icon: "lucide:workflow"
   },
   {
     name: "Mails",
-    path: "/admin/mails",
+    path: "/dashboard/mails",
     icon: "ic:outline-mail"
   },
 ]);
@@ -134,12 +134,12 @@ const main = ref([
 const admin = ref([
   {
     name: "Manage Users",
-    path: "/admin/manage-users",
+    path: "/dashboard/manage-users",
     icon: "mynaui:users",
   },
   {
     name: "Branch Setup",
-    path: "/admin/branch-setup",
+    path: "/dashboard/branch-setup",
     icon: "solar:database-outline",
   },
   {
@@ -149,7 +149,7 @@ const admin = ref([
   },
   {
     name: "Metadata Setup",
-    path: "/admin/metadata-setup",
+    path: "/dashboard/metadata-setup",
     icon: "uiw:setting-o",
   },
   {

@@ -41,10 +41,14 @@
           JPEG, PNG, PDF, MP3 & other formats
         </p>
       </div>
-
+<div class=" flex items-center gap-5"> 
       <button class="bg-white border-gray-300 border p-2 rounded-lg relative">
         <input type="file" class="opacity-0 absolute w-full" />Browse File
       </button>
+      <button class="bg-white border-gray-300 border p-2 rounded-lg relative">
+        <input type="file" class="opacity-0 absolute w-full" />Select from registry
+      </button>
+    </div>
     </div>
 
     <div  class=" mt-4">
@@ -155,6 +159,7 @@
 import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
 import image from "../../../assets/images/members/1.svg";
+
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue"]);
 const selectedIndex = ref(null)

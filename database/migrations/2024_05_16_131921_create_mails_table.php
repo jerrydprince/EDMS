@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('subject');
             $table->string('recipient');
             $table->string('sender');
+            $table->integer('sender_id');
             $table->text('body');
             $table->boolean('is_read')->default(0);
             $table->boolean('is_archived')->default(0);

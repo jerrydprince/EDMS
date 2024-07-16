@@ -196,7 +196,7 @@ const submitForm = () => {
 }
 
 const getFileType = ()=>{
-	axios.get('/dashboard/get-branch-file-type').then((response)=>{
+	axios.get('/data-entry/get-branch-file-type').then((response)=>{
 		fileType.value = response.data
 	})
 }
@@ -215,7 +215,7 @@ watch(()=>form.division,()=>{
 onMounted(()=>{
 	if(page.props.roles !='data entry' && props.department){
 
-		axios.get('/admin/get-division-with-unit',{params:{id: props.department.id}}).then((response)=>{
+		axios.get('/dashboard/get-division-with-unit',{params:{id: props.department.id}}).then((response)=>{
 			division.value = response.data;
 		})
 

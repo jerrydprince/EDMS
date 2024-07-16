@@ -16,7 +16,7 @@
          <!-- mini profile section starts here -->
       <div class="ml-1 cursor-pointer">
         <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
-          <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+          <img :src="page.props.user.profile_image? page.props.base+'/'+page.props.user.profile_image: 'https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png'" />
         </div>
 
         <div
@@ -24,7 +24,7 @@
           v-if="Profile_option">
           <div class=" flex items-center gap-3  p-4 border-b">
             <div class="ml-1 w-10 h-10 overflow-hidden rounded-full">
-              <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+              <img :src="page.props.user.profile_image? page.props.base+'/'+page.props.user.profile_image: 'https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png'" />
             </div>
             <div>
               <h1>{{ user.last_name+' '+user.first_name }}</h1>

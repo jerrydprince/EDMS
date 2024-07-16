@@ -34,7 +34,7 @@
                 </div>
                 <div class="flex align-middle items-center justify-center">
                     <button class=" rounded-lg border px-7 py-1 hover:text-gray-600 mx-2">Cancel</button>
-                    <Link :href="'/admin/add-user?email='+parseJson(notification).email+'&notification_id='+notification.id" class="rounded-lg border px-4 py-1 bg-blue-500 text-white hover:bg-blue-400">View Details</Link>
+                    <Link :href="'/dashboard/add-user?email='+parseJson(notification).email+'&notification_id='+notification.id" class="rounded-lg border px-4 py-1 bg-blue-500 text-white hover:bg-blue-400">View Details</Link>
                 </div>
                </div>
 

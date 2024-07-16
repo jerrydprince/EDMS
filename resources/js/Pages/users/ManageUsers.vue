@@ -23,7 +23,7 @@
           <Icon icon="material-symbols:download" width="20" />
           <p>Download CSV</p>
         </button>
-        <Link href="/admin/add-user">
+        <Link href="/dashboard/add-user">
         <button class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4">
           <Icon icon="material-symbols:add" width="20" />
           <p>Add User</p>
@@ -91,7 +91,7 @@
             <p class="text-[#667085] mt-2">{{ item.description }}</p>
           </div>
           <div class=" ">
-            <DataTable v-model:selection="selectedProduct" :rows="4" :value="item.users" dataKey="id" :pt="{
+            <DataTable  :rows="4" :value="item.users" dataKey="id" :pt="{
               table: {
                 class: ' border border-border_primary border-solid mb-6 mt-2',
               },
@@ -131,7 +131,7 @@
               }" headerStyle="color: #667085; font-weight: 500;">
                 <template #body="slotProps">
                   <div class="flex gap-3 items-center">
-                    <Link :href="'/admin/edit-user?id='+slotProps.data.id" class="p-1 font-semibold border rounded-md border-gray-300 cursor-pointer">
+                    <Link :href="'/dashboard/edit-user?id='+slotProps.data.id" class="p-1 font-semibold border rounded-md border-gray-300 cursor-pointer">
                       <Icon icon="mingcute:pencil-2-line" width="25" />
                     </Link>
                     <div @click="showDeleteDialog(slotProps.data.id)" class=" cursor-pointer">
@@ -144,7 +144,7 @@
           </div>
         </div>
         <div class="flex justify-end px-20" v-if="!item.label">
-          <Link :href="'/admin/role-users?role_id='+item.id">
+          <Link :href="'/dashboard/role-users?role_id='+item.id">
           <button class="flex items-center gap-2 text-[#2F68C5]">
             <p>View All</p>
             <Icon icon="flowbite:angle-right-outline" />
@@ -154,131 +154,7 @@
       </div>
     </div>
 
-    <!-- <div v-if="buttonToggle === 2">
-      <div v-for="(item, index) in filteredItems" :key="index" class="mb-5">
-        <div class="flex items-start justify-between pl-7 pr-14">
-          <div class="w-[25%]">
-            <h1 class="text-xl font-semibold text-[#475467]">
-              {{ item.name }}
-            </h1>
-            <p class="text-[#667085] mt-2">{{ item.description }}</p>
-          </div>
-          <div class=" ">
-            <DataTable v-model:selection="selectedProduct" :rows="4" :value="item.table.slice(0, 4)" dataKey="id" :pt="{
-              table: {
-                class: ' border border-border_primary border-solid mb-6 mt-2',
-              },
-            }" tableStyle="min-width: 50rem; border-radius: 100px;" style="width: ">
-              <Column selectionMode="multiple" headerStyle="width: 1rem; color: #667085;"></Column>
-              <Column field="name" header="Name" :pt="{
-                bodyCell: { class: 'text-gray-700' },
-              }" headerStyle="color: #667085; font-weight: 500;" style="width: 300px">
-                <template #body="slotProps">
-                  <div class="font-medium">
-                    <p>{{ slotProps.data.name }}</p>
-
-                    <p class="text-[#667085]">{{ slotProps.data.email }}</p>
-                  </div>
-                </template>
-              </Column>
-              <Column field="date" header="Date Added" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;" style="width: 150px">
-              </Column>
-              <Column field="active" header="Last Active" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;" style="width: 150px">
-              </Column>
-              <Column field="" header="Actions" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-                <template #body="">
-                  <div class="flex gap-3 items-center">
-                    <div class="p-1 font-semibold border rounded-md border-gray-300">
-                      <Icon icon="mingcute:pencil-2-line" width="25" />
-                    </div>
-                    <div @click="showDeleteDialog(slotProps.data.id)" class=" cursor-pointer">
-                      <Icon icon="mingcute:delete-2-line" width="25" />
-                    </div>
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-        </div>
-        <div class="flex justify-end px-20">
-          <Link href="/admin/role-users">
-          <button class="flex items-center gap-2 text-[#2F68C5]">
-            <p>View All</p>
-            <Icon icon="flowbite:angle-right-outline" />
-          </button>
-          </Link>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="buttonToggle === 3">
-      <div v-for="(item, index) in filteredItems" :key="index" class="mb-5">
-        <div class="  pl-7 pr-14">
-          <div class="w-[50%]">
-            <h1 class="text-xl font-semibold text-[#475467]">
-              {{ item.name }}
-            </h1>
-            <p class="text-[#667085] mt-2">{{ item.description }}</p>
-          </div>
-          <div class=" mt-5">
-            <DataTable v-model:selection="selectedProduct" :rows="4" :value="item.table.slice(0, 4)" dataKey="id" :pt="{
-              table: {
-                class: ' border border-border_primary border-solid mb-6 mt-2',
-              },
-            }" tableStyle="min-width: 70rem; border-radius: 100px;" style="width: ">
-              <Column selectionMode="multiple" headerStyle="width: 1rem; color: #667085;"></Column>
-              <Column field="name" header="Name" :pt="{
-                bodyCell: { class: 'text-gray-700' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-                <template #body="slotProps">
-                  <div class="font-medium">
-                    <p>{{ slotProps.data.name }}</p>
-
-                    <p class="text-[#667085]">{{ slotProps.data.email }}</p>
-                  </div>
-                </template>
-              </Column>
-              <Column field="date" header="Date Added" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;" style="width: 150px">
-              </Column>
-              <Column field="active" header="Last Active" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-              </Column>
-              <Column field="" header="Actions" :pt="{
-                bodyCell: { class: 'text-gray-500' },
-              }" headerStyle="color: #667085; font-weight: 500;">
-                <template #body="slotProps">
-                  <div class="flex gap-3 items-center">
-                    <div class="p-1 font-semibold border rounded-md border-gray-300">
-                      <Icon icon="mingcute:pencil-2-line" width="25" />
-                    </div>
-                    <div @click="showDeleteDialog(slotProps.data.id)" class=" cursor-pointer">
-                      <Icon icon="mingcute:delete-2-line" width="25" />
-                    </div>
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-        </div>
-        <div class="flex justify-end px-40">
-          <Link href="/admin/role-users">
-          <button class="flex items-center gap-2 text-[#2F68C5]">
-            <p>View All</p>
-            <Icon icon="flowbite:angle-right-outline" />
-          </button>
-          </Link>
-        </div>
-      </div>
-    </div> -->
+   
   </main>
   <DeleteUsers v-if="deleteModal" @confirmed="handleDelete" @cancelled="cancelDelete" />
   <AccountRequestModal v-model="account_request" :notifications="props.notifications" />
@@ -338,15 +214,12 @@ const showDeleteDialog = (itemId) => {
   deleteModal.value = !deleteModal.value
 };
 
-const handleDelete = () => {
-  data.forEach(category => {
-    const indexToDelete = category.table.findIndex(item => item.id === itemIdToDelete.value);
-    if (indexToDelete !== -1) {
-      category.table.splice(indexToDelete, 1);
-    }
-  });
-  itemIdToDelete.value = null;
-  deleteModal.value = !deleteModal.value
+const handleDelete = (id) => {
+  axios.get('/dashboard/delete-user/'+itemIdToDelete.value).then((response)=>{
+    itemIdToDelete.value = null;
+    deleteModal.value = !deleteModal.value
+    router.reload({only:['role']})
+  })
 };
 
 const cancelDelete = () => {

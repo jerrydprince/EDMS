@@ -46,23 +46,23 @@ const props = defineProps(['user'])
 const settings = ref([
   {
     name: "Profile",
-    path: "/dashboard/settings",
+    path: "/data-entry/settings",
     icon: "ep:user",
   },
   {
     name: "Preferences",
-    path: "/dashboard/preference",
+    path: "/data-entry/preference",
     icon: "material-symbols:room-preferences-rounded",
   },
 
   {
     name: "Security & Recovery",
-    path: "/dashboard/security",
+    path: "/data-entry/security",
     icon: "lucide:lock",
   },
   {
     name: "Localisation",
-    path: "/dashboard/localisation",
+    path: "/data-entry/localisation",
     icon: "jam:world",
   },
 ]);

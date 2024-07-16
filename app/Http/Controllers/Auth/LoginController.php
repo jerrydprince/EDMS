@@ -96,9 +96,9 @@ class LoginController extends Controller
 
             $request->session()->regenerate();
             if(auth()->user()->hasRole('data entry')){
-                return redirect()->intended('dashboard');
+                return redirect()->intended('data-entry');
             }
-            return redirect()->intended('admin');
+            return redirect()->intended('dashboard');
         }
  
         return back()->withErrors([

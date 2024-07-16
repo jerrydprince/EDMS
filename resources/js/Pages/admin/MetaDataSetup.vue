@@ -242,7 +242,7 @@ const menuItems = ref([
       value: "delete",
       command: ()=>{
         if (window.confirm("Do you want to delete this?")) {
-          router.post('/admin/delete-metadata',singleMetadata.value);
+          router.post('/dashboard/delete-metadata',singleMetadata.value);
         }
       } 
   },
@@ -281,17 +281,17 @@ const items = ref([
   {
     label: "Metadata",
     icon: "",
-    link: "/admin/metadata-setup",
+    link: "/dashboard/metadata-setup",
   },
   {
     label: "Document Type",
     icon: "material-symbols-light:info-outline",
-    link: "/admin/setup-document-type",
+    link: "/dashboard/setup-document-type",
   },
   {
     label: "File Type",
     icon: "",
-    link: "/admin/file-type",
+    link: "/dashboard/file-type",
   }
 ]);
 
@@ -302,7 +302,7 @@ const Actions = (val) => {
   // }
   // if(val == 'delete'){
   //   if (window.confirm("Do you want to delete this?")) {
-  //     router.post('/admin/delete-metadata',singleMetadata.value);
+  //     router.post('/dashboard/delete-metadata',singleMetadata.value);
   //   }
   // }
 }

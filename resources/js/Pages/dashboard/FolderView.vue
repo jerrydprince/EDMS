@@ -13,7 +13,7 @@
 
         <button v-if="is_folder_open"
           class="flex gap-2 items-center text-[#F04438] w-32  hover:bg-[#FFFBFA] hover:border hover:border-[#FECDCA] rounded-lg py-2 px-4">
-          <Link :href="'/dashboard/close-folder/' + folder_id" method="post" as="button">
+          <Link :href="'/data-entry/close-folder/' + folder_id" method="post" as="button">
           <p>Close File</p>
           </Link>
         </button>
@@ -36,7 +36,7 @@
         </button>
 
         <div v-if="props.is_folder_open">
-          <Link :href="'/dashboard/archiving/' + page.props.branch + '/' + folder_id">
+          <Link :href="'/data-entry/archiving/' + page.props.branch + '/' + folder_id">
           <button class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
             <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
             <p>Upload Documents</p>
@@ -53,13 +53,39 @@
 
       <div class="flex items-center justify-between  lg:w-[40%] text-sm">
         <div class="bg-gray-100 flex items-center rounded-md p-1">
-          <button class="bg-white shadow-md border-gray-300 rounded-lg py-1 px-4">
+          <button class="bg-gray-100 flex items-center rounded-md px-4 py-1"
+          @click="setActive(1)"
+            :class="{ activeButton: buttonToggle === 1 }"
+          >
             <p>All</p>
           </button>
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4">
-            <p>Type</p>
+          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+          :class="{ activeButton: buttonToggle === 2 }"
+              @click="toggleFileBtn">
+            <p>Document Type</p>
             <Icon icon="icon-park-outline:down" width="16" />
           </button>
+          <TieredMenu
+              ref="menuBtn"
+              id="overlay_tmenu"
+              :model="itemsBtn"
+              popup
+              style="width: 200px"
+            >
+              <template #item="{ item, props }">
+                <a
+                  v-ripple
+                  class="flex align-items-center gap-2 px-[15px] py-[8px]"
+                  v-bind="props.action"
+                  @click="handleFilterOption(item.label)"
+                >
+                  <div v-if="item.icon">
+                    <Icon :icon="item.icon" />
+                  </div>
+                  <span class="">{{ item.label }}</span>
+                </a>
+              </template>
+            </TieredMenu>
         </div>
         <button class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4"
           @click="sortDocuments">
@@ -102,56 +128,7 @@
     <!-- ===============    File table    ============ -->
 
 
-    <!-- <table class="w-full text-left mb-10" v-if="props.folder.subfolder && props.folder.subfolder.length > 0">
-          <thead class=" bg-gray-50">
-            <tr class="border text-[#667085]">
-              <th class="p-3 pl-5 w-[70px]">
-                <Checkbox class="mr-1" />
-              </th>
-              <th>File Name</th>
-              <th>File Number</th>
-              <th>File Type</th>
-              <th>Last Modified</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border" v-for="(folder, key) in props.folder.subfolder">
-              <td class="p-3 pl-5 py-3">
-                <Checkbox :binary="true" class="mr-1" />
-
-              </td>
-              <td class="py-3">
-                <div class="flex items-center font-medium gap-2">
-                  <div class="p-2 rounded-full bg-gray-200">
-                    <Link :href="'/dashboard/folder-view/' + branch_type + '/'+folder.my_id">
-                    <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
-                    </Link>
-                  </div>
-                  <Link :href="'/dashboard/folder-view/' + branch_type + '/' + folder.my_id">{{ folder.name }}</Link>
-                </div>
-              </td>
-              <td class="py-3">{{ folder.number }}</td>
-              <td>{{ folder?.file_type?.name }}</td>
-              <td class="py-3">{{ formatDate(folder.updated_at) }}</td>
-              <td class="py-3">
-                <div class="card flex justify-content-center">
-                  <div @click="toggle($event, key)" aria-haspopup="true" aria-controls="overlay_menu"
-                    class="flex items-center font-normal h-full border border-gray-300 rounded-lg cursor-pointer">
-                    <div class="h-full">
-                      <Icon icon="majesticons:more-menu-vertical" width="30" />
-                    </div>
-                    <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-                  </div>
-                  <Link :href="'/dashboard/delete-folder/' + folder.id" class="px-3 text-red-500"
-                    v-if="admin && admin.length > 0">delete</Link>
-                </div>
-
-              </td>
-          
-            </tr>
-          </tbody>
-        </table> -->
+    
 
 
     <!-- =================== Files table   =============== -->
@@ -163,7 +140,9 @@
       <ListVue :files="files" :documentsGridView="documentsGridView" @docs="SetselectedDocument"
         @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
         @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails" @editMetadata="setEditmetadata"
-        @addMetadata="setAddMetadata" :archives="props.archives" :search="search_text" :sort="sortOrder" />
+        @addMetadata="setAddMetadata" :archives="props.archives" :search="search_text" :sort="sortOrder" 
+        @fileActivity="toggleFileActivity=true" @fileVersion="toggleFileVersion=true" @lockDocs ="handleLockDocument"
+        @share="handleShare" />
     </div>
 
 
@@ -214,33 +193,7 @@
               </div>
             </div>
 
-            <!-- <div id="menu1" class="menu absolute right-5 z-50 " v-if="menuVisible && selectedDocumentId === i"
-                            ref="modalRef">
-                            <div class="w-[417px] h-[420px] relative " @click.stop
-                                :class="isPositionChanged ? '-top-20' : 'top-52'">
-                                <div
-                                    class="dropmenu w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute right-0 shadow-lg cursor-pointer">
-                                    <div class="flex justify-between items-center hover:bg-[#F9FAFB] px-3 my-2"
-                                        v-for="(item, index) in menuItem" :key="index" @click="handleMenuItem(item)">
-                                        <div class="flex items-center gap-2">
-                                            <Icon :icon="item.icon" />
-                                            <p>{{ item.label }}</p>
-                                        </div>
-                                        <Icon :icon="item.arrow" />
-                                    </div>
-                                </div>
-
-                                <div class="w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute bottom-0 left-0 shadow-lg cursor-pointer"
-                                    :class="{ ' bottom-28': isSecondPosition }"
-                                    :style="{ left: horizontalPosition ? '420px' : 'auto' }" v-if="submenu">
-                                    <div class="flex items-center gap-2 hover:bg-[#F9FAFB] px-3 my-2"
-                                        v-for="(item, index) in submenuItem" :key="index" @click="handleMenuItem(item)">
-                                        <Icon :icon="item.icon" />
-                                        <p>{{ item.label }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
+           
           </div>
 
 
@@ -252,18 +205,25 @@
       </div>
     </div>
   </main>
-  <CreateFolderDialog v-model="createFolderModal" :url="'/dashboard/create-folder'" :folderId="folder_id" />
+  <CreateFolderDialog v-model="createFolderModal" :url="'/data-entry/create-folder'" :folderId="folder_id" />
   <BranchDetails v-model="branchDetailsModal" :file="state.selectedArchive" :folder="props.folder"
     @updateDocument="handleUpdateDocument" />
-  <LockDocument v-model="LockDocumentModal" />
+  <LockDocument v-model="LockDocumentModal" :file="state.selectedArchive" />
   <UnlockDocument v-model="UnlockDocumentModal" />
   <GenerateEncriptionCode v-model="GenerateEncriptionModal" />
   <ChangeFormat v-model="ChangeFormatModal" :archive="state.selectedArchive" />
-  <PreviewFile v-if="togglePreview" :togglePreviewFunction="togglePreviewState" :file="state.selectedArchive" />
+  <PreviewFile v-if="togglePreview" :togglePreviewFunction="togglePreviewState" :file="filePreviewToggle" @toggleVersion="toggleFileVersion = true"/>
+
+  <!-- <PreviewFile v-if="togglePreviewFile" :togglePreviewFunction="togglePreviewState2" :file="filePreviewToggle" /> -->
   <RenameFileDialog v-model="FileRenameModal" :archive="state.selectedArchive" />
   <EditArchiveDocsMetadataDialog :file="state.selectedArchive" v-model="toggleMetadata" @formsubmited="FormSubmited" />
   <AddArchiveDocsMetadataDialog :file="state.selectedArchive" v-model="toggleAddMetadata"
     @editMetadata="setEditmetadata" @formsubmited="AddFormSubmited" />
+  
+  <fileActivity v-model="toggleFileActivity" :selectedArchive="state.selectedArchive" />
+  <fileVersion v-model="toggleFileVersion" :selectedArchive="state.selectedArchive" @previewFile="setSelectedFileState" 
+    @fileVersionDeleted="handleFileVersionDeleted"/>
+  <share v-model="toggleShare" :archive="state.selectedArchive" />
 </template>
 
 <script setup>
@@ -278,11 +238,14 @@ import ChangeFormat from "../../components/Modals/branches/ChangeFormatModal.vue
 import { onClickOutside } from '@vueuse/core'
 import { Link, usePage, router } from '@inertiajs/vue3';
 import PreviewFile from "../../components/Modals/branches/PreviewFile.vue";
+
 import ListVue from '../dashboard/partials/ListVue.vue';
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
 import EditArchiveDocsMetadataDialog from "../../components/Modals/EditArchiveDocsMetadataDialog.vue";
 import AddArchiveDocsMetadataDialog from "../../components/Modals/AddArchiveDocsMetadataDialog.vue";
-
+import fileActivity from "../../components/Modals/FileActivityModal.vue";
+import fileVersion from "../../components/Modals/VersionModal.vue";
+import share from "../../components/Modals/branches/share.vue";
 
 const createFolderModal = ref(false);
 const branchDetailsModal = ref(false);
@@ -291,6 +254,7 @@ const UnlockDocumentModal = ref(false)
 const GenerateEncriptionModal = ref(false)
 const foldersGridView = ref(false);
 const ChangeFormatModal = ref(false);
+const toggleFileVersion = ref(false);
 
 const isPositionChanged = ref(false);
 const isSecondPosition = ref(false)
@@ -300,13 +264,14 @@ const horizontalPosition = ref(null);
 const folderMenu = ref(false)
 const toggleMetadata = ref(false)
 const toggleAddMetadata = ref(false)
+const toggleFileActivity = ref(false);
 
 const menuVisible = ref(false);
 const modalRef = ref(null)
 const folderRef = ref(null)
 const submenu = ref(false)
 const page = usePage();
-const props = defineProps(['archives', 'branch_id', 'is_folder_open', 'branch_type', 'folder_name', 'folder'])
+const props = defineProps(['archives', 'branch_id', 'is_folder_open', 'branch_type', 'folder_name', 'folder', 'folder_id', 'branch_type'])
 const selectedArchiveId = ref();
 //const state.selectedArchive = ref();
 const menu = ref()
@@ -315,13 +280,31 @@ const folder_id = ref('');
 const search_text = ref('')
 const FileRenameModal = ref(false)
 const togglePreview = ref(false)
+const togglePreviewFile = ref(false)
 const documentsGridView = ref(false);
 const sortOrder = ref('')
 const is_sorting = ref(false)
+const filePreviewToggle = ref([])
+const toggleShare = ref(false);
+const buttonToggle = ref(1);
+const menuBtn = ref()
 
 const state = reactive({
   selectedArchive: null
 });
+
+const handleFileVersionDeleted = ()=>{
+  router.reload({only: ['archives']})
+}
+
+const setActive = (buttonNumber) => {
+  buttonToggle.value = buttonNumber;
+};
+
+const toggleFileBtn = (event) => {
+  menuBtn.value.toggle(event);
+  buttonToggle.value = 2;
+};
 
 const FormSubmited = () => {
   toggleMetadata.value = false;
@@ -331,6 +314,10 @@ const FormSubmited = () => {
 const AddFormSubmited = () => {
   toggleAddMetadata.value = false;
   router.reload({ only: ['archives'] })
+}
+
+const handleShare = ()=>{
+  toggleShare.value = true;
 }
 
 const setEditmetadata = () => {
@@ -343,6 +330,16 @@ const setAddMetadata = () => {
 
 const backbtn = () => {
   return window.history.back()
+}
+
+const setSelectedFileState = (data)=>{
+  filePreviewToggle.value = data.value
+  togglePreview.value = true;
+  toggleFileVersion.value = false;
+}
+
+const handleLockDocument = ()=>{
+  LockDocumentModal.value = true;
 }
 
 onClickOutside(
@@ -364,6 +361,10 @@ onClickOutside(
 
 const togglePreviewState = () => {
   togglePreview.value = !togglePreview.value;
+};
+
+const togglePreviewState2 = () => {
+  togglePreviewFile.value = !togglePreviewFile.value;
 };
 
 const getFileExtension = (file) => {
@@ -389,6 +390,38 @@ const getFileExtension = (file) => {
   // }
 
 }
+
+const itemsBtn = ref([
+  {
+    label: "Filter",
+    icon: "octicon:filter-16",
+  },
+  // {
+  //   label: "Super Admin",
+  // },
+  // {
+  //   label: "Administrator",
+  // },
+  // {
+  //   label: "Records Manager",
+  // },
+  // {
+  //   label: "Super User",
+  // },
+  // {
+  //   label: "Director",
+  // },
+  // ,
+  // {
+  //   label: "Division Head",
+  // },
+  // {
+  //   label: "Unit Head",
+  // },
+  // {
+  //   label: "Data Entry Personnel",
+  // },
+]);
 
 const setBranchDetails = (data) => {
   branchDetailsModal.value = data
@@ -422,7 +455,7 @@ const items = ref([
         label: 'Delete',
         icon: 'pi pi pi-trash',
         command: (data) => {
-          console.log(data)
+         
         }
       }
     ]
@@ -546,7 +579,7 @@ const downloadFile = async () => {
     // Cleanup by revoking the object URL
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Error downloading file:', error);
+    
   }
 };
 
@@ -598,6 +631,7 @@ const getArchiveDocsVale = (data, search) => {
 
 const handleUpdateDocument = () => {
   router.reload({ only: ['archives'] })
+  branchDetailsModal.value = false;
 }
 
 const files = computed(() => {
@@ -621,7 +655,10 @@ const files = computed(() => {
         archive_docs: file.archive_docs,
         department: file.department ? file.department : [],
         division: file.division ? file.division : [],
-        unit: file.unit ? file.unit : []
+        unit: file.unit ? file.unit : [],
+        file_activity: file.file_activity,
+        file_version: file.version,
+        is_locked: file.is_locked
       }
       newarr.push(arr);
     }
@@ -633,10 +670,12 @@ const files = computed(() => {
 const filteredfiles = computed(() => {
 
   if (search_text.value !== '') {
-    let found = files.value.filter((val) => {
-      return val.name.includes(search_text.value)
-    })
-    return found
+    // let found = files.value.filter((val) => {
+    //   return val.name.includes(search_text.value)
+    // })
+    // return found
+    
+      
   }
   return files.value
 
@@ -656,5 +695,11 @@ onMounted(() => {
 
 .no-focus:focus {
   outline: none;
+}
+
+.activeButton {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 </style>

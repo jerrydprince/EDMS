@@ -84,6 +84,7 @@ class RegistrationController extends Controller
 
     public function checkMailExit(Request $request){
         $user = User::where('email', $request->email)->first();
+
         if(!is_null($user)){
             return response()->json(['error'=>'true','error_msg'=>'Email exist']);
         }

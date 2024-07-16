@@ -54,7 +54,7 @@
         <div class=" px-5">
           <div class="flex items-center justify-between pt-5">
             <div>
-              <h1 class=" font-semibold text-4xl text-[#1D2939]">{{ props.task.length }}</h1>
+              <h1 class=" font-semibold text-4xl text-[#1D2939]">{{ props.task? props.task.length: '' }}</h1>
               <p class=" font-semibold opacity-60 text-[#1D2939] mt-3">Pending Tasks</p>
             </div>
             <div class=" flex flex-col ">
@@ -213,10 +213,11 @@
   <ChangeFormat v-model="ChangeFormatModal" />
   <ResolveTask v-model="resolveModal" :task="selectedTask" />
   <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive" />
+  <EditArchiveDocsMetadataDialog :file="state.selectedArchive" v-model="toggleMetadata" @formsubmited="FormSubmited" />
 </template>
 
 <script setup>
-import { ref, defineProps, computed } from "vue";
+import { ref, defineProps, computed, reactive } from "vue";
 import EmptyState from "../../components/EmptyState.vue";
 import ResolveTask from "../../components/Modals/ResolveTask.vue";
 import BranchDetails from "../../components/Modals/branches/BranchDetails.vue";
@@ -228,6 +229,7 @@ import { onClickOutside } from "@vueuse/core";
 import { usePage } from '@inertiajs/vue3';
 import ListVue from '../dashboard/partials/ListVue.vue';
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
+import EditArchiveDocsMetadataDialog from "../../components/Modals/EditArchiveDocsMetadataDialog.vue";
 
 
 const documentsGridView = ref(true)
@@ -246,6 +248,7 @@ const ChangeFormatModal = ref(false);
 const scrollContainer = ref(null);
 const horizontalPosition = ref(null);
 const selectedTask = ref();
+const toggleMetadata = ref(false)
 
 const FileRenameModal = ref(false);
 const selectedArchiveId = ref();
@@ -258,6 +261,12 @@ const is_sorting = ref(false)
 onClickOutside(modalRef, (event) => {
   (menuVisible.value = false), (submenu.value = false);
 });
+
+const FormSubmited = () => {
+  toggleMetadata.value = false;
+  router.reload({ only: ['branch'] })
+}
+
 
 const close = () => {
   menuVisible.value = false,
@@ -275,6 +284,10 @@ const sortDocuments = () => {
 
 }
 
+const setEditmetadata = () => {
+  toggleMetadata.value = true
+}
+
 const setResolveModal = (task) =>{
   resolveModal.value = true;
   selectedTask.value = task
@@ -285,7 +298,7 @@ const SetselectedDocument = (data) => {
 }
 
 const setSelectedArchive = (data) => {
-  selectedArchive.value = data.value
+  state.selectedArchive = data.value
 }
 
 const setFormatModal = (data) => {
@@ -303,6 +316,10 @@ const setFileRename = (data) => {
 const setLock = (data) => {
   LockDocumentModal.value = data
 }
+
+const state = reactive({
+  selectedArchive: null
+});
 
 const downloadFile = async () => {
   try {

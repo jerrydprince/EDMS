@@ -6,7 +6,7 @@
 		:pt="{
       content: { class: 'px-0 bg-white pb-6' },
     }"
-		:style="{ width: '35rem', padding: '10px 0px' }"
+		:style="{ width: '40rem', padding: '10px 0px' }"
 		:breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
         class=" .custom-dialog"
 	>
@@ -29,7 +29,7 @@
 
             <div  class=" flex  items-center gap-4 ">
      <div class=" flex items-center gap-2 bg-[#f8f8f9] p-2 rounded-3xl border border-solid  border-gray-300" v-for="(item,index) in assignment" :key="index">
-       <img src="../../../assets/images/members/1.svg" alt="" class=" w-5">
+       <img src="/assets/images/members/1.svg" alt="" class=" w-5">
         <p class=" text-xs w-fit">{{ item.name }}</p>
         <Icon icon="clarity:times-line"  class=" cursor-pointer"/>
      </div>
@@ -112,7 +112,7 @@
          </div>
         </div>
          <div class=" my-3   mx-6 flex items-center gap-2">
-          <img src="../../../assets/images/members/1.svg" alt="">
+          <img src="/assets/images/members/1.svg" alt="">
           <h1 class="  text-[#1D2939] font-medium">Dave Miye created this task</h1>
            
           
@@ -121,7 +121,7 @@
          <div>
           <Divider  class=" -mt-0.5"/>
           <div class="  mx-6 -mt-1 flex items-center gap-2">
-          <img src="../../../assets/images/members/1.svg" alt="">
+          <img src="/assets/images/members/1.svg" alt="">
           <h1 class="  text-[#1D2939] font-medium">Dave Miye created this task</h1>
           <small class="opacity-70" >• 3h ago</small>
          </div>
@@ -153,7 +153,10 @@
             </div>
           </div>
         </div>
-         <button class=" px-4 py-2 border rounded-md">Approve</button>
+        <div class=" flex items-center gap-2">
+        <button class=" text-[10px] w-[20px]"><p>Request Revision </p></button>
+         <button class=" px-1 py-1 border rounded-md text-sm">Approve</button>
+        </div>
         </div>
       </div>
     </section>

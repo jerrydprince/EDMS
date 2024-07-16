@@ -46,9 +46,9 @@ import { router } from '@inertiajs/vue3'
       const page = require(`./Pages/${name}.vue`).default;
       if(window.location.pathname.startsWith('/register')){
        page.layout = page.layout || Layout2;
-      }else if(window.location.pathname.startsWith('/dashboard')){
+      }else if(window.location.pathname.startsWith('/data-entry')){
         page.layout = page.layout || Layout3;
-      }else if(window.location.pathname.startsWith('/admin')){
+      }else if(window.location.pathname.startsWith('/dashboard')){
          page.layout =page.layout || Layout;
       }else if(window.location.pathname.startsWith('/password')){
         page.layout = page.layout || Layout4;

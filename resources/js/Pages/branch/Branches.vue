@@ -11,7 +11,7 @@
           <Icon icon="gala:add" width="25" />
           <p>Create Workflow</p>
         </button>
-          <Link :href="'/admin/archiving/'+department.id" class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
+          <Link :href="'/dashboard/archiving/'+department.id" class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
           <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
           <p>Upload Files</p>
           </Link>
@@ -274,7 +274,7 @@
       </div>
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" :url="'/admin/create-folder'" :department="props.department"/>
+    <CreateFolderDialog v-model="createFolderModal" :url="'/dashboard/create-folder'" :department="props.department"/>
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
     <GenerateEncriptionCode v-model="GenerateEncriptionModal" />

@@ -72,7 +72,7 @@ class MetadataController extends Controller
         $metadata = isset($unit->documentType)? $unit->documentType: [];
     }else
 
-    if(auth()->user()->division_id){dd('yes');
+    if(auth()->user()->division_id){
         $division = Division::with(['documentType'=>function($query){
             $query->with('metadata');
         }])->find(auth()->user()->division_id);

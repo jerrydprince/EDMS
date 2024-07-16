@@ -11,15 +11,18 @@
 
     <div class=" px-7 mt-10">
       <div class=" flex items-center w-full justify-between">
-        <h1 class=" text-lg font-semibold">Files</h1>
+        <!-- <h1 class=" text-lg font-semibold">Files</h1> -->
+        <div class="grow-[2] pr-4 w-[70%]">
+          <input type="text" name="" v-model="search" class="border w-full border-gray-300 rounded-lg p-2" id="" placeholder="Search for files">
+        </div>
         <div class=" flex items-center gap-5">
-          <button @click="folderGrid = !folderGrid"
+          <!-- <button @click="folderGrid = !folderGrid"
             class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
             <Icon v-if="folderGrid" icon="lucide:list" width="20" />
             <Icon v-else icon="system-uicons:grid" width="20" />
             <p v-if="folderGrid">List</p>
             <p v-else>Grid</p>
-          </button>
+          </button> -->
 
           <button @click="createFolderModal = true"
             class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
@@ -28,80 +31,39 @@
           </button>
         </div>
       </div>
-      <!--Folders Grid View -->
-      <div v-if="folderGrid" class="grid xl:grid-cols-4 mt-8  mb-4 md:grid-cols-3 grid-cols-1 gap-8">
-        <div v-for="(folder, key) in props.branch.folder"
-          class="rounded-md flex items-center justify-between hover:bg-gray-100 p-3" :key="i">
-          <template v-if="!folder.is_sub_folder">
-          <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id">
-          <div class="border rounded-md p-2 bg-gray-100 cursor-pointer">
-            <img src="/../images/folder.svg" alt="" />
-          </div>
-          </Link>
-          <div>
-            <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id">
-            <h1 class="text-lg font-medium">{{ folder.name }}</h1>
-            </Link>
-            <div class="flex items-center gap-3 mt-1">
-              <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id">
-              <p>{{ folder.file_count }} Files</p>
-              </Link>
-              <div v-if="folder.is_open == 1">
-                <div class="w-fit py-1 px-2 rounded-2xl bg-green-200 text-xs text-green-800">
-                  Open
-                </div>
-              </div>
-              <div v-else-if="folder.is_open == 0">
-                <div class="w-fit py-1 px-2 rounded-2xl bg-[#FEF3F2] text-xs text-[#B42318]">
-                  Closed
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card flex justify-content-center">
-            <div @click="toggle($event, key)" aria-haspopup="true" aria-controls="overlay_menu"
-              class="flex items-center font-normal h-full  rounded-lg cursor-pointer">
-              <div class="h-full">
-                <Icon icon="majesticons:more-menu-vertical" width="35" />
-              </div>
-              <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-            </div>
-          </div>
-          </template>
-        </div>
-      </div>
 
-      <!-- Folders List View -->
-      <div v-else class="mb-8 mt-8 text-sm">
+
+      <!-- Folders View -->
+      <div  class="mb-8 mt-8 text-sm">
 
         <table class="w-full text-left">
           <thead class=" bg-gray-50">
             <tr class="border text-[#667085]">
-              <th class="p-3 pl-5 w-[70px]">
+              <!-- <th class="p-3 pl-5 w-[70px]">
                 <Checkbox class="mr-1" />
-              </th>
-              <th>File Name</th>
-              <th>File Number</th>
-              <th>File Type</th>
-              <th>Last Modified</th>
-              <th>Actions</th>
+              </th> -->
+              <th class="py-5 pl-4">File Name</th>
+              <th class="py-5">File Number</th>
+              <th class="py-5">File Type</th>
+              <th class="py-5">Last Modified</th>
+              <th class="py-5">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr class="border" v-for="(folder, key) in folders">
               <template v-if="!folder.is_sub_folder">
-              <td class="p-3 pl-5 py-3">
+              <!-- <td class="p-3 pl-5 py-3">
                 <Checkbox :binary="true" class="mr-1" />
 
-              </td>
-              <td class="py-3">
+              </td> -->
+              <td class="py-3 pl-4">
                 <div class="flex items-center font-medium gap-2">
                   <div class="p-2 rounded-full bg-gray-200">
-                    <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id">
+                    <Link :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">
                     <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
                     </Link>
                   </div>
-                  <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
+                  <Link :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
                 </div>
               </td>
               <td class="py-3">{{ folder.number }}</td>
@@ -116,7 +78,7 @@
                     </div>
                     <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
                   </div>
-                  <Link :href="'/dashboard/delete-folder/' + folder.id" class="px-3 text-red-500"
+                  <Link :href="'/data-entry/delete-folder/' + folder.id" class="px-3 text-red-500"
                     v-if="admin && admin.length > 0">delete</Link>
                 </div>
 
@@ -125,7 +87,7 @@
             </tr>
           </tbody>
         </table>
-        <pagination :archives="props.folder"/>
+        <pagination :archives="pageFolders"/>
       </div>
     </div>
     <section class="mt-8">
@@ -133,7 +95,7 @@
 
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" :url="'/dashboard/create-folder'" :folderId="''"/>
+    <CreateFolderDialog v-model="createFolderModal" :url="'/data-entry/create-folder'" :folderId="''"/>
     <BranchDetails v-model="branchDetailsModal" :file="selectedArchive" />
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
@@ -144,7 +106,7 @@
   </main>
 </template>
 <script setup>
-import { ref, defineProps, computed } from 'vue';
+import { ref, defineProps, computed, watch, watchEffect } from 'vue';
 
 import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
 import BranchDetails from "../../components/Modals/branches/BranchDetails.vue";
@@ -158,6 +120,7 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 import ListVue from '../dashboard/partials/ListVue.vue';
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
 import pagination from './partials/pagination.vue';
+import  debounce  from 'lodash.debounce';
 
 const folderGrid = ref(false)
 const selectedDocumentId = ref(null);
@@ -186,37 +149,49 @@ const selectedArchive = ref();
 const menu2 = ref();
 const user = page.props.user;
 const admin = page.props.roles.filter((data) => data == 'super admin')
+//const allFolders = toRef(props, 'folder');
 
 const props = defineProps(['branch', 'branch_name', 'folder']);
+const fetchedFolders = ref([]);
+const pageFolders = ref([]);
+
+const userFolders = [];
+const search = ref('')
+
 
 const menu = ref();
 const items = ref([
   {
     label: '',
-    items: [
-      {
-        label: 'Open File',
-        icon: 'pi pi-folder-open'
-      },
-      {
-        label: 'Close File',
-        icon: 'pi pi-folder'
-      },
-      {
-        label: 'Delete',
-        icon: 'pi pi pi-trash',
-        command: (data) => {
-          console.log(data)
-        }
-      }
-    ]
+    // items: [
+    //   {
+    //     label: 'Open File',
+    //     icon: 'pi pi-folder-open'
+    //   },
+    //   {
+    //     label: 'Close File',
+    //     icon: 'pi pi-folder'
+    //   },
+    //   {
+    //     label: 'Delete',
+    //     icon: 'pi pi pi-trash',
+    //     command: (data) => {
+    //       console.log(data)
+    //     }
+    //   }
+    // ]
   }
 ]);
 
 const toggle = (event, key) => {
+  console.log(menu.value)
+  console.log(key)
   menu.value[key].toggle(event);
 };
 
+watchEffect(()=>{
+  pageFolders.value = props.folder
+})
 
 const togglePreviewState = () => {
   togglePreview.value = !togglePreview.value;
@@ -593,27 +568,125 @@ const getArchiveDocsVale = (data, search) => {
 //   return files.join()
 // }
 
-const folders = computed(() => {
-  let newfolder = []
-  if (props.folder && props.folder.data) {
-    for (let folder of props.folder.data) {
-      let arr = {
-        name: folder.name,
-        number: folder.number,
-        date: formatDate(folder.updated_at),
-        f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
-        folder_size: folder.folder_size ? folder.folder_size : 0,
-        file_type: folder.file_type?.name,
-        id: folder.id,
-        is_sub_folder: folder.is_sub_folder,
-        sub_folder: folder.is_sub_folder? folder.subfolder.path: [],
-        type: folder.type
+// const folderSearch = ()=>{
+//   let newfolder = []
+
+//     axios.get('/folder-search',{params:{search: search.value}}).then((response)=>{
+//       let val = response.data.data
+      
+//       for (let folder of val) {
+//         let arr = {
+//             name: folder.name,
+//             number: folder.number,
+//             date: formatDate(folder.updated_at),
+//             f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
+//             folder_size: folder.folder_size ? folder.folder_size : 0,
+//             file_type: folder.file_type?.name,
+//             id: folder.id,
+//             is_sub_folder: folder.is_sub_folder,
+//             sub_folder: folder.is_sub_folder? folder.subfolder.path: [],
+//             type: folder.type
+//           }
+//           newfolder.push(arr);
+//         }
+//     })
+
+//     return newfolder;
+// }
+
+
+// const folders = computed(() => {
+//   let newfolder = []
+//   if (props.folder && props.folder.data && search.value =='') {
+//     for (let folder of props.folder.data) {
+//       let arr = {
+//         name: folder.name,
+//         number: folder.number,
+//         date: formatDate(folder.updated_at),
+//         f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
+//         folder_size: folder.folder_size ? folder.folder_size : 0,
+//         file_type: folder.file_type?.name,
+//         id: folder.id,
+//         is_sub_folder: folder.is_sub_folder,
+//         sub_folder: folder.is_sub_folder? folder.subfolder.path: [],
+//         type: folder.type
+//       }
+//       newfolder.push(arr);
+//     }
+//   }
+//   if(search.value !=''){
+//     // return newfolder.filter((item => {
+//     //   return (item.name.toLowerCase().includes(search.value.toLowerCase().trim())||
+//     //     item.number.toLowerCase().includes(search.value.toLowerCase().trim())||
+//     //     item.file_type.toLowerCase().includes(search.value.toLowerCase().trim())||
+//     //     item.date.toLowerCase().includes(search.value.toLowerCase().trim()))
+//     // }))
+//     return folderSearch()
+//   }else{
+//     return newfolder;
+//   }
+  
+// })
+
+const fetchFolders = async () => {
+      try {
+        //const response = await axios.get('/data-entry/branches', { params: { search: search.value } });
+        let response = []
+          await router.get('/data-entry/branches', { search: search.value },{
+            onSuccess: page =>{
+              response = page
+              
+                const newFolders = page.props.folder.data.map(folder => ({
+                name: folder.name,
+                number: folder.number,
+                date: formatDate(folder.updated_at),
+                f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
+                folder_size: folder.folder_size ? folder.folder_size : 0,
+                file_type: folder.file_type?.name,
+                id: folder.id,
+                is_sub_folder: folder.is_sub_folder,
+                sub_folder: folder.is_sub_folder ? folder.subfolder.path : [],
+                type: folder.type
+              }));
+
+              fetchedFolders.value = newFolders;
+            },
+            preserveState: true, // This prevents a full page reload
+            only: ['folder'] // Specify the data you want to update
+          } );
+     
+      } catch (error) {
+        console.error('Error fetching folders:', error);
       }
-      newfolder.push(arr);
-    }
-  }
-  return newfolder
-})
+    };
+
+    const debouncedFetchFolders = debounce(fetchFolders, 300);
+
+    // Watch for changes in the search input and debounce the API call
+    watch(search, (newSearch) => {
+      if (newSearch !== '') {
+        debouncedFetchFolders();
+      }
+    });
+
+    const folders = computed(() => {
+      if (search.value === '' && props.folder && props.folder.data) {
+        return props.folder.data.map(folder => ({
+          name: folder.name,
+          number: folder.number,
+          date: formatDate(folder.updated_at),
+          f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
+          folder_size: folder.folder_size ? folder.folder_size : 0,
+          file_type: folder.file_type?.name,
+          id: folder.id,
+          is_sub_folder: folder.is_sub_folder,
+          sub_folder: folder.is_sub_folder ? folder.subfolder.path : [],
+          type: folder.type
+        }));
+      } else {
+        return fetchedFolders.value;
+      }
+    });
 
 
 </script>

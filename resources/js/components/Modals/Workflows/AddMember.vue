@@ -8,7 +8,7 @@
     }"
     :style="{ width: '35rem', padding: '10px 0px' }"
     :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-    class=".custom-dialog"
+    class=".custom-dialog overflow-y-scroll"
   >
     <template #header>
       <div class="flex items-start justify-between w-full" v-if="addMember">
@@ -60,8 +60,7 @@
             v-for="(item, index) in selectedMembers"
             :key="index"
           >
-           
-            <img src="../../../assets/images/members/1.svg" alt="" class="w-5" />
+            <img src="/assets/images/members/1.svg" alt="" class="w-5" />
             <p class="text-xs w-fit">{{ item.name }}</p>
             <Icon icon="clarity:times-line" class="cursor-pointer" />
           </div>
@@ -120,7 +119,7 @@
             >
               <div class="flex items-center gap-3">
                 <input type="checkbox" />
-                <img src="../../../assets/images/members/1.svg" alt="" />
+                <img src="/assets/images/members/1.svg" alt="" />
                 <div>
                   <h1 class="font-semibold">{{ member.name }}</h1>
                   <p class="text-sm text-[#667085]">{{ member.branch }}</p>
