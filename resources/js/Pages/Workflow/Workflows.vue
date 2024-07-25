@@ -158,12 +158,12 @@
               </td>
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
-                  <router-link :to="{ name: 'view-task', params: { taskId: item.id } }">
+                  <Link :href="'/dashboard/view-task/'+item.id">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
                     </button>
-                  </router-link>
+                  </Link>
                 </div>
               </td>
             </tr>
@@ -250,12 +250,14 @@
               </td>
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
-                  <router-link :to="{ name: 'view-task', params: { taskId: item.id } }">
+                 
+                  <Link :href="'/dashboard/view-task/'+item.id">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
                     </button>
-                  </router-link>
+                  </Link>
+                  
                 </div>
               </td>
             </tr>
@@ -279,6 +281,9 @@
 import { ref, computed, defineProps, watch } from "vue";
 //import paginator from "@/reusables/paginations.vue";
 import AssignTask from "../../components/Modals/Workflows/AssignTask.vue";
+import { Link } from "@inertiajs/vue3";
+
+
 const AssignModal = ref(false)
 const assignmentButton = ref(1);
 const buttonToggle = ref(1);
@@ -367,7 +372,7 @@ const displayedItems = computed(() => {
 });
 
 watch(()=>props.created_task, ()=>{
-  alert('yes')
+
 },{deep: true})
 
 </script>

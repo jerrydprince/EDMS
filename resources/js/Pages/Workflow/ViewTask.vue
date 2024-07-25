@@ -1,58 +1,41 @@
 <template>
   <main class="p-7 bg-slate-50">
     <div class="mb-5 flex items-center w-full justify-between">
-      <div class="flex items-center gap-2 cursor-pointer" @click="goBack">
-        <Icon icon="flowbite:angle-left-outline" />
-        <p>Back</p>
-      </div>
+      <Link href="/dashboard/workflow">
+        <div class="flex items-center gap-2 cursor-pointer">
+            <Icon icon="flowbite:angle-left-outline" />
+            <p>Back</p>
+        </div>
+      </Link>
       <div class="flex items-center gap-10 font-semibold text-gray-600">
-        <button
-          class="bg-white border rounded-md px-4 py-2"
-
-          v-if="data.status === 'In Progress' || data.status === 'Under Review'"
-
-          @click="Re_Assign_Modal = true"
-        >
+        <button class="bg-white border rounded-md px-4 py-2"
+          v-if="data.status === 'In Progress' || data.status === 'Under Review'" @click="Re_Assign_Modal = true">
           Reassign Task
         </button>
-        <button
-          class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-
-          v-if=" data.status === 'Under Review'"
-
-          @click="completeModal = true"
-        >
+        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
+          v-if="data.status === 'Under Review'" @click="completeModal = true">
           <Icon icon="mdi:tick" width="25" />
           <p>Mark as complete</p>
         </button>
 
 
 
-        <button
-          class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-          v-if=" data.status === 'In Progress'"
-          @click="editModal = true"
-        >
+        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
+          v-if="data.status === 'In Progress'" @click="editModal = true">
           <Icon icon="icon-park-outline:edit" width="25" />
           <p>Edit Task</p>
         </button>
 
 
 
-        <button
-          class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-          @click="reOpenModal = true"
-          v-if="data.status === 'Completed'"
-        >
+        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2" @click="reOpenModal = true"
+          v-if="data.status === 'Completed'">
           <Icon icon="teenyicons:unlock-outline" width="25" />
           <p>Reopen Task</p>
         </button>
 
       </div>
-      <div
-        class="absolute top-12 cursor-pointer z-50 right-7 block md:hidden"
-        @click="subNavVisible = true"
-      >
+      <div class="absolute top-12 cursor-pointer z-50 right-7 block md:hidden" @click="subNavVisible = true">
         <Icon icon="mdi:hamburger-menu-back" width="30" />
       </div>
     </div>
@@ -63,27 +46,29 @@
           <div class="p-4 border rounded-md">
             <Icon icon="lucide:file-text" width="25" />
           </div>
-          <p class="text-2xl">Caltech 6 months audit training certificate</p>
+          <p class="text-2xl">{{ props.task.title }}</p>
         </div>
 
         <div class="h-[1000px] overflow-y-auto hide_scroll">
-          <div v-for="i in 4" :key="i">
-            <div class="bg-slate-50 p-5 w-full rounded-md">
-              <img
-                src="/assets/images/document_2.svg"
-                alt=""
-                class="overflow-hidden rounded-md w-full"
-              />
+          <div>
+            <div class="bg-slate-50 p-5 w-full rounded-md" v-if="props.task.taskdocs && props.task.taskdocs.length > 0">
+              <img v-if="fileType(props.task.taskdocs[0]) == 'image'" 
+              :src="file_path !=''?getFileExtension(file_path): getFileExtension(props.task.taskdocs[0])" alt="" class="overflow-hidden rounded-md w-full" />
+
+             
+              <object v-if="fileType(props.task.taskdocs[0]) == 'pdf'" 
+              :data="file_path !=''?page.props.base +  file_path.path :page.props.base +  props.task.taskdocs[0].path" type="application/pdf"
+                width="100%" class="min-h-[80vh]">
+                <p>{{ page.props.base +  props.task.taskdocs[0].path }} 
+                  <a :href="file_path !=''? page.props.base +  file_path.path: page.props.base +  props.task.taskdocs[0].path">click here to
+                    download the PDF file.</a></p>
+              </object>
             </div>
           </div>
         </div>
       </div>
 
-      <div
-
-        class="bg-white hidden lg:block w-[40%] h-[1120px] overflow-y-scroll hide_scroll rounded-lg"
-
-      >
+      <div class="bg-white hidden lg:block w-[40%] h-[1120px] overflow-y-scroll hide_scroll rounded-lg">
         <div v-if="!sidemenu">
           <h1 class="p-8 font-semibold text-gray-800 text-3xl">
             Append Signature
@@ -97,9 +82,7 @@
                   <Icon icon="lucide:users" />
                   <p>Assign To</p>
                 </div>
-                <div
-                  class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300"
-                >
+                <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300">
 
                   <img :src="data.img" alt="" class="w-7" />
                   <p class="text-base w-fit">{{ data.name }}</p>
@@ -114,60 +97,67 @@
                 </div>
                 <div>
 
-                  <p class="text-base w-fit">{{ data.date }}</p>
+                  <p class="text-base w-fit">{{ props.task.due_date }}</p>
                 </div>
               </div>
 
+              <!-- <div class="flex items-center gap-14 mt-5">
+                <div class="flex items-center gap-3">
+                  <Icon icon="fluent:document-16-regular" />
+                  <p>Document Type</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div v-for="(item, index) in data.document_type" :key="index">
+                    <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4">{{ item }}</p>
+                  </div>
+                </div>
+              </div> -->
+
               <div class="flex items-center gap-14 mt-5">
-              <div class="flex items-center gap-3">
-                <Icon icon="fluent:document-16-regular" />
-                <p>Document Type</p>
+                <div class="flex items-center gap-3">
+                  <Icon icon="fluent:document-16-regular" />
+                  <p>Priority</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div>
+                    <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4 uppercase text-xs" :style="{
+                          color:
+                            props.task.priority === '1'
+                              ? '#FFBC53'
+                              : props.task.priority === '3'
+                                ? '#FF3737'
+                                : props.task.priority === '2'
+                                  ? '#F67E5A'
+                                  : 'black',
+                        }">{{ props.task.priority== 1? 'Low':props.task.priority ==2? 'Medium': 'High' }}</p>
+                  </div>
+                </div>
               </div>
-              <div class="flex items-center gap-3">
-              <div  v-for="(item,index) in data.document_type"  :key="index">
-                <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4">{{ item }}</p>
-              </div>
-            </div>
-            </div>
 
 
               <div class="flex items-center gap-24 mt-5">
                 <div class="flex items-center gap-3">
                   <Icon icon="lucide:calendar" />
-                  <p>Tags</p>
+                  <p>Status</p>
                 </div>
 
                 <div class="flex items-center gap-3">
-                  <div
-                    class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer"
-                  >
 
-                    <p class="text-xs w-fit text-[#F67E5A]">
-                      {{ data.severity }}
-                    </p>
+                  <div class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer">
 
-                  </div>
-
-                  <div
-                    class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer"
-                  >
-
-                    <p
-                      class="text-xs w-fit font-semibold"
-                      :style="{
-                        color:
-                          data.status === 'Completed'
-                            ? '#0D6E1A'
-                            : data.status === 'Under Review'
+                    <p class=" uppercase text-xs w-fit font-semibold" :style="{
+                      color:
+                        props.task.status === 'Completed'
+                          ? '#0D6E1A'
+                          : props.task.status === 'Under Review'
                             ? '#FB6514'
-                            : data.status === 'In Progress'
-                            ? '#F79009'
-                            : data.status === 'Uncompleted'
-                            ? '#F04438'
-                            : 'black',
-                      }"
-                    >
-                      {{ data.status }}
+                            : props.task.status === 'In Progress'
+                              ? '#F79009'
+                              : props.task.status === 'Uncompleted'
+                                ? '#F04438'
+                                : '#F04438',
+                    }">
+                      {{ props.task.status }}
                     </p>
 
                   </div>
@@ -180,40 +170,35 @@
                   <p>Task Description</p>
                 </div>
 
-                <p
-                  class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full"
-                >
+                <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
 
-                 {{ data.desc }}
+                  {{ props.task.description }}
 
                 </p>
               </div>
 
-              <div class="mt-5">
+              <div class="mt-5" v-if="props.task && props.task.taskdocs && props.task.taskdocs.length > 0">
                 <div class="flex mb-5 items-center gap-3">
                   <Icon icon="grommet-icons:attachment" width="20" />
                   <p>Attached Document</p>
                 </div>
-                <div
-
-                  v-for="(document, index) in data.documents"
-                  :key="index"
-                  class="border border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5"
-
-                >
+                <div v-for="(document, index) in props.task.taskdocs" :key="index" 
+                  :class="document.path === file_path.path? 'border-gray-500': 'border-gray-300'"
+                  class="border  hover:border-primary rounded-md p-4 flex items-center justify-between  mb-5">
                   <div class="flex items-center gap-3">
                     <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
-                      <Icon :icon="document.icon" width="25" />
+                      <!-- <Icon :icon="document.icon" width="25" /> -->
+                       <img :src="getFileExtension(document)" alt="" width="20">
                     </div>
                     <div>
-                      <h1>{{ document.name }}</h1>
+                      <h1>{{ document.file_name }}</h1>
                       <p class="text-sm text-gray-400">{{ document.size }}</p>
                     </div>
                   </div>
 
                   <div class="flex items-center gap-3">
-                    <Icon icon="ph:eye-light" width="25" />
-                    <Icon icon="material-symbols-light:download" width="25" />
+                    <Icon icon="ph:eye-light" width="25" @click="setFilePath(document)" class="cursor-pointer" />
+                    <Icon icon="material-symbols-light:download" width="25" @click="downloadFile(document.path)" class="cursor-pointer"/>
                   </div>
                 </div>
               </div>
@@ -221,35 +206,26 @@
           </section>
           <Divider class="mt-0" />
 
-          <div
-            class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-
-            @click="toggleSidemenu('comment')"
-          >
+          <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+            @click="toggleSidemenu('comment')">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:message-square" width="25" />
               <p class="text-xl">Comments</p>
               <p
-                class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3"
-              >
-                3
+                class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3">
+               {{ (props.task && props.task.comments && props.task.comments.length > 0)? props.task.comments.length: 0 }}
               </p>
             </div>
             <Icon icon="flowbite:angle-right-outline" width="25" />
           </div>
           <Divider class="mt-0" />
-          <div
-            class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-
-
-            @click="toggleSidemenu('submission')"
-          >
+          <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+            @click="toggleSidemenu('submission')">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:activity" width="25" />
               <p class="text-xl">Task Submissions</p>
               <p
-                class="w-7 h-7 rounded-md text-red-500 font-semibold bg-red-500/10 flex items-center justify-center flex-col p-3"
-              >
+                class="w-7 h-7 rounded-md text-red-500 font-semibold bg-red-500/10 flex items-center justify-center flex-col p-3">
                 !
               </p>
             </div>
@@ -263,10 +239,8 @@
         <div v-if="comment && sidemenu">
 
           <div class="p-8">
-            <div
-              class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-              @click="toggleSidemenu('back')"
-            >
+            <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+              @click="toggleSidemenu('back')">
               <Icon icon="flowbite:angle-left-outline" />
               <p>Back</p>
             </div>
@@ -276,35 +250,27 @@
             <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
 
             <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
-              <textarea
-                name=""
-                id=""
-                cols="30"
-                placeholder="Enter Message"
-                rows="5"
-                class="bg-slate-50 outline-none resize-none"
-              ></textarea>
+              <textarea name="" v-model="user_comment" id="comment_text" cols="30" placeholder="Enter Message" rows="5"
+                class="bg-slate-50 outline-none resize-none"></textarea>
               <div class="w-full flex items-center justify-end">
-                <button
-                  class="bg-white px-3 py-1.5 border border-gray-300 rounded-md"
-                >
+                <button class="bg-white px-3 py-1.5 border border-gray-300 rounded-md" @click="makeComment">
                   Send
                 </button>
               </div>
             </div>
-            <div class="mt-5 px-5">
-              <div v-for="(item, index) in comments" :key="index">
+            <div class="mt-5 px-5" v-if="props.task && props.task.comments && props.task.comments.length > 0">
+              <div v-for="(item, index) in props.task.comments" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
                     <div class="w-14 h-14 rounded-full overflow-hidden">
-                      <img :src="item.img" alt="" class="w-full h-full" />
+                      <img :src="getUserProfileImage(item)" alt="" class="w-full h-full" />
                     </div>
                   </div>
                   <div class="w-[80%]">
                     <div class="flex items-center gap-2">
-                      <h1 class="text-gray-800 text-xl">{{ item.name }}</h1>
-                      <small class="text-gray-500">• {{ item.time }}</small>
+                      <h1 class="text-gray-800 text-xl">{{ getUserName(item) }}</h1>
+                      <small class="text-gray-500 capitalize">• {{ moment(item.created_at).fromNow() }}</small>
                     </div>
                     <p class="text-base text-gray-500 my-4">
                       {{ item.comment }}
@@ -320,10 +286,8 @@
         <!-- //////   submissions   ///// -->
         <div v-if="submission && sidemenu">
           <div class="p-8">
-            <div
-              class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-              @click="toggleSidemenu('back')"
-            >
+            <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+              @click="toggleSidemenu('back')">
               <Icon icon="flowbite:angle-left-outline" />
               <p>Back</p>
             </div>
@@ -337,11 +301,8 @@
 
             <div class="px-5 mt-3">
               <div class="bg-slate-50 p-3 rounded-md">
-                <div
-                  v-for="(document, index) in documents"
-                  :key="index"
-                  class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5"
-                >
+                <div v-for="(document, index) in documents" :key="index"
+                  class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5">
                   <div class="flex items-center gap-3">
                     <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
                       <Icon :icon="document.icon" width="25" />
@@ -367,9 +328,7 @@
                 <p>Task Description</p>
               </div>
 
-              <p
-                class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full"
-              >
+              <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
                 {{ data.desc }}
               </p>
             </div>
@@ -379,10 +338,7 @@
                 Request Revision
               </button>
 
-              <button
-                class="font-semibold text-gray-800 px-3 py-2 border rounded-md"
-                @click="completeModal = true"
-              >
+              <button class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="completeModal = true">
                 Mark as complete
               </button>
             </div>
@@ -397,18 +353,12 @@
   <RequestRevision v-model="RequestRevisionModal" />
   <DeleteRevision v-model="deleteRevisionModal" />
 
-  <EditTask  v-model="editModal"/>
+  <EditTask v-model="editModal" />
 
   <Reopen v-model="reOpenModal" />
-  <Sidebar
-    v-model:visible="subNavVisible"
-    header=" Left Sidebar"
-    position="right"
-    :style="{ width: '32rem', padding: '10px 0px' }"
-  >
-    <div
-      class="bg-white hide_scroll sticky top-0 h-screen pr-5 overflow-y-scroll"
-    >
+  <Sidebar v-model:visible="subNavVisible" header=" Left Sidebar" position="right"
+    :style="{ width: '32rem', padding: '10px 0px' }">
+    <div class="bg-white hide_scroll sticky top-0 h-screen pr-5 overflow-y-scroll">
       <div v-if="!sidemenu">
         <h1 class="p-8 font-semibold text-gray-800 text-3xl">
           Append Signature
@@ -422,9 +372,7 @@
                 <Icon icon="lucide:users" />
                 <p>Assign To</p>
               </div>
-              <div
-                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300"
-              >
+              <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300">
                 <img src="/assets/images/user.png" alt="" class="w-7" />
                 <p class="text-base w-fit">Dave Miye</p>
               </div>
@@ -436,10 +384,10 @@
                 <p>Document Type</p>
               </div>
               <div class="flex items-center gap-3">
-              <div  v-for="(item,index) in data.document_type"  :key="index">
-                <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4">{{ item }}</p>
+                <div v-for="(item, index) in data.document_type" :key="index">
+                  <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4">{{ item }}</p>
+                </div>
               </div>
-            </div>
             </div>
             <div class="flex items-center gap-14 mt-5">
               <div class="flex items-center gap-3">
@@ -458,15 +406,11 @@
               </div>
 
               <div class="flex items-center gap-3">
-                <div
-                  class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer"
-                >
+                <div class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer">
                   <p class="text-xs w-fit text-[#F67E5A]">Medium</p>
                 </div>
 
-                <div
-                  class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer"
-                >
+                <div class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer">
                   <p class="text-xs w-fit text-[#F67E5A]">In Progress</p>
                 </div>
               </div>
@@ -478,36 +422,33 @@
                 <p>Task Description</p>
               </div>
 
-              <p
-                class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full"
-              >
-               {{ data.desc }}
+              <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
+                {{ data.desc }}
               </p>
             </div>
 
-            <div class="mt-5">
+            <div class="mt-5" v-if="props.task && props.task.taskdocs && props.task.taskdocs.length > 0">
               <div class="flex mb-5 items-center gap-3">
                 <Icon icon="grommet-icons:attachment" width="20" />
                 <p>Attached Document</p>
               </div>
-              <div
-                v-for="(document, index) in documents"
-                :key="index"
-                class="border border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
-                    <Icon :icon="document.icon" width="25" />
+              <div v-for="(document, index) in props.task.taskdocs" :key="index"
+                class="border border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5">
+                <div >
+                  <div class="flex items-center gap-3">
+                    <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
+                      <Icon :icon="document.icon" width="25" />
+                    </div>
+                    <div>
+                      <h1>{{ document.name }}</h1>
+                      <p class="text-sm text-gray-400">{{ document.size }}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h1>{{ document.name }}</h1>
-                    <p class="text-sm text-gray-400">{{ document.size }}</p>
-                  </div>
-                </div>
 
-                <div class="flex items-center gap-3">
-                  <Icon icon="ph:eye-light" width="25" />
-                  <Icon icon="material-symbols-light:download" width="25" />
+                  <div class="flex items-center gap-3">
+                    <Icon icon="ph:eye-light" width="25" />
+                    <Icon icon="material-symbols-light:download" width="25" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -515,32 +456,26 @@
         </section>
         <Divider class="mt-0" />
 
-        <div
-          class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-          @click="toggleSidemenu('comment')"
-        >
+        <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+          @click="toggleSidemenu('comment')">
           <div class="flex items-center gap-5">
             <Icon icon="lucide:message-square" width="25" />
             <p class="text-xl">Comments</p>
             <p
-              class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3"
-            >
+              class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3">
               3
             </p>
           </div>
           <Icon icon="flowbite:angle-right-outline" width="25" />
         </div>
         <Divider class="mt-0" />
-        <div
-          class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-          @click="toggleSidemenu('submission')"
-        >
+        <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+          @click="toggleSidemenu('submission')">
           <div class="flex items-center gap-5">
             <Icon icon="lucide:activity" width="25" />
             <p class="text-xl">Task History</p>
             <p
-              class="w-7 h-7 rounded-md text-red-500 font-semibold bg-red-500/10 flex items-center justify-center flex-col p-3"
-            >
+              class="w-7 h-7 rounded-md text-red-500 font-semibold bg-red-500/10 flex items-center justify-center flex-col p-3">
               !
             </p>
           </div>
@@ -553,10 +488,8 @@
 
       <div v-if="comment && sidemenu">
         <div class="p-8">
-          <div
-            class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-            @click="toggleSidemenu('back')"
-          >
+          <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+            @click="toggleSidemenu('back')">
             <Icon icon="flowbite:angle-left-outline" />
             <p>Back</p>
           </div>
@@ -566,18 +499,10 @@
           <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
 
           <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
-            <textarea
-              name=""
-              id=""
-              cols="30"
-              placeholder="Enter Message"
-              rows="5"
-              class="bg-slate-50 outline-none resize-none"
-            ></textarea>
+            <textarea name="" id="" cols="30" placeholder="Enter Message" rows="5"
+              class="bg-slate-50 outline-none resize-none"></textarea>
             <div class="w-full flex items-center justify-end">
-              <button
-                class="bg-white px-3 py-1.5 border border-gray-300 rounded-md"
-              >
+              <button class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
                 Send
               </button>
             </div>
@@ -611,10 +536,8 @@
       <!-- //////   submissions   ///// -->
       <div v-if="submission && sidemenu">
         <div class="p-8">
-          <div
-            class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-            @click="toggleSidemenu('back')"
-          >
+          <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+            @click="toggleSidemenu('back')">
             <Icon icon="flowbite:angle-left-outline" />
             <p>Back</p>
           </div>
@@ -627,11 +550,8 @@
 
           <div class="px-5 mt-3">
             <div class="bg-slate-50 p-3 rounded-md">
-              <div
-                v-for="(document, index) in documents"
-                :key="index"
-                class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5"
-              >
+              <div v-for="(document, index) in documents" :key="index"
+                class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5">
                 <div class="flex items-center gap-3">
                   <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
                     <Icon :icon="document.icon" width="25" />
@@ -656,10 +576,8 @@
               <p>Task Description</p>
             </div>
 
-            <p
-              class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full"
-            >
-         {{ data.desc }}
+            <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
+              {{ data.desc }}
             </p>
           </div>
 
@@ -668,10 +586,7 @@
               Request Revision
             </button>
 
-            <button
-              class="font-semibold text-gray-800 px-3 py-2 border rounded-md"
-              @click="completeModal = true"
-            >
+            <button class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="completeModal = true">
               Mark as complete
             </button>
           </div>
@@ -682,8 +597,8 @@
   </Sidebar>
 </template>
 
-<script  setup>
-import { ref } from "vue";
+<script setup>
+import { ref, defineProps } from "vue";
 //import { useRouter } from "vue-router";
 import MarkComplete from "../../components/Modals/Workflows/MarkComplete.vue";
 import ReAssign from "../../components/Modals/Workflows/ReAssign.vue";
@@ -693,27 +608,61 @@ import EditTask from "../../components/Modals/Workflows/EditTask.vue";
 import Reopen from "../../components/Modals/Workflows/Reopen.vue";
 import jenna from "../../assets/images/jenna.svg";
 import user from "../../assets/images/user.svg";
+import { usePage, Link, router } from "@inertiajs/vue3";
+import moment from 'moment';
 
 const editModal = ref(false)
 const subNavVisible = ref(false);
 const reOpenModal = ref(false);
 const sidemenu = ref(false);
 const submission = ref(false);
+const props = defineProps(['task'])
+const page = usePage()
+const user_comment = ref('')
 
 const comment = ref(false);
 const RequestRevisionModal = ref(false);
 const completeModal = ref(false);
 const deleteRevisionModal = ref(false);
 const Re_Assign_Modal = ref(false);
-//const router = useRouter();
+const file_path = ref([]);
 
 
-
+const makeComment = ()=>{
+  if(user_comment.value ==''){
+    document.getElementById('comment_text').focus();
+    return false
+  }
+  router.post('/dashboard/task-comment',{task_id: props.task.id, comment:user_comment.value}, {onSuccess: page=>{
+    user_comment.value = ''
+    router.reload({only: ['task']})
+  }})
+}
 
 const goBack = () => {
- // router.go(-1);
+  // router.go(-1);
+  window.history.back()
 };
 
+const getUserName = (comment)=>{
+console.log('this is the comment ', comment.user)
+  if(comment.user){
+    if(page.props.user.id == comment.user.id){
+      return 'You';
+    }
+    return comment.user.first_name+ ' ' +comment.user.last_name
+  }else{
+    return ''
+  }
+}
+
+const getUserProfileImage = (comment) =>{
+  if(comment.user && comment.user.profile_image){
+    return page.props.base+'/'+comment.user.profile_image;
+  }else{
+    return page.props.base+'/images/user.png';
+  }
+}
 
 const data = ref({
   date: '2023-05-15',
@@ -736,6 +685,10 @@ const data = ref({
   document_type: ["Invoice", "Reciept"],
   severity: "Medium",
 });
+
+const setFilePath = (path)=>{
+  file_path.value = path;
+}
 
 
 const documents = ref([
@@ -767,6 +720,37 @@ const comments = ref([
   },
 ]);
 
+// const downloadFile = (filename)=>{
+//     const url = '/dashboard/download-task-file/'+filename
+//     window.open(url, '_blank');
+// }
+
+const downloadFile = async (filename)=> {
+      try {
+        const url = `${page.props.base}` + `${filename}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the object URL
+        URL.revokeObjectURL(objectUrl);
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+    }
+
 const toggleSidemenu = (action) => {
 
   if (action === "comment") {
@@ -784,7 +768,52 @@ const toggleSidemenu = (action) => {
   }
 };
 
+const getFileExtension = (file) => {
+  const f_path = file.path 
+  const parts = f_path.split('.');
+
+  const extension = parts.pop();
+
+  if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
+    return encodeURI(page.props.base + file.path)
+  }
+
+  if (extension == 'pdf') {
+    return encodeURI(page.props.base + '/images/pdf.svg')
+  }
+
+  if (extension == 'doc' || extension == 'doctx') {
+    return encodeURI(page.props.base + '/images/word.svg')
+  }
+
+  if (extension == 'xlx' || extension == 'xlsx') {
+    return encodeURI(page.props.base + '/images/excel.svg')
+  }
+}
+
+const fileType = (file) => {
+  const f_path = file.path 
+  const parts = f_path.split('.');
+
+  const extension = parts.pop();
+
+  if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
+    return 'image'
+  }
+
+  if (extension == 'pdf') {
+    return 'pdf'
+  }
+
+  if (extension == 'doc' || extension == 'doctx') {
+    return 'word'
+  }
+
+  if (extension == 'xlx' || extension == 'xlsx') {
+    return 'excel'
+  }
+}
+
 </script>
 
-<style>
-</style>
+<style></style>

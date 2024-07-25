@@ -28,7 +28,7 @@ class Task extends Model
      */
     public function taskdocs()
     {
-        return $this->hasMany(TaskDocs::class);
+        return $this->hasMany(TaskDoc::class);
     }
 
     /**
@@ -39,6 +39,16 @@ class Task extends Model
     public function assignedBy()
     {
         return $this->hasOne(User::class, 'id', 'assigned_by');
+    }
+
+    /**
+     * Get all of the comments for the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 
 

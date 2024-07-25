@@ -8,6 +8,7 @@ use App\Notifications\TaskNotification;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\TaskDoc;
+use App\Models\Comment;
 
 class TaskController extends Controller
 {
@@ -19,16 +20,30 @@ class TaskController extends Controller
             'users' => 'required'
         ]);
 
-        $fileNames = [];
+        $files = [];
         if($request->file('files')){
             foreach($request->file('files') as $file){
                // $file = $request->file('file');
             // $extension = strtolower($file->getClientOriginalExtension());
+            $size = $this->formatSize(filesize($file));
+
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                $path = "/task";
+                $original_name = $file->getClientOriginalName();
+                $path =  "/task/".date('Y') . '/' . date('m');
+                $fullPath = public_path($path);
+
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0777, true);
+                }
                 $file->move(public_path($path),$fileName);
 
-                array_push($fileNames, $fileName);
+                $arr = [
+                    'fileName' => $fileName,
+                    'size' => $size,
+                    'original_name' => $original_name
+                ];
+
+                array_push($files, $arr);
             }
         }
 
@@ -43,10 +58,12 @@ class TaskController extends Controller
 
         if($request->file('files')){
             $docs = [];
-            foreach($fileNames as $fileName){
+            foreach($files as $file){
               array_push($docs, [
-                'path' => $path.'/'.$fileName,
+                'path' => $path.'/'.$file['fileName'],
                 'task_id' => $task->id,
+                'size' => $file['size'],
+                'file_name' => $file['original_name'],
                 'created_at' => \Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now()
               ]);
@@ -65,8 +82,52 @@ class TaskController extends Controller
         return redirect()->back();
     }
 
+    function formatSize($bytes) {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $bytes >= 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+    
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+
     public function getTaskByStatus(Request $request){
         $task = Task::where('status', $request->status)->paginate(10);
         return response()->json($task);
+    }
+
+    public function viewTask($id) {
+        $task = Task::with(['taskdocs', 'comments' => function($query) {
+            $query->with(['user' => function($query) {
+                $query->select('id', 'first_name', 'last_name','profile_image');
+            }]);
+        }])->find($id);
+        
+        return inertia('Workflow/ViewTask', compact('task'));
+    }
+
+    public function downloadFile($filename)
+    {
+        $path = public_path($filename);
+
+        // Check if the file exists
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->download($path);
+    }
+
+    public function taskComment(Request $request){
+        $request->validate([
+            'comment'=>'required'
+        ]);
+        $comment = new Comment();
+        $comment->comment = $request->comment;
+        $comment->task_id = $request->task_id;
+        $comment->user_id = auth()->user()->id;
+        $comment->save();
+        
+        return redirect()->back()->with(['success'=>true]);
     }
 }

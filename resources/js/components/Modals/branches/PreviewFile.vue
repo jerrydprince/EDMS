@@ -131,19 +131,19 @@ const getFileExtension = (file) => {
   const extension = parts.pop();
 
   if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
-    return page.props.base + '/storage' + file.path
+    return encodeURI(page.props.base + '/storage' + file.path)
   }
 
   if (extension == 'pdf') {
-    return page.props.base + '/images/pdf.svg'
+    return encodeURI(page.props.base + '/images/pdf.svg')
   }
 
   if (extension == 'doc' || extension == 'doctx') {
-    return page.props.base + '/images/word.svg'
+    return encodeURI(page.props.base + '/images/word.svg')
   }
 
   if (extension == 'xlx' || extension == 'xlsx') {
-    return page.props.base + '/images/excel.svg'
+    return encodeURI(page.props.base + '/images/excel.svg')
   }
 }
 

@@ -142,7 +142,7 @@
         @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails" @editMetadata="setEditmetadata"
         @addMetadata="setAddMetadata" :archives="props.archives" :search="search_text" :sort="sortOrder" 
         @fileActivity="toggleFileActivity=true" @fileVersion="toggleFileVersion=true" @lockDocs ="handleLockDocument"
-        @share="handleShare" />
+        @share="handleShare" :branch_type="props.branch_type" :folder_id="props.folder_id" :branch_id="props.branch_id" />
     </div>
 
 

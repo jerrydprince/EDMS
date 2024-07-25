@@ -110,11 +110,12 @@ import { router, usePage } from '@inertiajs/vue3';
 import PreviewFile from "../../../components/Modals/branches/PreviewFile.vue";
 import {Link} from '@inertiajs/vue3'
 import pagination from "./pagination.vue";
+import debounce from "lodash.debounce";
 
 
-const props = defineProps(['files', 'documentsGridView', 'archives', 'search','sort']);
+const props = defineProps(['files', 'documentsGridView', 'archives', 'search','sort', 'folder_id', 'branch_type','branch_id']);
 const emit = defineEmits(['docs', 'fileRename', 'lock', 'changeFormat', 'downloadFile', 'selectedArchive', 'branchDetails',
-'editMetadata', 'addMetadata', 'fileActivity', 'fileVersion', 'lockDocs', 'share', 'folder_id', 'branch_type']);
+'editMetadata', 'addMetadata', 'fileActivity', 'fileVersion', 'lockDocs', 'share', 'folder_id']);
 const selectedDocument = ref()
 const menu2 = ref();
 const selectedArchiveId = ref();
@@ -124,6 +125,7 @@ const toggleMetadata = ref(false);
 const itemsDisplayed = ref(0);
 const maxLength = ref(29);
 const expandedIndices = ref([]);
+const searchQuery = ref(props.search || '');
 
 const page = usePage();
 
@@ -382,28 +384,99 @@ const links = computed(()=>{
   }
 })
 
-const filteredFiles = computed(() => {
-    if (!props.files || !props.search) {
+const searchFile = async () => {
+  let url = '';
+  if(!page.props.roles.includes('data entry')){
+    url = `/dashboard/folder-view/${props.branch_type}/${props.folder_id}/${props.branch_id}`
+  }else{
+    url = `/data-entry/folder-view/${props.branch_type}/${props.folder_id}`
+  }
+      await router.get(url, { search: searchQuery.value }, {
+        onSuccess: (page) => {
+          // handle success
+        },
+        preserveState: true,
+      });
+    };
+
+    const debouncedFile = debounce(searchFile, 500);
+
+    watch(() => props.search, (newSearch) => {
+      searchQuery.value = newSearch;
+      debouncedFile();
+    });
+
+    const filteredFiles = computed(() => {
+      
+      if (!props.archives || !searchQuery.value) {
         return props.files || [];
+      }
+
+      const search = searchQuery.value.toLowerCase();
+      // return props.archives.data.filter(file => {
+      //   // return (
+      //   //   file.title.toLowerCase().includes(search) ||
+      //   //   file.amount.toLowerCase().includes(search) ||
+      //   //   file.description.toLowerCase().includes(search)
+      //   // );
+      // });
+
+      let newarr = []
+
+      for (let file of props.archives.data) {
+      let arr = {
+        name: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0].archive : file?.file_path[0]?.file_name,
+        size: file?.file_path[0]?.file_size,
+        date: formatDate(file.updated_at),
+        uploaded_by: file?.file_path[0]?.updated_by_name,
+        //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
+        path: (file.file_path && file.file_path.length > 0) ? file?.file_path[0]?.path : '',
+        files: file?.file_path,
+        id: file.id,
+        amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
+        title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file?.file_path[0]?.file_name,
+        description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',
+        archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : '',
+        archive_docs: file.archive_docs,
+        department: file.department ? file.department : [],
+        division: file.division ? file.division : [],
+        unit: file.unit ? file.unit : [],
+        file_activity: file.file_activity,
+        file_version: file.version,
+        is_locked: file.is_locked
+      }
+      newarr.push(arr);
     }
 
-    const search = props.search.toLowerCase();
-    
-    // return props.files.filter((val) => {
-    //     const title = val.title?.archive;
-    //     const amount = val.amount?.archive;
-    //     const description = val.description?.archive;
+    return newarr
+    });
 
-    //     return [title, amount, description].some((prop) =>
-    //         typeof prop === 'string' && prop.toLowerCase().includes(search)
-    //     );
-    // });
-    router.get('/data-entry/folder-view/'+props.branch_type+'/'+props.folder_id, {search: search_text.value}, {onSuccess: page =>{
+    const getArchiveDocsVale = (data, search) => {
 
-    }})
-});
+if (data) {
+  for (let archive of data) {
 
+    if (archive.archive_keys.toLowerCase() == search) {
+      return [{ archive: archive.archive_values, id: archive.id }]
+    }
+  }
+}
+}
 
+const formatDate = (inputDate) => {
+  var date = new Date(inputDate);
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+  var year = date.getFullYear();
+
+  day = day < 10 ? '0' + day : day;
+
+  var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
+
+  return formattedDate;
+}
 
 const deleteArchive = (data) => {
   let id = data.id

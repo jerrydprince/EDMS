@@ -68,5 +68,21 @@ class Department extends Model
     {
         return $this->belongsToMany(FileType::class, 'department_file_type');
     }
+
+    public function files()
+    {
+        return $this->hasMany(File::class);
+    }
+    // Relationship to get files sent from this department
+    public function sentFiles()
+    {
+        return $this->hasMany(File::class, 'sent_from_department_id');
+    }
+
+    // Relationship to get files sent to this department
+    public function receivedFiles()
+    {
+        return $this->hasMany(File::class, 'sent_to_department_id');
+    }
     
 }

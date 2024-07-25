@@ -129,7 +129,7 @@
             </div>
 
             <div v-for="(document, index) in search_result.archive" :key="index">
-              <Link @click="toggleSearch" :href="'/dashboard/folder-view/'+getUserBranch(document)+'/'+document.folder_id+'?archive_id='+document.id+'&branch_id='+getUserBranchID(document)">
+              <Link @click="toggleSearch" :href="'/'+getLandingPage()+'/folder-view/'+getUserBranch(document)+'/'+document.folder_id+'?archive_id='+document.id+'&branch_id='+getUserBranchID(document)">
                 <div class="flex items-center gap-3 my-2 group">
                   <div class="p-2 rounded-full bg-gray-100">
                     <!-- <Icon :icon="document.icon" width="15 " /> -->
@@ -173,7 +173,7 @@
             </div>
             <div class="grid grid-cols-3   gap-2">
               <div v-for="folder in search_result.folder" class="rounded-md flex items-center gap-3 hover:bg-gray-100 p-3" :key="i">
-                <Link :href="'/dashboard/folder-view/'+getUserBranch(folder)+'/'+folder.id" @click="toggleSearch">
+                <Link :href="'/'+getLandingPage()+'/folder-view/'+getUserBranch(folder)+'/'+folder.id" @click="toggleSearch">
                 <div class="border rounded-md p-2 bg-gray-100 cursor-pointer">
                   <img :src="page.props.base+'/images/folder.svg'" alt="" />
                 </div>
@@ -206,7 +206,7 @@
                 <div class="p-2 rounded-full border ">
                   <!-- <Icon :icon="Branche.icon" width="15 " /> -->
                 </div>
-                <Link :href="'/dashboard/branches/'+department.id">
+                <Link :href="'/'+getLandingPage()+'/branches/'+department.id">
                 <p class="text-sm font-medium">{{ department.title }} Department</p>
                 </Link>
               </div>
@@ -303,6 +303,14 @@ const searchActive = ref('')
 const togglePreviewState = () => {
   togglePreview.value = !togglePreview.value;
 };
+
+const getLandingPage = ()=>{
+  if(page.props.roles.includes('data entry')){
+    return 'data-entry';
+  }else{
+    return 'dashboard';
+  }
+}
 
 
 const Types = [

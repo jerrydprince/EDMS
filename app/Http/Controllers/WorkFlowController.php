@@ -13,7 +13,7 @@ class WorkFlowController extends Controller
 {
     public function index(){
         //$userworkflows = Workflow::with('task')->where('created_by', auth()->user()->id)->latest()->get();
-        $created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->paginate(10);
+        $created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
         return inertia('Workflow/Workflows', compact('created_task'));
     }
 

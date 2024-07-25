@@ -59,11 +59,20 @@
               <td class="py-3 pl-4">
                 <div class="flex items-center font-medium gap-2">
                   <div class="p-2 rounded-full bg-gray-200">
-                    <Link :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">
-                    <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
-                    </Link>
+                    <template v-if="page.props.roles.includes('data entry')">
+                      <Link  :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">
+                        <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+                      </Link>
+                    </template>
+                    <template v-else>
+                       <Link  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">
+                      <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+                      </Link>
+                    </template>
+
                   </div>
-                  <Link :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
+                  <Link v-if="page.props.roles.includes('data entry')" :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
+                  <Link v-else  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">{{ folder.name }}</Link>
                 </div>
               </td>
               <td class="py-3">{{ folder.number }}</td>

@@ -16,6 +16,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\WorkFlowController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\RegistryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -186,7 +187,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/create-folder',[ArchiveController::class, 'createFolder']);
                 Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder']);
                 Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit']);
-                Route::get('/folder-view/{branch}/{id}', [ArchiveController::class, 'folderView']);
+                Route::get('/folder-view/{branch}/{id}/{branch_id?}', [ArchiveController::class, 'folderView']);
 
                 //Mails
                 Route::get('/mails', [MailController::class, 'mail']);
@@ -209,13 +210,44 @@ Route::middleware('auth')->group(function () {
                 //task
                 Route::post('/create-task', [TaskController::class, 'createTask']);
                 Route::get('/task-by-status', [TaskController::class, 'getTaskByStatus']);
+                Route::get('/view-task/{id}', [TaskController::class, 'viewTask']);
+                Route::get('/download-task-file/{file_name}', [TaskController::class, 'downloadFile']);
+                Route::post('/task-comment', [TaskController::class, 'taskComment']);
 
                 //users
                 Route::get('/search-users', [UserController::class, 'searchUsers']);
             });
         
+
+              //REGISTRY
+                Route::get('/registry-config', [RegistryController::class, 'registryConfig']);
+                Route::get('/registry/entry/login', [RegistryController::class, 'login']);
+                Route::get('/registry', [RegistryController::class, 'registryEntry']);
+                Route::get('/registry/dept', [RegistryController::class, 'getDepartment']);
+                // Route::get('/registry/deptFiles/{deptId}', [RegistryController::class, 'getFilesByDept']);
+                Route::get('/registry/deptFiles/{deptId}', [RegistryController::class, 'getFilesByDept']);
+                Route::post('/registry/newfile/{sendingDeptId}', [RegistryController::class, 'createFile']);
+                Route::post('/registry/newdepartment', [RegistryController::class, 'createDepartment']);
+                Route::post('/registry/updateFileStatus/{fileId}', [RegistryController::class, 'updateFileStatus']);
+                Route::post('/registry/forward/{fileId}', [RegistryController::class, 'forwardFile']);
+                Route::post('/registry/registerUser', [UserController::class, 'registerUser']);
+                Route::post('/registry/loginUser', [UserController::class, 'loginUser']);
+                Route::post('/registry/transfer/{filedept}', [RegistryController::class, 'transferFile']);
+
+                Route::post('/registry/createDivision/{deptId}', [RegistryController::class, 'createDivision']);
+                Route::post('/registry/createUnit/{divisonId}', [RegistryController::class, 'createUnit']);
+                Route::get('/registry/getDivisionsInDepartment/{deptId}', [RegistryController::class, 'getDivisionsInDepartment']);
+                Route::get('/registry/getUnitsInDivision/{divisionId}', [RegistryController::class, 'getUnitsInDivision']);
+                Route::post('/registry/sendToDivision', [RegistryController::class, 'sendToDivision']);
+                Route::post('/registry/moveToUnit', [RegistryController::class, 'moveToUnit']);
+                Route::get('/registry/getFilesInDivision/{divisionId}', [RegistryController::class, 'getFilesInDivision']);
+                Route::get('/registry/getFilesInUnit/{unitId}', [RegistryController::class, 'getFilesInUnit']);
+                Route::get('/registry/getFileMovements/{fileId}', [RegistryController::class, 'getFileMovements']);
+                Route::get('/registry/files/department/{departmentId}/name/{name}', [RegistryController::class, 'getFileByName'])->where('name', '.*');
            
         });
+
+      
 
    
 

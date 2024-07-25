@@ -716,6 +716,7 @@ class ArchiveController extends Controller
     public function userBranches(){
        
         $search = request()->search;
+
             // if(request()->search){
             //     $search = request()->search;
        
@@ -777,14 +778,14 @@ class ArchiveController extends Controller
                             });
             }
           
-            $folder = $folder->latest()->paginate(20);
+            $folder = $folder->latest()->paginate(20)->withQueryString();
            
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
           }
 
          // $division = request()->id? request()->id: auth()->user()->division_id;
           if($branch_name == 'Division'){
-           
+          
            
             $branch = Division::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
@@ -800,6 +801,8 @@ class ArchiveController extends Controller
                                 $query->where('name', 'like', '%' . $search . '%');
                             });
             }
+
+            $folder = $folder->latest()->paginate(20)->withQueryString();
 
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
           }
@@ -835,6 +838,8 @@ class ArchiveController extends Controller
         $query->with('fileType');
        }])->find($id);
 
+       $folder_id = $id;
+
        $archive = Archive::with(['filePath', 'fileActivity', 'archiveDocs','department','division', 'unit', 'version' => function($query){
                 $query->latest();
             }]);
@@ -851,9 +856,9 @@ class ArchiveController extends Controller
             $search = request('search');
             if ($search) {
                 $archive->whereHas('archiveDocs', function($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('amount', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    $q->where('archive_values', 'like', "%{$search}%");
+                    // ->orWhere('amount', 'like', "%{$search}%")
+                    // ->orWhere('description', 'like', "%{$search}%");
                 });
             }
 
@@ -861,10 +866,10 @@ class ArchiveController extends Controller
             $is_folder_open = $folder->is_open;
             $branch_type = 'unit';
             $folder_name = $folder->name;
-            $folder_id = $id;
+            
            // $document_type = $archives->archiveDocs->unique('archive_keys');
             return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder', 'folder_id'));
-        }else
+        }
 
         if($branch == 'division'){
             $branch_id = request()->branch_id? request()->branch_id: auth()->user()->division_id;
@@ -877,38 +882,36 @@ class ArchiveController extends Controller
             $search = request('search');
             if ($search) {
                 $archive->whereHas('archiveDocs', function($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('amount', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    $q->where('archive_values', 'like', "%{$search}%");
                 });
             }
 
             $archives = $archive->latest()->paginate(20);
-            $is_folder_open = $folder->is_open;
+           
+            $is_folder_open = $folder? $folder->is_open : true;
             $branch_type = 'division';
-            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
-        }else
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id'));
+        }
 
         $branch_id = request()->branch_id? request()->branch_id: auth()->user()->department_id;
+        
         if(request()->archive_id){
-            $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id);
+              $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id);
         }else{
-            $archives =        $archive->where('folder_id', $id)->where('department_id',  $branch_id);
+                $archive->where('folder_id', $id)->where('department_id',  $branch_id);
         }
 
         $search = request('search');
         if ($search) {
             $archive->whereHas('archiveDocs', function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                ->orWhere('amount', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
+                $q->where('archive_values', 'like', "%{$search}%");
             });
         }
      
-        $archives = $archive->latest()->paginate;
+        $archives = $archive->latest()->paginate(20);
         $is_folder_open = $folder->is_open;
         $branch_type = 'department';
-        return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder'));
+        return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id'));
     }
 
     public function getDivisionWithUnit(Request $request){
