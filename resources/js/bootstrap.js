@@ -19,10 +19,31 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  * allows your team to easily build robust real-time web applications.
  */
 
-// import Echo from 'laravel-echo';
+import Echo from 'laravel-echo';
 
-// import Pusher from 'pusher-js';
-// window.Pusher = Pusher;
+import Pusher from 'pusher-js';
+
+window.Pusher = Pusher;
+
+// window.Echo = new Echo({
+//     broadcaster: "reverb",
+//     key: "fq9sswciqq9qke6hudgh",
+//     wsHost: "localhost",
+//     wsPort: 8080,
+//     wssPort: 8080,
+//     forceTLS: "http",
+//     enabledTransports: ['ws', 'wss'],
+// });
+
+// window.Echo = new Echo({
+//     broadcaster: 'reverb', // Use 'pusher' if you're using Pusher, change to 'reverb' if it's correct
+//     key: process.env.REVERB_APP_KEY,
+//     wsHost: process.env.REVERB_HOST,
+//     wsPort: process.env.REVERB_PORT,
+//     wssPort: process.env.REVERB_PORT,
+//     forceTLS: (process.env.REVERB_SCHEME ?? 'https') === 'https',
+//     enabledTransports: ['ws', 'wss'],
+// });
 
 // window.Echo = new Echo({
 //     broadcaster: 'pusher',
@@ -34,3 +55,14 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
 //     enabledTransports: ['ws', 'wss'],
 // });
+
+window.Echo = new Echo({
+    broadcaster: 'reverb',
+    key: process.env.MIX_REVERB_APP_KEY,
+    wsHost: process.env.MIX_REVERB_HOST,
+    wsPort: process.env.MIX_REVERB_PORT,
+    wssPort: process.env.MIX_REVERB_PORT,
+    forceTLS: (process.env.MIX_REVERB_SCHEME ?? 'https') === 'https',
+    enabledTransports: ['ws', 'wss'],
+});
+

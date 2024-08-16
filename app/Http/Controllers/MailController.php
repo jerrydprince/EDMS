@@ -20,16 +20,9 @@ class MailController extends Controller
     public function mail()
     {
         $mails = MailsModel::orderBy('created_at', 'desc')->get();
-        return Inertia::render('Mail/Mails', [
+        return inertia('Mail/Mails', [
             'mails' =>  $mails
         ]);
-        // return inertia('Mail/Mails', compact('mails'));
-
-        // return Inertia::render('Mail/Mails', [
-        //     'mails' => MailsModel::all()
-        // ]);
-        // return $mails;
-
     }
 
     public function createMail(Request $request)
@@ -78,7 +71,7 @@ class MailController extends Controller
         }
         // return Redirect::route('mails.Mails');
         if ($send) {
-            return redirect()->back()->with($newMail);
+            return redirect()->back()->with(['success'=>true]);
         } else {
             response()->json([
                 'message' => 'An error occured'
@@ -102,10 +95,11 @@ class MailController extends Controller
     public function deleteMail($id)
     {
         $mail = MailsModel::where('id', $id)->delete();
-        return  response()->json([
-            'message' => 'Mail deleted Successfully',
-            'data' => $mail
-        ]);
+        // return  response()->json([
+        //     'message' => 'Mail deleted Successfully',
+        //     'data' => $mail
+        // ]);
+        return redirect()->back();
     }
     public function getArchiveMails()
     {
@@ -162,9 +156,10 @@ class MailController extends Controller
             $message = 'Mail has been Unarchived successfully';
         }
 
-        return  response()->json([
-            'message' => $message,
-        ]);
+        // return  response()->json([
+        //     'message' => $message,
+        // ]);
+        return redirect()->back();
     }
 
 
@@ -189,8 +184,9 @@ class MailController extends Controller
             $message = 'Mail has been Unstarred successfully';
         }
 
-        return  response()->json([
-            'message' => $message,
-        ]);
+        // return  response()->json([
+        //     'message' => $message,
+        // ]);
+        return redirect()->back();
     }
 }

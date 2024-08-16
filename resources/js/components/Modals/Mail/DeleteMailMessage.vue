@@ -65,9 +65,11 @@
   import { defineEmits, defineProps, computed, ref } from "vue";
   import { useToast } from "primevue/usetoast";
   import { usePage } from '@inertiajs/vue3'
+  import { router } from "@inertiajs/vue3";
+import { toFormData } from "axios";
   
   const toast = useToast();
-  const props = defineProps(["modelValue"]);
+  const props = defineProps(["modelValue", 'data']);
   const emit = defineEmits(["update:modelValue"]);
 
   const page = usePage();
@@ -86,13 +88,16 @@
   };
   
   const submit = () => {
-    emit("update:modelValue", false);
-    //   toast.add({
-    //     severity: "success",
-    //     summary: '',
-    //     detail: "",
-    //     life: 3000,
-    //   });
+    router.get('/dashboard/mails/delete/'+props.data, {}, {onSuccess:(page)=>{
+      emit("update:modelValue", false);
+      emit('refresh');
+        toast.add({
+          severity: "success",
+          summary: '',
+          detail: "",
+          life: 3000,
+        });
+    }})
   };
   </script>
    <style scoped>

@@ -61,7 +61,7 @@
         </section>
 
         <div v-if="arrayMails.length !== 0">
-            <section class="px-7 mt-7 relative">
+            <section class=" mt-7 relative px-7">
                 <div>
                     <!-- <DataTable
             v-model:selection="selectedDocument"
@@ -156,10 +156,10 @@
 </DataTable>
 -->
 
-                    <table class="w-full">
-                        <thead class=" bg-gray-100 rounded-md overflow-hidden h-12">
+                    <table class="w-full mb-7">
+                        <thead class=" bg-gray-100 rounded-md overflow-hidden ">
                             <tr class="text-left">
-                                <th class="py-3 pl-5">
+                                <th class="py-6 pl-5">
                                     <!-- <input type="checkbox" v-model="allChecked" @change="toggleAll" class="h-5 w-5" /> -->
                                 </th>
                                 <th>From</th>
@@ -174,11 +174,11 @@
                                 class=" hover:bg-gray-50 cursor-pointer border-b ">
                                 <td class=" align-top pt-5 pl-5 ">
                                     <div class="flex items-center gap-2  ">
-                                        <input @click.stop type="checkbox" v-model="checkedItems[index]"
-                                            class="h-5 w-5" />
+                                        <!-- <input @click.stop type="checkbox" v-model="checkedItems[index]"
+                                            class="h-5 w-5" /> -->
                                         <button @click="addToFavorite(item.id)" @click.stop>
                                             <Icon icon="emojione:star" width="25 " class="cursor-pointer"
-                                                v-if="isFavorite(item.id)" />
+                                                v-if="item.is_starred" />
                                             <Icon icon="la:star" width="25" class="cursor-pointer" v-else />
                                         </button>
                                         <p class="text-[#F04438]" v-if="clickedButton === 'Drafts'">
@@ -228,15 +228,15 @@
 
                         </tbody>
                         <tbody v-else>
-                            <tr v-for="(item, index) in filteredMails" :key="index"
+                            <tr v-for="(itemed, index) in filteredMails" :key="index"
                                 class=" hover:bg-gray-50 cursor-pointer border-b ">
                                 <td class=" align-top pt-5 pl-5 ">
                                     <div class="flex items-center gap-2  ">
-                                        <input @click.stop type="checkbox" v-model="checkedItems[index]"
-                                            class="h-5 w-5" />
-                                        <button @click="addToFavorite(item.id)" @click.stop>
+                                        <!-- <input @click.stop type="checkbox" v-model="checkedItems[index]"
+                                            class="h-5 w-5" /> -->
+                                        <button @click="addToFavorite(itemed.id)" @click.stop>
                                             <Icon icon="emojione:star" width="25 " class="cursor-pointer"
-                                                v-if="isFavorite(item.id)" />
+                                                v-if="itemed.is_starred" />
                                             <Icon icon="la:star" width="25" class="cursor-pointer" v-else />
                                         </button>
                                         <p class="text-[#F04438]" v-if="clickedButton === 'Drafts'">
@@ -244,29 +244,29 @@
                                         </p>
                                     </div>
                                 </td>
-                                <Link :href="`/admin/mails/ReadMail/${item.id}`">
+                                <Link :href="`/dashboard/mails/ReadMail/${itemed.id}`">
                                 <td class=" align-top py-5">
                                     <div class=" flex items-center gap-2">
                                         <div>
-                                            <p class="text-base">{{ item.sender }}</p>
-                                            <p class="text-sm">{{ item.recipient }}</p>
+                                            <p class="text-base">{{ itemed.sender }}</p>
+                                            <p class="text-sm">{{ itemed.recipient }}</p>
                                         </div>
                                     </div>
                                 </td>
                                 </Link>
 
                                 <td class=" align-top py-5">
-                                    {{ item.subject }}
+                                    {{ itemed.subject }}
                                     <div class=" flex items-center gap-2 py-2 px-4 rounded-2xl mt-1 bg-slate-100 w-fit "
-                                        v-if="item.Attached" @click.stop>
+                                        v-if="itemed.Attached" @click.stop>
                                         <Icon :icon="item.icon" width="20" />
-                                        <p class=" text-xs">{{ item.Attached }}</p>
+                                        <p class=" text-xs">{{ itemed.Attached }}</p>
                                     </div>
                                 </td>
                                 <td class=" align-top py-5">
                                     <div class="">
                                         <!-- <p v-html="renderMessage(item.body)"></p> -->
-                                        <p>{{ new Date(item.created_at).toDateString() }}</p>
+                                        <p>{{ new Date(itemed.created_at).toDateString() }}</p>
                                     </div>
                                 </td>
                                 <td class=" align-top py-5">
@@ -275,25 +275,26 @@
                                             <div>
                                                 <button @click.stop @click="toggle" aria-haspopup="true"
                                                     aria-controls="overlay_menu">
-                                                    <Icon class="cursor-pointer" icon="mi:options-vertical"
+                                                    <Icon class="cursor-pointer" @click="sendId(itemed?.id)" icon="mi:options-vertical"
                                                         width="25" />
                                                 </button>
-
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
-
+                            <Menu  ref="menu" id="overlay_menu" :model="menuItems" :popup="true">
+                            <!-- <template #item="{item}">
+                                <button @click='handleSelection(item)'>{{item.label}}</button>
+                            </template> -->
+                            </Menu>
                         </tbody>
-
-                        <Menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true" />
-                    </table>
+                  </table>
                 </div>
                 <div></div>
             </section>
             <section class="flex flex-col items-center justify-center mb-10">
-                <Divider />
+                <!-- <Divider /> -->
                 <div class="w-full flex justify-between px-20">
                     <button class="text-[#667085] flex gap-3 items-center" @click="previousPage"
                         :disabled="currentPage === 1">
@@ -329,17 +330,22 @@
             </div>
         </div>
     </main>
-    <NewMessageModal v-model="newMessage" :data="newSelectedValue" />
-
+    <NewMessageModal v-model="newMessage" :data="newSelectedValue" @refresh="refreshData" />
+    <DeleteMailMessage v-model="newdelete" :data="toModal" @refresh="refreshData"/>
 </template>
 
 
 <script setup>
 import { ref, computed, watch, defineProps, onMounted } from "vue";
 import NewMessageModal from '../../components/Modals/Mail/NewMessage.vue';
-import { Link } from "@inertiajs/vue3";
+import DeleteMailMessage from "../../components/Modals/Mail/DeleteMailMessage.vue";
+import { Link, router } from "@inertiajs/vue3";
+import { useToast } from "primevue/usetoast";
+
+const toast = useToast();
 
 const newMessage = ref(false);
+const newdelete = ref(false);
 const buttonToggle = ref(1);
 const isfavourite = ref(false);
 const favorites = ref([]);
@@ -350,6 +356,14 @@ const selectedItem = ref({});
 const newSelectedValue = computed(()=>{
     return selectedItem.value
 })
+const pageStart = ref(1);
+const pageEnd = ref(1);
+const clickedButton = ref("All");
+const currentPage = ref(1);
+const itemsPerPage = 10;
+const toModal = ref('');
+
+const menu = ref();
 // console.log("computed", newSelectedValue);
 
 const props = defineProps(['mails'])
@@ -357,24 +371,26 @@ const props = defineProps(['mails'])
 const arrayMails = Object.keys(props.mails)
 
 
-
+const refreshData = ()=>{
+    router.reload({only: ['mails']})
+}
 
 const fetchdraftsMails = async () => {
     try {
-        const response = await axios.get('/admin/mails/drafts');
+        const response = await axios.get('/dashboard/mails/drafts');
         draftsmails.value = response.data;
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
-
+// console.log('Selected Item before:', selectedItem.value);
 
 
 
 const openDraftModal = (item) => {
     newMessage.value = true;
     selectedItem.value = {...item};
-    console.log('Selected Item inside:', selectedItem.value);
+    // console.log('Selected Item inside:', selectedItem.value);
 };
 
 
@@ -382,49 +398,120 @@ onMounted(() => {
     fetchdraftsMails()
 });
 
-//   console.log("The starred mails here", starredMails.value);
 
-const setD = () => {
-
-}
 
 const addToFavorite = async (itemId) => {
-    try {
-        console.log(itemId);
-        const response = await axios.post('/admin/mails/star/' + itemId);
-        console.log('Response:', response.data); // Log the response
-    } catch (error) {
-        console.error('Error:', error.message);
-    }
+
+    router.post('/dashboard/mails/star/' + itemId, {}, {onSuccess: (page)=>{
+        toast.add({
+            severity: "success",
+            summary: "Mail starred successfully",
+            detail: "Your message has been starred successfully.",
+            life: 3000,
+        });
+
+        router.reload({only: ['mails']})
+    }}, {onError: (page)=>{
+        toast.add({
+            severity: "danger",
+            summary: "Mail wasn't starred",
+            detail: error.message,
+            life: 3000,
+        });
+    }})
+
+
     // if (isFavorite(itemId)) {
     //     favorites.value = favorites.value.filter((id) => id !== itemId);
     // } else {
     //     favorites.value.push(itemId);
     // }
 };
+const archiveMail = async (itemId) => {
+    // try {
+    //     const response = await axios.post('/dashboard/mails/archive/' + itemId);
+    //     toast.add({
+    //         severity: "success",
+    //         summary: "Mail archived successfully",
+    //         detail: "Your message has been archived successfully.",
+    //         life: 3000,
+    //     });
+    // } catch (error) {
+    //     console.error('Error:', error.message);
+    //     toast.add({
+    //         severity: "danger",
+    //         summary: "Mail wasn't archived",
+    //         detail: error.message,
+    //         life: 3000,
+    //     });
+    // }
+
+   
+};
 
 const isFavorite = (itemId) => {
-    return favorites.value.includes(itemId);
+    //return favorites.value.includes(itemId);
+
 };
 
 
-const pageStart = ref(1);
-const pageEnd = ref(1);
-const clickedButton = ref("All");
-const currentPage = ref(1);
-const itemsPerPage = 10;
 
-const menu = ref();
 const menuItems = ref([
-    { label: "Archive" },
-    { label: "Star" },
+    { 
+        label: "Archive",
+        command: ()=>{
+            router.post('/dashboard/mails/archive/' + toModal.value,{}, {onSuccess: (page)=>{
+            toast.add({
+                severity: "success",
+                summary: "Mail archived successfully",
+                detail: "Your message has been archived successfully.",
+                life: 3000,
+            });
+            router.reload({only: ['mails']})
+        }}, {onError: (page)=>{
+            toast.add({
+            severity: "danger",
+            summary: "Mail wasn't archived",
+            detail: error.message,
+            life: 3000,
+        });
+        }})
+        } 
+    },
+    { 
+        label: "Star",
+        command: ()=>{
+            addToFavorite(toModal.value)
+        } 
+    },
+    { 
+        label: "Delete",
+        command: ()=>{
+            newdelete.value = true;
+        }
+    },
     { label: "Mark as Unread" },
-    { label: "Delete" },
 ]);
-
+// console.log(menuItems);
+// const handleSelection = (item) => {
+//     if(item?.label == 'Delete'){
+//         newdelete.value = true;
+//     }
+//     if(item?.label == 'Star'){
+//         addToFavorite(toModal.value)
+//     }
+//     if(item?.label == 'Archive'){
+//         archiveMail(toModal.value)
+//     }
+// };
 const toggle = (event) => {
     menu.value.toggle(event);
+
 };
+const sendId = (id) =>{
+    toModal.value = id;
+    console.log('to props', toModal.value);
+}
 
 const activeButton = (event) => {
     if (event === "All") {
@@ -449,104 +536,7 @@ const activeButton = (event) => {
 };
 
 const items = ref([
-    {
-        id: 1,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "All",
-        date: "Jan 20",
-        Attached: "Payment Contract",
-        icon: "vscode-icons:file-type-word",
-    },
-    {
-        id: 2,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "All",
-        date: "Jan 20",
-    },
-    {
-        id: 3,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "All",
-        date: "Jan 20",
-    },
-    {
-        id: 4,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Archive",
-        date: "Jan 20",
-        Attached: "Payment Contract",
-        icon: "vscode-icons:file-type-word",
-    },
-    {
-        id: 5,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Archive",
-        date: "Jan 20",
-    },
-    {
-        id: 6,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Unread",
-        date: "Jan 20",
-    },
-    {
-        id: 7,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Starred",
-        date: "Jan 20",
-    },
-    {
-        id: 8,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Starred",
-        date: "Jan 20",
-        Attached: "Payment Contract",
-        icon: "vscode-icons:file-type-word",
-    },
-    {
-        id: 9,
-        sender: "Emily Johnson",
-        email: "emily@ansel.com",
-        subject: "Document Review ",
-        message:
-            "<h1>Dear [Recipient's Name],</h1> <br>   <p> I hope this email finds you well. My name is [Your Name], and I'm reaching out to discuss a potential collaboration opportunity on a new project. Attached to this email, you'll find a proposal document titled \"Project Proposal Draft\" outlining the details of the project we discussed earlier. Please review the proposal at your earliest convenience and let me know your thoughts. If you have any questions or suggestions, feel free to reach out to me directly. <br> Looking forward to your feedback. </p> </br> <h1>Best regards, <br> [Your Name]</h1>",
-        status: "Drafts",
-        date: "Jan 20",
-        Attached: "Payment Contract",
-        icon: "vscode-icons:file-type-word",
-    },
+   
 ]);
 
 const renderMessage = (message) => {
@@ -636,7 +626,7 @@ const filteredMails = computed(() => {
     } else if (buttonToggle.value == 4) {
         return data = props.mails.filter((val) => val.is_starred == 1)
     } else {
-        return data;
+        return data = props.mails.filter((val)=> val.is_archived == 0);
     }
 })
 </script>

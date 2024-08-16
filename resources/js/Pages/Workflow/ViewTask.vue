@@ -2,10 +2,10 @@
   <main class="p-7 bg-slate-50">
     <div class="mb-5 flex items-center w-full justify-between">
       <Link href="/dashboard/workflow">
-        <div class="flex items-center gap-2 cursor-pointer">
-            <Icon icon="flowbite:angle-left-outline" />
-            <p>Back</p>
-        </div>
+      <div class="flex items-center gap-2 cursor-pointer">
+        <Icon icon="flowbite:angle-left-outline" />
+        <p>Back</p>
+      </div>
       </Link>
       <div class="flex items-center gap-10 font-semibold text-gray-600">
         <button class="bg-white border rounded-md px-4 py-2"
@@ -52,16 +52,20 @@
         <div class="h-[1000px] overflow-y-auto hide_scroll">
           <div>
             <div class="bg-slate-50 p-5 w-full rounded-md" v-if="props.task.taskdocs && props.task.taskdocs.length > 0">
-              <img v-if="fileType(props.task.taskdocs[0]) == 'image'" 
-              :src="file_path !=''?getFileExtension(file_path): getFileExtension(props.task.taskdocs[0])" alt="" class="overflow-hidden rounded-md w-full" />
+              <img v-if="fileType(props.task.taskdocs[0]) == 'image'"
+                :src="file_path != '' ? getFileExtension(file_path) : getFileExtension(props.task.taskdocs[0])" alt=""
+                class="overflow-hidden rounded-md w-full" />
 
-             
-              <object v-if="fileType(props.task.taskdocs[0]) == 'pdf'" 
-              :data="file_path !=''?page.props.base +  file_path.path :page.props.base +  props.task.taskdocs[0].path" type="application/pdf"
-                width="100%" class="min-h-[80vh]">
-                <p>{{ page.props.base +  props.task.taskdocs[0].path }} 
-                  <a :href="file_path !=''? page.props.base +  file_path.path: page.props.base +  props.task.taskdocs[0].path">click here to
-                    download the PDF file.</a></p>
+
+              <object v-if="fileType(props.task.taskdocs[0]) == 'pdf'"
+                :data="file_path != '' ? page.props.base + file_path.path : page.props.base + props.task.taskdocs[0].path"
+                type="application/pdf" width="100%" class="min-h-[80vh]">
+                <p>{{ page.props.base + props.task.taskdocs[0].path }}
+                  <a
+                    :href="file_path != '' ? page.props.base + file_path.path : page.props.base + props.task.taskdocs[0].path">click
+                    here to
+                    download the PDF file.</a>
+                </p>
               </object>
             </div>
           </div>
@@ -121,15 +125,15 @@
                 <div class="flex items-center gap-3">
                   <div>
                     <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4 uppercase text-xs" :style="{
-                          color:
-                            props.task.priority === '1'
-                              ? '#FFBC53'
-                              : props.task.priority === '3'
-                                ? '#FF3737'
-                                : props.task.priority === '2'
-                                  ? '#F67E5A'
-                                  : 'black',
-                        }">{{ props.task.priority== 1? 'Low':props.task.priority ==2? 'Medium': 'High' }}</p>
+            color:
+              props.task.priority === '1'
+                ? '#FFBC53'
+                : props.task.priority === '3'
+                  ? '#FF3737'
+                  : props.task.priority === '2'
+                    ? '#F67E5A'
+                    : 'black',
+          }">{{ props.task.priority == 1 ? 'Low' : props.task.priority == 2 ? 'Medium' : 'High' }}</p>
                   </div>
                 </div>
               </div>
@@ -146,17 +150,17 @@
                   <div class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer">
 
                     <p class=" uppercase text-xs w-fit font-semibold" :style="{
-                      color:
-                        props.task.status === 'Completed'
-                          ? '#0D6E1A'
-                          : props.task.status === 'Under Review'
-                            ? '#FB6514'
-                            : props.task.status === 'In Progress'
-                              ? '#F79009'
-                              : props.task.status === 'Uncompleted'
-                                ? '#F04438'
-                                : '#F04438',
-                    }">
+            color:
+              props.task.status === 'Completed'
+                ? '#0D6E1A'
+                : props.task.status === 'Under Review'
+                  ? '#FB6514'
+                  : props.task.status === 'In Progress'
+                    ? '#F79009'
+                    : props.task.status === 'Uncompleted'
+                      ? '#F04438'
+                      : '#F04438',
+          }">
                       {{ props.task.status }}
                     </p>
 
@@ -182,13 +186,13 @@
                   <Icon icon="grommet-icons:attachment" width="20" />
                   <p>Attached Document</p>
                 </div>
-                <div v-for="(document, index) in props.task.taskdocs" :key="index" 
-                  :class="document.path === file_path.path? 'border-gray-500': 'border-gray-300'"
+                <div v-for="(document, index) in props.task.taskdocs" :key="index"
+                  :class="document.path === file_path.path ? 'border-gray-500' : 'border-gray-300'"
                   class="border  hover:border-primary rounded-md p-4 flex items-center justify-between  mb-5">
                   <div class="flex items-center gap-3">
                     <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
                       <!-- <Icon :icon="document.icon" width="25" /> -->
-                       <img :src="getFileExtension(document)" alt="" width="20">
+                      <img :src="getFileExtension(document)" alt="" width="20">
                     </div>
                     <div>
                       <h1>{{ document.file_name }}</h1>
@@ -198,7 +202,8 @@
 
                   <div class="flex items-center gap-3">
                     <Icon icon="ph:eye-light" width="25" @click="setFilePath(document)" class="cursor-pointer" />
-                    <Icon icon="material-symbols-light:download" width="25" @click="downloadFile(document.path)" class="cursor-pointer"/>
+                    <Icon icon="material-symbols-light:download" width="25" @click="downloadFile(document.path)"
+                      class="cursor-pointer" />
                   </div>
                 </div>
               </div>
@@ -213,11 +218,23 @@
               <p class="text-xl">Comments</p>
               <p
                 class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3">
-               {{ (props.task && props.task.comments && props.task.comments.length > 0)? props.task.comments.length: 0 }}
+                {{ (props.task && props.task.comments && props.task.comments.length > 0) ? props.task.comments.length : 0
+                }}
               </p>
             </div>
             <Icon icon="flowbite:angle-right-outline" width="25" />
           </div>
+          <Divider class="mt-0" />
+
+          <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+            @click="toggleSidemenu('activity')">
+            <div class="flex items-center gap-5">
+              <Icon icon="lucide:activity" width="25" />
+              <p class="text-xl">Task Activity</p>
+            </div>
+            <Icon icon="flowbite:angle-right-outline" width="25" />
+          </div>
+      
           <Divider class="mt-0" />
           <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
             @click="toggleSidemenu('submission')">
@@ -282,6 +299,47 @@
           </div>
         </div>
 
+        <!-- //////   Activities   ///// -->
+      <div v-if="activities && sidemenu">
+        <div class="p-8">
+          <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+            @click="toggleSidemenu('back')">
+            <Icon icon="flowbite:angle-left-outline" />
+            <p>Back</p>
+          </div>
+        </div>
+        <Divider class="mt-0" />
+        <div class="">
+
+          <h1 class="px-5 font-semibold text-gray-800 text-3xl">
+            Task Activity
+          </h1>
+
+          <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5">
+            <div v-for="(step, index) in TaskAction" :key="index">
+              <div class="flex items-start gap-5">
+                <div class="flex flex-col items-center">
+
+                  <Icon icon="akar-icons:circle-check-fill" width="25" class=" text-primary" />
+
+                  <div class="w-[2px] my-1 h-10 bg-[#EBF3FE]" v-if="index < 4"></div>
+                </div>
+                <div class="text-[#475467]">
+                  <h1 class="font-medium text-lg">{{ step.progress }}:</h1>
+                  <div class=" flex items-center  text-sm gap-1">
+                    <p class="opacity-70">{{ step.to }}</p>
+                    <p class=" opacity-100">•</p>
+                    <p class="opacity-70">{{ step.date }}</p>
+                    <p class=" opacity-100">•</p>
+                    <p class="opacity-70">{{ step.time }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
 
         <!-- //////   submissions   ///// -->
         <div v-if="submission && sidemenu">
@@ -353,7 +411,7 @@
   <RequestRevision v-model="RequestRevisionModal" />
   <DeleteRevision v-model="deleteRevisionModal" />
 
-  <EditTask v-model="editModal" />
+  <EditTask v-model="editModal" :task="props.task" />
 
   <Reopen v-model="reOpenModal" />
   <Sidebar v-model:visible="subNavVisible" header=" Left Sidebar" position="right"
@@ -434,7 +492,7 @@
               </div>
               <div v-for="(document, index) in props.task.taskdocs" :key="index"
                 class="border border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5">
-                <div >
+                <div>
                   <div class="flex items-center gap-3">
                     <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
                       <Icon :icon="document.icon" width="25" />
@@ -469,6 +527,7 @@
           <Icon icon="flowbite:angle-right-outline" width="25" />
         </div>
         <Divider class="mt-0" />
+
         <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
           @click="toggleSidemenu('submission')">
           <div class="flex items-center gap-5">
@@ -531,6 +590,48 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- //////   Activities   ///// -->
+      <div v-if="activities && sidemenu">
+        <div class="p-8">
+          <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+            @click="toggleSidemenu('back')">
+            <Icon icon="flowbite:angle-left-outline" />
+            <p>Back</p>
+          </div>
+        </div>
+        <Divider class="mt-0" />
+        <div class="">
+
+          <h1 class="px-5 font-semibold text-gray-800 text-3xl">
+            Task Activity
+          </h1>
+
+          <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5">
+            <div v-for="(step, index) in TaskAction" :key="index">
+              <div class="flex items-start gap-5">
+                <div class="flex flex-col items-center">
+
+                  <Icon icon="akar-icons:circle-check-fill" width="25" class=" text-primary" />
+
+                  <div class="w-[2px] my-1 h-10 bg-[#EBF3FE]" v-if="index < 4"></div>
+                </div>
+                <div class="text-[#475467]">
+                  <h1 class="font-medium text-lg">{{ step.progress }}:</h1>
+                  <div class=" flex items-center  text-sm gap-1">
+                    <p class="opacity-70">{{ step.to }}</p>
+                    <p class=" opacity-100">•</p>
+                    <p class="opacity-70">{{ step.date }}</p>
+                    <p class=" opacity-100">•</p>
+                    <p class="opacity-70">{{ step.time }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       <!-- //////   submissions   ///// -->
@@ -609,6 +710,8 @@ import Reopen from "../../components/Modals/Workflows/Reopen.vue";
 import jenna from "../../assets/images/jenna.svg";
 import user from "../../assets/images/user.svg";
 import { usePage, Link, router } from "@inertiajs/vue3";
+import debouce from "lodash.debounce";
+
 import moment from 'moment';
 
 const editModal = ref(false)
@@ -619,6 +722,7 @@ const submission = ref(false);
 const props = defineProps(['task'])
 const page = usePage()
 const user_comment = ref('')
+const activities = ref(false)
 
 const comment = ref(false);
 const RequestRevisionModal = ref(false);
@@ -628,15 +732,17 @@ const Re_Assign_Modal = ref(false);
 const file_path = ref([]);
 
 
-const makeComment = ()=>{
-  if(user_comment.value ==''){
+const makeComment = () => {
+  if (user_comment.value == '') {
     document.getElementById('comment_text').focus();
     return false
   }
-  router.post('/dashboard/task-comment',{task_id: props.task.id, comment:user_comment.value}, {onSuccess: page=>{
-    user_comment.value = ''
-    router.reload({only: ['task']})
-  }})
+  router.post('/dashboard/task-comment', { task_id: props.task.id, comment: user_comment.value }, {
+    onSuccess: page => {
+      user_comment.value = ''
+      router.reload({ only: ['task'] })
+    }
+  })
 }
 
 const goBack = () => {
@@ -644,23 +750,23 @@ const goBack = () => {
   window.history.back()
 };
 
-const getUserName = (comment)=>{
-console.log('this is the comment ', comment.user)
-  if(comment.user){
-    if(page.props.user.id == comment.user.id){
+const getUserName = (comment) => {
+
+  if (comment.user) {
+    if (page.props.user.id == comment.user.id) {
       return 'You';
     }
-    return comment.user.first_name+ ' ' +comment.user.last_name
-  }else{
+    return comment.user.first_name + ' ' + comment.user.last_name
+  } else {
     return ''
   }
 }
 
-const getUserProfileImage = (comment) =>{
-  if(comment.user && comment.user.profile_image){
-    return page.props.base+'/'+comment.user.profile_image;
-  }else{
-    return page.props.base+'/images/user.png';
+const getUserProfileImage = (comment) => {
+  if (comment.user && comment.user.profile_image) {
+    return page.props.base + '/' + comment.user.profile_image;
+  } else {
+    return page.props.base + '/images/user.png';
   }
 }
 
@@ -686,38 +792,38 @@ const data = ref({
   severity: "Medium",
 });
 
-const setFilePath = (path)=>{
+const setFilePath = (path) => {
   file_path.value = path;
 }
 
 
 const documents = ref([
-  {
-    name: "Tech design requirements.pdf",
-    size: "200 KB ",
-    icon: "vscode-icons:file-type-word",
-  },
-  {
-    name: "Tech design requirements.pdf",
-    size: "200 KB ",
-    icon: "vscode-icons:file-type-excel2",
-  },
+  // {
+  //   name: "Tech design requirements.pdf",
+  //   size: "200 KB ",
+  //   icon: "vscode-icons:file-type-word",
+  // },
+  // {
+  //   name: "Tech design requirements.pdf",
+  //   size: "200 KB ",
+  //   icon: "vscode-icons:file-type-excel2",
+  // },
 ]);
 
 const comments = ref([
-  {
-    img: jenna,
-    name: "Jenna Ryan obadimu",
-    time: "6m ago",
-    comment:
-      "Task Received i would begin work immediately & review and archive assigned documents promptly to ensure seamless workflow. Documents awaiting archiving in the Finance Department. ",
-  },
-  {
-    img: user,
-    name: "You",
-    time: "6m ago",
-    comment: "Okay understood, i would work on the changes in due time boss ",
-  },
+  // {
+  //   img: jenna,
+  //   name: "Jenna Ryan obadimu",
+  //   time: "6m ago",
+  //   comment:
+  //     "Task Received i would begin work immediately & review and archive assigned documents promptly to ensure seamless workflow. Documents awaiting archiving in the Finance Department. ",
+  // },
+  // {
+  //   img: user,
+  //   name: "You",
+  //   time: "6m ago",
+  //   comment: "Okay understood, i would work on the changes in due time boss ",
+  // },
 ]);
 
 // const downloadFile = (filename)=>{
@@ -725,31 +831,31 @@ const comments = ref([
 //     window.open(url, '_blank');
 // }
 
-const downloadFile = async (filename)=> {
-      try {
-        const url = `${page.props.base}` + `${filename}`;
-        
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+const downloadFile = async (filename) => {
+  try {
+    const url = `${page.props.base}` + `${filename}`;
 
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = objectUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the object URL
-        URL.revokeObjectURL(objectUrl);
-      } catch (error) {
-        console.error('There has been a problem with your fetch operation:', error);
-      }
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the object URL
+    URL.revokeObjectURL(objectUrl);
+  } catch (error) {
+    console.error('There has been a problem with your fetch operation:', error);
+  }
+}
 
 const toggleSidemenu = (action) => {
 
@@ -761,6 +867,10 @@ const toggleSidemenu = (action) => {
     submission.value = !submission.value;
     sidemenu.value = !sidemenu.value;
   }
+  if (action === "activity") {
+    activities.value = !activities.value;
+    sidemenu.value = !sidemenu.value;
+  }
   if (action === "back") {
     comment.value = false;
     sidemenu.value = false;
@@ -769,7 +879,7 @@ const toggleSidemenu = (action) => {
 };
 
 const getFileExtension = (file) => {
-  const f_path = file.path 
+  const f_path = file.path
   const parts = f_path.split('.');
 
   const extension = parts.pop();
@@ -791,8 +901,41 @@ const getFileExtension = (file) => {
   }
 }
 
+const TaskAction = ref([
+  {
+    progress: "Task created",
+    to: "Dave Miye (You)",
+    date: "2024-02-14",
+    time: " 10:00 AM"
+  },
+  {
+    progress: "Task Assigned to Patricia Darlene ",
+    to: "Dave Miye (You)",
+    date: "2024-02-14",
+    time: " 10:00 AM"
+  },
+  {
+    progress: "Task Re-assigned to John Smith (Deputy director)",
+    to: "John smith",
+    date: "2024-02-14",
+    time: " 10:00 AM"
+  },
+  {
+    progress: "Added Comments & Feedback",
+    to: "Dave Miye (You)",
+    date: "2024-02-14",
+    time: " 10:00 AM"
+  },
+  {
+    progress: "Appended Signature",
+    to: "Dave Miye (You)",
+    date: "2024-02-14",
+    time: " 10:00 AM"
+  }
+])
+
 const fileType = (file) => {
-  const f_path = file.path 
+  const f_path = file.path
   const parts = f_path.split('.');
 
   const extension = parts.pop();

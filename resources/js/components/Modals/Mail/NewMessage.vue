@@ -408,6 +408,8 @@ const submitForm = async () => {
             
             functionCalled.value = true;
             emit("update:modelValue", false);
+             emit('refresh');
+             form.reset()
         }})
 
     //     const response = await axios.post('/dashboard/mails', form,

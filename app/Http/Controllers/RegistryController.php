@@ -12,33 +12,50 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator as FacadesValidator;
-use PhpOffice\PhpWord\Shared\Validate;
+//use PhpOffice\PhpWord\Shared\Validate;
+use Illuminate\Support\Facades\DB;
+use App\Events\RegistryEvent;
+use App\Notifications\RegistryNotification;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
 
 class RegistryController extends Controller
 {
-    public function registryConfig()
+    public function adminRegistry()
     {
-        $files = File::with('department')->orderBy('created_at', 'desc')->get();
-        return Inertia::render('Registry/RegistryConfig', [
-            'files' =>  $files
-        ]);
+        //$files = File::with('department')->orderBy('created_at', 'desc')->get();
+        $department = Department::get();
+        $division = Division::get();
+        $unit = Unit::get();
+
+        return inertia('Registry/AdminRegistry', compact('department', 'division', 'unit'));
     }
-    public function registryEntry()
+
+    public function registry()
     {
-        return Inertia::render('Registry/Registry');
+        $department = Department::get();
+        $division = Division::get();
+        $unit = Unit::get();
+        return Inertia::render('Registry/Registry', compact('department', 'division', 'unit'));
     }
-    public function login()
+    // public function login()
+    // {
+    //     return Inertia::render('Registry/login');
+    // }
+    public function getDepartment(Request $request)
     {
-        return Inertia::render('Registry/login');
-    }
-    public function getDepartment()
-    {
-        $department = Department::with(['division.unit'])->get();
+        if($request->id){
+            $department = Department::with(['division.unit'])->find($request->id);
+        }else{
+            $department = Department::with(['division.unit'])->find(auth()->user()->department_id);
+        }
+        
         return  response()->json([
             'message' => 'All departments with division and units',
             'data' => $department
         ]);
     }
+
     public function getFileByName($departmentId, $name)
     {
         $decodedFileName = urldecode($name);
@@ -54,91 +71,258 @@ class RegistryController extends Controller
 
     public function transferFile(Request $request, $id)
     {
-        $validated = FacadesValidator::make(
-            $request->all(),
-            [
-                'to_department' => 'required|exists:departments,id',
-            ]
-        );
+        // $validated = FacadesValidator::make(
+        //     $request->all(),
+        //     [
+        //         'to_department' => 'required|exists:departments,id',
+        //     ]
+        // );
 
-        if ($validated->fails()) {
-            return response()->json([
-                'message' => $validated->errors(),
-                'status' => false
-            ], 400);
-        }
-        $file = File::find($id);
-        // if (!$file->is_outgoing) {
-        //     return response()->json([
-        //         'message' => 'Can only move outgoing files',
-        //     ], 400);
+        // if ($validated->fails()) {
+        //     // return response()->json([
+        //     //     'message' => $validated->errors(),
+        //     //     'status' => false
+        //     // ], 400);
+        //     return redirect()->back()->withErrors();
         // }
-        $file->sent_to_department_id = $request->to_department;
-        $file->is_incoming = true;
-        $file->status = 'pending';
-        $file->is_outgoing = false;
-        $file->save();
-        return  response()->json([
-            'message' => 'file transferred Successfully',
-            'data' => $file
-        ]);
-    }
-    public function forwardFile($fileId)
-    {
+        $file = FileMovement::find($id);
+        // $file->sent_to_department_id = $request->to_department;
+        // $file->sent_from_department_id = auth()->user()->department_id;
+        // $file->is_incoming = true;
+        // $file->status = 'pending';
+        // $file->is_outgoing = false;
+        // $file->is_forwarded = 1;
+        // $file->save();
+       //dd($request->branch);
 
-        $getfile = File::findOrFail($fileId);
-        if (!$getfile->is_incoming) {
-            return response()->json(['message' => 'File is not marked as incoming'], 400);
+       $current_branch_id = '';
+       $user = auth()->user();
+       $loggedInUser = $this->getLogedInUserBranch();
+       if($loggedInUser == 'unit'){
+        $current_branch_id = $user->unit_id;
+       }
+       if($loggedInUser == 'division'){
+        $current_branch_id = $user->division_id;
+       }
+       if($loggedInUser == 'department'){
+        $current_branch_id = $user->department_id;
+       }
+
+
+        $newfile = $file->replicate();
+        if($request->branch['branch_type']==='unit'){
+            $newfile->sent_to_unit = $request->branch['id'];
+            $newfile->sent_to_division = null;
+            $newfile->sent_to_department = null;
         }
-        $getfile->is_outgoing  = true;
-        $getfile->is_incoming  = false;
-        $getfile->save();
-        return  response()->json([
-            'message' => 'file forwarded Successfully',
-            'data' => $getfile
-        ]);
+        if($request->branch['branch_type']==='division'){
+            $newfile->sent_to_division = $request->branch['id'];
+            $newfile->sent_to_unit = null;
+            $newfile->sent_to_department = null;
+
+        }
+        if($request->branch['branch_type']==='department'){
+            $newfile->sent_to_department = $request->branch['id'];
+            $newfile->sent_to_unit = null;
+            $newfile->sent_to_division = null;
+        }
+
+        if($request->branch_type === 'unit'){
+            $newfile->sent_from_unit = $current_branch_id;
+            $newfile->sent_from_division = null;
+            $newfile->sent_from_department = null;
+
+            $newfile->unit_id = $user->unit_id;
+            $newfile->division_id = null;
+            $newfile->department_id = null;
+
+            // if($user->unit_id == $file->unit_id){
+            //     $fm->file_movement_id = $this->getFileMovementUniqueId();
+            // }
+        }
+        if($request->branch_type === 'division'){
+            $newfile->sent_from_division = $current_branch_id;
+            $newfile->sent_from_unit = null;
+            $newfile->sent_from_department = null;
+
+            $newfile->unit_id = null;
+            $newfile->division_id = $user->division_id;
+            $newfile->department_id = null;
+        }
+        if($request->branch_type === 'department'){
+            $newfile->sent_from_department = $current_branch_id;
+            $newfile->sent_from_division = null;
+            $newfile->sent_from_unit = null;
+
+            $newfile->unit_id = null;
+            $newfile->division_id = null;
+            $newfile->department_id = $user->department_id;
+        }
+        $newfile->updated_at = \Carbon\Carbon::now();
+        $newfile->status = 'pending';
+        $newfile->save();
+
+        $file->is_forwarded = 1;
+        $file->status = 'forwarded';
+        $file->save();
+        return redirect()->back();
     }
-    public function createDepartment(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'string|required',
-        ]);
-        $newDepartment = new Department();
-        $newDepartment->name = $request->name;
-        $newDepartment->save();
-        return  response()->json([
-            'message' => 'Department created Successfully',
-            'data' => $newDepartment
-        ]);
+
+   // public function forwardFile($fileId)
+    // {
+
+    //     $getfile = File::findOrFail($fileId);
+    //     if (!$getfile->is_incoming) {
+    //         return response()->json(['message' => 'File is not marked as incoming'], 400);
+    //     }
+    //     $getfile->is_outgoing  = true;
+    //     $getfile->is_incoming  = false;
+    //     $getfile->save();
+    //     return  response()->json([
+    //         'message' => 'file forwarded Successfully',
+    //         'data' => $getfile
+    //     ]);
+    // }
+    // public function createDepartment(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'string|required',
+    //     ]);
+    //     $newDepartment = new Department();
+    //     $newDepartment->name = $request->name;
+    //     $newDepartment->save();
+    //     return  response()->json([
+    //         'message' => 'Department created Successfully',
+    //         'data' => $newDepartment
+    //     ]);
+    // }
+
+    public function getFileMovementUniqueId(){
+        $uniqueId = substr(str_shuffle("0123456789"), 0, 9);
+        return $uniqueId;
     }
-    public function createFile(Request $request, $departmentId)
+
+    public function getLogedInUserBranch(){
+        $user = auth()->user();
+        if($user->unit_id){
+            return 'unit';
+        }
+        if($user->division_id){
+            return 'division';
+        }
+        if($user->department_id){
+            return 'department';
+        }
+    }
+
+    public function createFile(Request $request)
     {
+        if($request->file_type){
+            $request->merge(['file_type'=>$request->file_type['name']]);
+        }
+        if($request->branch){
+            $request->merge(['branch'=>$request->branch['id'], 'branch_type'=> $request->branch['branch_type']]);
+        }
+      
+      //dd($request->all());
         $validated = $request->validate([
-            'name' => 'string|required',
-            'file_type' => 'string|required',
-            'sent_to_department_id' => 'string|required|exists:departments,id',
-            'subject' => 'string|required',
-            'doc_no' => 'string|required',
+            'name' => 'required|string',
+            'file_type' => 'required|string',
+            'branch' => 'required|integer',
+            // 'subject' => 'string|required',
+            'document_number' => 'string|required',
         ]);
 
-        // Find the department
-        // $sentFromDepartment = Department::findOrFail($departmentId);
-        // $sentToDepartment = Department::findOrFail($request->sent_to_department_id);
+        $branch_id = null;
+        $user = auth()->user();
+        if($user->unit_id){
+            $branch_id = $user->unit_id;
+        }elseif($user->division_id){
+            $branch_id = $user->division_id;
+        }elseif($user->department_id){
+            $branch_id = $user->department_id;
+        }
 
-        $newFile = new File();
-        $newFile->name = $request->name;
-        $newFile->file_type = $request->file_type;
-        $newFile->doc_no = $request->doc_no;
-        $newFile->subject = $request->subject;
-        $newFile->is_incoming = true;
-        // $newFile->is_outgoing = true;
-        $newFile->sent_from_department_id = $departmentId; // Assign the sending department_id
-        $newFile->sent_to_department_id = $request->sent_to_department_id; // Assign the receiving department_id
-        $newFile->save();
-        return  response()->json([
-            'message' => 'File sent Successfully',
-            'data' => $newFile
-        ]);
+        DB::transaction(function () use($request, $branch_id, $user) {
+            $logedInUserBranch = $this->getLogedInUserBranch();
+            
+            $newFile = new File();
+            $newFile->name = $request->name;
+            $newFile->file_type = $request->file_type;
+            $newFile->doc_no = $request->document_number;
+            $newFile->description = $request->description;
+            $newFile->created_by = $branch_id;
+            if($logedInUserBranch =='unit'){
+                $newFile->unit_id = $branch_id;
+            }
+            if($logedInUserBranch == 'division'){
+                $newFile->division_id = $branch_id;
+            }
+            if($logedInUserBranch == 'department'){
+                $newFile->department_id = $branch_id;
+            }
+            $newFile->save();
+    
+            $fm = new FileMovement();
+            $fm->sent_from = $branch_id;
+            $fm->sent_to = $request->branch;
+            $fm->file_id = $newFile->id;
+            $fm->status = "pending";
+            $fm->file_movement_id = $this->getFileMovementUniqueId();
+            $fm->sent_to_branch = $request->branch_type;
+            if($request->branch_type == 'unit'){
+                $fm->sent_to_unit = $request->branch;
+               
+            }
+            if($request->branch_type == 'division'){
+                $fm->sent_to_division = $request->branch;
+                
+            }
+            if($request->branch_type == 'department'){
+                $fm->sent_to_department = $request->branch;
+                
+            }
+            if($logedInUserBranch == 'unit'){
+                $fm->unit_id = $branch_id;
+                $fm->sent_from_unit = $request->branch;
+            }
+            if($logedInUserBranch == 'division'){
+                $fm->division_id = $branch_id;
+                $fm->sent_from_division = $request->branch;
+            }
+            if($logedInUserBranch == 'department'){
+                $fm->department_id = $branch_id;
+                $fm->sent_from_department = $request->branch;
+            }
+    
+            $fm->save();
+
+        });
+
+        //notification
+        if($request->branch_type == 'unit'){
+           $users = User::where('unit_id', $request->branch)->get();
+           $branch = Unit::find($request->branch);
+           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+           Notification::sendNow($users, new RegistryNotification($data));
+        }
+        if($request->branch_type == 'division'){
+            $users = User::where('unit_id', $request->branch)->get();
+           $branch = Division::find($request->branch);
+           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+           Notification::sendNow($users, new RegistryNotification($data));
+            
+        }
+        if($request->branch_type == 'department'){
+            $users = User::where('unit_id', $request->branch)->get();
+           $branch = Department::find($request->branch);
+           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+           Notification::sendNow($users, new RegistryNotification($data));
+        }
+
+        broadcast(new RegistryEvent($request->branch, $request->branch_type));
+
+        return redirect()->back();
     }
     public function updateFileStatus(Request $request, $fileId)
     {
@@ -146,52 +330,54 @@ class RegistryController extends Controller
             'status' => 'required|string|in:rejected,delivered',
         ]);
 
-        $file = File::findOrFail($fileId);
+        //$file = File::findOrFail($fileId);
+        $file = FileMovement::findOrFail($fileId);
         $file->status = $request->status;
         $file->save();
-        return  response()->json([
-            'message' => 'File updated Successfully',
-            'data' => $file
-        ]);
+        // return  response()->json([
+        //     'message' => 'File updated Successfully',
+        //     'data' => $file
+        // ]);
+        return redirect()->back();
     }
-    public function createDivision(Request $request, $deptId)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'description' => 'required|string',
-        ]);
+    // public function createDivision(Request $request, $deptId)
+    // {
+    //     $validated = $request->validate([
+    //         'title' => 'required|string',
+    //         'description' => 'required|string',
+    //     ]);
 
-        $department = Department::findOrFail($deptId);
-        $division = new Division([
-            'title' => $request->title,
-            'description' => $request->description,
-            'department_id' => $department->id,
-        ]);
-        $division->save();
-        return response()->json([
-            'message' => 'Division created successfully',
-            'division' => $division,
-        ]);
-    }
-    public function createUnit(Request $request, $divisionId)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'description' => 'required|string',
-        ]);
+    //     $department = Department::findOrFail($deptId);
+    //     $division = new Division([
+    //         'title' => $request->title,
+    //         'description' => $request->description,
+    //         'department_id' => $department->id,
+    //     ]);
+    //     $division->save();
+    //     return response()->json([
+    //         'message' => 'Division created successfully',
+    //         'division' => $division,
+    //     ]);
+    // }
+    // public function createUnit(Request $request, $divisionId)
+    // {
+    //     $validated = $request->validate([
+    //         'title' => 'required|string',
+    //         'description' => 'required|string',
+    //     ]);
 
-        $division = Division::findOrFail($divisionId);
+    //     $division = Division::findOrFail($divisionId);
 
-        $unit = new Unit([
-            'title' => $request->title,
-            'description' => $request->description,
-            'division_id' => $division->id,
-        ]);
+    //     $unit = new Unit([
+    //         'title' => $request->title,
+    //         'description' => $request->description,
+    //         'division_id' => $division->id,
+    //     ]);
 
-        $unit->save();
+    //     $unit->save();
 
-        return response()->json(['message' => 'Unit created successfully', 'unit' => $unit]);
-    }
+    //     return response()->json(['message' => 'Unit created successfully', 'unit' => $unit]);
+    // }
     public function getDivisionsInDepartment($departmentId)
     {
         $department = Department::findOrFail($departmentId);
@@ -295,57 +481,356 @@ class RegistryController extends Controller
         ]);
         // return response()->json($file->movements);
     }
-    public function getFilesByDept($departmentId)
-    {
-        $department = Department::findOrFail($departmentId);
-        // $files = File::where('sent_to_department_id', $departmentId)
-        // ->with('department', 'sentToDepartment')
-        // ->get();
-        // $sentFiles = $department->sentFiles()->get();
-        $sentFiles = $department->sentFiles()->get()->map(function ($file) {
-            return [
-                "id" => $file->id,
-                "name" => $file->name,
-                "file_type" => $file->file_type,
-                "status" => $file->status,
-                "doc_no" => $file->doc_no,
-                "subject" => $file->subject,
-                "is_incoming" => $file->is_outgoing,
-                "sent_from_department_id" => $file->sent_from_department_id,
-                "division_id" => $file->division_id,
-                "unit_id" => $file->unit_id,
-                "sent_from_division_id" => $file->sent_from_division_id,
-                "sent_from_unit_id" => $file->sent_from_unit_id,
-                'sent_to_department_id' => $file->sentToDepartment ? $file->sentToDepartment->name : null,
-                "created_at" => $file->created_at,
-                "updated_at" => $file->updated_at,
 
-            ];
-        });
-        $receivedFiles = $department->receivedFiles()->get()->map(function ($file) {
-            return [
-                "id" => $file->id,
-                "name" => $file->name,
-                "file_type" => $file->file_type,
-                "status" => $file->status,
-                "doc_no" => $file->doc_no,
-                "subject" => $file->subject,
-                "is_incoming" => $file->is_outgoing,
-                "sent_from_department_id" => $file->sent_from_department_id,
-                "division_id" => $file->division_id,
-                "unit_id" => $file->unit_id,
-                "sent_from_division_id" => $file->sent_from_division_id,
-                "sent_from_unit_id" => $file->sent_from_unit_id,
-                'sent_to_department_id' => $file->sentToDepartment ? $file->sentToDepartment->name : null,
-                "created_at" => $file->created_at,
-                "updated_at" => $file->updated_at,
+    public function branchMap($branch){
+        $branch = $branch->map(function($files){
+            return $files->fileMovement->map(function($file) use($files){
+                return [
+                    "id" => $file->id,
+                    "name" => $files->name,
+                    "file_type" => $files->file_type,
+                    "status" => $file->status,
+                    "doc_no" => $files->doc_no,
+                    "description" => $files->description,
+                    "sent_from" => $file->sent_from,
+                    "division_id" => $files->division_id,
+                    "unit_id" => $files->unit_id,
+                    "sent_to" =>$file->sent_to,
+                    "is_forwarded" => $file->is_forwarded,
+                    "file_movement_id" => $file->file_movement_id,
+                    'sent_to_unit' =>$file->sent_to_unit,
+                    'sent_to_division' => $file->sent_to_division,
+                    'sent_to_department' => $file->sent_to_department,
+                    'sent_from_unit' => $file->sent_from_unit,
+                    'sent_from_division' => $file->sent_from_division,
+                    'sent_from_department' => $file->sent_from_department,
+                    "created_by" => $files->created_by,
+                    "created_at" => $files->created_at,
+                    "updated_at" => $files->updated_at,
+    
+                ];
+            });
+        })->collapse();
 
-            ];
+        return $branch;
+    }
+
+    public function getUnitFile($id){
+        $user = auth()->user();
+        $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('unit_id', $id);
+                     // ->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_unit', $id);
+            });
+        })
+        ->with(['fileMovement' => function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('unit_id', $id);
+                      //->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_unit', $id);
+            });
+        }])
+        ->latest()
+        ->get();
+        
+        return $branch;
+    }
+
+    public function getDivisionFile($id){
+        $user = auth()->user();
+        $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('division_id', $id);
+                     // ->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_division', $id);
+            });
+        })
+        ->with(['fileMovement' => function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('division_id', $id);
+                      //->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_division', $id);
+            });
+        }])
+        ->latest()
+        ->get();
+
+        return $branch;
+    }
+
+    public function getDepartmentFile($id){
+        $user = auth()->user();
+        $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('department_id', $id);
+                     // ->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_department', $id);
+            });
+        })
+        ->with(['fileMovement' => function($query) use ($user, $id) {
+            $query->where(function($query) use ($user, $id) {
+                $query->where('department_id', $id);
+                      //->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) use ($user, $id) {
+                $query->where('sent_to_department', $id);
+            });
+        }])
+        ->latest()
+        ->get();
+
+        return $branch;
+    }
+
+    public function getBranchFiles(Request $request)
+    { 
+        $user = auth()->user();
+        $branch = null;
+
+        if($request->branch_type =='unit'){
+            $id = $request->branch_id;
+            $branch = $this->getUnitFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+
+        if($request->branch_type == 'division'){
+            $id = $request->branch_id;
+            $branch = $this->getDivisionFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+        if($request->branch_type == 'department'){
+            $id = $request->branch_id;
+            $branch = $this->getDepartmentFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+
+        if($user->unit_id || $request->branch_type =='unit'){
+            $id = $request->branch_id? $request->branch_id: $user->unit_id;
+            $branch = $this->getUnitFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+        if($user->division_id || $request->branch_type == 'division'){
+            $id = $request->branch_id? $request->branch_id: $user->division_id;
+            $branch = $this->getDivisionFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+        if($user->department_id || $request->branch_type == 'department'){
+            $id = $request->branch_id? $request->branch_id: $user->department_id;
+            $branch = $this->getDepartmentFile($id);
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+
+    }
+
+    public function getUserBranches(){
+        $user = auth()->user();
+      
+        if($user->unit_id){
+            $division = DB::table('divisions')
+                ->where('id', $user->division_id)
+                ->select('divisions.*') 
+                ->first();
+            
+            $division->branch_type = 'division';
+
+            $units = DB::table('units')
+                ->where('division_id', $user->division_id)
+                ->where('id', '!=', $user->unit_id)
+                ->select('units.*') 
+                ->get();
+
+                // $units = $units->map(function($item) {
+                //     $item->branch_type = 'unit';  
+                //     return $item;
+                // });
+
+            // Convert $division to an array and merge with $units collection
+            $units = collect([$division]);
+            return response()->json($units);
+        }
+
+        if($user->division_id){ 
+            $department = DB::table('departments')
+                ->where('id', $user->department_id)
+                ->select('departments.*') 
+                ->first();
+            
+            $department->branch_type = 'department';
+
+            $units = DB::table('units')
+                ->where('division_id', $user->division_id)
+                ->select('units.*') 
+                ->get();
+
+                $units = $units->map(function($item) {
+                    $item->branch_type = 'unit';  
+                    return $item;
+                });
+
+            // Convert $division to an array and merge with $units collection
+            $divisions = collect([$department])->merge($units);
+            return response()->json($divisions);
+        }
+
+        if($user->department_id){
+            $divisions = DB::table('divisions')
+                ->where('department_id', $user->department_id)
+                ->select('divisions.*') 
+                ->get();
+            
+                $divisions = $divisions->map(function($item) {
+                    $item->branch_type = 'division';  
+                    return $item;
+                });
+
+            return response()->json($divisions);
+        }
+    }
+
+    public function getBranchType(){
+        $user= auth()->user();
+        if($user->unit_id){
+            return 'unit';
+        }
+        if($user->division_id){
+            return 'division';
+        }
+        if($user->department_id){
+            return 'department';
+        }
+    }
+
+    public function TrackFile(Request $request){
+        $branch_type = $this->getBranchType();
+        // if($branch_type == 'unit'){
+        //     $file = File::with(['fileMovement'=>function($query){
+        //         $query->orderBy('updated_at');
+        //     }])
+        //         ->where('name', 'LIKE', '%'.$request->search.'%')
+        //         ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+        //         ->get();
+        // }
+        $user = auth()->user();
+
+        if($branch_type == 'unit'){
+            if($user->unit_id){
+                $branch = File::whereHas('fileMovement', function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('unit_id', $user->unit_id);
+                             // ->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_unit', $user->unit_id);
+                    });
+                })
+                ->with(['fileMovement' => function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('unit_id', $user->unit_id);
+                              //->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_unit', $user->unit_id);
+                    })->latest()->take(40);
+                }])
+                ->where('name', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+                ->latest()
+                ->get()
+                ->take(10);
+    
+                return response()->json($branch);
+            }
+        }
+
+        if($branch_type == 'division'){
+            if($user->division_id){
+                $branch = File::whereHas('fileMovement', function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('division_id', $user->division_id);
+                             // ->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_division', $user->division_id);
+                    });
+                })
+                ->with(['fileMovement' => function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('division_id', $user->division_id);
+                              //->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_division', $user->division_id);
+                    })->latest()->take(40);
+                }])
+                ->where('name', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+                ->latest()
+                ->get()
+                ->take(10);
+    
+                return response()->json($branch);
+            }
+        }
+
+        if($branch_type == 'department'){
+            if($user->department_id){
+                $branch = File::whereHas('fileMovement', function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('department_id', $user->department_id);
+                             // ->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_department', $user->department_id);
+                    });
+                })
+                ->with(['fileMovement' => function($query) use ($user) {
+                    $query->where(function($query) use ($user) {
+                        $query->where('department_id', $user->department_id);
+                              //->where('sent_to_branch', 'unit');
+                    })->orWhere(function($query) use ($user) {
+                        $query->where('sent_to_department', $user->department_id);
+                    })->latest()->take(40);
+                }])
+                ->where('name', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+                ->latest()
+                ->get()
+                ->take(10);
+    
+                return response()->json($branch);
+            }
+        }
+    }
+
+    public function getTrackedFile(Request $request){
+       
+        $file = File::find($request->file_id);
+        $file_movement = $file->fileMovement()->where('file_movement_id', $request->file_movement_id)->orderBy('id','ASC')->get();
+        return response()->json(['file_movement'=> $file_movement, 'file' => $file]);
+    }
+
+    public function getAdminRegistryBranch(Request $request){
+        $search = $request->search;
+        $unit = Unit::where('title', 'LIKE', '%'.$search.'%')->get()->map(function ($unit) {
+                $unit->branch_type = 'unit';
+                return $unit;
+            });
+        $division = Division::where('title', 'LIKE', '%'.$search.'%')->get()->map(function ($division) {
+            $division->branch_type = 'division';
+            return $division;
         });
-        // $receivedFiles = $department->receivedFiles;
-        return response()->json([
-            'sent_files' => $sentFiles,
-            'received_files' => $receivedFiles
-        ], 200);
+        $department = Department::where('title', 'LIKE', '%'.$search.'%')->get()->map(function ($department) {
+            $department->branch_type = 'department';
+            return $department;
+        });;
+
+        $branches = $department->merge($division->merge($unit));
+        return response()->json($branches);
     }
 }

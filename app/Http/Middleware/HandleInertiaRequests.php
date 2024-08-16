@@ -56,7 +56,8 @@ class HandleInertiaRequests extends Middleware
                 ((auth()->user()->division_id) ? 'division' :
                 'department')) :
                 [],
-            'roles'=>Auth::check()? Auth::user()->roles->pluck('name')->toArray() :[]
+            'roles'=>Auth::check()? Auth::user()->roles->pluck('name')->toArray() :[],
+            'permissions'=>Auth::check()? Auth::user()->permissions()->pluck('name') :[]
         ]);
     }
 }

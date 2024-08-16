@@ -9,18 +9,30 @@ class PermissionController extends Controller
 {
     public function createPermission(){
         $permissions_data = [
-            'branch',
-            'metadata',
-            'document type',
-            'archive',
+            // 'department',
+            // 'division',
+            // 'unit',
+            // 'metadata setup',
+            // 'document type',
+            // 'archiving',
+            // 'analytics',
+            // 'chat',
+            // 'workflow',
+            // 'mails',
+            // 'manage users',
+            // 'branch setup',
+            // 'access config',
+            // 'audit',
+            // 'recycle bin',
+            'registry'
         ];
         
         $permissions = [];
         foreach ($permissions_data as $perm) {
-           $arr = ['create', 'read', 'update', 'delete'];
+           $arr = ['create', 'view', 'update', 'delete'];
            foreach($arr as $val){
             $new_arr = [
-                'name' => $val." ".$perm,
+                'name' => $perm." ".$val,
                 'guard_name' => 'web',
                 'created_at' =>\Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now(),

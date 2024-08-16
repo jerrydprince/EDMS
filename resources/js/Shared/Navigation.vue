@@ -10,11 +10,13 @@
       <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
       <section>
         <div v-for="(item, index) in main" :key="index" class="mb-1">
-          <Link :href="item.path"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <Icon :icon="item.icon" width="25" />
-          <p class="text-lg">{{ item.name }}</p>
-          </Link>
+         <!-- {{ permissions.includes(item.permission) }} -->
+            <Link :href="item.path"
+              class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+              <Icon :icon="item.icon" width="25" />
+              <p class="text-lg">{{ item.name }}</p>
+            </Link>
+        
         </div>
       </section>
     </div>
@@ -90,6 +92,7 @@ import { usePage } from '@inertiajs/vue3'
 
 const page = usePage()
 const departments = computed(() => page.props.shared_departments)
+const permissions = computed(()=> page.props.permissions)
 const branches = ref([]);
 
 const setDepartments = () => {
@@ -108,26 +111,31 @@ const main = ref([
     name: "Admin",
     path: "/dashboard",
     icon: "lucide:home",
+    permission: ''
   },
   {
     name: "Analytics",
     path: "/analytics",
     icon: "carbon:analytics",
+    permission: 'analytics view'
   },
   {
-    name: "Inbox",
-    path: "/inbox",
+    name: "Chat",
+    path: "/dashboard/chat",
     icon: "octicon:inbox-24",
+    permission: 'chat view'
   },
   {
     name: "Workflow",
     path: "/dashboard/workflow",
-    icon: "lucide:workflow"
+    icon: "lucide:workflow",
+    permission: 'workflow view'
   },
   {
     name: "Mails",
     path: "/dashboard/mails",
-    icon: "ic:outline-mail"
+    icon: "ic:outline-mail",
+    permission: 'mail view'
   },
 ]);
 
@@ -144,7 +152,7 @@ const admin = ref([
   },
   {
     name: "Access Config",
-    path: "/access-config",
+    path: "/dashboard/access-level",
     icon: "mdi:cloud-key-outline",
   },
   {

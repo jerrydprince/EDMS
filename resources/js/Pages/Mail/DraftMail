@@ -247,7 +247,7 @@
             </div>
         </div>
     </main>
-    <DeleteMailModal v-model="DeleteMessage" />
+    <DeleteMailMessage v-model="DeleteMessage" />
 </template>
 
 
@@ -255,7 +255,7 @@
 
 <script setup>
 import { ref, onMounted, defineProps } from "vue";
-import DeleteMailModal from '../../components/modals/Mail/DeleteMail.vue';
+//import DeleteMailMessage from "../../components/modals/Mail/DeleteMailMessage.vue";
 import image from '../../assets/images/members/1.svg'
 import { usePage } from "@inertiajs/vue3";
 
@@ -265,7 +265,7 @@ console.log(props);
 const draftMail = ref([]);
 const getSingleDraftMail = async () => {
     try {
-        const response = await axios.get(`/admin/mails/SingleDraftMail/${props.id}`);
+        const response = await axios.get(`/dashboard/mails/SingleDraftMail/${props.id}`);
         draftMail.value = response.data;
     } catch (error) {
         console.error('Error fetching data:', error);

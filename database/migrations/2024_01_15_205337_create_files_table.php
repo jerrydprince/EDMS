@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->string('path');
-            $table->unsignedBigInteger('archive_id');
-            $table->foreign('archive_id')->references('id')->on('archives');
+           $table->string('name');
+           $table->string('file_type');
+           $table->string('doc_no');
+           $table->text('description')->nullable();
+           $table->integer('created_by');
             $table->timestamps();
         });
     }

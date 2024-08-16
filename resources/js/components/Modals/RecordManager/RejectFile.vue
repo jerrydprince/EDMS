@@ -64,6 +64,7 @@
   <script setup>
   import { defineEmits, defineProps, computed, ref } from "vue";
   import { useToast } from "primevue/usetoast";
+  import { router } from "@inertiajs/vue3";
 
   const toast = useToast();
   const props = defineProps(["modelValue", "data"]);
@@ -86,28 +87,43 @@
     status: "rejected"
 });
   const submit = async () => {
-        emit("update:modelValue", false);
-        console.log('from props', props?.data);
-        console.log(formData.value);
-        try {
-            const response =  await axios.post(`/dashboard/registry/updateFileStatus/${props?.data}`, formData.value)
-            toast.add({
+      router.post(`/dashboard/registry/updateFileStatus/${props?.data}`, formData.value, {onSuccess: page=>{
+        toast.add({
             severity: "success",
             summary: "Reject success",
             detail: "File has been rejected successfully.",
             life: 3000,
         });
-        console.log('Response:', response.data); // Log the response
-
-        } catch (error) {
-            console.error('Error:', error.message);
+        emit("update:modelValue", false);
+        emit('refresh')
+      }}, {onError: page=>{
         toast.add({
-            severity: "Error",
-            summary: 'An error occured',
-            detail: error.message,
+            severity: "success",
+            summary: "Reject success",
+            detail: "File has been rejected successfully.",
             life: 3000,
         });
-        }
+      }})
+
+        // try {
+        //     const response =  await axios.post(`/dashboard/registry/updateFileStatus/${props?.data}`, formData.value)
+        //     toast.add({
+        //     severity: "success",
+        //     summary: "Reject success",
+        //     detail: "File has been rejected successfully.",
+        //     life: 3000,
+        // });
+  
+
+        // } catch (error) {
+
+        // toast.add({
+        //     severity: "Error",
+        //     summary: 'An error occured',
+        //     detail: error.message,
+        //     life: 3000,
+        // });
+        // }
   };
 
   </script>

@@ -77,4 +77,134 @@ class RoleController extends Controller
         Role::insert($roles);
         echo "successful";
     }
+
+    public function createRole(Request $request){
+        Role::create([
+            'name' => $request->name, 
+                'guard_name' => 'web',
+                'description' => $request->description,
+                'created_at'=>\Carbon\Carbon::now(), 
+                'updated_at'=>\Carbon\Carbon::now(),
+        ]);
+
+        return redirect()->back();
+    }
+
+    public function getAccessLevel(){
+        $roles = Role::with('permissions')->withCount('users')->get();
+        $permissions = Permission::get();
+        $permissions = $permissions->groupBy('name')->chunk(4);
+        return inertia('AcessConfig/AccessLevel', compact('roles','permissions'));
+    }
+
+    public function toggleStatus(Request $request){
+        $role = Role::find($request->id);
+        $role->status = $request->status;
+        $role->save();
+        return redirect()->back()->with(['success'=>true]);
+    }
+
+    public function deleteAccessLevel(Request $request){
+        $level = Role::find($request->id);
+        $level->delete();
+        return redirect()->back()->with(['success'=>true]);
+    }
+
+    // public function createPermission(){
+    //     $permissions = [
+            
+    //            [ 'name' => 'create analytics', 'guard_name'=>'web'],
+    //             ['name' => 'view analytics'],
+    //             ['name' => 'edit analytics'],
+    //             ['name' => 'delete analytics']
+    //         ,
+            
+    //             ['name' => 'create chat'],
+    //             ['name' => 'view chat'],
+    //             ['name' => 'edit chat'],
+    //             ['name' => 'delete chat']
+    //         ,
+            
+    //             ['name' => 'create workflow'],
+    //             ['name' => 'view workflow'],
+    //             ['name' => 'edit workflow'],
+    //             ['name' => 'delete workflow']
+    //         ,
+            
+    //            [ 'name' => 'create division task'],
+    //             ['name' => 'view division task'],
+    //             ['name' => 'edit division task'],
+    //             ['name' => 'delete division task']
+    //         ,
+            
+    //             ['name' => 'create mails'],
+    //             ['name' => 'view mails'],
+    //             ['name' => 'edit mails'],
+    //             ['name' => 'delete mails']
+    //         ,
+            
+    //             ['name' => 'create manage users'],
+    //             ['name' => 'view manage users'],
+    //             ['name' => 'edit manage users'],
+    //             ['name' => 'delete manage users']
+    //         ,
+            
+    //             ['name' => 'create branch setup'],
+    //             ['name' => 'view branch setup'],
+    //             ['name' => 'edit branch setup'],
+    //             ['name' => 'delete branch setup']
+    //         ,
+            
+    //             ['name' => 'create access config'],
+    //             ['name' => 'view access config'],
+    //             ['name' => 'edit access config'],
+    //             ['name' => 'delete access config']
+    //         ,
+            
+    //             ['name' => 'create metadata setup'],
+    //             ['name' => 'view metadata setup'],
+    //             ['name' => 'edit metadata setup'],
+    //             ['name' => 'delete metadata setup']
+    //         ,
+            
+    //             ['name' => 'create audit'],
+    //             ['name' => 'view audit'],
+    //             ['name' => 'edit audit'],
+    //             ['name' => 'delete audit']
+    //         ,
+            
+    //             ['name' => 'create recylcle bin'],
+    //             ['name' => 'view recylcle bin'],
+    //             ['name' => 'edit recylcle bin'],
+    //             ['name' => 'delete recylcle bin']
+    //         ,
+            
+    //             ['name' => 'create department'],
+    //             ['name' => 'view department'],
+    //             ['name' => 'edit department'],
+    //             ['name' => 'delete department']
+    //         ,
+            
+    //             ['name' => 'create division'],
+    //             ['name' => 'view division'],
+    //             ['name' => 'edit division'],
+    //             ['name' => 'delete division']
+    //         ,
+            
+    //             ['name' => 'create unit'],
+    //             ['name' => 'view unit'],
+    //             ['name' => 'edit unit'],
+    //             ['name' => 'delete unit']
+    //         ,
+    //     ];
+
+    //     Permission::insert($permissions);
+    //     echo "successfull";
+    // }
+
+    public function addPermissionToRole(Request $request){
+        $role = Role::find($request->role_id);
+        $role->syncPermissions($request->permissions);
+        return redirect()->back()->with(['success'=>true]);
+    }
 }

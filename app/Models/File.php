@@ -8,15 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class File extends Model
 {
     use HasFactory;
+    // protected $fillable = [
+    //     'name', 'file_type', 'status', 'subject', 'is_incoming',
+    //     'is_outgoing','department_id', 'doc_no', 'sent_from_department_id', 'sent_to_department_id',
+    //     'sent_from_division_id', 'sent_from_unit_id', 'division_id', 'unit_id',
+    // ];
     protected $fillable = [
-        'name', 'file_type', 'status', 'subject', 'is_incoming',
-        'is_outgoing','department_id', 'doc_no', 'sent_from_department_id', 'sent_to_department_id',
-        'sent_from_division_id', 'sent_from_unit_id', 'division_id', 'unit_id',
+        'name', 'file_type', 'description','department_id', 'doc_no', 'division_id', 'unit_id',
     ];
-    public function movements()
-    {
-        return $this->hasMany(FileMovement::class);
-    }
+    // public function movements()
+    // {
+    //     return $this->hasMany(FileMovement::class);
+    // }
     public function department()
     {
         return $this->belongsTo(Department::class);
@@ -48,4 +51,16 @@ class File extends Model
     {
         return $this->belongsTo(Unit::class, 'sent_from_unit_id');
     }
+
+    /**
+     * Get all of the fileMovement for the File
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function fileMovement()
+    {
+        return $this->hasMany(FileMovement::class, 'file_id', 'id');
+    }
+
+
 }

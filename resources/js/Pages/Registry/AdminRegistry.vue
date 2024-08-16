@@ -46,18 +46,21 @@
                             <div class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
                                 <i class="pi pi-search text-gray-700" style="font-size: 1rem"></i>
                                 <input v-model="Users" type="text" class="w-96 border-0 outline-none text-gray-700"
-                                    placeholder="Search Branch" @input="filterRecipients" />
+                                    placeholder="Search Branch" @input="filterBranch" id="search"/>
                             </div>
 
                             <div class="border border-solid py-3 bg-white h-[300px] overflow-y-scroll rounded-md absolute z-50 w-full shadow-xl mt-2"
-                                v-if="Users && Suggestions.length > 0">
-                                <div class="flex items-center p-3 px-3 gap-2 hover:bg-[#f8f8f9]"
-                                    v-for="(suggestion, index) in Suggestions" :key="index"
-                                    @click="updateUsers(suggestion)">
+                                v-if="branches && branches.length > 0">
+                                <div class="flex items-center p-3 px-3 gap-2 cursor-pointer hover:bg-[#f8f8f9]"
+                                    v-for="(branch, index) in branches" :key="index"
+                                    @click="updateBranch(branch)">
                                     <div class="p-2 border border-gray-600 rounded-full">
-                                        <Icon :icon="suggestion.icon" width="20" />
+                                        <!-- <Icon :icon="suggestion.icon" width="20" /> -->
+                                        <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="branch.branch_type == 'unit'">
+                                        <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="branch.branch_type == 'division'">
+                                        <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="branch.branch_type == 'department'">
                                     </div>
-                                    <p class="text-sm w-fit font-normal">{{ suggestion.name }}</p>
+                                    <p class="text-sm w-fit font-normal">{{ branch.title }}</p>
                                 </div>
                             </div>
                         </div>
@@ -66,12 +69,13 @@
             </div>
 
             <div v-else class=" ">
-                <RegistryPackage :toggleStateFunction="toggleState" :data="files"/>
+                <RegistryPackage :toggleStateFunction="toggleState" :branch="selectedBranch" :department="props.department"
+                :division="props.division" :unit="props.unit" @close="closeRegistryPackageHandler"/>
             </div>
         </div>
     </main>
     <AssignRole v-model="AssignRoleModel" />
-    <TrackPackage v-model="TrackPackageModel" />
+    <TrackPackage v-model="TrackPackageModel" :department="props.department" :division="props.division" :unit="props.unit" />
     <EditPermission v-model="EditPermissionModal" />
 </template>
 
@@ -81,15 +85,25 @@ import AssignRole from "../../components/Modals/Registry/AssignRole.vue";
 import RegistryPackage from "../../components/RegistryPackage.vue";
 import TrackPackage from "../../components/Modals/Registry/TrackPackage.vue";
 import EditPermission from "../../components/Modals/Registry/EditPermission.vue"
+import debounce from 'lodash.debounce'
+import {usePage} from '@inertiajs/vue3'
+
 const AssignRoleModel = ref(false);
 const TrackPackageModel = ref(false);
 const EditPermissionModal = ref(false)
 const buttonToggle = ref(1);
 const Recipients = ref([])
 const files = ref([])
-const props = defineProps(['files'])
-files.value = props.files
+const props = defineProps(['department', 'division', 'unit'])
+const branches = ref([])
+//files.value = props.files
+const page = usePage()
+const selectedBranch = ref()
 
+const closeRegistryPackageHandler = ()=>{
+   // document.getElementById('search').focus()
+    toggleState();
+}
 
 const getDept = async () => {
     try {
@@ -106,10 +120,6 @@ const getDept = async () => {
 };
 
 
-
-onMounted(() => {
-    getDept()
-})
 const menu = ref();
 const items = ref([
     {
@@ -124,40 +134,32 @@ const toggle = (event) => {
 
 const Users = ref("");
 
-// const Recipients = ref([
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-//   {
-//     name: "Accounting Department",
-//     icon: "gg:organisation",
-//   },
-// ]);
 
 const Suggestions = ref([]);
-const filterRecipients = () => {
-    const searchTerm = Users.value.toLowerCase();
-    Suggestions.value = Recipients.value.filter((recipient) =>
-    recipient.name.toLowerCase().includes(searchTerm)
-);
-};
+// const filterRecipients = () => {
+//     const searchTerm = Users.value.toLowerCase();
+//     Suggestions.value = Recipients.value.filter((recipient) =>
+//     recipient.name.toLowerCase().includes(searchTerm)
+// );
+// };
+
+const filterBranch = debounce((event)=>{
+    let search = event.target.value
+   if(search !== ''){
+    axios.get('/dashboard/admin-registry-branch', {params:{search: search}}).then((response)=>{
+        if(response.data){
+            branches.value = response.data
+        }
+    })
+   }else{
+    branches.value = []
+   }
+}, 500)
+
+const updateBranch = (branch)=>{
+    selectedBranch.value = branch
+    toggleState();
+}
 
 const packages = ref(false);
 

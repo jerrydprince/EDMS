@@ -36,7 +36,7 @@
                         {{ item.sender ? item.sender : 'Blank' }}
                         <div class="flex items-center gap-1 text-xs">
                             <p>{{ item.recipient }}</p>
-                            <p>{{ new Date(item.created_at).toDateString() }}<small> (20 minutes ago) </small></p>
+                            <p>{{ new Date(item.created_at).toDateString() }}<small>({{returnDifference(item.created_at)}})</small></p>
                         </div>
                     </div>
                 </div>
@@ -51,6 +51,7 @@
                 <!-- <p v-html="message"></p> -->
                 <p v-html="item.body"></p>
                 <div v-for="(doc, index) in item?.attachments" :key="index">
+                    <!-- <iframe :src="'\storage\app/' + doc?.file_path"> </iframe> -->
                     <embed :src="'\storage\app/' + doc?.file_path" />
                 </div>
                 <Divider />
@@ -248,12 +249,12 @@
             </div>
         </div>
     </main>
-    <DeleteMailModal v-model="DeleteMessage" />
+    <DeleteMailMessage v-model="DeleteMessage" />
 </template>
 
 <script setup>
 import { ref, onMounted, defineProps } from "vue";
-import DeleteMailModal from '../../components/modals/Mail/DeleteMail.vue';
+//import DeleteMailMessage from '../../components/modals/Mail/DeleteMailMessage.vue';
 import image from '../../assets/images/members/1.svg'
 import { usePage } from "@inertiajs/vue3";
 
@@ -261,17 +262,43 @@ const props = defineProps(['id']);
 console.log(props);
 
 const mail = ref([]);
+const currentDate = ref(new Date());
+const timeDifference = ref('');
+
 const getSingleMail = async () => {
     try {
-        const response = await axios.get(`/admin/mails/SingleMail/${props.id}`);
+        const response = await axios.get(`/dashboard/mails/SingleMail/${props.id}`);
         mail.value = response.data;
         console.log(mail.value)
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
+const returnDifference = (date) =>{
+    currentDate.value = new Date();
+    const newdate = new Date(date)
+    const diff = newdate.getTime() - currentDate.value.getTime();
+    console.log(diff)
+ if (isNaN(diff)) {
+        timeDifference.value = 'Invalid Date';
+        return  timeDifference.value;
+      }
+ const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      timeDifference.value = `${minutes}munites ago`
+      return timeDifference.value
+
+}
+// const updateCurrentTime = () => {
+//       setInterval(() => {
+//         returnDifference();
+//       }, 1000);
+//     };
 onMounted(() => {
     getSingleMail()
+    returnDifference()
+    // updateCurrentTime()
 })
 const DeleteMessage = ref(false);
 const respond = ref(false);

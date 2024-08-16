@@ -40,12 +40,15 @@
 
   
 <script setup>
-  import { ref } from "vue";
+  import { ref,onMounted, computed } from "vue";
 import TopBar from "./TopBar.vue";
 import Navigation from "./Navigation.vue";
 import searchResult from "../components/Modals/SearchResult.vue";
+import { usePage } from "@inertiajs/vue3";
 
 const toggleSearch = ref(false);
+const page = usePage()
+const user_id = computed(()=>page.props.user.id);
 
   const toggleSearchState = () => {
     toggleSearch.value = !toggleSearch.value;
@@ -54,6 +57,20 @@ const toggleSearch = ref(false);
   const closeModal = ()=> {
     toggleSearch.value = false
   }
+
+  onMounted(()=>{
+    
+    // Echo.private(`chat.${user_id}`).listen('ChatEvent', (e)=>{
+    //   alert('yes i got the message')
+    //     console.log(e)
+    //   })
+  
+    Echo.private(`chat.${user_id.value}`)
+    .listen('ChatEvent', (e) => {
+      alert('yes')
+        console.log(e.model);
+    });
+  })
 </script>
  
   

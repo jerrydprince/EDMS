@@ -16,7 +16,7 @@
     <div v-if="active === 1" class=" flex float-col items-center w-full">
 
            <div class=" flex flex-col items-center justify-center w-full h-">
-            <img src="@/assets/images/report_modal.svg" alt="" class=" -mt-5 h-56">
+            <img src="../../../assets/images/report_modal.svg" alt="" class=" -mt-5 h-56">
             <div class=" text-center absolute flex flex-col items-center justify-center bg-white py-5 top-36   shadow-white">
                 <h1 class=" text-xl font-semibold">Report Complaint</h1>
                 <p class=" text-sm text-[#667085] w-[80%] ">If you encounter any issues or concerns with a contact, use this form to report it. </p>
@@ -73,7 +73,7 @@
         </section>
 
         <div v-else class=" flex flex-col items-center justify-center w-full ">
-           <img src="@/assets/images/complaint.svg" alt=""  class=" w-80">
+           <img src="../../../assets/images/complaint.svg" alt=""  class=" w-80">
            <div class=" flex flex-col items-center w-full">
             <h1 class=" text-2xl font-semibold my-5">Complaint Recieved</h1>
 

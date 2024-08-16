@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('file_movements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
-            $table->foreignId('division_id')->nullable()->constrained('divisions')->onDelete('set null');
-            $table->foreignId('unit_id')->nullable()->constrained('units')->onDelete('set null');
-            $table->foreignId('sent_from_division_id')->nullable()->constrained('divisions')->onDelete('set null');
-            $table->foreignId('sent_from_unit_id')->nullable()->constrained('units')->onDelete('set null');
-            $table->foreignId('sent_from_department_id')->nullable()->constrained('departments')->onDelete('set null');
-            $table->foreignId('sent_to_department_id')->nullable()->constrained('departments')->onDelete('set null');
+            $table->integer('sent_from');
+            $table->integer('sent_to');
+            $table->unsignedBigInteger('file_id');
+            $table->boolean('is_forwarded')->default(0);
+            $table->enum('status', ['pending', 'rejected', 'delivered']);
+            $table->bigInteger('file_movement_id');
+            $table->integer('unit_id')->nullable();
+            $table->integer('division_id')->nullable();
+            $table->integer('department_id')->nullable();
+            $table->foreign('file_id')->references('id')->on('files');
             $table->timestamps();
         });
     }
