@@ -10,7 +10,8 @@
     <template #header>
       <div class="flex bg-slate-100 p-3 justify-end w-full">
         <div class="flex gap-5 bg-slate-100 items-center px-5">
-          <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
+          <Icon icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile"
+            class=" cursor-pointer" />
           <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" />
           <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
             Create Task
@@ -64,12 +65,12 @@
               <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
                 v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
                 <div class=" flex items-center gap-3 ">
-                  <img :src="page.props.base+'/'+suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
+                  <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
                   <p class="text-sm w-fit text-black font-semibold">{{
-                    (suggestion.first_name+" "+suggestion.last_name).length > 15
-                      ? `${(suggestion.first_name+" "+suggestion.last_name).substring(0, 15)}..`
-                      : suggestion.first_name+" "+suggestion.last_name
-                  }}</p>
+                  (suggestion.first_name + " " + suggestion.last_name).length > 15
+                    ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
+                    : suggestion.first_name + " " + suggestion.last_name
+                }}</p>
                 </div>
 
                 <div>
@@ -84,19 +85,91 @@
             <p>Set assignee</p>
             <Icon icon="lucide:plus" />
           </div>
-          
-          <div
+
+          <!-- <div
             class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
             v-if="Assigned_by">
-            <img :src="page.props.base+'/'+assigned_by_img" alt="" class="w-5 h-5 rounded-full" />
+            <img :src="page.props.base + '/' + assigned_by_img" alt="" class="w-5 h-5 rounded-full" />
             <p class="text-xs w-fit">{{ Assigned_by }}</p>
             <div class="bg-white border rounded-full p-0.5 text-sm">
               <Icon icon="clarity:times-line" class="cursor-pointer" @click="Assigned_by = ''" />
             </div>
+          </div> -->
+
+          <div v-if="Assigned_by  !=''" class="flex items-center flex-wrap gap-2">
+            <div v-for="user in selectedUsers"
+              class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
+              <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
+              <p class="text-xs w-fit">{{ user.first_name+' '+user.last_name }}</p>
+              <div class="bg-white border rounded-full p-0.5 text-sm">
+                <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
+              </div>
+            </div>
+              <!-- <div
+                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
+                v-for="(tag, index) in Tags" :key="index">
+                <img :src="tag.img" alt="" class="w-5" />
+                <p class="text-xs w-fit">{{ tag.name }}</p>
+                <div class=" bg-white border rounded-full p-0.5 text-sm">
+                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeTag(tag)" />
+                </div>
+              </div> -->
+              <!-- <div class="relative">
+                <input v-model="Users" type="text"
+                  class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700" placeholder=""
+                  @input="filterRecipients" />
+
+                <div
+                  class="border border-solid py-3 bg-white right-0 max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
+                  v-if="Users && Suggestions.length > 0">
+                  <div class="flex items-center p-2 px-3 justify-between hover:bg-[#f8f8f9]"
+                    v-for="(suggestion, index) in Suggestions" :key="index" @click="updateUsers(suggestion)">
+                    <div class="flex items-center gap-3">
+                      <img :src="suggestion.img" alt="" class="w-8" />
+                      <p class="text-sm w-fit text-black font-semibold">
+                        {{
+                        suggestion.name.length > 15
+                          ? `${suggestion.name.substring(0, 15)}..`
+                          : suggestion.name
+                      }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p>{{ suggestion.email }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div> -->
+              <div class="relative">
+            <input v-model="search" type="text"
+              class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
+              placeholder="Search department / staff" @input="filterRecipients" />
+
+            <div
+              class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
+              v-if="users && users.length > 0">
+              <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
+                v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
+                <div class=" flex items-center gap-3 ">
+                  <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
+                  <p class="text-sm w-fit text-black font-semibold">{{
+                  (suggestion.first_name + " " + suggestion.last_name).length > 15
+                    ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
+                    : suggestion.first_name + " " + suggestion.last_name
+                }}</p>
+                </div>
+
+                <div>
+                  <p>{{ suggestion.email }}</p>
+                </div>
+              </div>
+            </div>
           </div>
+            </div>
         </div>
         <div v-if="form.errors.users" class=" text-red-400">{{ form.errors.users }}</div>
-       
+
 
         <div class="flex items-center gap-14 mt-5">
           <div class="flex items-center gap-3">
@@ -189,7 +262,7 @@
             <p>Attached Document</p>
           </div>
 
-           <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
+          <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
 
 
             <!-- <div class="border  p-3 rounded-md">
@@ -219,11 +292,11 @@
 
 
             <div class=" w-1/3 border  p-2 rounded-md" v-for="(file, index) in files" :key="index">
-            <!-- Uploading File Content -->
-            <div class="mb-1 flex justify-between items-center">
+              <!-- Uploading File Content -->
+              <div class="mb-1 flex justify-between items-center">
                 <div class="flex items-center gap-x-3">
-                    <span class="w-8 h-8 flex justify-center items-center text-gray-500">
-                        <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <span class="w-8 h-8 flex justify-center items-center text-gray-500">
+                    <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M31.6313 3.2207L38.934 10.8332V39.7817H11.6537V39.8762H39.0272V10.929L31.6313 3.2207Z" fill="#909090"/>
                         <path d="M31.5407 3.125H11.5605V39.7805H38.934V10.8333L31.5407 3.125Z" fill="#F4F4F4"/>
                         <path d="M11.3597 5.09375H2.97281V14.0542H29.3541V5.09375H11.3597Z" fill="#7A7B7C"/>
@@ -234,47 +307,57 @@
                         <path d="M31.5407 3.125V10.8333H38.934L31.5407 3.125Z" fill="#F4F4F4"/>
                         <path d="M11.7796 6.34995H10.0642V12.65H11.4187V10.5263L11.718 10.5434C12.0075 10.5384 12.2942 10.4865 12.5671 10.3898C12.8064 10.3075 13.0265 10.1776 13.2142 10.0079C13.4037 9.84578 13.5529 9.64177 13.65 9.41201C13.7816 9.02942 13.8286 8.62281 13.7878 8.22026C13.7796 7.93271 13.7292 7.64791 13.6381 7.37501C13.5553 7.17802 13.4323 7.00043 13.2771 6.85355C13.1219 6.70667 12.9377 6.59372 12.7365 6.52189C12.5616 6.45827 12.3809 6.41211 12.197 6.38408C12.0585 6.3627 11.9185 6.35129 11.7783 6.34995M11.5303 9.36083H11.4135V7.41833H11.6681C11.7799 7.41026 11.8921 7.42743 11.9963 7.46855C12.1006 7.50967 12.1943 7.57369 12.2705 7.65589C12.4284 7.86722 12.5128 8.12446 12.5107 8.38826C12.5107 8.71114 12.5107 9.00383 12.2193 9.20989C12.0094 9.32534 11.7705 9.37732 11.5316 9.35951M16.3485 6.33289C16.2028 6.33289 16.061 6.34339 15.9613 6.34733L15.6528 6.3552H14.6291V12.6552H15.834C16.2944 12.6678 16.7529 12.5898 17.1832 12.4255C17.5296 12.2881 17.8363 12.0667 18.0757 11.7811C18.3085 11.4929 18.4756 11.1574 18.5653 10.798C18.6684 10.391 18.7187 9.97234 18.7149 9.55245C18.7404 9.05653 18.702 8.5594 18.6007 8.07326C18.5046 7.71543 18.3246 7.38564 18.0757 7.1112C17.8804 6.8896 17.6413 6.71085 17.3735 6.5862C17.1435 6.47978 16.9016 6.40134 16.653 6.35258C16.5541 6.33624 16.4539 6.32877 16.3537 6.33026M16.1148 11.4976H15.9836V7.47608H16.0006C16.2712 7.44494 16.545 7.49377 16.7881 7.61651C16.9662 7.75869 17.1113 7.93781 17.2134 8.14151C17.3236 8.35589 17.3871 8.59118 17.3998 8.83189C17.4116 9.12064 17.3998 9.35689 17.3998 9.55245C17.4051 9.77773 17.3906 10.003 17.3565 10.2258C17.316 10.4544 17.2412 10.6757 17.1346 10.882C17.014 11.0738 16.851 11.2355 16.6582 11.3545C16.4963 11.4592 16.3045 11.5081 16.1122 11.4936M22.7758 6.3552H19.5864V12.6552H20.9356V10.1562H22.6419V8.98545H20.9356V7.52595H22.7731V6.3552" fill="white"/>
                         </svg> -->
-                        <div>
-                            <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview" style="max-width: 200px; max-height: 200px;" />
-                        </div>
-                        
-                    </span>
-                    <div class="ml-2">
-                        <p class="text-sm font-medium text-gray-800 dark:text-white">{{file.name}}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{ form.progress.loaded / 1024}} KB of {{ formatSize(file.size) }}
-                            <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
-                                <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
-                                    <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line>
-                                    <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="24"></line>
-                                    <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
-                                    </line>
-                                    <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="24"></line>
-                                    <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
-                                    </line>
-                                    <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="24"></line>
-                                    <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line>
-                                    <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
-                                    </line>
-                                </svg>
-                                <span class="text-xs font-medium text-gray-500">Loading...</span>
-                            </div>
-                        </p>
+                    <div>
+                      <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview"
+                        style="max-width: 200px; max-height: 200px;" />
                     </div>
-                    </div>
-                   <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
 
+                  </span>
+                  <div class="ml-2">
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
+                      form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
+                    <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
+                      <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
+                        <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24"></line>
+                        <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24"></line>
+                        <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24">
+                        </line>
+                        <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24"></line>
+                        <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24">
+                        </line>
+                        <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24"></line>
+                        <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24"></line>
+                        <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="24">
+                        </line>
+                      </svg>
+                      <span class="text-xs font-medium text-gray-500">Loading...</span>
+                    </div>
+                    </p>
+                  </div>
                 </div>
-                <!-- End Uploading File Content -->
+                <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]"
+                  viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z"
+                    stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
 
-                <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="w-full rounded-lg h-2">
+              </div>
+              <!-- End Uploading File Content -->
+
+              <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="w-full rounded-lg h-2">
                 {{ form.progress.percentage }}%
-                </progress>
-                <!-- End Progress Bar -->
+              </progress>
+              <!-- End Progress Bar -->
             </div>
 
 
@@ -282,11 +365,11 @@
             <div class=" p-7 border-dashed border-[3px] rounded-md cursor-pointer" @click="getFile">
               <Icon icon="lucide:plus" width="30" />
             </div>
-          </div> 
+          </div>
 
-         
+
         </div>
-        
+
         <!-- <div class=" mt-5">
                <p>Submission Type</p>
 
@@ -296,18 +379,18 @@
                </div>
         </div> -->
       </div>
-      
+
     </section>
 
     <div class="flex p-3 justify-end w-full">
-        <div class="flex gap-5 items-center px-5">
-          <!-- <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
+      <div class="flex gap-5 items-center px-5">
+        <!-- <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
           <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" /> -->
-          <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
-            Create Task
-          </button>
-        </div>
+        <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
+          Create Task
+        </button>
       </div>
+    </div>
   </Dialog>
 </template>
 
@@ -315,7 +398,7 @@
 import { defineEmits, defineProps, computed, ref } from "vue";
 import image from "../../../assets/images/members/1.svg";
 import { useToast } from "primevue/usetoast";
-import {useForm, usePage } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 
 const selectedType = ref(null);
 const select_Priority = ref(false);
@@ -326,12 +409,13 @@ const files = ref([])
 const page = usePage()
 const assigned_by_img = ref(null);
 
-const users = ref("");
+const users = ref([]);
 const Assigned_by = ref("");
 const buttonSwitch = ref(1);
 const clickedButton = ref("");
 const search = ref('')
 const user_ids = ref([]);
+const selectedUsers = ref([])
 
 const props = defineProps(["modelValue"]);
 
@@ -341,37 +425,39 @@ const form = useForm({
   due_date: '',
   priority: '',
   description: '',
-  users:''
+  users: []
 })
 
-const getFile = ()=>{
+const getFile = () => {
   let file = document.getElementById('fileUpload');
   file.click();
 }
 
 const formatSize = (size) => {
-      const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-      let i = 0;
-      while (size >= 1024) {
-        size /= 1024;
-        i++;
-      }
-      return size.toFixed(2) + ' ' + units[i];
-    }
-
-const handleFileUpload = (event) =>{
-    files.value = Array.from(event.target.files);
-    form.files = Array.from(event.target.files);
-    //uploadFiles()
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (size >= 1024) {
+    size /= 1024;
+    i++;
+  }
+  return size.toFixed(2) + ' ' + units[i];
 }
 
-const uploadFiles = () =>{
-        form.post('/upload-files',{onSuccess: ()=>{
-            //alert(' this was successfull')
-            form.files = null;
-            //files.value = []
-        }})
+const handleFileUpload = (event) => {
+  files.value = Array.from(event.target.files);
+  form.files = Array.from(event.target.files);
+  //uploadFiles()
+}
+
+const uploadFiles = () => {
+  form.post('/upload-files', {
+    onSuccess: () => {
+      //alert(' this was successfull')
+      form.files = null;
+      //files.value = []
     }
+  })
+}
 
 const activeButton = (event) => {
   if (event === "") {
@@ -386,41 +472,41 @@ const activeButton = (event) => {
   clickedButton.value = event;
 };
 
-const getFileURL = (file) =>{
-      if (file.type) {
-        if(file.type == 'image/jpeg' || file.type == 'image/jpeg' || file.type == 'image/png' || file.type == 'image/gif'){
-            return URL.createObjectURL(file); 
-        }
-       
-        if(file.type == 'application/pdf'){
-            return page.props.base+'/images/pdf.svg' 
-        }
-
-        if(file.type == 'application/msword' || file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'){
-            return page.props.base+'/images/word.svg'
-        }
-
-        if(file.type == 'application/vnd.ms-excel' || file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
-            return page.props.base+'/images/excel.svg'
-        }
-      } else {
-        // If type is not available, manually determine file type based on extension
-        const extension = file.name.split('.').pop();
-        const mimeTypes = {
-          'jpg': 'image/jpeg',
-          'jpeg': 'image/jpeg',
-          'png': 'image/png',
-          'gif': 'image/gif',
-          'pdf': 'application/pdf',
-          'doc': 'application/msword',
-          'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'xls': 'application/vnd.ms-excel',
-          'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        };
-
-        return URL.createObjectURL(new Blob([file], { type: mimeTypes[extension] || 'application/octet-stream' }));
-      }
+const getFileURL = (file) => {
+  if (file.type) {
+    if (file.type == 'image/jpeg' || file.type == 'image/jpeg' || file.type == 'image/png' || file.type == 'image/gif') {
+      return URL.createObjectURL(file);
     }
+
+    if (file.type == 'application/pdf') {
+      return page.props.base + '/images/pdf.svg'
+    }
+
+    if (file.type == 'application/msword' || file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      return page.props.base + '/images/word.svg'
+    }
+
+    if (file.type == 'application/vnd.ms-excel' || file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      return page.props.base + '/images/excel.svg'
+    }
+  } else {
+    // If type is not available, manually determine file type based on extension
+    const extension = file.name.split('.').pop();
+    const mimeTypes = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+
+    return URL.createObjectURL(new Blob([file], { type: mimeTypes[extension] || 'application/octet-stream' }));
+  }
+}
 
 
 const searchUsers = () => {
@@ -438,13 +524,23 @@ const filterRecipients = () => {
   searchUsers()
 };
 const updateUsers = (suggestion) => {
-  Assigned_by.value = suggestion.first_name+" "+suggestion.last_name;
+  Assigned_by.value = suggestion.first_name + " " + suggestion.last_name;
   assigned_by_img.value = suggestion.profile_image
   user_ids.value = suggestion.id
   toggleRecipient.value = false;
-  form.users = suggestion.id
- // Suggestions.value = [];
+  selectedUsers.value.push(suggestion)
+  form.users.push(suggestion.id)
+
+  let index = users.value.findIndex((item)=>item.id == suggestion.id)
+  users.value.splice(index,1);
+  // Suggestions.value = [];
 };
+
+const removeUser = (user)=>{
+  users.value.push(user)
+  let index = selectedUsers.value.findIndex((item)=>item.id == user.id)
+  selectedUsers.value.splice(index,1)
+}
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -490,11 +586,13 @@ const closeModal = () => {
 };
 
 const submit = () => {
-  form.post('/dashboard/create-task',{onSuccess: page=>{
-    form.reset()
-    emit("update:modelValue", false);
-  }})
- 
+  form.post('/dashboard/create-task', {
+    onSuccess: page => {
+      form.reset()
+      emit("update:modelValue", false);
+    }
+  })
+
 
   //   toast.add({
   //     severity: "success",

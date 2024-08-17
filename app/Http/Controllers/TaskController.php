@@ -97,7 +97,7 @@ class TaskController extends Controller
     }
 
     public function viewTask($id) {
-        $task = Task::with(['taskdocs', 'comments' => function($query) {
+        $task = Task::with(['taskdocs','user', 'comments' => function($query) {
             $query->with(['user' => function($query) {
                 $query->select('id', 'first_name', 'last_name','profile_image');
             }]);
