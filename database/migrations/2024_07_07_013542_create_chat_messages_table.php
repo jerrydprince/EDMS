@@ -13,15 +13,31 @@ return new class extends Migration
     {
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('chat_user_id')->nullable(); // Sender ID
-            $table->unsignedBigInteger('chat_group_id')->nullable(); // Group ID
+            $table->unsignedBigInteger('sender_id');
+            $table->unsignedBigInteger('recipient_id');
             $table->text('message');
 
-            $table->foreign('chat_user_id')->references('id')->on('chat_users')->onDelete('cascade');
-            $table->foreign('chat_group_id')->references('id')->on('chat_groups')->onDelete('cascade');
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('recipient_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
+    // {
+    //     Schema::create('chat_messages', function (Blueprint $table) {
+    //         $table->id();
+    //         $table->unsignedBigInteger('chat_user_id')->nullable(); // user ID
+    //         $table->unsignedBigInteger('chat_group_id')->nullable(); // Group ID
+    //         // $table->unsignedBigInteger('parent_id')->nullable();
+    //         $table->string('doc')->nullable();
+    //          $table->boolean('is_sent_by_admin')->default(false);
+    //         $table->text('message');
+
+    //         // $table->foreign('parent_id')->references('id')->on('chat_messages')->onDelete('cascade');
+    //         $table->foreign('chat_user_id')->references('id')->on('chat_users')->onDelete('cascade');
+    //         $table->foreign('chat_group_id')->references('id')->on('chat_groups')->onDelete('cascade');
+    //         $table->timestamps();
+    //     });
+    // }
 
     /**
      * Reverse the migrations.

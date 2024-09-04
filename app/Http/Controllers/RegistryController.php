@@ -126,38 +126,67 @@ class RegistryController extends Controller
             $newfile->sent_to_unit = null;
             $newfile->sent_to_division = null;
         }
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            $newfile->sent_to_agf = null;
+            $newfile->sent_to_unit = null;
+            $newfile->sent_to_division = null;
+            $newfile->sent_to_department=$request->branch['id'];
+
+            $newfile->sent_from_unit = null;
+            $newfile->sent_from_division = null;
+            $newfile->sent_from_department = null;
+            $newfile->sent_from_agf = true;
+
+        }
 
         if($request->branch_type === 'unit'){
             $newfile->sent_from_unit = $current_branch_id;
             $newfile->sent_from_division = null;
             $newfile->sent_from_department = null;
+            $newfile->sent_from_agf = null;
 
             $newfile->unit_id = $user->unit_id;
             $newfile->division_id = null;
             $newfile->department_id = null;
-
-            // if($user->unit_id == $file->unit_id){
-            //     $fm->file_movement_id = $this->getFileMovementUniqueId();
-            // }
         }
         if($request->branch_type === 'division'){
             $newfile->sent_from_division = $current_branch_id;
             $newfile->sent_from_unit = null;
             $newfile->sent_from_department = null;
+            $newfile->sent_from_agf = null;
 
             $newfile->unit_id = null;
             $newfile->division_id = $user->division_id;
             $newfile->department_id = null;
         }
-        if($request->branch_type === 'department'){
+        if($request->branch_type === 'department' && $request->branch['branch_type'] !='agf'){
             $newfile->sent_from_department = $current_branch_id;
             $newfile->sent_from_division = null;
             $newfile->sent_from_unit = null;
+            $newfile->sent_from_agf = null;
 
             $newfile->unit_id = null;
             $newfile->division_id = null;
+            $newfile->sent_from_agf = null;
             $newfile->department_id = $user->department_id;
         }
+
+        if($request->branch_type === 'department' && $request->branch['branch_type'] == 'agf'){
+            $newfile->sent_from_unit = null;
+            $newfile->sent_from_division = null;
+            $newfile->sent_from_department = auth()->user()->department_id;
+            $newfile->sent_from_agf = null;
+
+            $newfile->unit_id = null;
+            $newfile->division_id = null;
+            $newfile->department_id = null;
+
+            $newfile->sent_to_agf = true;
+            $newfile->sent_to_unit = null;
+            $newfile->sent_to_division = null;
+            $newfile->sent_to_department=null;
+        }
+
         $newfile->updated_at = \Carbon\Carbon::now();
         $newfile->status = 'pending';
         $newfile->save();
@@ -230,7 +259,7 @@ class RegistryController extends Controller
             'file_type' => 'required|string',
             'branch' => 'required|integer',
             // 'subject' => 'string|required',
-            'document_number' => 'string|required',
+            //'document_number' => 'string|required',
         ]);
 
         $branch_id = null;
@@ -241,6 +270,8 @@ class RegistryController extends Controller
             $branch_id = $user->division_id;
         }elseif($user->department_id){
             $branch_id = $user->department_id;
+        }elseif(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            $branch_id = $user->id;
         }
 
         DB::transaction(function () use($request, $branch_id, $user) {
@@ -260,6 +291,9 @@ class RegistryController extends Controller
             }
             if($logedInUserBranch == 'department'){
                 $newFile->department_id = $branch_id;
+            }
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                $newFile->is_agf = true;
             }
             $newFile->save();
     
@@ -294,6 +328,10 @@ class RegistryController extends Controller
                 $fm->department_id = $branch_id;
                 $fm->sent_from_department = $request->branch;
             }
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                $fm->sent_from_agf = true;
+            }
+
     
             $fm->save();
 
@@ -320,7 +358,12 @@ class RegistryController extends Controller
            Notification::sendNow($users, new RegistryNotification($data));
         }
 
-        broadcast(new RegistryEvent($request->branch, $request->branch_type));
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            $data = ['branch_type' => 'AGF', 'branch'=>'NIL'];
+            Notification::sendNow($users, new RegistryNotification($data));
+        }
+
+       // broadcast(new RegistryEvent($request->branch, $request->branch_type));
 
         return redirect()->back();
     }
@@ -504,6 +547,8 @@ class RegistryController extends Controller
                     'sent_from_unit' => $file->sent_from_unit,
                     'sent_from_division' => $file->sent_from_division,
                     'sent_from_department' => $file->sent_from_department,
+                    'sent_from_agf' => $file->sent_from_agf,
+                    'sent_to_agf' => $file->sent_to_agf,
                     "created_by" => $files->created_by,
                     "created_at" => $files->created_at,
                     "updated_at" => $files->updated_at,
@@ -587,6 +632,30 @@ class RegistryController extends Controller
         return $branch;
     }
 
+    public function getAGFFile(){
+        $user = auth()->user();
+        $branch = File::whereHas('fileMovement', function($query){
+            $query->where(function($query)  {
+                $query->where('sent_from_agf', true);
+                     // ->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) {
+                $query->where('sent_to_agf', true);
+            });
+        })
+        ->with(['fileMovement' => function($query) {
+            $query->where(function($query)  {
+                $query->where('sent_from_agf');
+                      //->where('sent_to_branch', 'unit');
+            })->orWhere(function($query) {
+                $query->where('sent_to_agf');
+            });
+        }])
+        ->latest()
+        ->get();
+
+        return $branch;
+    }
+
     public function getBranchFiles(Request $request)
     { 
         $user = auth()->user();
@@ -630,6 +699,13 @@ class RegistryController extends Controller
             $branch = $this->branchMap($branch);
             return response()->json($branch);
         }
+
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            $branch = $this->getAGFFile();
+            $branch = $this->branchMap($branch);
+            return response()->json($branch);
+        }
+
 
     }
 
@@ -683,18 +759,44 @@ class RegistryController extends Controller
             return response()->json($divisions);
         }
 
-        if($user->department_id){
+        if ($user->department_id) {
             $divisions = DB::table('divisions')
                 ->where('department_id', $user->department_id)
-                ->select('divisions.*') 
+                ->select('divisions.*')
                 ->get();
             
-                $divisions = $divisions->map(function($item) {
-                    $item->branch_type = 'division';  
-                    return $item;
-                });
-
+            // Map over the collection to add 'branch_type' to each item
+            $divisions = $divisions->map(function ($item) {
+                $item->branch_type = 'division';
+                return $item;
+            });
+        
+            // Add a new item to the collection
+            $divisions->push([
+                'branch_type' => 'agf',
+                'created_at' => null,
+                'description' => null,
+                'head' => null,
+                'id' => $divisions->count() + 1, // Increment the ID by 1
+                'title' => 'AGF',
+                'updated_at' => null,
+            ]);
+        
             return response()->json($divisions);
+        }        
+
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            $departments = DB::table('departments')
+            // ->where('department_id', $user->department_id)
+            // ->select('divisions.*') 
+            ->get();
+        
+            $departments = $departments->map(function($item) {
+                $item->branch_type = 'department';  
+                return $item;
+            });
+
+        return response()->json($departments);
         }
     }
 

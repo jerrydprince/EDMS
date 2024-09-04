@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use App\Models\Attendance;
 use Hash;
 
 class LoginController extends Controller
@@ -92,6 +93,12 @@ class LoginController extends Controller
                 }
             }
 
+            //take the attendance
+            Attendance::updateOrCreate(
+                ['user_id' => auth()->user()->id],
+                ['login_time' => Attendance::where('user_id', auth()->user()->id)->value('login_time') ?? now()]
+            );
+
             session(['branch'=>$this->userBranchDetails($request)]);
 
             $request->session()->regenerate();
@@ -126,12 +133,18 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        Attendance::where('user_id', auth()->user()->id)
+        ->whereNull('logout_time')  
+        ->orderBy('login_time', 'desc') 
+        ->first()  
+        ?->update(['logout_time' => now()]); 
+    
         Auth::logout();
     
         $request->session()->invalidate();
     
         $request->session()->regenerateToken();
-    
+
         return redirect('/login');
     }
 }

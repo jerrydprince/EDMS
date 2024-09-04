@@ -11,6 +11,8 @@ class TaskDoc extends Model
 
     protected $fillable = ['task_id', 'path'];
 
+    public $timestamps = true;
+
     /**
      * Get the task that owns the TaskDoc
      *

@@ -18,6 +18,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\RegistryController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\PMSController;
+use App\Http\Controllers\KRAController;
+use App\Http\Controllers\RatingsController;
+use App\Http\Controllers\CorrespondenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,7 +126,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/branch-setup',[AdminController::class, 'BranchSetup'])->middleware('permission:branch setup create');
                 Route::get('/metadata-setup', [AdminController::class, 'MetaDataSetup'])->middleware('permission:metadata setup create');
             
-                // Route::post('/create-department-division-unit', [AdminController::class, 'CreateDepartmentDivisionUnit'])->middleware('permission:branch setup create');
+                Route::post('/create-department-division-unit', [AdminController::class, 'CreateDepartmentDivisionUnit'])->middleware('permission:branch setup create');
                 Route::post('/delete-department', [AdminController::class, 'deleteDepartment'])->middleware('permission:branch setup delete');
                 //Route::post('/duplicate-department', [AdminController::class, 'duplicateDepartment']);
                 Route::get('/get-divisions', [AdminController::class, 'getDivision'])->middleware('permission:branch setup create');
@@ -211,24 +215,54 @@ Route::middleware('auth')->group(function () {
                 Route::post('/workflow', [WorkFlowController::class, 'createWorkFlow'])->middleware('permission:workflow create');
 
                 //task
-                Route::post('/create-task', [TaskController::class, 'createTask'])->middleware('permission:task create');
-                Route::get('/task-by-status', [TaskController::class, 'getTaskByStatus'])->middleware('permission:task view');
-                Route::get('/view-task/{id}', [TaskController::class, 'viewTask'])->middleware('permission:task view');
-                Route::get('/download-task-file/{file_name}', [TaskController::class, 'downloadFile'])->middleware('permission:task view');
-                Route::post('/task-comment', [TaskController::class, 'taskComment'])->middleware('permission:task view');
+                Route::post('/create-task', [TaskController::class, 'createTask'])->middleware('permission:workflow create');
+                Route::get('/task-by-status', [TaskController::class, 'getTaskByStatus'])->middleware('permission:workflow view');
+                Route::get('/view-task/{id}', [TaskController::class, 'viewTask'])->middleware('permission:workflow view');
+                Route::get('/download-task-file/{file_name}', [TaskController::class, 'downloadFile'])->middleware('permission:workflow view');
+                Route::post('/task-comment', [TaskController::class, 'taskComment'])->middleware('permission:workflow view');
+                Route::get('/remove-task-image', [TaskController::class, 'removeTaskImage'])->middleware('permission: workflow edit');
+                Route::post('/reassign-task', [TaskController::class, 'reAssignTask']);
+                Route::post('/task-submission', [TaskController::class, 'taskSubmission']);
+                Route::post('/mark-as-completed', [TaskController::class, 'markAsComplete']);
+                Route::post('/request-revision', [TaskController::class, 'requestRevision']);
+                Route::post('/re-open-task', [TaskController::class, 'reopenTask']);
+                Route::get('/get-department-kra', [TaskController::class, 'getDepartmentKRA']);
+
+                //Ratings
+                Route::post('/rate-user', [RatingsController::class, 'rateUser']);
 
                 //users
                 Route::get('/search-users', [UserController::class, 'searchUsers']);
 
                 //chat
-                Route::get('/chat', [ChatController::class, 'index'])->middleware('permission:chat view');
-                Route::post('/chat', [ChatController::class, 'chat'])->middleware('permission:chat create');
+                // Route::get('/chat', [ChatController::class, 'index'])->middleware('permission:chat view');
+                // Route::post('/chat', [ChatController::class, 'chat'])->middleware('permission:chat create');
+
+                Route::get('/chat', [ChatController::class, 'chat'])->name('chat');
+                Route::post('/chat', [ChatController::class, 'sendMessageToUser'])->name('chat');
+                Route::get('/chat/users', [ChatController::class, 'getAllUsers']);
+                Route::get('/chat/usersConversation/{userId}', [ChatController::class, 'getConversationWithUser']);
+                Route::post('/chat/group/send-message', [ChatController::class, 'sendMessageToGroup']);
+                Route::get('/chat/group/{groupId}/messages', [ChatController::class, 'getGroupMessages']);
+                Route::post('/chat/groups', [ChatController::class, 'createGroup']);
+                Route::post('/chat/users/messages/', [ChatController::class, 'sendMessageToUser']);
+                Route::get('/chat/groups/{category}', [ChatController::class, 'getGroupsByCategory']);
+                Route::get('/chat/categories', [ChatController::class, 'getAllCategories']);
+                Route::get('/chat/groups/{category}/{groupId}', [ChatController::class, 'getGroupWithConversations']);
+                Route::get('/chat/all-groups', [ChatController::class, 'getUserGroups']);
 
                 //Access level or Roles
                 Route::get('/access-level', [RoleController::class, 'getAccessLevel'])->middleware('permission:access config view');
                 Route::post('/change-accessLevel-status', [RoleController::class, 'toggleStatus'])->middleware('permission:access config update');
                 Route::post('/create-role', [RoleController::class, 'createRole'])->middleware('permission:access config update');
                 Route::get('/delete-level', [RoleController::class, 'deleteAccessLevel'])->middleware('permission:access config update');
+
+                //settings
+                Route::get('/settings', [DashboardController::class, 'settings']);
+                Route::get('/profile', [DashboardController::class, 'settings']);
+
+                //Correspondence
+                Route::get('/correspondence', [CorrespondenseController::class, 'correspondense']);
            // });
         
 
@@ -264,6 +298,25 @@ Route::middleware('auth')->group(function () {
 
                 //Admin Registry
                 Route::get('/admin-registry-branch', [RegistryController::class, 'getAdminRegistryBranch']);
+
+                //PMS
+                Route::get('/pms', [PMSController::class, 'index']);
+                Route::get('/pms/overview', [PMSController::class, 'overview']);
+                Route::get('/pms/settings', [PMSController::class, 'settings']);
+                Route::get('/get-department-users', [PMSController::class, 'getDepartmentUsers']);
+                Route::get('/pms-user-profile/{id}', [PMSController::class, 'viewPMSUserProfile']);
+                Route::get('/pms-attendance/{id}', [PMSController::class, 'getAttendance']);
+
+                //KRA
+                Route::post('/create-kra', [KRAController::class, 'createKRA']);
+                Route::get('/get-kra', [KRAController::class, 'getKRA']);
+                Route::post('/add-kpi', [KRAController::class, 'addKPI']);
+                Route::get('/delete-kpi', [KRAController::class, 'deleteKPI']);
+                Route::get('/delete-kra', [KRAController::class, 'deleteKRA']);
+
+                //KPI
+                Route::post('/add-certificate', [PMSController::class, 'saveCertificate']);
+                Route::get('/delete-certificate', [PMSController::class, 'deleteCertificate']);
            
         });
 

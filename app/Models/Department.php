@@ -84,5 +84,15 @@ class Department extends Model
     {
         return $this->hasMany(File::class, 'sent_to_department_id');
     }
+
+    /**
+     * The task that belong to the Department
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function task()
+    {
+        return $this->belongsToMany(Task::class, 'department_tasks');
+    }
     
 }

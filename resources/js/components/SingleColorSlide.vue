@@ -19,11 +19,11 @@
       <div
             class="flex items-center absolute mt-2 text-gray-400 w-full justify-between"
           >
-            <div class="flex items-center flex-col">
+            <div class="flex items-center flex-col" v-for="m in max">
               |
-              <p>1</p>
+              <p>{{ m }}</p>
             </div>
-            <div class="flex items-center flex-col">
+            <!-- <div class="flex items-center flex-col">
               |
               <p>2</p>
             </div>
@@ -37,14 +37,15 @@
             </div>
             <div class="flex items-center flex-col">
               |
-              <p>5</p>
-            </div>
+              <p>5</p> 
+            </div>-->
           </div>
     </div>
   </template>
   
   <script setup>
-  import { ref, computed, watch } from "vue";
+  import { ref, computed, watch, defineProps } from "vue";
+
   const props = defineProps({
     min: { type: Number, default: 1 },
     max: { type: Number, default: 5 },

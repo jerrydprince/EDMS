@@ -8,20 +8,28 @@
       </div>
       </Link>
       <div class="flex items-center gap-10 font-semibold text-gray-600">
-        <button class="bg-white border rounded-md px-4 py-2"
-          v-if="data.status === 'In Progress' || data.status === 'Under Review'" @click="Re_Assign_Modal = true">
+        <button class="bg-white border rounded-md px-4 py-2" @click="Re_Assign_Modal = true"
+        v-if="props.is_assigned == 1">
           Reassign Task
         </button>
+
         <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-          v-if="data.status === 'Under Review'" @click="completeModal = true">
+          v-if="(props.task.status !=='under review' && props.task.status != 'completed') && props.is_assigned == 1" @click="completeModal = true">
           <Icon icon="mdi:tick" width="25" />
-          <p>Mark as complete</p>
+          <p>Submit task</p>
+        </button>
+
+        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
+          v-if="props.task.status == 'completed' && props.is_assigned == 2" @click="ratingsModal">
+          <Icon icon="mdi:tick" width="25" />
+          <p>Ratings</p>
         </button>
 
 
 
-        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-          v-if="data.status === 'In Progress'" @click="editModal = true">
+        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2" 
+        v-if="props.status != 'completed' && props.is_assigned == 2"
+          @click="editModal = true">
           <Icon icon="icon-park-outline:edit" width="25" />
           <p>Edit Task</p>
         </button>
@@ -29,7 +37,7 @@
 
 
         <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2" @click="reOpenModal = true"
-          v-if="data.status === 'Completed'">
+          v-if="props.task.status === 'completed'">
           <Icon icon="teenyicons:unlock-outline" width="25" />
           <p>Reopen Task</p>
         </button>
@@ -86,11 +94,12 @@
                   <Icon icon="lucide:users" />
                   <p>Assign To</p>
                 </div>
-                <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300">
-
-                  <img :src="data.img" alt="" class="w-7" />
-                  <p class="text-base w-fit">{{ data.name }}</p>
-
+                <div v-if="props.task.user && props.task.user.length > 0">
+                  <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] my-1 p-2 py-1 rounded-3xl border-gray-300"
+                    v-for="user in props.task.user">
+                    <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-7 rounded-full" />
+                    <p class="text-base w-fit">{{ user.first_name + " " + user.last_name }}</p>
+                  </div>
                 </div>
               </div>
 
@@ -125,15 +134,15 @@
                 <div class="flex items-center gap-3">
                   <div>
                     <p class="rounded-2xl font-semibold bg-slate-50 py-1 px-4 uppercase text-xs" :style="{
-            color:
-              props.task.priority === '1'
-                ? '#FFBC53'
-                : props.task.priority === '3'
-                  ? '#FF3737'
-                  : props.task.priority === '2'
-                    ? '#F67E5A'
-                    : 'black',
-          }">{{ props.task.priority == 1 ? 'Low' : props.task.priority == 2 ? 'Medium' : 'High' }}</p>
+          color:
+            props.task.priority === '1'
+              ? '#FFBC53'
+              : props.task.priority === '3'
+                ? '#FF3737'
+                : props.task.priority === '2'
+                  ? '#F67E5A'
+                  : 'black',
+        }">{{ props.task.priority == 1 ? 'Low' : props.task.priority == 2 ? 'Medium' : 'High' }}</p>
                   </div>
                 </div>
               </div>
@@ -150,17 +159,17 @@
                   <div class="bg-[#FEFBF6] flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer">
 
                     <p class=" uppercase text-xs w-fit font-semibold" :style="{
-            color:
-              props.task.status === 'Completed'
-                ? '#0D6E1A'
-                : props.task.status === 'Under Review'
-                  ? '#FB6514'
-                  : props.task.status === 'In Progress'
-                    ? '#F79009'
-                    : props.task.status === 'Uncompleted'
-                      ? '#F04438'
-                      : '#F04438',
-          }">
+          color:
+            props.task.status === 'Completed'
+              ? '#0D6E1A'
+              : props.task.status === 'Under Review'
+                ? '#FB6514'
+                : props.task.status === 'In Progress'
+                  ? '#F79009'
+                  : props.task.status === 'Uncompleted'
+                    ? '#F04438'
+                    : '#F04438',
+        }">
                       {{ props.task.status }}
                     </p>
 
@@ -218,7 +227,8 @@
               <p class="text-xl">Comments</p>
               <p
                 class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3">
-                {{ (props.task && props.task.comments && props.task.comments.length > 0) ? props.task.comments.length : 0
+                {{ (props.task && props.task.comments && props.task.comments.length > 0) ? props.task.comments.length :
+          0
                 }}
               </p>
             </div>
@@ -234,10 +244,10 @@
             </div>
             <Icon icon="flowbite:angle-right-outline" width="25" />
           </div>
-      
+
           <Divider class="mt-0" />
           <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-            @click="toggleSidemenu('submission')">
+            @click="toggleSidemenu('submission')" v-if="task.status == 'under review' || task.status == 'completed'">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:activity" width="25" />
               <p class="text-xl">Task Submissions</p>
@@ -300,46 +310,46 @@
         </div>
 
         <!-- //////   Activities   ///// -->
-      <div v-if="activities && sidemenu">
-        <div class="p-8">
-          <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-            @click="toggleSidemenu('back')">
-            <Icon icon="flowbite:angle-left-outline" />
-            <p>Back</p>
+        <div v-if="activities && sidemenu">
+          <div class="p-8">
+            <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+              @click="toggleSidemenu('back')">
+              <Icon icon="flowbite:angle-left-outline" />
+              <p>Back</p>
+            </div>
           </div>
-        </div>
-        <Divider class="mt-0" />
-        <div class="">
+          <Divider class="mt-0" />
+          <div class="">
 
-          <h1 class="px-5 font-semibold text-gray-800 text-3xl">
-            Task Activity
-          </h1>
+            <h1 class="px-5 font-semibold text-gray-800 text-3xl">
+              Task Activity
+            </h1>
 
-          <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5">
-            <div v-for="(step, index) in TaskAction" :key="index">
-              <div class="flex items-start gap-5">
-                <div class="flex flex-col items-center">
+            <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5">
+              <div v-for="(step, index) in TaskAction" :key="index">
+                <div class="flex items-start gap-5">
+                  <div class="flex flex-col items-center">
 
-                  <Icon icon="akar-icons:circle-check-fill" width="25" class=" text-primary" />
+                    <Icon icon="akar-icons:circle-check-fill" width="25" class=" text-primary" />
 
-                  <div class="w-[2px] my-1 h-10 bg-[#EBF3FE]" v-if="index < 4"></div>
-                </div>
-                <div class="text-[#475467]">
-                  <h1 class="font-medium text-lg">{{ step.progress }}:</h1>
-                  <div class=" flex items-center  text-sm gap-1">
-                    <p class="opacity-70">{{ step.to }}</p>
-                    <p class=" opacity-100">•</p>
-                    <p class="opacity-70">{{ step.date }}</p>
-                    <p class=" opacity-100">•</p>
-                    <p class="opacity-70">{{ step.time }}</p>
+                    <div class="w-[2px] my-1 h-10 bg-[#EBF3FE]" v-if="index < 4"></div>
+                  </div>
+                  <div class="text-[#475467]">
+                    <h1 class="font-medium text-lg">{{ step.progress }}:</h1>
+                    <div class=" flex items-center  text-sm gap-1">
+                      <p class="opacity-70">{{ step.to }}</p>
+                      <p class=" opacity-100">•</p>
+                      <p class="opacity-70">{{ step.date }}</p>
+                      <p class=" opacity-100">•</p>
+                      <p class="opacity-70">{{ step.time }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
-      </div>
 
         <!-- //////   submissions   ///// -->
         <div v-if="submission && sidemenu">
@@ -357,48 +367,54 @@
               Task Submissions
             </h1>
 
-            <div class="px-5 mt-3">
-              <div class="bg-slate-50 p-3 rounded-md">
-                <div v-for="(document, index) in documents" :key="index"
-                  class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5">
-                  <div class="flex items-center gap-3">
-                    <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
-                      <Icon :icon="document.icon" width="25" />
-                    </div>
-                    <div>
-                      <h1>{{ document.name }}</h1>
-                      <p class="text-sm text-gray-400">{{ document.size }}</p>
+            <div v-if="task.task_submission && task.task_submission.length > 0">
+              <div v-for="(document, index) in task.task_submission" :key="index">
+                <div class="px-5 mt-3" v-if="document.task_submission_files">
+                  <div class="bg-slate-50 p-3 rounded-md">
+                    <div
+                      class="border bg-white border-gray-300 hover:border-primary rounded-md p-4 flex items-center justify-between mb-5"
+                      v-for="doc in document.task_submission_files">
+                      <div class="flex items-center gap-3">
+                        <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
+                          <img :src="getFileExtension(doc)" width="25" alt="">
+                          <!-- <Icon :icon="document.icon" width="25" /> -->
+                        </div>
+                        <div>
+                          <h1>{{ doc.name }}</h1>
+                          <p class="text-sm text-gray-400">{{ doc.size }}</p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-3">
+                        <Icon icon="ph:eye-light" width="25" class="cursor-pointer" @click="setFilePath(doc)" />
+                        <Icon icon="material-symbols-light:download" width="25" class="cursor-pointer" @click="downloadFile(doc.path)" />
+                      </div>
                     </div>
                   </div>
 
+                </div>
+
+                <div class="mt-7 px-5">
                   <div class="flex items-center gap-3">
-                    <Icon icon="ph:eye-light" width="25" />
-                    <Icon icon="material-symbols-light:download" width="25" />
+                    <Icon icon="lucide:file-text" />
+                    <p>Task Description</p>
                   </div>
+
+                  <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
+                    {{ document.description }}
+                  </p>
+                </div>
+
+                <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end" v-if="is_assigned == 2">
+                  <button v-if="props.task.status != 'completed'" class="text-red-600" @click="RequestRevisionModal = true">
+                    Request Revision
+                  </button>
+
+                  <Link v-if="props.task.status != 'completed'" href="/dashboard/mark-as-completed" method="post" :data="{id: props.task.id}" class="font-semibold text-gray-800 px-3 py-2 border rounded-md">
+                    Mark as complete
+                  </Link>
                 </div>
               </div>
-
-            </div>
-
-            <div class="mt-7 px-5">
-              <div class="flex items-center gap-3">
-                <Icon icon="lucide:file-text" />
-                <p>Task Description</p>
-              </div>
-
-              <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
-                {{ data.desc }}
-              </p>
-            </div>
-
-            <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end">
-              <button class="text-red-600" @click="RequestRevisionModal = true">
-                Request Revision
-              </button>
-
-              <button class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="completeModal = true">
-                Mark as complete
-              </button>
             </div>
           </div>
         </div>
@@ -406,14 +422,15 @@
       </div>
     </section>
   </main>
-  <MarkComplete v-model="completeModal" />
-  <ReAssign v-model="Re_Assign_Modal" />
-  <RequestRevision v-model="RequestRevisionModal" />
+  <MarkComplete v-model="completeModal" :task="props.task" />
+  <ReAssign v-model="Re_Assign_Modal" :users="props.task?.user" @refresh="refreshHandler" :task_id="props.task?.id" />
+  <RequestRevision v-model="RequestRevisionModal" :task="props.task" />
   <DeleteRevision v-model="deleteRevisionModal" />
+  <Ratings v-model="rating" :task="props.task" />
 
-  <EditTask v-model="editModal" :task="props.task" />
+  <EditTask v-model="editModal" :task="props.task" @refresh="refreshHandler" />
 
-  <Reopen v-model="reOpenModal" />
+  <Reopen v-model="reOpenModal" :task="props.task"/>
   <Sidebar v-model:visible="subNavVisible" header=" Left Sidebar" position="right"
     :style="{ width: '32rem', padding: '10px 0px' }">
     <div class="bg-white hide_scroll sticky top-0 h-screen pr-5 overflow-y-scroll">
@@ -430,9 +447,12 @@
                 <Icon icon="lucide:users" />
                 <p>Assign To</p>
               </div>
-              <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300">
-                <img src="/assets/images/user.png" alt="" class="w-7" />
-                <p class="text-base w-fit">Dave Miye</p>
+              <div v-if="props.task.user && props.task.user.length > 0">
+                <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border-gray-300"
+                  v-for="user in props.task.user">
+                  <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-7" />
+                  <p class="text-base w-fit">{{ user.first_name + " " + user.last_name }}</p>
+                </div>
               </div>
             </div>
 
@@ -504,8 +524,8 @@
                   </div>
 
                   <div class="flex items-center gap-3">
-                    <Icon icon="ph:eye-light" width="25" />
-                    <Icon icon="material-symbols-light:download" width="25" />
+                    <Icon icon="ph:eye-light" width="25" @click="setFilePath(document)" />
+                    <Icon icon="material-symbols-light:download" @click="downloadFile(document.path)" width="25" />
                   </div>
                 </div>
               </div>
@@ -593,7 +613,7 @@
       </div>
 
       <!-- //////   Activities   ///// -->
-      <div v-if="activities && sidemenu">
+      <!-- <div v-if="activities && sidemenu">
         <div class="p-8">
           <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
             @click="toggleSidemenu('back')">
@@ -632,7 +652,7 @@
 
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- //////   submissions   ///// -->
       <div v-if="submission && sidemenu">
@@ -664,8 +684,8 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                  <Icon icon="ph:eye-light" width="25" />
-                  <Icon icon="material-symbols-light:download" width="25" />
+                  <Icon icon="ph:eye-light" width="25" class="cursor-pointer"  @click="setFilePath(document)" />
+                  <Icon icon="material-symbols-light:download" class="cursor-pointer" width="25" @click="downloadFile(document.path)" />
                 </div>
               </div>
             </div>
@@ -699,7 +719,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, computed } from "vue";
 //import { useRouter } from "vue-router";
 import MarkComplete from "../../components/Modals/Workflows/MarkComplete.vue";
 import ReAssign from "../../components/Modals/Workflows/ReAssign.vue";
@@ -710,6 +730,7 @@ import Reopen from "../../components/Modals/Workflows/Reopen.vue";
 import jenna from "../../assets/images/jenna.svg";
 import user from "../../assets/images/user.svg";
 import { usePage, Link, router } from "@inertiajs/vue3";
+import Ratings from "../../components/Modals/Workflows/Ratings.vue"
 import debouce from "lodash.debounce";
 
 import moment from 'moment';
@@ -719,7 +740,7 @@ const subNavVisible = ref(false);
 const reOpenModal = ref(false);
 const sidemenu = ref(false);
 const submission = ref(false);
-const props = defineProps(['task'])
+const props = defineProps(['task', 'is_assigned', 'branchType'])
 const page = usePage()
 const user_comment = ref('')
 const activities = ref(false)
@@ -730,7 +751,16 @@ const completeModal = ref(false);
 const deleteRevisionModal = ref(false);
 const Re_Assign_Modal = ref(false);
 const file_path = ref([]);
+const rating = ref(false)
 
+const ratingsModal = () => {
+  rating.value = true;
+}
+
+
+const refreshHandler = () => {
+  router.reload({ only: ['task'] })
+}
 
 const makeComment = () => {
   if (user_comment.value == '') {
@@ -744,6 +774,7 @@ const makeComment = () => {
     }
   })
 }
+
 
 const goBack = () => {
   // router.go(-1);
@@ -771,25 +802,7 @@ const getUserProfileImage = (comment) => {
 }
 
 const data = ref({
-  date: '2023-05-15',
-  name: 'Dave Miye',
-  img: jenna,
-  status: "In Progress",
-  desc: 'Review and archive assigned documents promptly to ensure seamless workflow. Documents awaiting archive.',
-  documents: [
-    {
-      name: "Tech design requirements.pdf",
-      size: "200 KB ",
-      icon: "vscode-icons:file-type-word",
-    },
-    {
-      name: "Tech design requirements.pdf",
-      size: "200 KB ",
-      icon: "vscode-icons:file-type-excel2",
-    },
-  ],
-  document_type: ["Invoice", "Reciept"],
-  severity: "Medium",
+
 });
 
 const setFilePath = (path) => {
@@ -875,6 +888,7 @@ const toggleSidemenu = (action) => {
     comment.value = false;
     sidemenu.value = false;
     submission.value = false;
+    activities.value = false
   }
 };
 

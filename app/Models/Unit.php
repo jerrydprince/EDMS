@@ -68,4 +68,14 @@ class Unit extends Model
     {
         return $this->hasMany(Archive::class);
     }
+
+    /**
+     * The task that belong to the Unit
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function task()
+    {
+        return $this->belongsToMany(Task::class, 'unit_tasks');
+    }
 }

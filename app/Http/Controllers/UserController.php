@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\Division;
 use App\Models\Unit;
 use Illuminate\Validation\Rule;
+use App\Notifications\Registration;
 
 class UserController extends Controller
 {
@@ -18,10 +19,54 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function getBranchType(){
+        if(auth()->user()->unit_id){
+            return 'unit';
+        }
+        if(auth()->user()->division_id){
+            return 'division';
+        }
+        if(auth()->user()->department_id){
+            return 'department';
+        }
+    }
+
+    public function isRole($role){
+        $roles = auth()->user()->getRoleNames();
+        $is_role = $roles->contains(function($item)use ($role){
+            //dd($item);
+            return $item == $role;
+        });
+        if($is_role){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function searchUsers(Request $request){
-        $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
-        ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')->get();
-        return response()->json($users);
+        //$branchType = $this->getBranchType();
+        if($this->isRole('unit heads')){
+            $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
+            ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')->get();
+            return response()->json(['data' => $users, 'type'=>'unit']);
+        }
+
+        if($this->isRole('division heads')){
+            $divisions = Unit::where('division_id', auth()->user()->division_id)->get();
+            return response()->json(['data'=>$divisions, 'type'=>'division']);
+        }
+
+        if($this->isRole('directors')){
+            $departments = Division::where('department_id', auth()->user()->department_id)->get();
+            return response()->json(['data'=>$departments, 'type'=>'department']);
+        }
+
+        if($this->isRole('super users')){
+            $departments = Department::where('title', 'LIKE', '%'.$request->search.'%')->get();
+            return response()->json(['data'=>$departments, 'type'=>'department']);
+        }
+        
     }
 
     public function updateProfileImage(Request $request){
@@ -49,10 +94,11 @@ class UserController extends Controller
     }
 
     public function manageUsers(){
-        $notifications = DB::table('notifications')->where('read_at',null)->get();
-        $roles = Role::with(['users'=>function($query){
-             $query->limit(4);
-        }])->get();
+        $notifications = DB::table('notifications')->where('type', Registration::class)->where('read_at',null)->get();
+        $roles = Role::with(['users'])->get()->map(function($item){
+           $item->users = $item->users->take(4);
+           return $item;
+        });
 
         return inertia('users/ManageUsers', compact('notifications','roles'));
     }
@@ -106,7 +152,7 @@ class UserController extends Controller
                   'email',
                   Rule::unique('users')->ignore($request->id)
               ],
-              'department' => 'required',
+              //'department' => 'required',
               'phone' => [
                   'sometimes',
                   Rule::unique('users')->ignore($request->id)
@@ -119,7 +165,7 @@ class UserController extends Controller
               'gender' => 'required',
               'grade_level' => 'required',
               'email' => 'required|email|unique:users',
-              'department' => 'required',
+              //'department' => 'required',
               'phone' => 'sometimes|unique:users'
           ]);
         }

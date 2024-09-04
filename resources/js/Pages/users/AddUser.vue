@@ -29,11 +29,11 @@
     <section class=" px-7 ">
       <div class=" flex items-center justify-between">
         <p class="  text-xl font-medium">Choose Access Level</p>
-        <button
+        <!-- <button
           class="flex gap-2 items-center text-[#344054] border border-solid font-semibold border-gray-300  rounded-lg py-2 px-4">
           <Icon icon="mynaui:edit" width="20" />
           <p>Edit Acces Level</p>
-        </button>
+        </button> -->
       </div>
       <div class="  grid grid-cols-4 gap-3 mt-5">
         <div v-for=" (item, index) in props.roles" :key="index">
@@ -147,7 +147,7 @@
 
                   <h1 class="  mt-2"><span class=" text-[#2F68C5] font-medium">Click to upload </span> or drag and drop
                   </h1>
-                  <p>SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                  <p>SVG, PNG, JPG or GIF </p>
                 </div>
                 <input type="file" class="opacity-0 absolute w-full h-full cursor-pointer" @change="handleFileChange" />
               </div>
@@ -341,33 +341,43 @@ const checkPhoneExist = () => {
 }
 
 
-const isFormReady = computed(() => {
-  if (form.first_name == '') {
-    return false
-  } else
-    if (form.last_name == '') {
-      return false
-    } else
-      if (form.email == '') {
-        return false
-      }
-      else
-        if (form.department == '') {
-          return false
-        } else
-          if (form.grade_level == '') {
-            return false
-          } else
-            if (form.gender == '') {
-              return false
-            } else
-              if (form.role == '') {
-                return false
-              } else {
-                return true;
-              }
+// const isFormReady = computed(() => {
+//   if (form.first_name == '') {
+//     return false
+//   } else
+//     if (form.last_name == '') {
+//       return false
+//     } else
+//       if (form.email == '') {
+//         return false
+//       }
+//       else
+//           if (form.grade_level == '') {
+//             return false
+//           } else
+//             if (form.gender == '') {
+//               return false
+//             } else
+//               if (form.role == '') {
+//                 return false
+//               } else {
+//                 return true;
+//               }
 
-})
+// })
+const isFormReady = computed(() => {
+  const isFieldFilled = (field) => field !== undefined && field !== '';
+  
+  return isFieldFilled(form.first_name) &&
+         isFieldFilled(form.last_name) &&
+         isFieldFilled(form.email) &&
+         isFieldFilled(form.grade_level) &&
+         isFieldFilled(form.phone) &&
+         isFieldFilled(form.gender) &&
+         isFieldFilled(form.role);
+});
+
+
 
 const getDivision = computed(() => {
   return department.value[0]?.division

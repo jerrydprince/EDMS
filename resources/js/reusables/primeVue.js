@@ -26,6 +26,8 @@ import Checkbox from "primevue/checkbox";
 import Sidebar from "primevue/sidebar";
 import TieredMenu from "primevue/tieredmenu";
 import Editor from 'primevue/editor'
+import Chart from 'primevue/chart';
+import VueApexCharts from "vue3-apexcharts";
 
 
 export function registerGlobalComponents(app) {
@@ -54,4 +56,6 @@ export function registerGlobalComponents(app) {
   app.component('TieredMenu', TieredMenu);
   app.component('Editor',Editor);
   app.component('Calendar', Calendar);
+  app.component('Chart',Chart);
+	app.component('Apexcharts',VueApexCharts)
 }

@@ -132,7 +132,7 @@ const validatePassword = () => {
                 clearInterval(countdownTimer);
                 window.location.href = '/login';
             } 
-            }, 1000);
+            }, 400);
         }})
     }
 

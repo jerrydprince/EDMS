@@ -8,6 +8,11 @@
         </div>
 
         <div class="flex items-center gap-4 mt-5 md:mt-0">
+            <button v-if="isPermissions('agf registry view') || user_roles.includes('super admin')" @click="openScan = true"
+                class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
+                <Icon icon="tabler:line-scan" />
+                <p>Scan Files</p>
+            </button>
             <button @click="TrackPackageModel = true"
                 class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
                 <p>Track File</p>
@@ -66,7 +71,7 @@
                 'bg-red-400/10': slotProps.data.status === 'rejected'
             }" :style="{
                 color:
-                    slotProps.data.status === 'delivered'||slotProps.data.status === 'forwarded'
+                    slotProps.data.status === 'delivered' || slotProps.data.status === 'forwarded'
                         ? '#12B76A'
                         : slotProps.data.status === 'pending'
                             ? '#DC6803'
@@ -74,7 +79,7 @@
                                 ? '#F04438'
                                 : 'black',
                 borderColor:
-                    slotProps.data.status === 'delivered'||slotProps.data.status === 'forwarded'
+                    slotProps.data.status === 'delivered' || slotProps.data.status === 'forwarded'
                         ? '#12B76A'
                         : slotProps.data.status === 'pending'
                             ? '#DC6803'
@@ -98,7 +103,7 @@
                 <template #expansion="slotProps">
                     <div class=" p-5">
                         <div v-if="checkData" class="flex gap-5 ">
-                            <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' && slotProps.data.is_forwarded==0"
+                            <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' && slotProps.data.is_forwarded == 0"
                                 class="flex items-center gap-5">
                                 <button @click="rejectFileHandler(slotProps.data.id)"
                                     class="flex gap-2 items-center font-semibold text-red-700 border-red-300 border-solid border rounded-lg py-2 px-3">
@@ -119,9 +124,12 @@
                                     <div class="p-3 rounded-full border w-fit">
                                         <!-- <img :src="slotProps.data.icon" alt=""
                                             v-if="getDestinationBranch(slotProps.data)"> -->
-                                            <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'unit'">
-                                            <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'division'">
-                                            <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'department'">
+                                        <img :src="page.props.base + '/images/unit.svg'" alt="" width="20"
+                                            v-if="getSourceBranchType(slotProps.data) == 'unit'">
+                                        <img :src="page.props.base + '/images/division.svg'" alt="" width="20"
+                                            v-if="getSourceBranchType(slotProps.data) == 'division'">
+                                        <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
+                                            v-if="getSourceBranchType(slotProps.data) == 'department'">
                                         <!-- <Icon icon="fa-solid:question" v-else /> -->
                                     </div>
                                     <div>
@@ -164,8 +172,9 @@
                         </div> -->
                         <div v-if="slotProps.data.description">
                             <h1 class=" mt-2">Description</h1>
-                            <p class=" mt-2 p-2 bg-gray-50 border border-gray-300 rounded-md">{{ slotProps.data.description
-                                }}</p>
+                            <p class=" mt-2 p-2 bg-gray-50 border border-gray-300 rounded-md">{{
+                slotProps.data.description
+            }}</p>
                         </div>
                     </div>
                 </template>
@@ -257,9 +266,12 @@
                                         <!-- <img :src="slotProps.data.icon" alt=""
                                             v-if="getDestinationBranch(slotProps.data)"> -->
 
-                                            <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'unit'">
-                                            <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'division'">
-                                            <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'department'">
+                                        <img :src="page.props.base + '/images/unit.svg'" alt="" width="20"
+                                            v-if="getDestinationBranchType(slotProps.data) == 'unit'">
+                                        <img :src="page.props.base + '/images/division.svg'" alt="" width="20"
+                                            v-if="getDestinationBranchType(slotProps.data) == 'division'">
+                                        <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
+                                            v-if="getDestinationBranchType(slotProps.data) == 'department'">
                                         <!-- <Icon icon="fa-solid:question" v-else /> -->
                                     </div>
                                     <div>
@@ -312,9 +324,13 @@
         </div>
     </div>
     <RejectFileModal v-model="rejectFile" :data="fileId" @refresh="refreshPage" />
-    <AddDestinationModal v-model="addDestination" :fileId="destFileId" @refresh="refreshPage" :branches="branches" :branch_type="getUserBranchType()"/>
-    <CreatEntryModal v-model="createEntry" @refresh="refreshPage"  :branches="branches"/>
-    <TrackPackage v-model="TrackPackageModel" :department="props.department" :division="props.division" :unit="props.unit" />
+    <AddDestinationModal v-model="addDestination" :fileId="destFileId" @refresh="refreshPage" :branches="branches"
+        :branch_type="getUserBranchType()" />
+    <CreatEntryModal v-model="createEntry" @refresh="refreshPage" :branches="branches" />
+    <TrackPackage v-model="TrackPackageModel" :department="props.department" :division="props.division"
+        :unit="props.unit" />
+    <ScannedFiles v-model="scanModal" />
+    <ScanFile v-model="openScan" />
 </template>
 <script setup>
 import { ref, onMounted, computed, defineProps, watchEffect, watch } from "vue";
@@ -324,6 +340,8 @@ import AddDestinationModal from '../../components/Modals/RecordManager/AdddDesti
 import TrackPackage from "../../components/Modals/Registry/TrackPackage.vue";
 import CreatEntryModal from '../../components/Modals/RecordManager/CreateEntry.vue'
 import { router, usePage } from "@inertiajs/vue3";
+import ScannedFiles from '../../components/Modals/RecordManager/ScannedFiles.vue';
+import ScanFile from '../../components/Modals/RecordManager/ScanFile.vue';
 
 const TrackPackageModel = ref(false);
 const addDestination = ref(false);
@@ -336,6 +354,10 @@ const fileId = ref('')
 const destFileId = ref(null)
 const department = ref({})
 const departments = ref([])
+const openScan = ref(false)
+const permissions = computed(()=>page.props.permissions)
+const scanModal = ref(false)
+const user_roles = computed(() => page.props.user_roles)
 const formData = ref({
     status: "delivered",
 });
@@ -387,6 +409,10 @@ const outgoing = computed(() => {
         let filtered = files.value.filter((item) => item.sent_from_department === user_branch.value.department_id)
         return (filtered && filtered.length > 0) ? filtered : []
     }
+    if (isPermissions('agf registry view')) {
+        let filtered = files.value.filter((item) => item.sent_from_agf == true)
+        return (filtered && filtered.length > 0) ? filtered : []
+    }
 })
 
 const incoming = computed(() => {
@@ -402,7 +428,24 @@ const incoming = computed(() => {
         let filtered = files.value.filter((item) => item.sent_to_department == user_branch.value.department_id)
         return (filtered && filtered.length > 0) ? filtered : []
     }
+
+    if (isPermissions('agf registry view')) {
+        let filtered = files.value.filter((item) => item.sent_to_agf == 1)
+        return (filtered && filtered.length > 0) ? filtered : []
+    }
 })
+
+const isPermissions = (perm) =>{
+    let found = permissions.value.find((item)=>{
+       return  item.name == perm
+    })
+
+    if(found){
+        return true;
+    }else{
+        return false
+    }
+}
 
 const formatDate = (inputDate) => {
     var date = new Date(inputDate);
@@ -421,10 +464,10 @@ const formatDate = (inputDate) => {
 
 
 const getBranchFiles = () => {
-    axios.get(`/dashboard/registry/branchFiles`).then((response)=>{
+    axios.get(`/dashboard/registry/branchFiles`).then((response) => {
         files.value = response.data;
     })
-   
+
 };
 // const destination = async (id) =>{
 //     destFileId.value = id;
@@ -454,105 +497,105 @@ onMounted(() => {
     getBranchFiles()
 })
 
-const getDestinationBranch = (data)=>{
-    
-    if(data.sent_to_unit){
-        let filtered = props.unit.filter((item)=>{
+const getDestinationBranch = (data) => {
+
+    if (data.sent_to_unit) {
+        let filtered = props.unit.filter((item) => {
             return item.id == data.sent_to_unit
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 
-    if(data.sent_to_division){
-        let filtered = props.division.filter((item)=>{
+    if (data.sent_to_division) {
+        let filtered = props.division.filter((item) => {
             return item.id == data.sent_to_division
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 
-    if(data.sent_to_department){
-        let filtered = props.department.filter((item)=>{
+    if (data.sent_to_department) {
+        let filtered = props.department.filter((item) => {
             return item.id == data.sent_to_department
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 }
 
-const getSourceBranch = (data)=>{
-    
-    if(data.sent_from_unit){
-        let filtered = props.unit.filter((item)=>{
+const getSourceBranch = (data) => {
+
+    if (data.sent_from_unit) {
+        let filtered = props.unit.filter((item) => {
             return item.id == data.sent_from_unit
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 
-    if(data.sent_from_division){
-        let filtered = props.division.filter((item)=>{
+    if (data.sent_from_division) {
+        let filtered = props.division.filter((item) => {
             return item.id == data.sent_from_division
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 
-    if(data.sent_from_department){
-        let filtered = props.department.filter((item)=>{
+    if (data.sent_from_department) {
+        let filtered = props.department.filter((item) => {
             return item.id == data.sent_from_department
         })
         if (filtered.length > 0) {
             return filtered[0].title;
         } else {
-            return null; 
+            return null;
         }
     }
 }
 
-const getDestinationBranchType = (data)=>{
-    
-    if(data.sent_to_unit){
-       return 'unit'
+const getDestinationBranchType = (data) => {
+
+    if (data.sent_to_unit) {
+        return 'unit'
     }
 
-    if(data.sent_to_division){
-       return 'division'
+    if (data.sent_to_division) {
+        return 'division'
     }
 
-    if(data.sent_to_department){
-      return 'department'
+    if (data.sent_to_department) {
+        return 'department'
     }
 }
 
-const getSourceBranchType = (data)=>{
-    
-    if(data.sent_from_unit){
-       return 'unit'
+const getSourceBranchType = (data) => {
+
+    if (data.sent_from_unit) {
+        return 'unit'
     }
 
-    if(data.sent_from_division){
-       return 'division'
+    if (data.sent_from_division) {
+        return 'division'
     }
 
-    if(data.sent_from_department){
-      return 'department'
+    if (data.sent_from_department) {
+        return 'department'
     }
 }
 
@@ -646,13 +689,13 @@ const rejectFileHandler = (id) => {
     fileId.value = id
 }
 
-const getUserBranches = ()=>{
-  axios.get('/dashboard/registry/user-branches').then((response)=>{
-    branches.value = response.data
-  })
+const getUserBranches = () => {
+    axios.get('/dashboard/registry/user-branches').then((response) => {
+        branches.value = response.data
+    })
 }
 
-onMounted(()=>{
+onMounted(() => {
     getUserBranches();
 
     // Echo.private(`registry.${getUserBranch()}.${getUserBranchType()}`)

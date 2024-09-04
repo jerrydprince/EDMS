@@ -11,12 +11,20 @@
         <Icon icon="heroicons:sun-20-solid" width="30" class="bg-white rounded-full p-1" />
         <Icon class="text-gray-500" icon="ion:moon-sharp" width="20" />
       </div>
-      <Icon icon="iconamoon:notification" width="25" />
+      <div @click="toggle_notification = !toggle_notification" class=" cursor-pointer">
+        <Icon icon="iconamoon:notification" width="25" class="" />
+      </div>
+      <div v-if="toggle_notification" ref="modalRef"
+        class="  top-16 absolute max-h-[60vh] overflow-y-auto  w-[550px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-7">
+        <Notification />
+      </div>
 
       <!-- mini profile section starts here -->
       <div class="ml-1 cursor-pointer">
         <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
-          <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+          <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" />
+          <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+          <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{page.props.user_roles[0].name}}</p>
         </div>
 
         <div
@@ -24,7 +32,8 @@
           v-if="Profile_option">
           <div class=" flex items-center gap-3  p-4 border-b">
             <div class="ml-1 w-10 h-10 overflow-hidden rounded-full">
-              <img src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
+              <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" />
+              <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
             </div>
             <div>
               <h1>{{ user.last_name+' '+user.first_name }}</h1>
@@ -190,7 +199,9 @@ import { ref } from "vue";
 //mport { useRoute } from "vue-router";
 import logo from "../assets/logo.vue";
 import { Link, usePage } from '@inertiajs/vue3'
+import { onClickOutside } from "@vueuse/core";
 import Userplaceholder from "../assets/Userimageholder.vue";
+import Notification from "../components/Notification.vue"
 import { defineProps } from 'vue';
 
 const { toggleSearchFunction } = defineProps(['toggleSearchFunction']);
@@ -203,8 +214,14 @@ const navVisible = ref(false);
 const Profile_option = ref(false)
 const page = usePage()
 
+const modalRef = ref(null);
+const toggle_notification = ref(false)
+onClickOutside(modalRef, (event) => {
+  (Profile_option.value = false, toggle_notification.value = false);
+});
+
 const user = page.props.user
-const roles = page.props.roles
+const roles = page.props.user_roles
 
 
 //const route = useRoute();

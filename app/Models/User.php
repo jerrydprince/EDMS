@@ -94,4 +94,49 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Task::class, 'user_task');
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany(groups::class, 'group_users','user_id', 'group_id');
+    }
+
+    /**
+     * Get all of the rating for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function rating()
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+    /**
+     * Get all of the attendance for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    /**
+     * Get all of the certificates for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    /**
+     * The superusertask that belong to the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function superusertask()
+    {
+        return $this->belongsToMany(SuperuserTask::class, 'superuser_tasks');
+    }
 }

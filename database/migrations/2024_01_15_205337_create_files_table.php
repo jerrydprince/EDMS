@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
            $table->string('name');
            $table->string('file_type');
-           $table->string('doc_no');
+           $table->string('doc_no')->nullable();
            $table->text('description')->nullable();
            $table->integer('created_by');
             $table->timestamps();

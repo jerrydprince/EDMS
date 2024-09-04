@@ -20,7 +20,11 @@
       </div>
       <input type="file" name="" @change="handleFileUpload" id="fileUpload" multiple class=" opacity-0 absolute">
     </template>
-    <section class="bg-white p-5">
+    <button class="absolute -right-10 -top-10 bg-white p-2 rounded-full" @click="closeModal">
+      <Icon icon="ic:baseline-close" width="25" />
+    </button>
+    <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
+      <section class="bg-white p-5">
       <input type="text" class=" w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
       <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
     </section>
@@ -54,7 +58,7 @@
             <p>Assign To</p>
           </div>
 
-          <div class="relative" v-if="toggleRecipient">
+          <!-- <div class="relative" v-if="toggleRecipient">
             <input v-model="search" type="text"
               class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
               placeholder="Search department / staff" @input="filterRecipients" />
@@ -64,13 +68,20 @@
               v-if="users && users.length > 0">
               <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
                 v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                <div class=" flex items-center gap-3 ">
+                <div class=" flex items-center gap-3 " v-if="search_type =='unit'">
                   <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
                   <p class="text-sm w-fit text-black font-semibold">{{
                   (suggestion.first_name + " " + suggestion.last_name).length > 15
                     ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
                     : suggestion.first_name + " " + suggestion.last_name
                 }}</p>
+                </div>
+
+                <div class=" flex items-center gap-3 " v-else>
+                  <img :src="page.props.base + '/'" alt="" class="w-8 h-8 rounded-full" />
+                  <p class="text-sm w-fit text-black font-semibold">
+                {{ suggestion.title }}
+                </p>
                 </div>
 
                 <div>
@@ -78,86 +89,45 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2"
-            v-if="!toggleRecipient && Assigned_by === ''" @click="toggleRecipient = true">
+            v-if="!is_dropdown" @click="setIsDropdown">
             <p>Set assignee</p>
             <Icon icon="lucide:plus" />
           </div>
 
-          <!-- <div
-            class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
-            v-if="Assigned_by">
-            <img :src="page.props.base + '/' + assigned_by_img" alt="" class="w-5 h-5 rounded-full" />
-            <p class="text-xs w-fit">{{ Assigned_by }}</p>
-            <div class="bg-white border rounded-full p-0.5 text-sm">
-              <Icon icon="clarity:times-line" class="cursor-pointer" @click="Assigned_by = ''" />
-            </div>
-          </div> -->
-
-          <div v-if="Assigned_by  !=''" class="flex items-center flex-wrap gap-2">
+          <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
             <div v-for="user in selectedUsers"
               class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
               <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
-              <p class="text-xs w-fit">{{ user.first_name+' '+user.last_name }}</p>
+              <p class="text-xs w-fit" v-if="search_type == 'unit'">{{ user.first_name+' '+user.last_name }}</p>
+              <p class="text-xs w-fit" v-else>{{ user.title }}</p>
               <div class="bg-white border rounded-full p-0.5 text-sm">
                 <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
               </div>
             </div>
-              <!-- <div
-                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
-                v-for="(tag, index) in Tags" :key="index">
-                <img :src="tag.img" alt="" class="w-5" />
-                <p class="text-xs w-fit">{{ tag.name }}</p>
-                <div class=" bg-white border rounded-full p-0.5 text-sm">
-                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeTag(tag)" />
-                </div>
-              </div> -->
-              <!-- <div class="relative">
-                <input v-model="Users" type="text"
-                  class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700" placeholder=""
-                  @input="filterRecipients" />
-
-                <div
-                  class="border border-solid py-3 bg-white right-0 max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                  v-if="Users && Suggestions.length > 0">
-                  <div class="flex items-center p-2 px-3 justify-between hover:bg-[#f8f8f9]"
-                    v-for="(suggestion, index) in Suggestions" :key="index" @click="updateUsers(suggestion)">
-                    <div class="flex items-center gap-3">
-                      <img :src="suggestion.img" alt="" class="w-8" />
-                      <p class="text-sm w-fit text-black font-semibold">
-                        {{
-                        suggestion.name.length > 15
-                          ? `${suggestion.name.substring(0, 15)}..`
-                          : suggestion.name
-                      }}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p>{{ suggestion.email }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
-              <div class="relative">
+            
+              <div class="relative" >
             <input v-model="search" type="text"
               class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-              placeholder="Search department / staff" @input="filterRecipients" />
+              placeholder="Search department / staff" @input="filterRecipients"/>
 
-            <div
+            <div 
               class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-              v-if="users && users.length > 0">
+              v-if="users && users.length > 0 && !is_dropwdown_blur">
               <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
                 v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
                 <div class=" flex items-center gap-3 ">
-                  <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
-                  <p class="text-sm w-fit text-black font-semibold">{{
+                  <img v-if="search_type == 'unit'" :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
+                  <p v-if="search_type == 'unit'" class="text-sm w-fit text-black font-semibold">{{
                   (suggestion.first_name + " " + suggestion.last_name).length > 15
                     ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
                     : suggestion.first_name + " " + suggestion.last_name
                 }}</p>
+                 <p v-else class="text-sm w-fit text-black font-semibold">
+                  {{ suggestion.title }}
+                 </p>
                 </div>
 
                 <div>
@@ -212,15 +182,15 @@
               v-if="select_Priority">
               <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
                 <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-    color:
-      priority === 'Low'
-        ? '#FFBC53'
-        : priority === 'High'
-          ? '#FF3737'
-          : priority === 'Medium'
-            ? '#F67E5A'
-            : 'black',
-  }">
+                color:
+                  priority === 'Low'
+                    ? '#FFBC53'
+                    : priority === 'High'
+                      ? '#FF3737'
+                      : priority === 'Medium'
+                        ? '#F67E5A'
+                        : 'black',
+              }">
                   {{ priority }}
                 </p>
               </div>
@@ -228,15 +198,15 @@
           </div>
 
           <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-    color:
-      priority === 'Low'
-        ? '#FFBC53'
-        : priority === 'High'
-          ? '#FF3737'
-          : priority === 'Medium'
-            ? '#F67E5A'
-            : 'black',
-  }" v-else>
+                color:
+                  priority === 'Low'
+                    ? '#FFBC53'
+                    : priority === 'High'
+                      ? '#FF3737'
+                      : priority === 'Medium'
+                        ? '#F67E5A'
+                        : 'black',
+              }" v-else>
             <p class="text-xs w-fit">{{ priority }}</p>
             <div class="">
               <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
@@ -381,7 +351,7 @@
       </div>
 
     </section>
-
+    </section>
     <div class="flex p-3 justify-end w-full">
       <div class="flex gap-5 items-center px-5">
         <!-- <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
@@ -399,6 +369,7 @@ import { defineEmits, defineProps, computed, ref } from "vue";
 import image from "../../../assets/images/members/1.svg";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from "@inertiajs/vue3";
+import debounce from 'lodash.debounce'
 
 const selectedType = ref(null);
 const select_Priority = ref(false);
@@ -408,6 +379,7 @@ const uses = ref([])
 const files = ref([])
 const page = usePage()
 const assigned_by_img = ref(null);
+const toast = useToast()
 
 const users = ref([]);
 const Assigned_by = ref("");
@@ -416,8 +388,16 @@ const clickedButton = ref("");
 const search = ref('')
 const user_ids = ref([]);
 const selectedUsers = ref([])
+const is_dropdown = ref(false)
+let is_dropwdown_blur = ref(false)
+const search_type = ref('')
 
 const props = defineProps(["modelValue"]);
+
+const setIsDropdown = ()=>{
+  is_dropdown.value = true 
+  is_dropwdown_blur = false
+}
 
 const form = useForm({
   files: [],
@@ -449,15 +429,6 @@ const handleFileUpload = (event) => {
   //uploadFiles()
 }
 
-const uploadFiles = () => {
-  form.post('/upload-files', {
-    onSuccess: () => {
-      //alert(' this was successfull')
-      form.files = null;
-      //files.value = []
-    }
-  })
-}
 
 const activeButton = (event) => {
   if (event === "") {
@@ -509,11 +480,12 @@ const getFileURL = (file) => {
 }
 
 
-const searchUsers = () => {
+const searchUsers = debounce(() => {
   axios.get('/dashboard/search-users', { params: { search: search.value } }).then((response) => {
-    users.value = response.data
+    users.value = response.data.data
+    search_type.value = response.data.type
   })
-}
+}, 500)
 
 
 const filterRecipients = () => {
@@ -590,16 +562,15 @@ const submit = () => {
     onSuccess: page => {
       form.reset()
       emit("update:modelValue", false);
+      toast.add({
+        severity: "success",
+        summary: '',
+        detail: "Task created successfully",
+        life: 3000,
+      });
     }
   })
 
-
-  //   toast.add({
-  //     severity: "success",
-  //     summary: '',
-  //     detail: "",
-  //     life: 3000,
-  //   });
 };
 </script>
 <style scoped>

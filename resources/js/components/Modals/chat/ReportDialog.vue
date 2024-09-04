@@ -11,12 +11,12 @@
         class=" .custom-dialog"
 	>
 	 <template #header>
-       
+
 
     <div v-if="active === 1" class=" flex float-col items-center w-full">
 
            <div class=" flex flex-col items-center justify-center w-full h-">
-            <img src="../../../assets/images/report_modal.svg" alt="" class=" -mt-5 h-56">
+            <img src="/images/report_modal.svg" alt="" class=" -mt-5 h-56">
             <div class=" text-center absolute flex flex-col items-center justify-center bg-white py-5 top-36   shadow-white">
                 <h1 class=" text-xl font-semibold">Report Complaint</h1>
                 <p class=" text-sm text-[#667085] w-[80%] ">If you encounter any issues or concerns with a contact, use this form to report it. </p>
@@ -38,7 +38,7 @@
             <span>*</span>
         </div>
             <input type="text" class=' border-solid border-gray-300 mt-1 p-2 border rounded-md outline-none w-full text-sm' placeholder="A brief subject line for the report." required>
-            
+
            </div>
            <div class=" mb-2">
             <label class=" text-[#344054] font-semibold">Describe Situation</label>
@@ -63,17 +63,17 @@
            <div class=" p-0.5 rounded-full bg-white  absolute right-1 top-1 z-30 cursor-pointer" @click="removeImage(index)">
            <Icon icon="uil:times"   />
           </div>
-          </div>   
+          </div>
         </div>
         <div class=" w-20 h-28 bg-[#EBF3FE] border-[#2C62B9] border-dashed border-[2px]   flex items-center flex-col justify-center  rounded-xl overflow-hidden relative " v-if="imagePreviews.length !== 0">
           <input type="file" class="opacity-0 cursor-pointer absolute w-full h-full"   @change="previewImages" accept="image/*" multiple/>
           <Icon icon="ic:baseline-plus"  class=" text-primary" width="25" />
-          </div> 
+          </div>
         </div>
         </section>
 
         <div v-else class=" flex flex-col items-center justify-center w-full ">
-           <img src="../../../assets/images/complaint.svg" alt=""  class=" w-80">
+           <img src="/images/complaint.svg" alt=""  class=" w-80">
            <div class=" flex flex-col items-center w-full">
             <h1 class=" text-2xl font-semibold my-5">Complaint Recieved</h1>
 
@@ -81,7 +81,7 @@
             <div class="mx-4  ">
                 <div class="   text-[#7A2E0E]  ">
                     <p class=" text-center">Thank you for reporting the contact. We have received your complaint and will reach out to you via your work email to address the issue.</p>
-                   
+
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@
 				severity="secondary"
 				outlined
 			/>
-            
+
             <Button
             v-if=" active ===1"
             @click="active = 2"
@@ -113,7 +113,7 @@
               'py-2 bg-primary px-10 border-0 text-white font-light  rounded-lg',
           },
         }"
-				
+
 			/>
 
       <Button
@@ -127,7 +127,7 @@
               'py-2 bg-primary px-10 border-0 text-white font-light  rounded-lg',
           },
         }"
-				
+
 			/>
 		</template>
 	</Dialog>
@@ -189,7 +189,7 @@ const submit = () => {
 </script>
  <style scoped>
   .custom-dialog .p-dialog-header {
-    display: none; 
+    display: none;
     width: 20%;
   }
   .p-inputtextarea {

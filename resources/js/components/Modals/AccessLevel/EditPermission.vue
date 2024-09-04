@@ -215,11 +215,13 @@ watch(()=>props.permissions, ()=>{
 }, {immediate:true})
 
 watch(()=>props.selectedPermission, ()=>{
- if(props.selectedPermission){
+ if(props.selectedPermission && props.selectedPermission.length > 0){
   let perm = props.selectedPermission;
   for(let i=0; i < perm.length; i++){
     selectedPermissions.value.push(perm[i].id)
   }
+ }else{
+  selectedPermissions.value = []
  }
 }, {immediate:true})
 

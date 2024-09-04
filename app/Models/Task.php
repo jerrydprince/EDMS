@@ -51,5 +51,93 @@ class Task extends Model
         return $this->hasMany(Comment::class);
     }
 
+    /**
+     * The unitTask that belong to the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function unitTask()
+    {
+        return $this->belongsToMany(Unit::class, 'unit_tasks');
+    }
 
+    /**
+     * The divisionTask that belong to the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function divisionTask()
+    {
+        return $this->belongsToMany(Division::class, 'division_tasks');
+    }
+
+    /**
+     * The departmentTask that belong to the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function departmentTask()
+    {
+        return $this->belongsToMany(Department::class, 'department_tasks');
+    }
+
+     /**
+     * The super user that belong to the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function superuserTask()
+    {
+        return $this->belongsToMany(Department::class, 'superuser_tasks');
+    }
+
+    /**
+     * Get the assignedByDivision associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function assignedByDivision()
+    {
+        return $this->hasOne(Division::class, 'id', 'assigned_by_division');
+    }
+
+    /**
+     * Get the assignedByDepartment associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function assignedByDepartment()
+    {
+        return $this->hasOne(Department::class, 'id', 'assigned_by_department');
+    }
+
+     /**
+     * Get the assignedBySuperUser associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function assignedBySuperUser()
+    {
+        return $this->hasOne(Department::class, 'id', 'assigned_by_super_user');
+    }
+
+    /**
+     * Get the taskSubmission associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function taskSubmission()
+    {
+        return $this->hasMany(TaskSubmission::class, 'task_id');
+    }
+
+    /**
+     * Get all of the rating for the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function rating()
+    {
+        return $this->hasMany(Rating::class);
+    }
 }

@@ -78,4 +78,14 @@ class Division extends Model
     {
         return $this->hasMany(Archive::class);
     }
+
+    /**
+     * The task that belong to the Division
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function task()
+    {
+        return $this->belongsToMany(Task::class, 'division_tasks');
+    }
 }

@@ -24,7 +24,8 @@ class PermissionController extends Controller
             // 'access config',
             // 'audit',
             // 'recycle bin',
-            'registry'
+            //'registry'
+            'agf registry'
         ];
         
         $permissions = [];

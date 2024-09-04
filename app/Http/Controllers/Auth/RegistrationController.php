@@ -112,7 +112,7 @@ class RegistrationController extends Controller
                 'email',
                 Rule::unique('users')->ignore($request->id)
             ],
-            'department' => 'required',
+            //'department' => 'required',
             'phone' => [
                 'sometimes',
                 Rule::unique('users')->ignore($request->id)
@@ -125,7 +125,7 @@ class RegistrationController extends Controller
             'gender' => 'required',
             'grade_level' => 'required',
             'email' => 'required|email|unique:users',
-            'department' => 'required',
+            //'department' => 'required',
             'phone' => 'sometimes|unique:users'
         ]);
       }

@@ -15,7 +15,7 @@
           </div>
         </div>
       </div>
-      <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm">
+      <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm" v-if="!isRole('regular users')">
         <div class="bg-gray-100 flex items-center rounded-md p-1">
           <button class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignmentButton = 1"
             :class="{ activeButton: assignmentButton === 1 }">
@@ -84,7 +84,7 @@
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
-              <th class="pl-5 py-5">Task Title2</th>
+              <th class="pl-5 py-5">Task Title</th>
               <th>Date Assigned</th>
               <th>Deadline</th>
               <th>Assigned By</th>
@@ -98,11 +98,11 @@
               <td class="align-middle pl-5">
                 <div class="flex items-center gap-2">
                   <div>
-                    <p>
+                    <p v-if="item.title && item.title.length > 0">
                       {{
-              item.description.length > 20
-                ? `${item.description.substring(0, 20)}...`
-                : item.description
+              item.title.length > 20
+                ? `${item.title.substring(0, 20)}...`
+                : item.title
             }}
                     </p>
                   </div>
@@ -120,8 +120,14 @@
                 </div>
               </td>
               <td class="align-middle">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2" v-if="item.assigned_by">
                   <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                </div>
+                <div class="flex items-center gap-2" v-if="item.assigned_by_division">
+                  <p>{{item.assigned_by_division.title }}</p>
+                </div>
+                <div class="flex items-center gap-2" v-if="item.assigned_by_department">
+                  <p>{{ item.assigned_by_department.department }}</p>
                 </div>
               </td>
               <td class="align-middle">
@@ -158,7 +164,7 @@
               </td>
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
-                  <Link :href="'/dashboard/view-task/'+item.id">
+                  <Link :href="'/dashboard/view-task/'+item.id" :data="{is_assigned: assignmentButton}">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
@@ -176,7 +182,7 @@
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
-              <th class="pl-5 py-5">Task Title2</th>
+              <th class="pl-5 py-5">Task Title</th>
               <th>Date Assigned</th>
               <th>Deadline</th>
               <th>Assigned By</th>
@@ -186,15 +192,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in filteredTask" :key="index" class="hover:bg-gray-50 cursor-pointer border-b">
+            <tr v-for="(item, index) in filteredAssignedTask" :key="index" class="hover:bg-gray-50 cursor-pointer border-b">
               <td class="align-middle pl-5">
                 <div class="flex items-center gap-2">
                   <div>
-                    <p>
+                    <p v-if="item.title && item.title.length > 0">
                       {{
-              item.description.length > 20
-                ? `${item.description.substring(0, 20)}...`
-                : item.description
+              item.title.length > 20
+                ? `${item.title.substring(0, 20)}...`
+                : item.title
             }}
                     </p>
                   </div>
@@ -212,8 +218,14 @@
                 </div>
               </td>
               <td class="align-middle">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2" v-if="item.assigned_by">
                   <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                </div>
+                <div class="flex items-center gap-2" v-if="item.assigned_by_division">
+                  <p>{{ item.assigned_by_division.title }}</p>
+                </div>
+                <div class="flex items-center gap-2" v-if="item.assigned_by_department">
+                  <p>{{ item.assigned_by_department.title }}</p>
                 </div>
               </td>
               <td class="align-middle">
@@ -251,7 +263,7 @@
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
                  
-                  <Link :href="'/dashboard/view-task/'+item.id">
+                  <Link :href="'/dashboard/view-task/'+item.id+'?is_assigned='+assignmentButton">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
@@ -281,7 +293,7 @@
 import { ref, computed, defineProps, watch } from "vue";
 //import paginator from "@/reusables/paginations.vue";
 import AssignTask from "../../components/Modals/Workflows/AssignTask.vue";
-import { Link } from "@inertiajs/vue3";
+import { Link, router, usePage } from "@inertiajs/vue3";
 
 
 const AssignModal = ref(false)
@@ -290,7 +302,10 @@ const buttonToggle = ref(1);
 const currentPage = ref(1);
 const itemsPerPage = 10;
 const tasks = ref([])
-const props = defineProps(['created_task'])
+const page = usePage()
+const props = defineProps(['created_task', 'assigned_task'])
+
+const roles = computed(()=> page.props.roles)
 
 const buttonSwitch = ref(1);
 const clickedButton = ref("");
@@ -322,8 +337,17 @@ const activeButton = (event) => {
   clickedButton.value = event;
 };
 
+const isRole = (role)=>{
+  if(roles.value.includes(role)){
+    return true
+  }else{
+    return false
+  }
+}
+
 const taskByStatus = (status)=>{
-  axios.get('/dashboard/task-by-status',{params:{status: status}}).then((response)=>{
+  let type = assignmentButton.value ==1? 'assigned_to_me': 'assigned_by_me';
+  axios.get('/dashboard/task-by-status',{params:{status: status, type: type}}).then((response)=>{
     tasks.value = response.data.data;
   })
 }
@@ -353,10 +377,18 @@ const filteredItems = computed(() => {
 });
 
 const filteredTask = computed(()=>{
-  if(tasks.value.length > 0){
-    return tasks.value.data
+  if( buttonSwitch.value !== 1){
+    return tasks.value
   }else{
     return props.created_task?.data
+  }
+})
+
+const filteredAssignedTask = computed(()=>{
+  if(buttonSwitch.value !== 1){
+    return tasks.value
+  }else{
+    return props.assigned_task?.data
   }
 })
 const pageStart = ref(1);
@@ -375,6 +407,15 @@ watch(()=>props.created_task, ()=>{
 
 },{deep: true})
 
+
+watch(assignmentButton, (newVal)=>{
+  buttonSwitch.value = 1;
+  // if(newVal == 1){
+  //   router.reload({only: ['created_at']})
+  // }else{
+  //   router.reload({only:['assigned_task']})
+  // }
+})
 </script>
 
 <style scoped>

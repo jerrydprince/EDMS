@@ -9,75 +9,133 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\TaskDoc;
 use App\Models\Comment;
+use App\Models\TaskSubmission;
+use App\Models\TaskSubmissionFiles;
+use Illuminate\Support\Facades\DB;
+use App\Models\KRA;
 
 class TaskController extends Controller
 {
     public function createTask(Request $request){
-        $request->validate([
-            'title' => 'required',
-            'due_date' => 'required',
-            'priority' => 'required',
-            'users' => 'required'
-        ]);
+       
+        if($request->id){
+            $request->validate([
+                'title' => 'required',
+                'due_date' => 'required',
+                'priority' => 'required',
+            ]);
+        }else{
+            $request->validate([
+                'title' => 'required',
+                'due_date' => 'required',
+                'priority' => 'required',
+                'users' => 'required'
+            ]);
+        }
 
         $files = [];
-        if($request->file('files')){
-            foreach($request->file('files') as $file){
-               // $file = $request->file('file');
-            // $extension = strtolower($file->getClientOriginalExtension());
-            $size = $this->formatSize(filesize($file));
 
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $original_name = $file->getClientOriginalName();
-                $path =  "/task/".date('Y') . '/' . date('m');
-                $fullPath = public_path($path);
-
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0777, true);
+        $branchType = $this->getBranchType();
+    
+        try {
+            if($request->file('files')){
+                foreach($request->file('files') as $file){
+                   // $file = $request->file('file');
+                // $extension = strtolower($file->getClientOriginalExtension());
+                $size = $this->formatSize(filesize($file));
+    
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $original_name = $file->getClientOriginalName();
+                    $path =  "/task/".date('Y') . '/' . date('m');
+                    $fullPath = public_path($path);
+    
+                    if (!file_exists($fullPath)) {
+                        mkdir($fullPath, 0777, true);
+                    }
+                    $file->move(public_path($path),$fileName);
+    
+                    $arr = [
+                        'fileName' => $fileName,
+                        'size' => $size,
+                        'original_name' => $original_name
+                    ];
+    
+                    array_push($files, $arr);
                 }
-                $file->move(public_path($path),$fileName);
-
-                $arr = [
-                    'fileName' => $fileName,
-                    'size' => $size,
-                    'original_name' => $original_name
-                ];
-
-                array_push($files, $arr);
             }
-        }
-
-        $task = new Task();
-        $task->title = $request->title;
-        $task->description = $request->description;
-        $task->due_date = $request->due_date;
-        $task->priority = $request->priority;
-        $task->assigned_by = auth()->user()->id;
-        $task->status = 'pending';
-        $task->save();
-
-        if($request->file('files')){
-            $docs = [];
-            foreach($files as $file){
-              array_push($docs, [
-                'path' => $path.'/'.$file['fileName'],
-                'task_id' => $task->id,
-                'size' => $file['size'],
-                'file_name' => $file['original_name'],
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now()
-              ]);
+    
+            $task = $request->id? Task::with('user')->find($request->id) :new Task();
+            $task->title = $request->title;
+            $task->description = $request->description;
+            $task->due_date = $request->due_date;
+            $task->priority = $request->priority;
+            if(auth()->user()->hasRole('unit heads')){
+                $task->assigned_by = auth()->user()->id;
+                $task->assigned_by_unit = auth()->user()->unit_id;
             }
-            TaskDoc::insert($docs);
+            if(auth()->user()->hasRole('division heads')){
+                $task->assigned_by_division = auth()->user()->division_id;
+            }
+            if(auth()->user()->hasRole('directors')){
+                $task->assigned_by_department = auth()->user()->department_id;
+            }
+            if(!$request->id){
+                $task->status = 'pending';
+            }
+            if(auth()->user()->hasRole('super users')){
+                $task->assigned_by_super_user = auth()->user()->id;
+            }
+            
+            $task->save();
+    
+            if($request->file('files')){
+                $docs = [];
+                foreach($files as $file){
+                  array_push($docs, [
+                    'path' => $path.'/'.$file['fileName'],
+                    'task_id' => $task->id,
+                    'size' => $file['size'],
+                    'file_name' => $file['original_name'],
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now()
+                  ]);
+                }
+                TaskDoc::insert($docs);
+            }
+            //$ids = explode(',', $request->users);
+            if(!$request->id){
+                if(auth()->user()->hasRole('unit heads')){
+                    $task->user()->sync($request->users); 
+                }
+
+                if(auth()->user()->hasRole('division heads')){
+                    //branch can only assign to units
+                    $task->unitTask()->sync($request->users);
+                }
+
+                if(auth()->user()->hasRole('directors')){
+                    //department can assign a task to divisions
+                    $task->divisionTask()->sync($request->users);
+                    //$task->departmentTask()->sync($request->users);
+                }
+
+                if(auth()->user()->hasRole('super users')){
+                   // $task->superuserTask()->sync($request->users);
+                   $task->departmentTask()->sync($request->users);
+                }
+               
+                 //user notification
+                 $users = User::whereIn('id', $request->users)->get();
+            }else{
+                $users = $task->user()->get();
+            }
+           
+           //$users = User::where('id', $request->users)->get();
+            Notification::send($users, new TaskNotification($request->title));
+           
+        } catch (Exception $e) {
+            dd($e->getMessage());
         }
-
-        //$ids = explode(',', $request->users);
-        $task->user()->sync($request->users);
-
-        //user notification
-       // $users = User::whereIn('id', $request->users)->get();
-       $users = User::where('id', $request->users)->get();
-        Notification::send($users, new TaskNotification($request->title));
 
         return redirect()->back();
     }
@@ -92,18 +150,34 @@ class TaskController extends Controller
     }
 
     public function getTaskByStatus(Request $request){
-        $task = Task::where('status', $request->status)->paginate(10);
+        if($request->type == 'assigned_to_me'){
+            $task = auth()->user()->task()->with('assignedBy')->where('status', $request->status)->paginate(10);
+        }else{
+            $task = Task::with('assignedBy')->where('status', $request->status)->paginate(10);
+        }
         return response()->json($task);
     }
 
     public function viewTask($id) {
-        $task = Task::with(['taskdocs','user', 'comments' => function($query) {
+       
+        $task = Task::with(['taskdocs','user', 'rating', 'taskSubmission'=>function($query){
+            $query->with('taskSubmissionFiles', 'user');
+        }, 'comments' => function($query) {
             $query->with(['user' => function($query) {
                 $query->select('id', 'first_name', 'last_name','profile_image');
             }]);
         }])->find($id);
-        
-        return inertia('Workflow/ViewTask', compact('task'));
+
+        // if($task){
+        //     $type = $task->assigned_by == auth()->user()->id? 1: 2;
+        // }else{
+        //     $type = 2;
+        // }
+        // $task = is_null($task)? []: $task;
+        //dd(auth()->user()->id);
+        $is_assigned = request()->is_assigned? request()->is_assigned: 1;
+        $branchType = $this->getBranchType();
+        return inertia('Workflow/ViewTask', compact('task', 'is_assigned', 'branchType'));
     }
 
     public function downloadFile($filename)
@@ -129,5 +203,205 @@ class TaskController extends Controller
         $comment->save();
         
         return redirect()->back()->with(['success'=>true]);
+    }
+
+    public function removeTaskImage(Request $request){
+        $taskdoc = TaskDoc::find($request->id);
+        if($taskdoc){
+            if(file_exists(public_path($taskdoc->path))){
+                unlink(public_path($taskdoc->path));
+            }
+            $taskdoc->delete();
+        }
+        
+        return response()->json(['success'=>true]);
+    }
+
+    public function isRole($role){
+        $roles = auth()->user()->getRoleNames();
+        $is_role = $roles->contains(function($item)use ($role){
+            //dd($item);
+            return $item == $role;
+        });
+        if($is_role){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public function insertTaskDoc($task, $task2){
+        $docs = $task->taskdocs->map(function($item)use ($task2){
+            $item->task_id = $task2->id;
+            $item->created_at = null;
+            $item->updated_at = null;
+            $item->id = null;
+            return $item;
+        });
+        $docs = $docs->toArray();
+        TaskDoc::insert($docs);
+    }
+
+    public function getBranchIds($branch){
+        $user_ids = [];
+            foreach($branch as $user){
+                array_push($user_ids, $user['id']);
+            }
+            return $user_ids;
+    }
+
+    public function reAssignTask(Request $request){
+
+        if($request->users){
+            $user_ids = [];
+            foreach($request->users as $user){
+                array_push($user_ids, $user['id']);
+            }
+
+            $task = Task::with('taskdocs')->find($request->task_id);
+            
+            if($request->description){
+                $task->description = $request->description;
+                $task->save();
+            }
+            
+            $task2 = $task->replicate();
+            if($this->isRole('unit heads')){
+                $task2->assigned_by = auth()->user()->id;
+                $task2->assigned_by_unit = auth()->user()->unit_id;
+                $task2->assigned_by_division = null;
+                $task2->assigned_by_department = null;
+                $task2->save();
+                $task2->user()->sync($user_ids);
+
+                $this->insertTaskDoc($task, $task2);
+            }
+
+            if($this->isRole('division heads')){
+                $task2->assigned_by_division = auth()->user()->division_id;
+                $task2->assigned_by_department = null;
+                $task2->save();
+
+                $branch_ids = $this->getBranchIds($request->users);
+                $task2->unitTask()->sync($branch_ids);
+
+                $this->insertTaskDoc($task, $task2);
+            }
+
+            if($this->isRole('directors')){
+                $task2->assigned_by_department = auth()->user()->department_id;
+                $task2->save();
+                $branch_ids = $this->getBranchIds($request->users);
+                $task2->divisionTask()->sync($branch_ids);
+
+                $this->insertTaskDoc($task, $task2);
+            }
+            
+        }
+        $title = 'New task assigned';
+        if($this->isRole('unit heads')){
+             $users = User::whereIn('id', $user_ids)->get();
+            Notification::send($users, new TaskNotification($title));
+        }
+       
+        return redirect()->back();
+    }
+
+    public function getBranchType(){
+        $user = auth()->user();
+        if($user->unit_id){
+            return 'unit';
+        }
+        if($user->division_id){
+            return 'division';
+        }
+        if($user->department_id){
+            return 'department';
+        }
+    }
+
+    public function taskSubmission(Request $request){
+       DB::transaction(function () use($request) {
+        $submission = new TaskSubmission();
+        $submission->description = $request->description;
+        $submission->task_id = $request->task_id;
+        $submission->user_id = auth()->user()->id;
+        $submission->save();
+
+        if($request->file('files')){
+            $files = [];
+            foreach($request->file('files') as $file){
+
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $original_name = $file->getClientOriginalName();
+                $path =  "/task/".date('Y') . '/' . date('m');
+                $size = $this->formatSize(filesize($file));
+                $fullPath = public_path($path);
+
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0777, true);
+                }
+                $file->move(public_path($path),$fileName);
+
+                $arr = [
+                    'path' => $path.'/'.$fileName,
+                    'task_id' => $request->task_id,
+                    'task_submissions_id' =>$submission->id,
+                    'name' => $original_name,
+                    'size'=>$size
+                ];
+
+                array_push($files, $arr);
+            }
+
+            $tsf = new TaskSubmissionFiles();
+            $tsf->insert($files);
+
+        }
+        $task = Task::find($request->task_id);
+        $task->status = 'under review';
+        $task->save();
+       });
+
+        return redirect()->back();
+    }
+
+    public function markAsComplete(Request $request){
+        $task = Task::find($request->id);
+        $task->status = 'completed';
+        $task->save();
+        return redirect()->back();
+    }
+
+    public function requestRevision(Request $request){
+        $task = Task::find($request->id);
+        $task->status = 'revision';
+        $task->save();
+
+        if($request->description){
+            $comment = new Comment();
+            $comment->comment = $request->description;
+            $comment->task_id =$task->id;
+            $comment->user_id = auth()->user()->id;
+            $comment->save();
+        }
+        return redirect()->back();
+    }
+
+    public function reopenTask(Request $request){
+        $task = Task::find($request->id);
+        $task->status = 'pending';
+        $task->save();
+        return redirect()->back();
+    }
+
+    public function getDepartmentKRA(Request $request){
+        $user = User::find($request->user_id);
+        $department = $user->department_id;
+        if($department){
+            $kra = KRA::with('kpi')->where('department_id',$department)->first();
+            $kpi = $kra->kpi->chunk(2);
+            return response()->json($kpi);
+        }
     }
 }
