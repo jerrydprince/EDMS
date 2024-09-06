@@ -19,9 +19,24 @@ class ChatEvent implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(public Chat $chat)
+    public function __construct(public Chat $chat, User $user)
     {
         //
+    }
+
+    public function getType(){
+        $user = auth()->user();
+        if($user->unit_id){
+            return 'unit';
+        }
+        if($user->division_id){
+            return 'division';
+        }
+        if($user->department_id){
+            return 'department';
+        }else{
+            return '';
+        }
     }
 
     /**
@@ -31,6 +46,7 @@ class ChatEvent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        $type = $this->getType();
         return [
             new PrivateChannel('chat.'.$this->chat->receiver),
         ];

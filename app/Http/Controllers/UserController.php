@@ -215,4 +215,10 @@ class UserController extends Controller
         return redirect()->back();
     }
 
+    public function getUserUnreadNotification(){
+        $user = auth()->user();
+        $notifications = $user->unreadNotifications;
+        return response()->json($notifications);
+    }
+
 }

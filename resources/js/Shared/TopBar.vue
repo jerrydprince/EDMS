@@ -11,12 +11,13 @@
         <Icon icon="heroicons:sun-20-solid" width="30" class="bg-white rounded-full p-1" />
         <Icon class="text-gray-500" icon="ion:moon-sharp" width="20" />
       </div>
-      <div @click="toggle_notification = !toggle_notification" class=" cursor-pointer">
+      <div  @click="toggle_notification = !toggle_notification" class=" cursor-pointer flex">
         <Icon icon="iconamoon:notification" width="25" class="" />
+        <span v-if="notifications && notifications.length > 0" class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white">{{ notifications.length }}</span>
       </div>
-      <div v-if="toggle_notification" ref="modalRef"
+      <div v-if="toggle_notification"  ref="modalRef"
         class="  top-16 absolute max-h-[60vh] overflow-y-auto  w-[550px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-7">
-        <Notification />
+        <Notification :notifications="props.notifications" />
       </div>
 
       <!-- mini profile section starts here -->
@@ -24,7 +25,7 @@
         <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
           <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" />
           <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
-          <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{page.props.user_roles[0].name}}</p>
+          <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{roles[0]}}</p>
         </div>
 
         <div
@@ -195,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, computed } from "vue";
 //mport { useRoute } from "vue-router";
 import logo from "../assets/logo.vue";
 import { Link, usePage } from '@inertiajs/vue3'
@@ -204,7 +205,8 @@ import Userplaceholder from "../assets/Userimageholder.vue";
 import Notification from "../components/Notification.vue"
 import { defineProps } from 'vue';
 
-const { toggleSearchFunction } = defineProps(['toggleSearchFunction']);
+const props = defineProps(['toggleSearchFunction', 'notifications']);
+const { toggleSearchFunction} = props;
 
 const toggleSearch = () => {
   toggleSearchFunction();
@@ -220,8 +222,8 @@ onClickOutside(modalRef, (event) => {
   (Profile_option.value = false, toggle_notification.value = false);
 });
 
-const user = page.props.user
-const roles = page.props.user_roles
+const user = computed(()=>page.props.user)
+const roles = computed(()=>page.props.user_roles)
 
 
 //const route = useRoute();
@@ -306,4 +308,5 @@ const branches = ref([
     icon: "clarity:circle-line",
   },
 ]);
+
 </script>

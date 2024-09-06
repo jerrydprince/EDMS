@@ -66,6 +66,9 @@ class WorkFlowController extends Controller
             $assigned_task = auth()->user()->task()->with('assignedBy')->paginate(10);
         }
 
+        $created_task = $created_task? $created_task: [];
+        $assigned_task = $assigned_task? $assigned_task: [];
+
         return inertia('Workflow/Workflows', compact('created_task', 'assigned_task'));
     }
 

@@ -23,6 +23,24 @@ Broadcast::channel('chat.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+// Broadcast::channel('task.{userId}.{roles}', function($user, $userId, $roles){
+//      if($roles ==  'unit heads'){
+//         return (int) $user->id == (int)$userId;
+//     }
+//     if($roles == 'division heads' ){
+//         return (int) $user->id == (int)$userId;
+//     }
+//     if($roles == 'directors' ){
+//         return (int) $user->id == (int)$userId;
+//     }
+//     return (int) $user->id === (int) $userId;
+// });
+
+Broadcast::channel('task.{userId}', function($user, $userId){
+  
+   return (int) $user->id === (int) $userId;
+});
+
 Broadcast::channel('registry.{sentToId}.{branchType}', function (User $user, $sentToId, $branchType) {
     if($branchType == 'unit'){
         return (int) $user->unit_id == $sentToId;

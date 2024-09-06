@@ -3,7 +3,7 @@
   <main class="h-screen flex w-full  fixed top-0">
     <Navigation />
     <section class="hide_scroll w-full overflow-y-scroll">
-      <TopBar :toggleSearchFunction="toggleSearchState"/>
+      <TopBar :toggleSearchFunction="toggleSearchState" :notifications="notifications"/>
       <slot />
     </section>
 
@@ -48,7 +48,10 @@ import { usePage } from "@inertiajs/vue3";
 
 const toggleSearch = ref(false);
 const page = usePage()
-const user_id = computed(()=>page.props.user.id);
+const user = computed(()=>page.props.user);
+const roles = computed(()=>page.props.user_roles)
+const notifications = ref([])
+
 
   const toggleSearchState = () => {
     toggleSearch.value = !toggleSearch.value;
@@ -58,18 +61,62 @@ const user_id = computed(()=>page.props.user.id);
     toggleSearch.value = false
   }
 
+  const getRole = (user)=>{
+    if(roles.value.includes('unit_heads')){
+      return 'unit_heads'
+    }
+    if(roles.value.includes('division_heads')){
+      return 'division_heads'
+    }
+    if(roles.value.includes('directors')){
+      return 'directors'
+    }
+    if(roles.value.includes('super users')){
+      return 'super_users'
+    }
+    if(roles.value.includes('admin')){
+      return 'admin'
+    }
+    if(roles.value.includes('super admin')){
+      return 'super_admin'
+    }
+    return 'users'
+  }
+
+  const getUserNotifications = ()=>{
+    axios.get('/user-notifications').then((response)=>{
+      notifications.value = response.data
+    })
+  }
+
   onMounted(()=>{
     
-    // Echo.private(`chat.${user_id}`).listen('ChatEvent', (e)=>{
-    //   alert('yes i got the message')
-    //     console.log(e)
-    //   })
+    getUserNotifications()
+
+    Echo.private(`chat.${user.value.id}`).listen('ChatEvent', (e)=>{
+      alert('yes i got the message')
+        console.log(e)
+      })
+
+    
+      // Echo.private(`task.${user.value.id}.${role}`)
+      // .listen('TaskEvent', (e) => {
+      //   alert('yes')
+      //     console.log(e.model);
+      // });
+
+      Echo.private('task.' + user.value.id)
+      .notification((notification) => {
+       // alert(' there is a notification ')
+          //notifications.value.push({notifications: notification.task, notification_type: notification.type});
+          getUserNotifications()
+      });
   
-    Echo.private(`chat.${user_id.value}`)
-    .listen('ChatEvent', (e) => {
-      alert('yes')
-        console.log(e.model);
-    });
+    // Echo.private(`chat.${user.value.id}`)
+    // .listen('ChatEvent', (e) => {
+    //   alert('yes')
+    //     console.log(e.model);
+    // });
   })
 </script>
  

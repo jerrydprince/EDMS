@@ -221,8 +221,7 @@ const handleGroups = (item) => {
     groups.value.groups.forEach((obj, index) => {
         obj.icon = newValues[0]
     })
-    console.log("check am", groups.value)
-    console.log(groups.value.groups);
+   
 };
 const getAllCategories = async () => {
     const token = localStorage.getItem('token');
@@ -317,11 +316,11 @@ onMounted(async () => {
         getAllCategories()
         let userId = window.authUserId;
         console.log("user id:", userId)
-        window.Echo.private(`chat.${userId}`)
-            .listen('MessageSent', (event) => {
-                allMessagess.value = event.message;
-                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === window.authUserId;
-            });
+        // window.Echo.private(`chat.${userId}`)
+        //     .listen('MessageSent', (event) => {
+        //         allMessagess.value = event.message;
+        //         allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === window.authUserId;
+        //     });
     } catch (error) {
         console.error('Error during onMounted:', error);
     }

@@ -34,6 +34,7 @@ class User extends Authenticatable
         'email',
         'password',
     ];
+    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -138,5 +139,10 @@ class User extends Authenticatable
     public function superusertask()
     {
         return $this->belongsToMany(SuperuserTask::class, 'superuser_tasks');
+    }
+
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'task.'.$this->id;
     }
 }

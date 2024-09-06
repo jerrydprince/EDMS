@@ -351,4 +351,7 @@ Route::middleware('auth')->group(function () {
 
     //archiving
     Route::get('/folder-search', [ArchiveController::class, 'folderSearch']);
+
+    //notifications 
+    Route::get('/user-notifications', [UserController::class, 'getUserUnreadNotification']);
 });

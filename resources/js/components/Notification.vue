@@ -26,11 +26,11 @@
       </div>
     </div>
 
-    <div v-for="(item, index) in filteredItems" :key="index">
+    <div v-for="(item, index) in props.notifications" :key="index">
       <div class="text-gray-700">
-        <h1 class="text-[10px]">{{ item.day }}</h1>
-        <div v-for="(notification, indexP) in item.notifications" :key="indexP">
-          <div v-if="notification.type === 'chat'">
+        <h1 class="text-[10px]">Today</h1>
+        <div v-for="(notification, indexP) in item.data" :key="indexP">
+          <!-- <div v-if="notification.type === 'chat'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg cursor-pointer hover:bg-slate-50"
             >
@@ -94,19 +94,19 @@
                 <Icon icon="icon-park-outline:dot" class="text-green-500" />
               </div>
             </div>
-          </div>
+          </div> -->
 
-          <div v-if="notification.type === 'task'">
+          <div v-if="item.type === 'App\\Notifications\\TaskNotification'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
               <div class="flex items-start gap-4">
-                <img :src="notification.avatar" class="h-7 mt-1" alt="" />
+                <img src="" class="h-7 mt-1" alt="" />
                 <div>
                   <p class="font-semibold text-[12px]">
-                    {{ notification.sender }}
+                    sender
                     <span class="font-normal text-gray-500"
-                      >{{ notification.message }}</span
+                      >{{ notification.title }}</span
                     >
                   </p>
 
@@ -154,7 +154,7 @@
             </div>
           </div>
 
-          <div v-if="notification.type === 'mail'">
+          <!-- <div v-if="notification.type === 'mail'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
@@ -188,9 +188,9 @@
                 <Icon icon="icon-park-outline:dot" class="text-green-500" />
               </div>
             </div>
-          </div>
+          </div> -->
 
-          <div v-if="notification.type === 'mentions'">
+          <!-- <div v-if="notification.type === 'mentions'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
@@ -273,7 +273,7 @@
                 <Icon icon="icon-park-outline:dot" class="text-green-500" />
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -281,17 +281,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, defineProps } from "vue";
 import profile from "../../../public/images/profile.svg";
 import profile_1 from "../../../public/images/profile_1.svg";
 import profile_2 from "../../../public/images/linda.svg";
 
 const clickedButton = ref("chat");
 const buttonToggle = ref(0);
+const props = defineProps(['notifications'])
 const activeButton = (item, index) => {
   buttonToggle.value = index;
-  clickedButton.value = item;
+  clickedButton.value = getItem(item);
 };
+
+const getItem = (item)=>{
+  console.log(item)
+  if(item === 'App\\Notifications\\TaskNotification'){
+    return "Task"
+  }
+  if(item == 'App\\Notifications\\Mail'){
+    return "Mail"
+  }
+  if(item == 'App\\Notifications\\Chat'){
+    return "Chat"
+  }
+  if(item == 'App\\Notifications\\Other'){
+    return "Other"
+  }
+}
 
 const buttons = ref(["Chat", "Mail", "Mentions", "Task", "Other", "Unread"]);
 const notifications = ref([
@@ -623,6 +640,7 @@ const filteredItems = computed(() => {
     })
     .filter((day) => day !== null); // Filter out days that are null
 });
+
 </script>
 
 <style>

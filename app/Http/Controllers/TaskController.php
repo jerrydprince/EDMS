@@ -13,6 +13,7 @@ use App\Models\TaskSubmission;
 use App\Models\TaskSubmissionFiles;
 use Illuminate\Support\Facades\DB;
 use App\Models\KRA;
+use App\Events\TaskEvent;
 
 class TaskController extends Controller
 {
@@ -38,6 +39,7 @@ class TaskController extends Controller
         $branchType = $this->getBranchType();
     
         try {
+            DB::beginTransaction();
             if($request->file('files')){
                 foreach($request->file('files') as $file){
                    // $file = $request->file('file');
@@ -106,35 +108,43 @@ class TaskController extends Controller
             if(!$request->id){
                 if(auth()->user()->hasRole('unit heads')){
                     $task->user()->sync($request->users); 
+                    $users = $task->user()->get();
                 }
 
                 if(auth()->user()->hasRole('division heads')){
                     //branch can only assign to units
                     $task->unitTask()->sync($request->users);
+                    $users = User::role('unit heads')->get();
                 }
 
                 if(auth()->user()->hasRole('directors')){
                     //department can assign a task to divisions
                     $task->divisionTask()->sync($request->users);
+                    $users = User::role('division heads')->get();
                     //$task->departmentTask()->sync($request->users);
                 }
 
                 if(auth()->user()->hasRole('super users')){
                    // $task->superuserTask()->sync($request->users);
                    $task->departmentTask()->sync($request->users);
+                   $users = User::role('directors')->get();
                 }
                
                  //user notification
-                 $users = User::whereIn('id', $request->users)->get();
+                // $users = User::whereIn('id', $request->users)->get();
             }else{
                 $users = $task->user()->get();
             }
-           
+           DB::commit();
            //$users = User::where('id', $request->users)->get();
-            Notification::send($users, new TaskNotification($request->title));
+           //dd($users);
+          
+            Notification::send($users, new TaskNotification($task));
+            //broadcast()
            
         } catch (Exception $e) {
-            dd($e->getMessage());
+            DB::rollback();
+            //dd($e->getMessage());
         }
 
         return redirect()->back();
