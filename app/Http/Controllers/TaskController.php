@@ -14,6 +14,7 @@ use App\Models\TaskSubmissionFiles;
 use Illuminate\Support\Facades\DB;
 use App\Models\KRA;
 use App\Events\TaskEvent;
+use App\Notifications\CommentNotification;
 
 class TaskController extends Controller
 {
@@ -138,8 +139,8 @@ class TaskController extends Controller
            DB::commit();
            //$users = User::where('id', $request->users)->get();
            //dd($users);
-          
-            Notification::send($users, new TaskNotification($task));
+            $user = User::find(auth()->user()->id);
+            Notification::send($users, new TaskNotification($task,$user));
             //broadcast()
            
         } catch (Exception $e) {
@@ -168,24 +169,61 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-    public function viewTask($id) {
-       
-        $task = Task::with(['taskdocs','user', 'rating', 'taskSubmission'=>function($query){
+    public function viewTask(Request $request, $id) {
+        
+    //   if($request->is_assigned){
+    //     $request->session()->put('is_assigned', $request->is_assigned);
+    //     $is_assigned = $request->is_assigned;
+    //   }else{
+    //     $is_assigned = $request->session()->get('is_assigned');
+    //   }
+
+      //mark notification as read if found
+      if($request->notification_id){
+        $notification = DB::table('notifications')
+            ->where('id', $request->notification_id)
+            ->update(['read_at'=> \Carbon\Carbon::now()]);
+      }
+
+        $task = Task::with(['unitTask', 'divisionTask', 'departmentTask', 'taskdocs','user', 'rating', 'taskSubmission'=>function($query){
             $query->with('taskSubmissionFiles', 'user');
         }, 'comments' => function($query) {
             $query->with(['user' => function($query) {
                 $query->select('id', 'first_name', 'last_name','profile_image');
-            }]);
+            }])->latest();
         }])->find($id);
 
-        // if($task){
-        //     $type = $task->assigned_by == auth()->user()->id? 1: 2;
-        // }else{
-        //     $type = 2;
-        // }
-        // $task = is_null($task)? []: $task;
-        //dd(auth()->user()->id);
-        $is_assigned = request()->is_assigned? request()->is_assigned: 1;
+       $user = auth()->user();
+       if($user->hasRole('super users')){
+        if($task->assigned_by_super_user == $user->id){
+            $is_assigned = 2;
+        }
+       }else
+       if($user->hasRole('directors')){
+        if($task->assigned_by_department == $user->department_id){
+            $is_assigned = 2;
+        }else{
+            $is_assigned = 1;
+        }
+       }else
+       if($user->hasRole('division heads')){
+       
+        if($task->assigned_by_division == $user->division_id){
+            $is_assigned = 2;
+        }else{
+            $is_assigned = 1;
+        }
+       }else
+       if($user->hasRole('unit heads')){
+        if($task->assigned_by_unit == $user->unit_id){
+            $is_assigned = 2;
+        }else{
+            $is_assigned = 1;
+        }
+       }else{
+        $is_assigned = 1;
+       }
+        
         $branchType = $this->getBranchType();
         return inertia('Workflow/ViewTask', compact('task', 'is_assigned', 'branchType'));
     }
@@ -203,14 +241,72 @@ class TaskController extends Controller
     }
 
     public function taskComment(Request $request){
-        $request->validate([
-            'comment'=>'required'
-        ]);
+   
         $comment = new Comment();
         $comment->comment = $request->comment;
         $comment->task_id = $request->task_id;
         $comment->user_id = auth()->user()->id;
         $comment->save();
+
+        $comment->load('user');
+
+        $user = auth()->user();
+        /**
+         * handles notifications
+         * is_assigned = 2  when a user assigns a task and 1 when it was assigned to a user
+         * */
+        //$task = Task::with(['user','unitTask', 'divisionTask', 'departmentTask'])->find($request->task_id);
+        // if($task->user && $task->user->count() > 0){
+        //    $users = $task->user;
+        //    Notification::send($users, new CommentNotification($comment,$users));
+        // }
+
+        if($request->is_assigned == 2){
+
+             //comment communication from top to down
+            if($user->hasRole('super users')){
+                $director = User::role('directors')->first();
+                Notification::send($director, new CommentNotification($comment,$director));
+            }
+            if($user->hasRole('directors')){
+                $div_head = User::role('division heads')->first();
+                Notification::send($div_head, new CommentNotification($comment,$div_head));
+            }
+            if($user->hasRole('division heads')){
+                $unit_head = User::role('unit heads')->first();
+                Notification::send($unit_head, new CommentNotification($comment,$unit_head));
+            }
+            if($user->hasRole('unit heads')){
+               
+                $task = Task::with(['user'])->find($request->task_id);
+                if($task->user && $task->user->count() > 0){
+                    $users = $task->user;
+                    Notification::send($users, new CommentNotification($comment,$users));
+                }
+            }
+        }else{
+            $task = Task::with(['assignedByUnit','assignedByDivision', 'assignedByDepartment', 'assignedBySuperUser'])->find($request->task_id);
+        
+            if($task->assignedByUnit){
+                $user = User::role('unit heads')->first();
+                Notification::send($user, new CommentNotification($comment,$user));
+            }
+            if($task->assignedByDivision){
+                $user = User::role('division heads')->first();
+                Notification::send($user, new CommentNotification($comment,$user));
+            }
+            if($task->assignedByDepartment){
+                $user = User::role('directors')->first();
+                Notification::send($user, new CommentNotification($comment,$user));
+            }
+            if($task->assigned_by_super_user){
+                $user = User::role('super users')->first();
+                Notification::send($user, new CommentNotification($comment,$user));
+            }
+        }
+
+         //comment communication from down to top users
+         
         
         return redirect()->back()->with(['success'=>true]);
     }
@@ -262,6 +358,9 @@ class TaskController extends Controller
 
     public function reAssignTask(Request $request){
 
+        try {
+            DB::beginTransaction();
+
         if($request->users){
             $user_ids = [];
             foreach($request->users as $user){
@@ -269,11 +368,12 @@ class TaskController extends Controller
             }
 
             $task = Task::with('taskdocs')->find($request->task_id);
+            $task->status = 'in progress';
             
             if($request->description){
                 $task->description = $request->description;
-                $task->save();
             }
+            $task->save();
             
             $task2 = $task->replicate();
             if($this->isRole('unit heads')){
@@ -308,6 +408,11 @@ class TaskController extends Controller
             }
             
         }
+        DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+        }
+       
         $title = 'New task assigned';
         if($this->isRole('unit heads')){
              $users = User::whereIn('id', $user_ids)->get();

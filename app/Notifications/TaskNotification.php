@@ -16,13 +16,13 @@ class TaskNotification extends Notification
      * Create a new notification instance.
      */
     
-     //protected $users;
+     protected $user;
      protected $task; 
 
-    public function __construct($task)
+    public function __construct($task, $user)
     {
         $this->task = $task;
-        //$this->user = $user;
+        $this->user = $user;
     }
 
     /**
@@ -54,20 +54,11 @@ class TaskNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-    //'users' => $this->users,
-           $this->task
+            'user' => $this->user,
+           'task'=>$this->task
         ];
     }
 
-    /**
-     * Get the custom type for the notification.
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        return 'Task'; // Your custom notification type
-    }
 
     /**
      * Get the broadcastable representation of the notification.
@@ -75,7 +66,8 @@ class TaskNotification extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-           $this->task
+           'task' =>$this->task,
+           'user'=> $this->user
         ]);
     }
 }

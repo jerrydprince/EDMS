@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\Attendance;
 use Hash;
+use Illuminate\Support\Facades\Log;
+
+// use Jenssegers\Agent\Facades\Agent;
+use Jenssegers\Agent\Agent;
+use Stevebauman\Location\Facades\Location;
 
 class LoginController extends Controller
 {
@@ -100,6 +105,19 @@ class LoginController extends Controller
             );
 
             session(['branch'=>$this->userBranchDetails($request)]);
+
+            // $ip = $request->ip(); // Get the user's IP address
+            // $agent = new Agent();
+            // $browser = $agent->browser();
+            // $location = $this->getLocation($ip); // Optional: get the location based on the IP address
+            // LoginActivity::create([
+            //     'user_id'    => Auth::user()->id,
+            //     'name'       => Auth::user()->first_name,
+            //     'ip_address' => $ip,
+            //     'browser'    => $browser,
+            //     'location'   => $location,
+            //     'created_at' => now()
+            // ]);
 
             $request->session()->regenerate();
             if(auth()->user()->hasRole('data entry')){

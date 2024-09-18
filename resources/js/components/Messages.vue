@@ -46,30 +46,61 @@
                         <div class="h-0.5 w-[30%] bg-gray-100"></div>
                     </div>
                     <div v-for="(message, index) in item.messages" class="max-w-[40%] " :class="{
-            'mb-8 w-fit   ': message.is_sent_by_logged_in_user === false,
-            ' w-fit ml-auto   mb-5  p-3 text-base ':
-                message.is_sent_by_logged_in_user == true,
-            'max-w-[50%]': profile,
-        }">
-                        <div>
+                            'mb-8 w-fit   ': message.sender_id !== page.props.user.id,
+                            ' w-fit ml-auto   mb-5  p-3 text-base ':
+                            message.sender_id == page.props.user.id,
+                            'max-w-[50%]': profile,
+                        }">
+                        <div v-if="message.group_type === props.groupType && message.group_id == clickedIndexGroup ">
                             <div class="flex items-center w-full text-xs justify-between mb-2">
-                                <h1 v-if="message.is_sent_by_logged_in_user == true"> You</h1>
+                              
+                                <h4 v-if="message.sender_id == page.props.user.id" class="mr-4"> You</h4>
                                 <div v-else class="py-2 flex items-center gap-2">
                                     <img src="../assets/images/display_picture.svg" alt="" />
-                                    <div v-if="message.is_sent_by_logged_in_user === false">
-                                        <h1 class="font-semibold" v-if="message.is_sent_by_logged_in_user === false">
+                                    <div v-if="message.sender_id !== page.props.user.id">
+                                        <h4 class="font-semibold mr-4" v-if="message.sender_id !== page.props.user.id">
                                             {{ message.sender_name }}
-                                        </h1>
+                                        </h4>
                                     </div>
                                 </div>
                                 <p class="text-[#667085]">{{ message.timestamp }}</p>
                             </div>
                             <p :class="{
-            'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
-                message.is_sent_by_logged_in_user === false,
-            ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
-                message.is_sent_by_logged_in_user == true,
-        }">
+                                        'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
+                                        message.sender_id !== page.props.user.id,
+                                        ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
+                                        message.sender_id == page.props.user.id,
+                            }">
+                                {{ message.message }}
+                            </p>
+                            <!-- <div v-for="(doc, index) in message?.attachments" :key="index"> -->
+                            <div v-if='message?.attachment'>
+                                <embed :src="'/storage/' + message?.attachment?.file_path" />
+                            </div>
+                            <!-- </div> -->
+                        </div>
+
+                        <div v-if="!message.group_type && (message.sender_id == clickedIndex ||message.sender_id ==user.id) ">
+                            <div class="flex items-center w-full text-xs justify-between mb-2">
+                              
+                                <h4 v-if="message.sender_id == page.props.user.id" class="mr-4"> You</h4>
+                                <div v-else class="py-2 flex items-center gap-2">
+                                    <img v-if="message.profile_image" :src="page.props.base+message.sender+'/'+message.profile_image" alt="">
+                                    <img v-else src="../assets/images/display_picture.svg" alt="" />
+                                    <div v-if="message.sender_id !== page.props.user.id">
+                                        <h4 class="font-semibold mr-4" v-if="message.sender_id !== page.props.user.id">
+                                            {{ message.sender.first_name+" "+message.sender.last_name }}
+                                        </h4>
+                                    </div>
+                                </div>
+                                <p class="text-[#667085]">{{ message.timestamp }}</p>
+                            </div>
+                            <p :class="{
+                                        'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
+                                        message.sender_id !== page.props.user.id,
+                                        ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
+                                        message.sender_id == page.props.user.id,
+                            }">
                                 {{ message.message }}
                             </p>
                             <!-- <div v-for="(doc, index) in message?.attachments" :key="index"> -->
@@ -85,7 +116,7 @@
             <!-- =============== send message  ================= -->
             <div class="absolute w-full bottom-5">
                 <div class="mx-7 border border-gray-300 bg-white rounded-md py-3 overflow-hidden">
-                    <div class="flex items-center justify-between border-b border-gray-300 px-2 pb-2">
+                    <!-- <div class="flex items-center justify-between border-b border-gray-300 px-2 pb-2">
                         <div class="flex gap-3 items-center">
                             <h1 class="text-[#98A2B3]">To:</h1>
                             <p v-if="selectedMessage.users" class="bg-[#EAECF0] text-base px-4 py-1 rounded-2xl">
@@ -98,7 +129,7 @@
                         <div>
                             <Icon icon="tabler:arrows-diagonal" />
                         </div>
-                    </div>
+                    </div> -->
                     <div>
                         <div v-if="isTyping">
                             {{ typingUser.name }} is typing...
@@ -420,8 +451,8 @@ import { useToast } from "primevue/usetoast";
 import { onClickOutside } from "@vueuse/core";
 import AddLink from "./Modals/chat/AddLink.vue";
 import ReportDialog from "./Modals/chat/ReportDialog.vue";
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
+import {usePage} from "@inertiajs/vue3"
+
 const toast = useToast();
 const addLinkModal = ref(false);
 const reportModal = ref(false);
@@ -430,11 +461,13 @@ const messagesContainer = ref(null);
 const fileInput = ref(null);
 const typingUser = ref(null);
 const isTyping = ref(false);
+const page = usePage()
+const user = computed(()=>page.props.user)
 
 
 
 
-const props = defineProps(["selectedMessage", "clickedIndex", "clickedIndexGroup", "allMessagess"]);
+const props = defineProps(["selectedMessage", "clickedIndex", "clickedIndexGroup", "allMessagess", 'groupType']);
 const currentClickedIndex = ref(props.clickedIndex);
 const clickedIndexGroup = ref(props.clickedIndexGroup);
 const form = new FormData()
@@ -450,33 +483,33 @@ const sidebarRef = ref(null);
 const handleTyping = async (event) => {
     const token = localStorage.getItem('token');
     if (event.target.value) {
-        await axios.post('/admin/chat/typing', {
-            recipient_id: currentClickedIndex.value,
-            is_typing: true
-        }, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            }
-        });
+        // await axios.post('/dashboard/chat/typing', {
+        //     recipient_id: currentClickedIndex.value,
+        //     is_typing: true
+        // }, {
+        //     headers: {
+        //         'Authorization': `Bearer ${token}`,
+        //     }
+        // });
     } else {
-        await axios.post('/api/typing', {
-            recipient_id: currentClickedIndex.value,
-            is_typing: false
-        }, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            }
-        });
+        // await axios.post('/api/typing', {
+        //     recipient_id: currentClickedIndex.value,
+        //     is_typing: false
+        // }, {
+        //     headers: {
+        //         'Authorization': `Bearer ${token}`,
+        //     }
+        // });
     }
 };
-const listenForTyping = () => {
-    window.Echo.private(`chat.${currentClickedIndex.value}`)
-        .listen('typing', (event) => {
-            console.log("e dey type:", event);
-            // typingUser.value = event.user;
-            // isTyping.value = event.isTyping;
-        });
-};
+// const listenForTyping = () => {
+//     window.Echo.private(`chat.${currentClickedIndex.value}`)
+//         .listen('typing', (event) => {
+//             console.log("e dey type:", event);
+//             // typingUser.value = event.user;
+//             // isTyping.value = event.isTyping;
+//         });
+// };
 onClickOutside(sidebarRef, (event) => {
     profile.value = false;
 });
@@ -580,26 +613,7 @@ const toggleMembers = () => {
 };
 const member_switch = ref(false);
 const members = [
-    {
-        id: "1",
-        name: "David Akinson",
-    },
-    {
-        id: "2",
-        name: "David Akinson",
-    },
-    {
-        id: "3",
-        name: "David Akinson",
-    },
-    {
-        id: "4",
-        name: "David Akinson",
-    },
-    {
-        id: "5",
-        name: "David Akinson",
-    },
+   
 ];
 
 const menu = ref();
@@ -672,7 +686,7 @@ watch(() => props.allMessagess, (newMessage) => {
                 }
             };
         }
-        console.log("Messages updated:", allMessages.value);
+       
     }
 }, { deep: true })
 const userConversations = async () => {
@@ -683,26 +697,26 @@ const userConversations = async () => {
     const token = localStorage.getItem('token');
     if (hasKey === true) {
         try {
-            const response = await axios.get(`/admin/chat/usersConversation/${currentClickedIndex.value}`, {
+            const response = await axios.get(`/dashboard/chat/usersConversation/${currentClickedIndex.value}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
             });
             allMessages.value = response.data;
         } catch (error) {
-            console.error('Error fetching data:', error);
+            
         }
     } else {
         try {
-            const responses = await axios.get(`/admin/chat/group/${clickedIndexGroup.value}/messages`, {
+            const responses = await axios.get(`/dashboard/chat/group/${clickedIndexGroup.value}/${props.groupType}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
             });
             allMessages.value = responses.data
-            console.log("messages in group", allMessages.value);
+           
         } catch (error) {
-            console.error('Error fetching data:', error);
+           
         }
     }
 
@@ -728,7 +742,7 @@ const sendMessage = async () => {
             form.append("recipient_id", currentClickedIndex.value)
             console.log("new data", form);
             console.log("recipient", formData.value.recipient_id);
-            const responses = await axios.post(`/admin/chat/users/messages/`, form, {
+            const responses = await axios.post(`/dashboard/chat/users/messages/`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
@@ -751,20 +765,20 @@ const sendMessage = async () => {
 
             formData.value = {}
         } catch (error) {
-            console.error('Error fetching data:', error.message);
+            
         }
     } else {
         try {
             form.append("message", formData.value.message)
             form.append("group_id", clickedIndexGroup.value)
-            console.log("new data", form);
-            const responses = await axios.post(`/admin/chat/group/send-message`, form, {
+            form.append('groupType', props.groupType)
+            const responses = await axios.post(`/dashboard/chat/group/send-message`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
                 }
             });
-            console.log("on send", responses.data);
+           
             const newMessage = responses.data.sentMessage;
             const messageDate = formatDate(newMessage.created_at);
             if (allMessages.value[messageDate]) {
@@ -780,7 +794,7 @@ const sendMessage = async () => {
             }
             formData.value = {}
         } catch (error) {
-            console.error('Error fetching data:', error.message);
+          
         }
     }
 
@@ -799,7 +813,7 @@ const sortedMessages = computed(() => {
 
 onMounted(() => {
     console.log("group id:", clickedIndexGroup.value)
-    listenForTyping();
+    //listenForTyping();
     scrollToBottom();
     userConversations()
 });

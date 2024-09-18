@@ -78,4 +78,14 @@ class Unit extends Model
     {
         return $this->belongsToMany(Task::class, 'unit_tasks');
     }
+
+    /**
+     * Get all of the groupMessages for the Unit
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function groupMessages()
+    {
+        return $this->hasMany(GroupMessages::class, 'unit_id', 'id');
+    }
 }

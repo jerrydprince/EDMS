@@ -3,6 +3,7 @@
  import Layout2 from "./Shared/Layout2.vue"
  import Layout3 from "./Shared/Layout3.vue"
  import Layout4 from "./Shared/Layout4.vue"
+ import store from "./store/store.js"
 
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -46,7 +47,7 @@ import { router } from '@inertiajs/vue3'
       const page = require(`./Pages/${name}.vue`).default;
       if(window.location.pathname.startsWith('/register')){
        page.layout = page.layout || Layout2;
-      }else if(window.location.pathname.startsWith('/data-entry')){
+      }else if(window.location.pathname.startsWith('/edms')){
         page.layout = page.layout || Layout3;
       }else if(window.location.pathname.startsWith('/dashboard')){
          page.layout =page.layout || Layout;
@@ -64,6 +65,7 @@ import { router } from '@inertiajs/vue3'
       app.use(plugin)
       app.use(PrimeVue, { unstyled: true, pt: Tailwind })
       app.use(ToastService)
+      app.use(store)
       app.mount(el)
   },
 })

@@ -13,11 +13,11 @@
       </div>
       <div  @click="toggle_notification = !toggle_notification" class=" cursor-pointer flex">
         <Icon icon="iconamoon:notification" width="25" class="" />
-        <span v-if="notifications && notifications.length > 0" class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white">{{ notifications.length }}</span>
+        <span v-if="props.total_task_notifications > 0" class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white">{{ props.total_task_notifications }}</span>
       </div>
       <div v-if="toggle_notification"  ref="modalRef"
         class="  top-16 absolute max-h-[60vh] overflow-y-auto  w-[550px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-7">
-        <Notification :notifications="props.notifications" />
+        <Notification :notifications="props.notifications" @close="closeNotificationHandler" :total_task_notifications="total_task_notifications" />
       </div>
 
       <!-- mini profile section starts here -->
@@ -25,7 +25,7 @@
         <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
           <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" />
           <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
-          <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{roles[0]}}</p>
+          <!-- <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{roles[0]}}</p> -->
         </div>
 
         <div
@@ -205,7 +205,7 @@ import Userplaceholder from "../assets/Userimageholder.vue";
 import Notification from "../components/Notification.vue"
 import { defineProps } from 'vue';
 
-const props = defineProps(['toggleSearchFunction', 'notifications']);
+const props = defineProps(['toggleSearchFunction', 'notifications', "total_task_notifications"]);
 const { toggleSearchFunction} = props;
 
 const toggleSearch = () => {
@@ -225,6 +225,10 @@ onClickOutside(modalRef, (event) => {
 const user = computed(()=>page.props.user)
 const roles = computed(()=>page.props.user_roles)
 
+const closeNotificationHandler = ()=>{
+  toggle_notification.value = false;
+  Profile_option.value = false
+}
 
 //const route = useRoute();
 const main = ref([

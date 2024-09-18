@@ -94,5 +94,15 @@ class Department extends Model
     {
         return $this->belongsToMany(Task::class, 'department_tasks');
     }
+
+     /**
+     * Get all of the groupMessages for the Unit
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function groupMessages()
+    {
+        return $this->hasMany(GroupMessages::class, 'department_id', 'id');
+    }
     
 }

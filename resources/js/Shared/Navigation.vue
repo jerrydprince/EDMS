@@ -1,122 +1,188 @@
 <template>
-  <!-- <section class="hidden lg:block w-1/5 border-r border-solid border-gray-200 sticky top-0  px-5 py-5"> -->
-  <section
-    class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"
-    :class="{ 'w-[7%]': shouldShow }">
-    <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 ">
-      <!-- <logo /> -->
-      <img src="../../../public/images/default-logo.png" alt="">
-      <!-- <p>IFEIS</p> -->
-    </div>
-    <div class="border-b border-dashed pb-4">
-      <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
-      <section>
-        <div v-for="(item, index) in main" :key="index" class="mb-1">
-          <!-- {{ permissions.includes(item.permission) }} -->
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <!-- <Icon :icon="item.icon" width="25" /> -->
-          <span v-html="item.icon"></span>
-          <p class="text-lg">{{ item.name }}</p>
-          </Link>
+    <!-- <main class="h-screen flex w-full max-w-[1680px] fixed top-0"> -->
+        <section
+            class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"
+            :class="{ 'w-[7%]': shouldShow }">
+            <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 px-3"
+                :class="{ 'px-0': shouldShow }">
+                <img src="../../../public/images/default-logo.png" alt="" v-if="!shouldShow">
+                <div v-else>
+                    <logo />
+                </div>
 
-        </div>
-      </section>
-    </div>
-    <div class="border-b border-dashed pb-4">
-      <p class="text-gray-500 pl-4 mt-4 mb-2">Admin</p>
-      <section>
-        <div v-for="(item, index) in admin" :key="index" class="mb-1">
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <!-- <Icon :icon="item.icon" width="25" /> -->
-          <span v-html="item.icon"></span>
-          <p class="text-lg">{{ item.name }}</p>
-          </Link>
-        </div>
-      </section>
-    </div>
-    <div class="pb-4 mb-12">
-      <div class="text-gray-500 pl-4 mt-4 mb-2 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Icon icon="ic:round-greater-than" width="20" />
-          <p>Branches</p>
-        </div>
-        <Icon icon="line-md:grid-3-filled" width="20" />
-      </div>
-      <section>
-        <div v-for="(item, index) in branches" :key="index" class="mb-1">
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="pl-4 pr-1 py-3 flex items-center justify-between text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <div class="flex items-center gap-3">
-            <!-- <Icon :icon="item.icon" width="15" /> -->
-            <span v-html="item.icon"></span>
-            <p class="text-lg">{{ item.name }}</p>
-          </div>
-          <Icon icon="ic:round-greater-than" width="20" />
-          </Link>
-        </div>
-        <!-- <div class="mb-1">
-          <div
-            class="pl-4 pr-1 py-3 flex items-center justify-between text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-            <div class="flex items-center gap-3">
-              <Icon icon="mdi:company" width="20" />
-              <p class="text-lg">Add Department</p>
             </div>
-            <Icon icon="material-symbols:add-box-outline" width="25" />
-          </div>
-        </div> -->
-      </section>
-    </div>
-    <div class="border-t border-dashed pt-2 pb-4">
-      <section>
-        <div class="mb-1">
-          <Link href="/"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <Icon icon="system-uicons:support" width="30" />
-          <p class="text-lg">Support</p>
-          </Link>
-        </div>
-        <div class="mb-1">
-          <Link href="/"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <Icon icon="uiw:setting-o" width="25" />
-          <p class="text-lg">Settings</p>
-          </Link>
-        </div>
-      </section>
-    </div>
-  </section>
+            <div class="border-b border-dashed pb-4">
+                <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ 'text-center': shouldShow }">
+                    Main
+                </p>
+                <section>
+                    <div v-for="(item, index) in main" :key="index" class="mb-1">
+                        <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
+                                ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+                                : 'px-3') + (shouldShow ? ' w-fit' : '')
+                            " class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+                            <!-- <Icon :icon="item.icon" width="25" /> -->
+                            <span v-html="item.icon"></span>
+                            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+                    </Link>
+                    </div>
+                </section>
+            </div>
+            <div class="border-b border-dashed pb-4" :class="{ '-ml-4': shouldShow }">
+                <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ ' ml-3': shouldShow }">
+                    Admin
+                </p>
+                <section>
+                    <div v-for="(item, index) in admin" :key="index" class="mb-1">
+                        <Link :href="item.path" v-if="userHasPermission(item.permission)"  :class="$page.url === item.path
+                                ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+                                : 'hover:border-0 px-3'
+                            " class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+                            <!-- <Icon :icon="item.icon" width="25" :class="{ 'ml-5': shouldShow }" /> -->
+                            <span v-html="item.icon" :class="{ 'ml-5': shouldShow }"></span>
+                            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+                    </Link>
+                    </div>
+                </section>
+            </div>
+            <div class="pb-4 mb-10">
+                <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3"
+                    :class="{ ' -ml-3': shouldShow }">
+                    <div class="flex items-center gap-2">
+                        <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
+                        <p>Branches</p>
+                    </div>
+                    <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" />
+                </div>
+                <section>
+                    <div v-for="(item, index) in branches" :key="index" class="mb-1">
+                        <Link :href="item.path" v-if="userHasPermission(item.permission)"  :class="$page.url === item.path
+                                ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+                                : ' px-3  '
+                            " class="py-3 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+                            <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
+                                <div class="h-4 w-4 rounded-full border border-gray-300"
+                                    :class="{ 'bg-primary': $page.url === item.path }" v-tooltip.right="{
+                                        value: item.name,
+                                        pt: {
+                                            arrow: {
+                                                style: {
+                                                    borderRightColor: '',
+                                                },
+                                            },
+                                            text: 'bg-[#1D2939] text-xs text-white font-medium px-2 py-1 rounded',
+                                        },
+                                    }"></div>
+                                <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+                            </div>
+                            <!-- <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" /> -->
+                            <span v-html="item.icon" v-if="!shouldShow"></span>
+                        </Link>
+                    </div>
+                    <!-- <div class="mb-1">
+                        <div
+                            class="px-3 py-3 flex items-center justify-between text-gray-700 hover:border-0 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+                            <div class="flex items-center gap-3" v-if="!shouldShow">
+                                <Icon icon="mdi:company" width="20" />
+                                <p class="text-lg">Add Department</p>
+                            </div>
+                            <Icon icon="material-symbols:add-box-outline" width="25" :class="{ 'ml-1': shouldShow }" />
+                        </div>
+                    </div> -->
+                </section>
+            </div>
+            <div class="border-t border-dashed pt-2 pb-4">
+                <section>
+                    <div class="mb-1">
+                        <Link :href="'/dashboard/support'"
+                            class="px-3 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+                            :class="$page.url === '/support'
+                                    ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+                                    : ' px-3  '
+                                "
+                                >
+                            <Icon icon="system-uicons:support" width="30" :class="{ ' ml-1': shouldShow }" />
+                            <p class="text-lg" v-if="!shouldShow">Support</p>
+                    </Link>
+                    </div>
+                    <div class="mb-1">
+                        <Link :href="'/settings'"
+                            class="px-3 py-3 flex gap-3 items-center text-[#344054] rounded-xl  hover:text-primary font-normal transition-all"
+                            :class="$page.url === '/settings'
+                                    ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+                                    : ' px-3  '
+                                ">
+                            <Icon icon="uiw:setting-o" width="25" :class="{ 'ml-1.5': shouldShow }" />
+                            <p class="text-lg" v-if="!shouldShow">Settings</p>
+                    </Link>
+                    </div>
+                </section>
+            </div>
+        </section>
+    
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
+import searchResult from "../components/Modals/SearchResult.vue";
 import logo from "../assets/logo.vue";
-import { Link } from '@inertiajs/vue3'
-import { usePage } from '@inertiajs/vue3'
+import TopBar from "./TopBar.vue";
+import { usePage, Link } from '@inertiajs/vue3'
 
 const page = usePage()
 const departments = computed(() => page.props.shared_departments)
 const permissions = computed(() => page.props.permissions)
 const role = computed(() => page.props.user_roles)
 const branches = ref([]);
+const userBranchName = computed(()=> page.props.branchName)
+const userBranch = computed(()=> page.props.userBranch)
+const current_page = computed(()=> page.url)
+
+const toggleSearch = ref(false);
+
+const toggleSearchState = () => {
+    toggleSearch.value = !toggleSearch.value;
+};
+
+const shouldShow = ref(false);
 
 const setDepartments = () => {
-  for (let dept of departments.value) {
-    let data = {
-      name: dept.title,
-      path: "/dashboard/branches/department/" + dept.id,
-      icon: `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="0.5" y="0.5" width="9" height="9" rx="4.5" stroke="#344054"/>
-</svg>
-`,
-      permission: 'archiving view'
+  if(role.value.includes('super users')){
+    for (let dept of departments.value) {
+      let data = {
+        name: dept.title,
+        path: "/dashboard/branches/department/" + dept.id,
+        icon: `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="9" height="9" rx="4.5" stroke="#344054"/>
+        </svg>
+        `,
+        permission: 'edms view'
+      }
+      branches.value.push(data)
     }
-    branches.value.push(data)
+  }else{
+   
+    const branchType = userBranchName.value; 
+    const branchData = userBranch.value[branchType]; 
+
+    if (branchData) {
+      let data = {
+        name: branchData.title,
+        path: `/dashboard/branches/${branchType}/${branchData.id}`,
+        icon: `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="9" height="9" rx="4.5" stroke="#344054"/>
+        </svg>`,
+        permission: 'edms view'
+      };
+      branches.value.push(data);
+    }
   }
 }
 
 const userHasPermission = (permit) => {
+  if(permit ==''){
+    return true;
+  }
   if (role.value.includes('super admin')) {
     return true;
   } else {
@@ -130,6 +196,20 @@ const userHasPermission = (permit) => {
 
 }
 
+
+watch(current_page,
+    (newPath) => {console.log(newPath)
+        shouldShow.value =
+            newPath.startsWith("/settings") || newPath.startsWith("/dashboard/chat") || newPath.startsWith("/dashboard/workflow");
+    }
+);
+
+onMounted(() => {
+    setDepartments()
+    shouldShow.value =
+       current_page.value.startsWith("/settings") || current_page.value.startsWith("/dashboard/chat") || current_page.value.startsWith("/dashboard/workflow");
+});
+
 const main = ref([
   {
     name: "Dashboard",
@@ -142,7 +222,7 @@ const main = ref([
   },
   {
     name: "Analytics",
-    path: "/analytics",
+    path: "/dashboard/analytics",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66667 1.66669V15.8334C1.66667 17.2167 1.61709 18.3334 3.00043 18.3334H18.3333" stroke="#344054" stroke-width="1.25" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M16.8341 6.66669L11.234 12.2667L9.10068 9.06669L4.83398 13.3334" stroke="#344054" stroke-width="1.38462" stroke-linecap="round" stroke-linejoin="round"/>
@@ -170,6 +250,23 @@ const main = ref([
 `,
     permission: 'mail view'
   },
+  {
+    name: 'Registry',
+    path: '/dashboard/registry',
+    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+    permission: 'registry view'
+  },
+  // {
+  //   name:'EDMS',
+  //   path: '/edms/branches',
+  //   icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M17.5 4.16663C17.5 5.54734 14.1421 6.66663 10 6.66663C5.85786 6.66663 2.5 5.54734 2.5 4.16663M17.5 4.16663C17.5 2.78591 14.1421 1.66663 10 1.66663C5.85786 1.66663 2.5 2.78591 2.5 4.16663M17.5 4.16663V15.8333C17.5 17.2166 14.1667 18.3333 10 18.3333C5.83333 18.3333 2.5 17.2166 2.5 15.8333V4.16663M17.5 9.99996C17.5 11.3833 14.1667 12.5 10 12.5C5.83333 12.5 2.5 11.3833 2.5 9.99996" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+  //       </svg>
+  //       `,
+  //       permission: 'edms view'
+  // },
   {
     name: "Workflow",
     path: "/dashboard/workflow",
@@ -261,13 +358,13 @@ const admin = ref([
     permission: 'metadata setup view'
   },
   {
-    name: "Registry",
+    name: "Admin Registry",
     path: "/dashboard/admin-registry",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `,
-    permission: 'registry view'
+    permission: 'admin registry view'
   },
   {
     name: "Audit Log",
@@ -289,7 +386,43 @@ const admin = ref([
   },
 ]);
 
-onMounted(() => {
-  setDepartments()
-})
+
+
+// const branches = ref([
+//     {
+//         name: "Communication",
+//         path: "/branches/communication",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Tech Titans",
+//         path: "/branches/tech-titans",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Information",
+//         path: "/branches/information",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Management",
+//         path: "/branches/management",
+//         icon: "clarity:circle-line",
+//     },
+// ]);
 </script>
+
+<style>
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide_scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide_scroll {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+</style>

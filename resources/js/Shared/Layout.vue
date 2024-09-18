@@ -3,7 +3,7 @@
   <main class="h-screen flex w-full  fixed top-0">
     <Navigation />
     <section class="hide_scroll w-full overflow-y-scroll">
-      <TopBar :toggleSearchFunction="toggleSearchState" :notifications="notifications"/>
+      <TopBar :toggleSearchFunction="toggleSearchState" :total_task_notifications="total_task_notifications" :notifications="notifications"/>
       <slot />
     </section>
 
@@ -40,17 +40,21 @@
 
   
 <script setup>
-  import { ref,onMounted, computed } from "vue";
+  import { ref,onMounted, computed, provide, watch } from "vue";
 import TopBar from "./TopBar.vue";
 import Navigation from "./Navigation.vue";
 import searchResult from "../components/Modals/SearchResult.vue";
 import { usePage } from "@inertiajs/vue3";
+import { useStore } from 'vuex';
 
 const toggleSearch = ref(false);
 const page = usePage()
 const user = computed(()=>page.props.user);
 const roles = computed(()=>page.props.user_roles)
-const notifications = ref([])
+const notifications = computed(()=> store.getters.getNotifications)
+const total_task_notifications = computed(()=>store.getters.getTotalTaskNotifications)
+const store = useStore()
+const current_page = computed(()=> page.url)
 
 
   const toggleSearchState = () => {
@@ -83,20 +87,29 @@ const notifications = ref([])
     return 'users'
   }
 
+  watch(current_page, ()=>{
+    store.dispatch("fetchNotifications")
+  })
+
   const getUserNotifications = ()=>{
     axios.get('/user-notifications').then((response)=>{
-      notifications.value = response.data
+      notifications.value = response.data.notifications
+      total_task_notifications.value = response.data.count
+      
     })
   }
-
+  provide('notifications', notifications)
   onMounted(()=>{
     
-    getUserNotifications()
+    //getUserNotifications()
+     store.dispatch("fetchNotifications")
+    // notifications.value = store.state.notifications
+    // total_task_notifications.value = store.state.total_task_notifications
 
-    Echo.private(`chat.${user.value.id}`).listen('ChatEvent', (e)=>{
-      alert('yes i got the message')
-        console.log(e)
-      })
+    // Echo.private(`chat.${user.value.id}`).listen('ChatEvent', (e)=>{
+    //   alert('yes i got the message')
+    //     console.log(e)
+    //   })
 
     
       // Echo.private(`task.${user.value.id}.${role}`)
@@ -107,10 +120,13 @@ const notifications = ref([])
 
       Echo.private('task.' + user.value.id)
       .notification((notification) => {
-       // alert(' there is a notification ')
-          //notifications.value.push({notifications: notification.task, notification_type: notification.type});
           getUserNotifications()
       });
+
+       Echo.private('comment.' + user.value.id)
+        .notification((notification) => {
+            getUserNotifications()
+        });
   
     // Echo.private(`chat.${user.value.id}`)
     // .listen('ChatEvent', (e) => {

@@ -36,8 +36,8 @@
           </div>
           <div class="relative">
             <input type="text" v-model="search" @input="filterRecipients" class="outline-none" />
-            <div class="border border-solid py-3 bg-white rounded-md absolute z-50"
-              v-if="!branchType && users && users.length > 0">
+            <div ref="pop_up" class="border border-solid py-3 bg-white rounded-md absolute z-50"
+              v-if="!branchType && users && users.length > 0 && !clickOutside">
               <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
                 v-for="(user, index) in users" :key="index" @click="updateUsers(user)">
                 <img :src="page.props.base+'/'+user.profile_image" alt="" class="w-8" />
@@ -45,8 +45,8 @@
               </div>
             </div>
 
-            <div class="border border-solid py-3 bg-white rounded-md absolute z-50"
-              v-if="branchType && branch && branch.length > 0">
+            <div ref="pop_up2" class="border border-solid py-3 bg-white rounded-md absolute z-50"
+              v-if="branchType && branch && branch.length > 0 && !clickOutside2">
               <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
                 v-for="(user, index) in branch" :key="index" @click="updateUsers(user)">
                 <!-- <img :src="page.props.base+'/'+user.profile_image" alt="" class="w-8" /> -->
@@ -88,6 +88,7 @@ import { useToast } from "primevue/usetoast";
 import image from "../../../assets/images/members/1.svg";
 import debounce from "lodash.debounce"
 import { usePage, router } from "@inertiajs/vue3"
+import { onClickOutside } from '@vueuse/core'
 
 const toast = useToast()
 const props = defineProps(["modelValue", 'users', 'task_id']);
@@ -95,6 +96,10 @@ const emit = defineEmits(["update:modelValue"]);
 const search = ref('')
 const page = usePage()
 const description = ref('')
+const pop_up = ref(null)
+const pop_up2 = ref(null)
+const clickOutside = ref(false)
+const clickOutside2 = ref(false)
 const visible = computed({
   get() {
     return props.modelValue;
@@ -103,6 +108,14 @@ const visible = computed({
     emit("update:modelValue", value);
   },
 });
+
+onClickOutside(pop_up, () => {
+  clickOutside.value = true;
+})
+
+onClickOutside(pop_up2, () => {
+  clickOutside2.value = true;
+})
 
 
 const searchInput = ref("");
@@ -165,7 +178,7 @@ const searchUsers = debounce(() => {
   branchType.value = ''
   axios.get('/dashboard/search-users', { 
     params: { search: search.value } }).then((response) => {
-      if(response.data.type){
+      if(response.data.type != 'unit'){
         branch.value = response.data.data
         branchType.value = response.data.type
       }else{

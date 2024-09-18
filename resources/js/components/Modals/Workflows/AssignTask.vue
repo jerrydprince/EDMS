@@ -25,40 +25,41 @@
     </button>
     <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
       <section class="bg-white p-5">
-      <input type="text" class=" w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
-      <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
-    </section>
-    <Divider class="-mt-0" />
-    <section class="p-5 text-gray-600">
+        <input type="text" class=" w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
+        <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
+      </section>
+      <Divider class="-mt-0" />
+      <section class="p-5 text-gray-600">
 
-      <div class="flex gap-3 pb-4 items-center justify-between text-sm">
-        <div class="bg-gray-100 flex items-center rounded-md p-1">
-          <button class="rounded-lg py-1 px-4" @click="activeButton('')" :class="{ activeButton: buttonSwitch === 1 }">
-            <p>Document Upload + Text comment</p>
-          </button>
-          <div>
-            <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
-              @click="activeButton('document_only')" :class="{ activeButton: buttonSwitch === 2 }">
-              <p>Document Only</p>
+        <div class="flex gap-3 pb-4 items-center justify-between text-sm">
+          <div class="bg-gray-100 flex items-center rounded-md p-1">
+            <button class="rounded-lg py-1 px-4" @click="activeButton('')"
+              :class="{ activeButton: buttonSwitch === 1 }">
+              <p>Document Upload + Text comment</p>
             </button>
+            <div>
+              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
+                @click="activeButton('document_only')" :class="{ activeButton: buttonSwitch === 2 }">
+                <p>Document Only</p>
+              </button>
+            </div>
+
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+              @click="activeButton('text_only')" :class="{ activeButton: buttonSwitch === 3 }">
+              <p>Text Only</p>
+            </button>
+
           </div>
-
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="activeButton('text_only')"
-            :class="{ activeButton: buttonSwitch === 3 }">
-            <p>Text Only</p>
-          </button>
-
         </div>
-      </div>
 
-      <div>
-        <div class="flex items-center gap-14">
-          <div class="flex items-center gap-3">
-            <Icon icon="lucide:users" />
-            <p>Assign To</p>
-          </div>
+        <div>
+          <div class="flex items-center gap-14">
+            <div class="flex items-center gap-3">
+              <Icon icon="lucide:users" />
+              <p>Assign To</p>
+            </div>
 
-          <!-- <div class="relative" v-if="toggleRecipient">
+            <!-- <div class="relative" v-if="toggleRecipient">
             <input v-model="search" type="text"
               class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
               placeholder="Search department / staff" @input="filterRecipients" />
@@ -91,151 +92,153 @@
             </div>
           </div> -->
 
-          <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2"
-            v-if="!is_dropdown" @click="setIsDropdown">
-            <p>Set assignee</p>
-            <Icon icon="lucide:plus" />
-          </div>
+            <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" v-if="!is_dropdown"
+              @click="setIsDropdown">
+              <p>Set assignee</p>
+              <Icon icon="lucide:plus" />
+            </div>
 
-          <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
-            <div v-for="user in selectedUsers"
-              class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
-              <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
-              <p class="text-xs w-fit" v-if="search_type == 'unit'">{{ user.first_name+' '+user.last_name }}</p>
-              <p class="text-xs w-fit" v-else>{{ user.title }}</p>
+            <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
+              <div v-for="user in selectedUsers"
+                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
+                <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
+                <p class="text-xs w-fit" v-if="search_type == 'unit'">{{ user.first_name + ' ' + user.last_name }}</p>
+                <p class="text-xs w-fit" v-else>{{ user.title }}</p>
+                <div class="bg-white border rounded-full p-0.5 text-sm">
+                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
+                </div>
+              </div>
+
+              <div class="relative">
+                <input v-model="search" type="text"
+                  class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
+                  placeholder="Search department / staff" 
+                  @focus="clickOutside=false" @input="filterRecipients" />
+
+                <div ref="pop_up"
+                  class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
+                  v-if="users && users.length > 0 && !is_dropwdown_blur && !clickOutside">
+                  <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
+                    v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
+                    <div class=" flex items-center gap-3 ">
+                      <img v-if="search_type == 'unit'" :src="page.props.base + '/' + suggestion.profile_image" alt=""
+                        class="w-8 h-8 rounded-full" />
+                      <p v-if="search_type == 'unit'" class="text-sm w-fit text-black font-semibold">{{
+                      (suggestion.first_name + " " + suggestion.last_name).length > 15
+                        ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
+                        : suggestion.first_name + " " + suggestion.last_name
+                    }}</p>
+                      <p v-else class="text-sm w-fit text-black font-semibold">
+                        {{ suggestion.title }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p>{{ suggestion.email }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="form.errors.users" class=" text-red-400">{{ form.errors.users }}</div>
+
+
+          <div class="flex items-center gap-14 mt-5">
+            <div class="flex items-center gap-3">
+              <Icon icon="lucide:calendar" />
+              <p>Due date</p>
+            </div>
+            <div class="relative" v-if="!form.due_date">
+              <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2">
+                <p>Set deadline</p>
+                <Icon icon="lucide:plus" />
+              </div>
+              <div class="absolute top-0 opacity-0">
+                <Calendar v-model="form.due_date" />
+              </div>
+            </div>
+
+            <div
+              class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
+              v-else>
+              <p class="text-xs w-fit">{{ formattedDate }}</p>
               <div class="bg-white border rounded-full p-0.5 text-sm">
-                <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
+                <Icon icon="clarity:times-line" class="cursor-pointer" @click="form.due_date = null" />
               </div>
             </div>
-            
-              <div class="relative" >
-            <input v-model="search" type="text"
-              class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-              placeholder="Search department / staff" @input="filterRecipients"/>
+          </div>
+          <div v-if="form.errors.due_date" class=" text-red-400">{{ form.errors.due_date }}</div>
 
-            <div 
-              class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-              v-if="users && users.length > 0 && !is_dropwdown_blur">
-              <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                <div class=" flex items-center gap-3 ">
-                  <img v-if="search_type == 'unit'" :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
-                  <p v-if="search_type == 'unit'" class="text-sm w-fit text-black font-semibold">{{
-                  (suggestion.first_name + " " + suggestion.last_name).length > 15
-                    ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                    : suggestion.first_name + " " + suggestion.last_name
-                }}</p>
-                 <p v-else class="text-sm w-fit text-black font-semibold">
-                  {{ suggestion.title }}
-                 </p>
+          <div class="flex items-center gap-24 mt-5">
+            <div class="flex items-center gap-3">
+              <Icon icon="lucide:calendar" />
+              <p>Priority</p>
+            </div>
+            <div class="relative" v-if="!priority">
+              <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" @click="select_Priority = true">
+                <Icon icon="lucide:plus" />
+                <p>Set Priority</p>
+              </div>
+
+              <div class="z-50 absolute top-12 bg-white border flex items-center gap-5 p-5 rounded-xl shadow-lg"
+                v-if="select_Priority">
+                <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
+                  <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
+    color:
+      priority === 'Low'
+        ? '#FFBC53'
+        : priority === 'High'
+          ? '#FF3737'
+          : priority === 'Medium'
+            ? '#F67E5A'
+            : 'black',
+  }">
+                    {{ priority }}
+                  </p>
                 </div>
+              </div>
+            </div>
 
-                <div>
-                  <p>{{ suggestion.email }}</p>
-                </div>
+            <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
+    color:
+      priority === 'Low'
+        ? '#FFBC53'
+        : priority === 'High'
+          ? '#FF3737'
+          : priority === 'Medium'
+            ? '#F67E5A'
+            : 'black',
+  }" v-else>
+              <p class="text-xs w-fit">{{ priority }}</p>
+              <div class="">
+                <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
               </div>
             </div>
           </div>
-            </div>
-        </div>
-        <div v-if="form.errors.users" class=" text-red-400">{{ form.errors.users }}</div>
+          <div v-if="form.errors.priority" class=" text-red-400">{{ form.errors.priority }}</div>
 
-
-        <div class="flex items-center gap-14 mt-5">
-          <div class="flex items-center gap-3">
-            <Icon icon="lucide:calendar" />
-            <p>Due date</p>
-          </div>
-          <div class="relative" v-if="!form.due_date">
-            <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2">
-              <p>Set deadline</p>
-              <Icon icon="lucide:plus" />
-            </div>
-            <div class="absolute top-0 opacity-0">
-              <Calendar v-model="form.due_date" />
-            </div>
-          </div>
-
-          <div
-            class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
-            v-else>
-            <p class="text-xs w-fit">{{ formattedDate }}</p>
-            <div class="bg-white border rounded-full p-0.5 text-sm">
-              <Icon icon="clarity:times-line" class="cursor-pointer" @click="form.due_date = null" />
-            </div>
-          </div>
-        </div>
-        <div v-if="form.errors.due_date" class=" text-red-400">{{ form.errors.due_date }}</div>
-
-        <div class="flex items-center gap-24 mt-5">
-          <div class="flex items-center gap-3">
-            <Icon icon="lucide:calendar" />
-            <p>Priority</p>
-          </div>
-          <div class="relative" v-if="!priority">
-            <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" @click="select_Priority = true">
-              <Icon icon="lucide:plus" />
-              <p>Set Priority</p>
+          <div class=" mt-5 " :class="{ 'hidden': buttonSwitch === 2 }">
+            <div class="flex items-center gap-3">
+              <Icon icon="lucide:file-text" />
+              <p>Task Description</p>
             </div>
 
-            <div class="z-50 absolute top-12 bg-white border flex items-center gap-5 p-5 rounded-xl shadow-lg"
-              v-if="select_Priority">
-              <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
-                <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-                color:
-                  priority === 'Low'
-                    ? '#FFBC53'
-                    : priority === 'High'
-                      ? '#FF3737'
-                      : priority === 'Medium'
-                        ? '#F67E5A'
-                        : 'black',
-              }">
-                  {{ priority }}
-                </p>
-              </div>
+            <textarea v-model="form.description" id="" cols="30" rows="5"
+              class=" bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full ">
+        </textarea>
+          </div>
+
+          <div class=" mt-5" :class="{ 'hidden': buttonSwitch === 3 }">
+            <div class=" flex items-center gap-3">
+              <Icon icon="grommet-icons:attachment" width="20" />
+              <p>Attached Document</p>
             </div>
-          </div>
 
-          <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-                color:
-                  priority === 'Low'
-                    ? '#FFBC53'
-                    : priority === 'High'
-                      ? '#FF3737'
-                      : priority === 'Medium'
-                        ? '#F67E5A'
-                        : 'black',
-              }" v-else>
-            <p class="text-xs w-fit">{{ priority }}</p>
-            <div class="">
-              <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
-            </div>
-          </div>
-        </div>
-        <div v-if="form.errors.priority" class=" text-red-400">{{ form.errors.priority }}</div>
-
-        <div class=" mt-5 " :class="{ 'hidden': buttonSwitch === 2 }">
-          <div class="flex items-center gap-3">
-            <Icon icon="lucide:file-text" />
-            <p>Task Description</p>
-          </div>
-
-          <textarea v-model="form.description" id="" cols="30" rows="5"
-            class=" bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full ">
-      </textarea>
-        </div>
-
-        <div class=" mt-5" :class="{ 'hidden': buttonSwitch === 3 }">
-          <div class=" flex items-center gap-3">
-            <Icon icon="grommet-icons:attachment" width="20" />
-            <p>Attached Document</p>
-          </div>
-
-          <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
+            <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
 
 
-            <!-- <div class="border  p-3 rounded-md">
+              <!-- <div class="border  p-3 rounded-md">
               <div class="flex justify-between">
                 <div class="flex items-center gap-1 justify-center">
                   <img src="../../../assets/images/file.svg" alt="" class="w-7" />
@@ -261,12 +264,12 @@
             </div> -->
 
 
-            <div class=" w-1/3 border  p-2 rounded-md" v-for="(file, index) in files" :key="index">
-              <!-- Uploading File Content -->
-              <div class="mb-1 flex justify-between items-center">
-                <div class="flex items-center gap-x-3">
-                  <span class="w-8 h-8 flex justify-center items-center text-gray-500">
-                    <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div class=" w-1/3 border  p-2 rounded-md" v-for="(file, index) in files" :key="index">
+                <!-- Uploading File Content -->
+                <div class="mb-1 flex justify-between items-center">
+                  <div class="flex items-center gap-x-3">
+                    <span class="w-8 h-8 flex justify-center items-center text-gray-500">
+                      <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M31.6313 3.2207L38.934 10.8332V39.7817H11.6537V39.8762H39.0272V10.929L31.6313 3.2207Z" fill="#909090"/>
                         <path d="M31.5407 3.125H11.5605V39.7805H38.934V10.8333L31.5407 3.125Z" fill="#F4F4F4"/>
                         <path d="M11.3597 5.09375H2.97281V14.0542H29.3541V5.09375H11.3597Z" fill="#7A7B7C"/>
@@ -277,70 +280,71 @@
                         <path d="M31.5407 3.125V10.8333H38.934L31.5407 3.125Z" fill="#F4F4F4"/>
                         <path d="M11.7796 6.34995H10.0642V12.65H11.4187V10.5263L11.718 10.5434C12.0075 10.5384 12.2942 10.4865 12.5671 10.3898C12.8064 10.3075 13.0265 10.1776 13.2142 10.0079C13.4037 9.84578 13.5529 9.64177 13.65 9.41201C13.7816 9.02942 13.8286 8.62281 13.7878 8.22026C13.7796 7.93271 13.7292 7.64791 13.6381 7.37501C13.5553 7.17802 13.4323 7.00043 13.2771 6.85355C13.1219 6.70667 12.9377 6.59372 12.7365 6.52189C12.5616 6.45827 12.3809 6.41211 12.197 6.38408C12.0585 6.3627 11.9185 6.35129 11.7783 6.34995M11.5303 9.36083H11.4135V7.41833H11.6681C11.7799 7.41026 11.8921 7.42743 11.9963 7.46855C12.1006 7.50967 12.1943 7.57369 12.2705 7.65589C12.4284 7.86722 12.5128 8.12446 12.5107 8.38826C12.5107 8.71114 12.5107 9.00383 12.2193 9.20989C12.0094 9.32534 11.7705 9.37732 11.5316 9.35951M16.3485 6.33289C16.2028 6.33289 16.061 6.34339 15.9613 6.34733L15.6528 6.3552H14.6291V12.6552H15.834C16.2944 12.6678 16.7529 12.5898 17.1832 12.4255C17.5296 12.2881 17.8363 12.0667 18.0757 11.7811C18.3085 11.4929 18.4756 11.1574 18.5653 10.798C18.6684 10.391 18.7187 9.97234 18.7149 9.55245C18.7404 9.05653 18.702 8.5594 18.6007 8.07326C18.5046 7.71543 18.3246 7.38564 18.0757 7.1112C17.8804 6.8896 17.6413 6.71085 17.3735 6.5862C17.1435 6.47978 16.9016 6.40134 16.653 6.35258C16.5541 6.33624 16.4539 6.32877 16.3537 6.33026M16.1148 11.4976H15.9836V7.47608H16.0006C16.2712 7.44494 16.545 7.49377 16.7881 7.61651C16.9662 7.75869 17.1113 7.93781 17.2134 8.14151C17.3236 8.35589 17.3871 8.59118 17.3998 8.83189C17.4116 9.12064 17.3998 9.35689 17.3998 9.55245C17.4051 9.77773 17.3906 10.003 17.3565 10.2258C17.316 10.4544 17.2412 10.6757 17.1346 10.882C17.014 11.0738 16.851 11.2355 16.6582 11.3545C16.4963 11.4592 16.3045 11.5081 16.1122 11.4936M22.7758 6.3552H19.5864V12.6552H20.9356V10.1562H22.6419V8.98545H20.9356V7.52595H22.7731V6.3552" fill="white"/>
                         </svg> -->
-                    <div>
-                      <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview"
-                        style="max-width: 200px; max-height: 200px;" />
-                    </div>
+                      <div>
+                        <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview"
+                          style="max-width: 200px; max-height: 200px;" />
+                      </div>
 
-                  </span>
-                  <div class="ml-2">
-                    <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
-                      form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
-                    <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
-                      <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
-                        <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24"></line>
-                        <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24"></line>
-                        <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24">
-                        </line>
-                        <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24"></line>
-                        <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24">
-                        </line>
-                        <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24"></line>
-                        <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24"></line>
-                        <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="24">
-                        </line>
-                      </svg>
-                      <span class="text-xs font-medium text-gray-500">Loading...</span>
+                    </span>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
+    form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
+                      <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
+                        <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
+                          <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24"></line>
+                          <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24"></line>
+                          <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24">
+                          </line>
+                          <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round"
+                            stroke-linejoin="round" stroke-width="24"></line>
+                          <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24">
+                          </line>
+                          <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24"></line>
+                          <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24"></line>
+                          <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="24">
+                          </line>
+                        </svg>
+                        <span class="text-xs font-medium text-gray-500">Loading...</span>
+                      </div>
+                      </p>
                     </div>
-                    </p>
                   </div>
+                  <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]"
+                    viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z"
+                      stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+
                 </div>
-                <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]"
-                  viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z"
-                    stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <!-- End Uploading File Content -->
 
+                <progress v-if="form.progress" :value="form.progress.percentage" max="100"
+                  class="w-full rounded-lg h-2">
+                  {{ form.progress.percentage }}%
+                </progress>
+                <!-- End Progress Bar -->
               </div>
-              <!-- End Uploading File Content -->
 
-              <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="w-full rounded-lg h-2">
-                {{ form.progress.percentage }}%
-              </progress>
-              <!-- End Progress Bar -->
+
+
+              <div class=" p-7 border-dashed border-[3px] rounded-md cursor-pointer" @click="getFile">
+                <Icon icon="lucide:plus" width="30" />
+              </div>
             </div>
 
 
-
-            <div class=" p-7 border-dashed border-[3px] rounded-md cursor-pointer" @click="getFile">
-              <Icon icon="lucide:plus" width="30" />
-            </div>
           </div>
 
-
-        </div>
-
-        <!-- <div class=" mt-5">
+          <!-- <div class=" mt-5">
                <p>Submission Type</p>
 
                <div  v-for="(item,index) in type" :key="index" class=" flex mt-3 items-center gap-5">
@@ -348,9 +352,9 @@
                    <p class=" text-black font-semibold">{{ item }}</p>
                </div>
         </div> -->
-      </div>
+        </div>
 
-    </section>
+      </section>
     </section>
     <div class="flex p-3 justify-end w-full">
       <div class="flex gap-5 items-center px-5">
@@ -370,6 +374,7 @@ import image from "../../../assets/images/members/1.svg";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from "@inertiajs/vue3";
 import debounce from 'lodash.debounce'
+import { onClickOutside } from '@vueuse/core'
 
 const selectedType = ref(null);
 const select_Priority = ref(false);
@@ -391,11 +396,17 @@ const selectedUsers = ref([])
 const is_dropdown = ref(false)
 let is_dropwdown_blur = ref(false)
 const search_type = ref('')
+const pop_up = ref(null)
+const clickOutside = ref(false)
 
 const props = defineProps(["modelValue"]);
 
-const setIsDropdown = ()=>{
-  is_dropdown.value = true 
+onClickOutside(pop_up, () => {
+  clickOutside.value = true;
+})
+
+const setIsDropdown = () => {
+  is_dropdown.value = true
   is_dropwdown_blur = false
 }
 
@@ -503,15 +514,15 @@ const updateUsers = (suggestion) => {
   selectedUsers.value.push(suggestion)
   form.users.push(suggestion.id)
 
-  let index = users.value.findIndex((item)=>item.id == suggestion.id)
-  users.value.splice(index,1);
+  let index = users.value.findIndex((item) => item.id == suggestion.id)
+  users.value.splice(index, 1);
   // Suggestions.value = [];
 };
 
-const removeUser = (user)=>{
+const removeUser = (user) => {
   users.value.push(user)
-  let index = selectedUsers.value.findIndex((item)=>item.id == user.id)
-  selectedUsers.value.splice(index,1)
+  let index = selectedUsers.value.findIndex((item) => item.id == user.id)
+  selectedUsers.value.splice(index, 1)
 }
 
 const formatDate = (dateString) => {

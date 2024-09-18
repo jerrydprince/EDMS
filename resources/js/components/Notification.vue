@@ -7,20 +7,13 @@
         <p>Mark all as read</p>
       </div>
     </div>
-    <div
-      class="flex items-center w-full bg-gray-50 gap-1 p-1 rounded-md justify-between mt-2"
-    >
+    <div class="flex items-center w-full bg-gray-50 gap-1 p-1 rounded-md justify-between mt-2">
       <div v-for="(item, index) in buttons" :key="index">
-        <button
-          class="flex items-center gap-1 px-4 py-1 rounded-md"
-          @click="activeButton(item, index)"
-          :class="buttonToggle === index ? 'bg-white' : ''"
-        >
+        <button class="flex items-center gap-1 px-4 py-1 rounded-md" @click="activeButton(item, index)"
+          :class="buttonToggle === index ? 'bg-white' : ''">
           <p class="text-gray-700 text-[10px] font-normal">{{ item }}</p>
-          <p
-            class="bg-gray-100 text-gray-700 p-1 h-4 w-4 text-[6px] flex flex-col items-center justify-center rounded-sm"
-          >
-            1
+          <p class="bg-gray-100 text-gray-700 p-1 h-4 w-4 text-[8px] flex flex-col items-center justify-center rounded-sm">
+            {{ getTotalNotification(item) }}
           </p>
         </button>
       </div>
@@ -28,8 +21,8 @@
 
     <div v-for="(item, index) in props.notifications" :key="index">
       <div class="text-gray-700">
-        <h1 class="text-[10px]">Today</h1>
-        <div v-for="(notification, indexP) in item.data" :key="indexP">
+        <h3 class="text-[10px]">{{ index }}</h3>
+        <div v-for="(notification, indexp) in item" :key="indexp">
           <!-- <div v-if="notification.type === 'chat'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg cursor-pointer hover:bg-slate-50"
@@ -96,51 +89,46 @@
             </div>
           </div> -->
 
-          <div v-if="item.type === 'App\\Notifications\\TaskNotification'">
-            <div
-              class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
-            >
+          <div v-if="clickedButton == 'Task' && notification.type === 'App\\Notifications\\TaskNotification'">
+            <Link  @click="closeNotification" :href="'/dashboard/view-task/'+notification.data.task.id" method="post" :data="{is_assigned:1, notification_id:notification.id}"
+              class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer">
               <div class="flex items-start gap-4">
-                <img src="" class="h-7 mt-1" alt="" />
+                <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
+                  :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
+                <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
                 <div>
-                  <p class="font-semibold text-[12px]">
-                    sender
-                    <span class="font-normal text-gray-500"
-                      >{{ notification.title }}</span
-                    >
-                  </p>
+                  <div class="font-semibold text-[12px]"
+                    v-if="notification.data && notification.data.task && notification.data.task.status == 'pending'">
+                  {{ notification?.data?.user?.first_name + ' ' + notification?.data?.user?.last_name }}
+                  <span class="font-normal text-gray-500">assigned a task to you</span>
+                  </div>
 
-                  
-                  <p
-                    class="text-[10px] font-normal leading-[13px] text-gray-500"
-                  >
+
+                  <p class="text-[10px] font-normal leading-[13px] text-gray-500">
                     1 hour ago
                   </p>
 
                   <div class=" flex items-center gap-2 text-[10px] mt-1" v-if="notification.statusChange">
-                     <div class=" flex items-center gap-1 bg-slate-50 px-3 py-0.5 rounded-md"    :class="notification.statusChange.from.name === 'In Progress' 
-                  ? 'text-yellow-500' 
-                  : notification.statusChange.from.name === 'Under Review' 
-                  ? 'text-orange-500' 
-                  : ''">
+                    <div class=" flex items-center gap-1 bg-slate-50 px-3 py-0.5 rounded-md" :class="notification.statusChange.from.name === 'In Progress'
+                    ? 'text-yellow-500'
+                    : notification.statusChange.from.name === 'Under Review'
+                      ? 'text-orange-500'
+                      : ''">
                       <Icon :icon='notification.statusChange.from.icon' />
                       <p>{{ notification.statusChange.from.name }}</p>
-                     </div>
+                    </div>
 
-                     <Icon icon="bi:arrow-right" />
-                     <div class=" flex items-center gap-1 bg-slate-50 px-3 py-0.5 rounded-md" :class="notification.statusChange.to.name === 'Completed' ? 'text-green-500'
-                      : notification.statusChange.to.name === 'Uncompleted' 
-                      ? 'text-orange-500' 
-                     : ''">
+                    <Icon icon="bi:arrow-right" />
+                    <div class=" flex items-center gap-1 bg-slate-50 px-3 py-0.5 rounded-md" :class="notification.statusChange.to.name === 'Completed' ? 'text-green-500'
+                  : notification.statusChange.to.name === 'Uncompleted'
+                    ? 'text-orange-500'
+                    : ''">
                       <Icon :icon='notification.statusChange.to.icon' />
                       <p>{{ notification.statusChange.to.name }}</p>
-                     </div>
+                    </div>
                   </div>
-                  <div
-                    class="bg-gray-50 mb-2 rounded-2xl px-4 py-1 w-fit flex items-center gap-3"
-                    v-for="(attached, index) in notification.attachments"
-                    :key="index"
-                  >
+                  <div class="bg-gray-50 mb-2 rounded-2xl px-4 py-1 w-fit flex items-center gap-3"
+                    v-for="(attached, index) in notification.attachments" :key="index">
                     <Icon :icon="attached.icon" />
                     <p class="text-[10px] font-normal text-gray-500">
                       {{ attached.name }}
@@ -148,10 +136,10 @@
                   </div>
                 </div>
               </div>
-              <div v-if="notification.isRead">
+              <div v-if="notification.read_at">
                 <Icon icon="icon-park-outline:dot" class="text-green-500" />
               </div>
-            </div>
+            </Link>
           </div>
 
           <!-- <div v-if="notification.type === 'mail'">
@@ -281,32 +269,59 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps } from "vue";
+import { ref, computed, defineProps, defineEmits } from "vue";
+import { usePage, Link } from "@inertiajs/vue3"
 import profile from "../../../public/images/profile.svg";
 import profile_1 from "../../../public/images/profile_1.svg";
 import profile_2 from "../../../public/images/linda.svg";
+import { useStore } from 'vuex';
+
 
 const clickedButton = ref("chat");
 const buttonToggle = ref(0);
-const props = defineProps(['notifications'])
+const props = defineProps(['notifications', 'total_task_notifications'])
 const activeButton = (item, index) => {
   buttonToggle.value = index;
-  clickedButton.value = getItem(item);
+  clickedButton.value = item;
 };
+const emit = defineEmits(['close'])
+const page = usePage();
+const base = computed(() => page.props.base)
+const store = useStore()
 
-const getItem = (item)=>{
-  console.log(item)
-  if(item === 'App\\Notifications\\TaskNotification'){
+const getItem = (item) => {
+
+  if (item === 'App\\Notifications\\TaskNotification') {
     return "Task"
   }
-  if(item == 'App\\Notifications\\Mail'){
+  if (item == 'App\\Notifications\\Mail') {
     return "Mail"
   }
-  if(item == 'App\\Notifications\\Chat'){
+  if (item == 'App\\Notifications\\Chat') {
     return "Chat"
   }
-  if(item == 'App\\Notifications\\Other'){
+  if (item == 'App\\Notifications\\Other') {
     return "Other"
+  }
+}
+
+const closeNotification = ()=>{
+  //store.dispatch("fetchNotifications")
+  emit('close')
+}
+
+const getTotalNotification = (item)=>{
+  if (item === 'Task') {
+    return props.total_task_notifications
+  }
+  if (item == 'Mail') {
+    return 0
+  }
+  if (item == 'Chat') {
+    return 0;
+  }
+  if (item == 'Other') {
+    return 0;
   }
 }
 
@@ -362,8 +377,8 @@ const notifications = ref([
             name: "In Progress",
             icon: "nonicons:loading-16"
           },
-          to:{
-             name: "Completed",
+          to: {
+            name: "Completed",
             icon: "teenyicons:tick-circle-solid"
           },
         },
@@ -381,8 +396,8 @@ const notifications = ref([
             name: "Under Review",
             icon: "mdi:timer-sand-complete"
           },
-          to:{
-             name: "Uncompleted",
+          to: {
+            name: "Uncompleted",
             icon: "material-symbols:cancel"
           },
         },
@@ -400,8 +415,8 @@ const notifications = ref([
             name: "In Progress",
             icon: "nonicons:loading-16"
           },
-          to:{
-             name: "Completed",
+          to: {
+            name: "Completed",
             icon: "teenyicons:tick-circle-solid"
           },
         },
@@ -515,7 +530,7 @@ const notifications = ref([
         date: "2024-07-28T10:45:00Z",
         isRead: true,
       },
-      
+
       {
         id: 10,
         type: "task",
@@ -643,5 +658,4 @@ const filteredItems = computed(() => {
 
 </script>
 
-<style>
-</style>
+<style></style>

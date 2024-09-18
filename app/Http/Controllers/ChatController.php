@@ -12,8 +12,8 @@ use App\Models\ChatMessage;
 use App\Models\NewAttachment;
 use App\Models\ChatUnit;
 use App\Models\ChatUser;
-use App\Models\group_messages;
-use App\Models\groups;
+use App\Models\GroupMessages;
+use App\Models\Groups;
 use App\Models\User;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -49,13 +49,13 @@ class ChatController extends Controller
     }
     public function getGroupWithConversations($category, $groupId)
     {
-        $group = groups::with(['users', 'messages.user'])->where('category', $category)->findOrFail($groupId);
+        $group = Groups::with(['users', 'messages.user'])->where('category', $category)->findOrFail($groupId);
 
         return response()->json($group, 200);
     }
     public function getGroupsByCategory($category)
     {
-        $groups = groups::with('users')->where('category', $category)->get();
+        $groups = Groups::with('users')->where('category', $category)->get();
 
         return response()->json($groups, 200);
     }
@@ -81,21 +81,32 @@ class ChatController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $group = groups::create([
+        $group = Groups::create([
             'name' => $request->name,
             'category_id' => $request->category_id,
         ]);
 
         return response()->json(['message' => 'Group created successfully!', 'group' => $group], 201);
     }
-    public function getGroupMessages($groupId)
+    public function getGroupMessages($groupId, $groupType)
     {
         $loggedInUserId = Auth::id();
-        $group = groups::with('messages.user')->find($groupId);
-        if (!$group->users->contains(Auth::id())) {
-            return response()->json(['message' => 'User not a member of this group'], 403);
+        $branch = "";
+        if($groupType =="department"){
+            $branch = Department::with(['groupMessages'])->find($groupId);
         }
-        $formattedMessages = $group->messages->groupBy(function ($message) {
+        if($groupType =="division"){
+            $branch = Division::with(['groupMessages'])->find($groupId);
+        }
+        if($groupType =="unit"){
+            $branch = Unit::with(['groupMessages'])->find($groupId);
+        }
+
+        // $group = Groups::with('messages.user')->find($groupId);
+        // if (!$group->users->contains(Auth::id())) {
+        //     return response()->json(['message' => 'User not a member of this group'], 403);
+        // }
+        $formattedMessages = $branch->groupMessages->groupBy(function ($message) {
             return Carbon::parse($message->created_at)->format('Y-m-d');
         })->map(function ($dayMessages, $date) use ($loggedInUserId) {
             return [
@@ -103,12 +114,14 @@ class ChatController extends Controller
                 'messages' => $dayMessages->map(function ($message) use ($loggedInUserId) {
                     return [
                         'id' => $message->id,
-                        'sender_name' => $message->user->first_name, // Assuming 'first_name' is the column in the users table
+                        'sender_name' => $message->user->first_name." ".$message->user->last_name, // Assuming 'first_name' is the column in the users table
                         'message' => $message->message,
                         'timestamp' => $message->created_at->format('H:i'),
                         'created_at' => $message->created_at,
                         'sender_id' => $message->user->id,
-                        'is_sent_by_logged_in_user' => $message->user_id === $loggedInUserId,
+                        'group_type' => $message->group_type,
+                        'group_id' => $message->group_id,
+                        //'is_sent_by_logged_in_user' => $message->user_id === $loggedInUserId,
                     ];
                 }),
             ];
@@ -124,7 +137,7 @@ class ChatController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
-        $group = groups::findOrFail($groupId);
+        $group = Groups::findOrFail($groupId);
         $group->users()->attach($request->user_id);
 
         return response()->json(['message' => 'User added to group successfully!'], 200);
@@ -143,32 +156,50 @@ class ChatController extends Controller
     public function sendMessageToGroup(Request $request)
     {
         $request->validate([
-            'group_id' => 'required|exists:groups,id',
+            'group_id' => 'required',
             'message' => 'required|string|max:1000',
         ]);
 
-        $group = groups::find($request->group_id);
+        // $group = Groups::find($request->group_id);
 
-        if (!$group->users->contains(Auth::id())) {
-            return response()->json(['message' => 'User not a member of this group'], 403);
+        // if (!$group->users->contains(Auth::id())) {
+        //     return response()->json(['message' => 'User not a member of this group'], 403);
+        // }
+        $unit_group_id = null;
+        $div_group_id = null;
+        $dept_group_id = null;
+        if($request->groupType == 'unit'){
+            $unit_group_id = $request->group_id;
+        }
+        if($request->groupType == 'division'){
+            $div_group_id = $request->group_id;
+        }
+        if($request->groupType == 'department'){
+            $dept_group_id = $request->group_id;
         }
 
-        $message = group_messages::create([
+        $message = GroupMessages::create([
             'group_id' => $request->group_id,
             'user_id' => Auth::id(),
             'message' => $request->message,
+            'group_type' => $request->groupType,
+            'unit_id' => $unit_group_id,
+            'division_id' => $div_group_id,
+            'department_id' => $dept_group_id,
         ]);
-        $isSentByLoggedInUser = Auth::id() === $message->user->id;
+       // $isSentByLoggedInUser = Auth::id() === $message->user->id;
         $MessageArray = [
             'id' => $message->id,
-            'sender_name' => $message->user->first_name,
-            'sender_id' => $message->user->id,
+             'sender_name' => $message->user->first_name,
+             'sender_id' => $message->user->id,
             'message' => $message->message,
             'timestamp' => $message->created_at->format('H:i'),
             'created_at' => $message->created_at,
-            'is_sent_by_logged_in_user' => $isSentByLoggedInUser,
+            'group_type' => $request->groupType,
+            'group_id' => $request->group_id,
+            //'is_sent_by_logged_in_user' => $isSentByLoggedInUser,
         ];
-        broadcast(new GroupMessageSent($MessageArray, $request->group_id))->toOthers();
+        broadcast(new GroupMessageSent($MessageArray, $request->group_id, $request->groupType))->toOthers();
         return response()->json(['message' => 'Message sent to group successfully!', 'sentMessage' => $MessageArray], 200);
     }
     public function sendMessageToUser(Request $request)
@@ -195,7 +226,7 @@ class ChatController extends Controller
         ];
         // $MessageArray = $formattedMessage->toArray();
         broadcast(new MessageSent($formattedMessage, $message->recipient_id))->toOthers();
-        broadcast(new MessageSent($formattedMessage, $message->sender_id))->toOthers();
+        //broadcast(new MessageSent($formattedMessage, $message->sender_id))->toOthers();
         return response()->json(['message' => 'Message sent to user successfully!', 'sentMessage' => $formattedMessage], 200);
     }
 
@@ -284,7 +315,8 @@ class ChatController extends Controller
                             'timestamp' => $message->created_at->format('H:i'),
                             'recipient_id' => $message->recipient_id,
                             'sender_id' => $message->sender_id,
-                            'is_sent_by_logged_in_user' => $isSentByLoggedInUser
+                            'is_sent_by_logged_in_user' => $isSentByLoggedInUser,
+                            'sender' => $message->sender,
                             // 'attachments' => $message->attachments->map(function ($attachment) {
                             //     return [
                             //         'id' => $attachment->id,
@@ -296,7 +328,7 @@ class ChatController extends Controller
                     })->toArray(),
                 ];
             })->toArray();
-        broadcast(new MessageSent($formattedMessages, $userId))->toOthers();
+        //broadcast(new MessageSent($formattedMessages, $userId))->toOthers();
         return response()->json($formattedMessages, 200);
     }
 

@@ -39,12 +39,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = auth()->user();
+
         return array_merge(parent::share($request), [
-            'shared_departments' => fn () => Department::get()->take(4),
+            'shared_departments' => fn () => Department::get(),
             'base' => fn () => url('/'),
             // 'department' => fn () => Auth::check()? User::with(['department','division','unit'])->find(auth()->user()->id): [],
             'userBranch' => fn () => Auth::check()? User::with(['department','division','unit'])->find(auth()->user()->id): [],
-            'user' => fn () => auth()->user(),
+            'user' => fn () => Auth::check()? auth()->user():'',
             // 'division' => fn () => Auth::check()? \App\Models\Division::find(auth()->user()->division_id): [],
             // 'unit' => fn () => Auth::check()? \App\Models\Unit::find(auth()->user()->unit_id): [],
             // 'department_div_unit' => fn () =>
@@ -52,6 +54,11 @@ class HandleInertiaRequests extends Middleware
             //         $query->with('unit');
             //     }])->where('id', Auth::user()->department_id)->first() : [],
             'branch' => fn() => (Auth::check()) ? 
+                ((auth()->user()->unit_id) ? 'unit' :
+                ((auth()->user()->division_id) ? 'division' :
+                'department')) :
+                [],
+            'branchName' => fn() => (Auth::check()) ? 
                 ((auth()->user()->unit_id) ? 'unit' :
                 ((auth()->user()->division_id) ? 'division' :
                 'department')) :

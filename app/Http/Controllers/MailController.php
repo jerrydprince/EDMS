@@ -19,7 +19,8 @@ class MailController extends Controller
 {
     public function mail()
     {
-        $mails = MailsModel::orderBy('created_at', 'desc')->get();
+        //$mails = MailsModel::orderBy('created_at', 'desc')->get();
+        $mails = auth()->user()->mails()->orderBy('created_at', 'desc')->get();
         return inertia('Mail/Mails', [
             'mails' =>  $mails
         ]);
@@ -41,6 +42,7 @@ class MailController extends Controller
         $newMail->body = $request->body;
         $newMail->sender = auth()->user()->first_name." ".auth()->user()->last_name;
         $newMail->sender_id = auth()->user()->id;
+        $newMail->user_id = auth()->user()->id;
         $newMail->save();
         if($request->hasFile('doc')){
             $file = $request->file('doc');

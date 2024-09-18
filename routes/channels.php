@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Models\User;
+use App\Models\Department;
+use App\Models\Division;
+use App\Models\Unit;
 
 
 /*
@@ -21,6 +24,30 @@ use App\Models\User;
 
 Broadcast::channel('chat.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
+});
+
+Broadcast::channel('comment.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
+Broadcast::channel('group.{groupId}.{groupType}', function ($user, $groupId, $groupType) {
+    if ($groupType === 'department') {
+        $department = Department::find($groupId);
+        return $department && $department->id === (int) $groupId;
+    }
+
+    if ($groupType === 'division') {
+        $division = Division::find($groupId);
+        return $division && $division->id === (int) $groupId;
+    }
+
+    if ($groupType === 'unit') {
+        $unit = Unit::find($groupId);
+        return $unit && $unit->id === (int) $groupId;
+    }
+
+    // Add a fallback if needed
+    return false;
 });
 
 // Broadcast::channel('task.{userId}.{roles}', function($user, $userId, $roles){

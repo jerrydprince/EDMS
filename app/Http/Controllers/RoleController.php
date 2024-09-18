@@ -92,7 +92,7 @@ class RoleController extends Controller
 
     public function getAccessLevel(){
         $roles = Role::with('permissions')->withCount('users')->get();
-        $permissions = Permission::get();
+        $permissions = Permission::orderBy('name','ASC')->get();
         $permissions = $permissions->groupBy('name')->chunk(4);
         return inertia('AcessConfig/AccessLevel', compact('roles','permissions'));
     }

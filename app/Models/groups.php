@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class groups extends Model
+class Groups extends Model
 {
     use HasFactory;
     protected $fillable = [
@@ -23,6 +23,6 @@ class groups extends Model
 
     public function messages()
     {
-        return $this->hasMany(group_messages::class,  'group_id');
+        return $this->hasMany(GroupMessages::class,  'group_id');
     }
 }

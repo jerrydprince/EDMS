@@ -15,6 +15,16 @@ class Mail extends Model
     {
         return $this->hasMany(Attachment::class);
     }
+
+    /**
+     * Get the user that owns the Mail
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
 
 

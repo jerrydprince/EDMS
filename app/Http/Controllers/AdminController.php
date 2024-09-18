@@ -14,14 +14,82 @@ use App\Models\Folder;
 use App\Models\FileType;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\Rule;
+use App\Models\Task;
 
 class AdminController extends Controller
 {
     public function index(){
-        $departments = Department::with(['division'=>function($query){
-            $query->with('unit');
-        }])->get()->take(4);
-        return inertia('admin/index', compact('departments'));
+        $user = auth()->user();
+
+        if($user->hasRole('super admin') || $user->hasRole('admin')){
+             $departments = Department::with(['division'=>function($query){
+                $query->with('unit');
+            }])->get()->take(4);
+            return inertia('admin/index', compact('departments'));
+        }
+      
+        if($user->hasRole('super users') || $user->hasRole('directors') || $user->hasRole('division heads')
+         || $user->hasRole('unit heads')){
+
+            if($user->hasRole('division heads')){
+                $division = Division::find(auth()->user()->division_id);
+                $created_task = Task::with('assignedByDivision')
+                    ->where('assigned_by_division', auth()
+                    ->user()->division_id)
+                    ->latest()
+                    ->paginate(10);
+                  
+                    $created_task->getCollection()->transform(function ($task) {
+                        $task->is_assigned = 2;  // Add the attribute
+                        return $task;
+                    });
+            }
+    
+            if($user->hasRole('unit heads')){
+                $unit = Unit::find(auth()->user()->unit_id);
+                $created_task = Task::with('assignedBy')
+                    ->where('assigned_by_unit', auth()->user()->unit_id)
+                    ->latest()
+                    ->paginate(10);
+                    
+                    $created_task->getCollection()->transform(function ($task) {
+                        $task->is_assigned = 2;  // Add the attribute
+                        return $task;
+                    });
+            }
+    
+            if($user->hasRole('directors')){
+                $department = Department::find(auth()->user()->department_id);
+                $created_task = Task::with('assignedByDepartment')
+                    ->where('assigned_by_department', auth()->user()->department_id)
+                    ->latest()
+                    ->paginate(10);
+                    
+                    $created_task->getCollection()->transform(function ($task) {
+                        $task->is_assigned = 2;  // Add the attribute
+                        return $task;
+                    });
+                
+            }
+    
+            if(auth()->user()->hasRole('super users')){
+                
+                //$department = Department::find(auth()->user()->department_id);
+                $created_task = Task::with('assignedBySuperUser')
+                    ->where('assigned_by_super_user', auth()->user()->id)
+                    ->latest()
+                    ->paginate(10);
+    
+                $created_task->getCollection()->transform(function ($task) {
+                    $task->is_assigned = 2;  // Add the attribute
+                    return $task;
+                });
+            }
+
+            $mails = auth()->user()->mails()->orderBy('created_at', 'desc')->get();
+
+            return inertia('dashboard/Dashboard', compact('created_task', 'mails'));
+        }
     }
 
     public function BranchSetup(){

@@ -43,11 +43,13 @@
 
                 <div class="overflow-scroll h-[50vh] pb-20 hide_scroll px-3 pr-7 mt-5">
                     <div class="grid grid-cols-2 gap-5 justify-between">
-                        <div v-for="(item, index) in userGroups" :key="index" class="" @click="handleGroups(item)">
+                        <div v-for="(item, index) in userGroups" :key="index" class="" @click="handleGroups(item, index)">
                             <div
                                 class="flex items-center justify-center flex-col p-3 border border-solid cursor-pointer rounded-md border-gray-300">
                                 <div class="text-primary border bg-white p-3 w-fit rounded-full">
-                                    <Icon :icon="item.icon" width="30" />
+                                    <!-- <Icon :icon="item.icon" width="30" /> -->
+                                    <img :src="getImageForGroup(index)" alt="" />
+                                   
                                 </div>
                                 <p class="mt-2 font-semibold">{{ index }}</p>
                                 <small v-if="item && item.length > 0" class="capitalize">({{item.length}} <span class="capitalize">{{ index }}</span>)</small>
@@ -86,9 +88,11 @@
                     <div v-for="(item, index) in newbox" :key="index" class="cursor-pointer"
                         @click="toggleBackground(item)">
                         <div class="flex items-center py-3 px-3 justify-between w-full"
-                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === item.user.id }">
+                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === item.id }">
                             <div class="flex items-center gap-3 w-full">
-                                <img src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <img v-if="message.profile_image" :src="page.props.base+message.sender+'/'+message.profile_image" alt="">
+                                    <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <!-- <img src="/images/display_picture.svg" alt=""  /> -->
                                 <div class="flex items-center justify-between w-full">
                                     <div>
                                         <h1 class="font-semibold text-base">{{ item.user.first_name }}</h1>
@@ -114,7 +118,7 @@
                 <div>
                     <h1 class="font-semibold text-2xl">{{ groups?.name }}</h1>
                     <p class="opacity-70">
-                        ({{ groups?.groups.length }})
+                        ({{ groups.length }})
                     </p>
                 </div>
             </div>
@@ -124,21 +128,22 @@
                 <input type="text" :placeholder="groups?.name" class="outline-none h-full p-2 bg-gray-100" />
             </div>
 
-            <div v-for="(item, index) in groups.groups" :key="index" class="cursor-pointer"
+            <div v-for="(item, index) in groups" :key="index" class="cursor-pointer"
                 @click="toggleBackground(item)">
                 <!-- {{ item }} -->
                 <div class="flex items-center py-3 px-3 justify-between w-full"
-                    :class="{ ' bg-[#F5F9FF]': open && clickedIndex === item.id }">
+                    :class="{ ' bg-[#F5F9FF]': open && item.id == groupIndex  }">
                     <div class="flex items-center gap-3 w-full">
                         <div
                             class="text-primary border border-gray-300 bg-white p-2 rounded-full overflow-hidden flex-none">
-                            <Icon :icon="item.icon" width="25" />
+                            <!-- <Icon :icon="item.icon" width="25" /> -->
+                             <img :src="current_img" alt="">
                         </div>
                         <div class="flex items-center justify-between w-full">
                             <div>
-                                <h1 class="font-semibold text-base">{{ item.name }}</h1>
+                                <h1 class="font-semibold text-base">{{ item.title }}</h1>
                                 <p class="text-[#98A2B3] text-sm">
-                                    {{ item?.users.length }} Members
+                                    {{ item.users?item.users.length:'' }} Members
                                 </p>
                             </div>
                             <div class="p-1 border rounded-full">
@@ -155,7 +160,7 @@
                 <div v-if="active === 0 || active === 1">
                     <Messages :selectedMessage="selectedMessage" :clickedIndexGroup="clickedIndexGroup"
                         :clickedIndex="clickedIndex" :selectedMessageGroup="selectedMessageGroup"
-                        :allMessagess="allMessagess" />
+                        :allMessagess="allMessagess" :groupType="groupType" />
                 </div>
             </div>
             <div v-else>
@@ -169,17 +174,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
+import {usePage} from "@inertiajs/vue3"
 import EmptyChatRoom from "../../components/EmptyChatRoom.vue";
 import ReportDialog from "../../components/Modals/chat/ReportDialog.vue";
 import AddLink from "../../components/Modals/chat/AddLink.vue";
 import Messages from "../../components/Messages.vue";
-import Echo from 'laravel-echo';
+
 
 
 const clickedIndex = ref(null);
 const clickedIndexGroup = ref(null);
-const groups = ref(null);
+const groups = ref([]);
 const activeButton = ref(0);
 const active = ref(0);
 const addLinkModal = ref(false);
@@ -194,8 +200,14 @@ const userGroups = ref([])
 const inbox = ref([])
 const Suggestions = ref([]);
 const Users = ref("");
+const page = usePage()
+const current_img = ref(null)
+const groupType = ref(null)
+const groupIndex = ref(null)
+const user = computed(()=>page.props.user)
+const userBranch = computed(()=>page.props.userBranch)
 function toggleBackground(item) {
-    console.log('such as', item);
+    groupIndex.value = item.id
     Users.value = "";
     Suggestions.value = [];
     selectedMessage.value = item;
@@ -210,18 +222,52 @@ function handleKeyDown(event) {
     }
 }
 
+const getUserBranch = ()=>{
+    if(userBranch.value.unit){
+        return 'unit'
+    }else if(userBranch.value.division){
+        return 'division'
+    }else if(userBranch.value.department){
+        return 'department'
+    }
+}
+
+function getImageForGroup(item) {
+    
+    switch (item) {
+      case 'department':
+        return page.props.base+'/images/department_active.svg';
+      case 'division':
+        return page.props.base+'/images/division_active.svg';
+      case 'unit':
+      return page.props.base+'/images/unit_active.svg';
+      default:
+        return ''; // Fallback or default image
+    }
+  }
+
 document.addEventListener("keydown", handleKeyDown);
 const message = ref("");
 
 const items = ref([{ label: "Branch Groups" }, { label: "Direct Messages" }]);
-const handleGroups = (item) => {
+const handleGroups = (item, index) => {
     activeButton.value = 1;
     groups.value = item;
-    const newValues = ["gg:organisation", "icon-park-outline:fork", "tabler:box"]
-    groups.value.groups.forEach((obj, index) => {
-        obj.icon = newValues[0]
-    })
-   
+    current_img.value = getImageForGroup(index)
+
+    if(index == 'department'){
+        groupType.value = 'department'
+    }else if(index == 'division'){
+        groupType.value = 'division'
+    }else{
+        groupType.value = 'unit'
+    }
+
+    // const newValues = ["gg:organisation", "icon-park-outline:fork", "tabler:box"]
+    // groups.value.forEach((obj, index) => {
+    //     obj.icon = newValues[0]
+    // })
+
 };
 const getAllCategories = async () => {
     const token = localStorage.getItem('token');
@@ -290,22 +336,59 @@ async function fetchUserGroups() {
             }
         });
         userGroups.value = response.data;
-       
+
     } catch (error) {
         console.error('Error fetching user groups:', error);
     }
 }
 function listenToGroupMessages(groups) {
-    groups.forEach(group => {
-        let userId = window.authUserId;
-        window.Echo.private(`group.${group.id}`)
+    //this line to be reviewed
+    let total_length = Object.keys(groups).length
+   
+    // if(groups && total_length > 0){
+    //     groups.forEach(group => {
+    //     let userId = window.authUserId;
+       
+    //     // window.Echo.private(`group.${group.id}`)
+    //     //     .listen('GroupMessageSent', (event) => {
+    //     //         console.log('from group:', group.id, event);
+    //     //         allMessagess.value = event.message;
+    //     //         console.log("listened", allMessagess.value.sender_id)
+    //     //         allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === userId;
+    //     //     });
+    //     let groupType = getUserBranch()
+       
+    // });
+
+        
+    // }
+
+    for(let grp in groups){
+        if(groups.hasOwnProperty(grp)){
+            let grouptype = getUserBranch();
+            let branch = null
+            if(grouptype == 'unit'){
+                branch = userBranch.value['unit'];
+            }
+            if(grouptype == 'division'){
+                branch = userBranch.value['division']
+            }
+            if(grouptype == 'department'){
+                branch = userBranch.value['department']
+            }
+
+            window.Echo.private(`group.${branch.id}.${grouptype}`)
             .listen('GroupMessageSent', (event) => {
-                console.log('from group:', group.id, event);
+               
                 allMessagess.value = event.message;
-                console.log("listened", allMessagess.value.sender_id)
-                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === userId;
+               
+                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === user.value.id;
             });
-    });
+           
+        }
+           
+    }
+   
 }
 onMounted(async () => {
     try {
@@ -314,15 +397,16 @@ onMounted(async () => {
 
         getAllUserAndMessage()
         getAllCategories()
-        let userId = window.authUserId;
-        console.log("user id:", userId)
-        // window.Echo.private(`chat.${userId}`)
-        //     .listen('MessageSent', (event) => {
-        //         allMessagess.value = event.message;
-        //         allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === window.authUserId;
-        //     });
+        let userId = user.value.id;
+       
+        window.Echo.private(`chat.${userId}`)
+            .listen('MessageSent', (event) => {
+                allMessagess.value = event.message;
+                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === $userId;
+            });
+        
     } catch (error) {
-        console.error('Error during onMounted:', error);
+      
     }
 
 })

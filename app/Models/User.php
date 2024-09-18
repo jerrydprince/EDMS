@@ -145,4 +145,14 @@ class User extends Authenticatable
     {
         return 'task.'.$this->id;
     }
+
+    /**
+     * Get all of the mails for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function mails()
+    {
+        return $this->hasMany(Mail::class);
+    }
 }

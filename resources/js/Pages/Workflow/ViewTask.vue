@@ -101,6 +101,27 @@
                     <p class="text-base w-fit">{{ user.first_name + " " + user.last_name }}</p>
                   </div>
                 </div>
+                <div v-if="props.task.unit_task && props.task.unit_task.length > 0">
+                  <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] my-1 p-2 py-1 rounded-3xl border-gray-300"
+                    v-for="branch in props.task.unit_task">
+                    <!-- <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-7 rounded-full" /> -->
+                    <p class="text-base w-fit">{{ branch.title }}</p>
+                  </div>
+                </div>
+                <div v-if="props.task.division_task && props.task.division_task.length > 0">
+                  <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] my-1 p-2 py-1 rounded-3xl border-gray-300"
+                    v-for="branch in props.task.division_task">
+                    <!-- <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-7 rounded-full" /> -->
+                    <p class="text-base w-fit">{{ branch.title }}</p>
+                  </div>
+                </div>
+                <div v-if="props.task.department_task && props.task.department_task.length > 0">
+                  <div class="flex items-center gap-2 h-fit bg-[#f8f8f9] my-1 p-2 py-1 rounded-3xl border-gray-300"
+                    v-for="branch in props.task.department_task">
+                    <!-- <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-7 rounded-full" /> -->
+                    <p class="text-base w-fit">{{ branch.title }}</p>
+                  </div>
+                </div>
               </div>
 
               <div class="flex items-center gap-14 mt-5">
@@ -286,7 +307,7 @@
               </div>
             </div>
             <div class="mt-5 px-5" v-if="props.task && props.task.comments && props.task.comments.length > 0">
-              <div v-for="(item, index) in props.task.comments" :key="index">
+              <div v-for="(item, index) in comments" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
@@ -719,7 +740,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, computed } from "vue";
+import { ref, defineProps, computed, onMounted, inject, watch } from "vue";
 //import { useRouter } from "vue-router";
 import MarkComplete from "../../components/Modals/Workflows/MarkComplete.vue";
 import ReAssign from "../../components/Modals/Workflows/ReAssign.vue";
@@ -731,7 +752,7 @@ import jenna from "../../assets/images/jenna.svg";
 import user from "../../assets/images/user.svg";
 import { usePage, Link, router } from "@inertiajs/vue3";
 import Ratings from "../../components/Modals/Workflows/Ratings.vue"
-import debouce from "lodash.debounce";
+
 
 import moment from 'moment';
 
@@ -752,6 +773,8 @@ const deleteRevisionModal = ref(false);
 const Re_Assign_Modal = ref(false);
 const file_path = ref([]);
 const rating = ref(false)
+const current_user = computed(()=>page.props.user)
+const notifications = inject('notifications');
 
 const ratingsModal = () => {
   rating.value = true;
@@ -767,7 +790,7 @@ const makeComment = () => {
     document.getElementById('comment_text').focus();
     return false
   }
-  router.post('/dashboard/task-comment', { task_id: props.task.id, comment: user_comment.value }, {
+  router.post('/dashboard/task-comment', { task_id: props.task.id, comment: user_comment.value, is_assigned: props.is_assigned }, {
     onSuccess: page => {
       user_comment.value = ''
       router.reload({ only: ['task'] })
@@ -970,6 +993,31 @@ const fileType = (file) => {
     return 'excel'
   }
 }
+
+watch(notifications,(newVal)=>{
+
+  if(newVal && newVal.Today){
+    // alert('yes')
+    let new_comment = newVal.Today[0].data.comment;
+    let comment = comments.value.findIndex((item)=>item.id == new_comment.id)
+    if(comment == -1){
+      comments.value.unshift(new_comment)
+    }
+  }
+  
+})
+
+watch(()=>props.task, ()=>{
+  comments.value = props.task?.comments
+}, {immediate: true})
+
+onMounted(()=>{
+  
+  // Echo.private('comment.' + current_user.value.id)
+  //     .notification((notification) => {
+  //         //getUserNotifications()
+  //     });
+})
 
 </script>
 

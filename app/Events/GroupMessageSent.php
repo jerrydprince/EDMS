@@ -16,13 +16,15 @@ class GroupMessageSent  implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
     private $message;
     private $groupId;
+    private $groupType;
     /**
      * Create a new event instance.
      */
-    public function __construct(array $message, $groupId)
+    public function __construct(array $message, $groupId, $groupType)
     {
         $this->message = $message;
         $this->groupId = $groupId;
+        $this->groupType = $groupType;
     }
 
     /**
@@ -32,7 +34,7 @@ class GroupMessageSent  implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('group.' . $this->groupId);
+        return new PrivateChannel('group.' . $this->groupId.'.'.$this->groupType);
     }
     public function broadcastWith(): array
     {

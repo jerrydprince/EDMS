@@ -101,6 +101,16 @@ class Task extends Model
         return $this->hasOne(Division::class, 'id', 'assigned_by_division');
     }
 
+     /**
+     * Get the assignedByUnit associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function assignedByUnit()
+    {
+        return $this->hasOne(Unit::class, 'id', 'assigned_by_unit');
+    }
+
     /**
      * Get the assignedByDepartment associated with the Task
      *

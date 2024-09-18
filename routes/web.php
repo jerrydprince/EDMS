@@ -21,7 +21,8 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PMSController;
 use App\Http\Controllers\KRAController;
 use App\Http\Controllers\RatingsController;
-use App\Http\Controllers\CorrespondenseController;
+use App\Http\Controllers\CorrespondenceController;
+use App\Http\Controllers\AnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,8 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/share-file-search', [ArchiveController::class, 'shareFileSearch'])->middleware('permission:archiving view');
         Route::post('/share-file', [ArchiveController::class, 'shareFile'])->middleware('permission:archiving view');
 
-        Route::prefix('data-entry')->group(function(){
-            Route::middleware('role:data entry|super admin')->group(function () {
+        Route::prefix('edms')->group(function(){
+            Route::middleware('permission:edms view')->group(function () {
                 Route::get('/', [DashboardController::class, 'index']);
                 Route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
     
@@ -186,14 +187,14 @@ Route::middleware('auth')->group(function () {
                 //Route::get('/branches', [ArchiveController::class, 'Branches']);
                 Route::get('/branches/{branch}/{id}', [ArchiveController::class, 'userBranches']);
 
-                //archiving
-                Route::post('/upload-files', [ArchiveController::class, 'uploadFiles'])->middleware('permission:archiving create');
-                Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles'])->middleware('permission:archiving create');
-                Route::get('/archiving/{id}/{folder_id}', [ArchiveController::class, 'Archiving'])->middleware('permission:archiving create');
-                Route::get('/create-folder',[ArchiveController::class, 'createFolder'])->middleware('permission:archiving create');
-                Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder'])->middleware('permission:archiving create');
-                Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit'])->middleware('permission:archiving create');
-                Route::get('/folder-view/{branch}/{id}/{branch_id?}', [ArchiveController::class, 'folderView'])->middleware('permission:archiving create');
+                //archiving /EDMS
+                Route::post('/upload-files', [ArchiveController::class, 'uploadFiles'])->middleware('permission:edms create');
+                Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles'])->middleware('permission:edms create');
+                Route::get('/archiving/{id}/{folder_id}', [ArchiveController::class, 'Archiving'])->middleware('permission:edms create');
+                Route::get('/create-folder',[ArchiveController::class, 'createFolder'])->middleware('permission:edms create');
+                Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder'])->middleware('permission:edms create');
+                Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit'])->middleware('permission:edms create');
+                Route::get('/folder-view/{branch}/{id}/{branch_id?}', [ArchiveController::class, 'folderView'])->middleware('permission:edms create');
 
                 //Mails
                 Route::get('/mails', [MailController::class, 'mail'])->middleware('permission:mails view');
@@ -213,14 +214,15 @@ Route::middleware('auth')->group(function () {
                 //workflow
                 Route::get('/workflow', [WorkFlowController::class, 'index'])->middleware('permission:workflow view');
                 Route::post('/workflow', [WorkFlowController::class, 'createWorkFlow'])->middleware('permission:workflow create');
+                Route::get('/search-workflow', [WorkFlowController::class, 'searchWorkflow'])->middleware('permission:workflow view');
 
                 //task
                 Route::post('/create-task', [TaskController::class, 'createTask'])->middleware('permission:workflow create');
                 Route::get('/task-by-status', [TaskController::class, 'getTaskByStatus'])->middleware('permission:workflow view');
-                Route::get('/view-task/{id}', [TaskController::class, 'viewTask'])->middleware('permission:workflow view');
+                Route::any('/view-task/{id}', [TaskController::class, 'viewTask'])->middleware('permission:workflow view');
                 Route::get('/download-task-file/{file_name}', [TaskController::class, 'downloadFile'])->middleware('permission:workflow view');
-                Route::post('/task-comment', [TaskController::class, 'taskComment'])->middleware('permission:workflow view');
-                Route::get('/remove-task-image', [TaskController::class, 'removeTaskImage'])->middleware('permission: workflow edit');
+                Route::post('/task-comment', [TaskController::class, 'taskComment']);
+                Route::get('/remove-task-image', [TaskController::class, 'removeTaskImage'])->middleware('permission: workflow update');
                 Route::post('/reassign-task', [TaskController::class, 'reAssignTask']);
                 Route::post('/task-submission', [TaskController::class, 'taskSubmission']);
                 Route::post('/mark-as-completed', [TaskController::class, 'markAsComplete']);
@@ -243,7 +245,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/chat/users', [ChatController::class, 'getAllUsers']);
                 Route::get('/chat/usersConversation/{userId}', [ChatController::class, 'getConversationWithUser']);
                 Route::post('/chat/group/send-message', [ChatController::class, 'sendMessageToGroup']);
-                Route::get('/chat/group/{groupId}/messages', [ChatController::class, 'getGroupMessages']);
+                Route::get('/chat/group/{groupId}/{groupType}', [ChatController::class, 'getGroupMessages']);
                 Route::post('/chat/groups', [ChatController::class, 'createGroup']);
                 Route::post('/chat/users/messages/', [ChatController::class, 'sendMessageToUser']);
                 Route::get('/chat/groups/{category}', [ChatController::class, 'getGroupsByCategory']);
@@ -262,7 +264,11 @@ Route::middleware('auth')->group(function () {
                 Route::get('/profile', [DashboardController::class, 'settings']);
 
                 //Correspondence
-                Route::get('/correspondence', [CorrespondenseController::class, 'correspondense']);
+                Route::get('/correspondence', [CorrespondenceController::class, 'correspondence']);
+                Route::post('/correspondence', [CorrespondenceController::class, 'createCorrespondence']);
+
+                //support
+                Route::get('/support', [DashboardController::class, 'support']);
            // });
         
 
@@ -317,6 +323,19 @@ Route::middleware('auth')->group(function () {
                 //KPI
                 Route::post('/add-certificate', [PMSController::class, 'saveCertificate']);
                 Route::get('/delete-certificate', [PMSController::class, 'deleteCertificate']);
+
+                 //SUPPORT
+                Route::get('/support/', [SupportController::class, 'support'])->name('support');
+                Route::post('/support/support-details', [SupportController::class, 'sendSupportDetails']);
+                Route::get('/support/support-details', [SupportController::class, 'getSupportDetails']);
+                Route::post('/support/faqs', [SupportController::class, 'SaveFaqs']);
+                Route::get('/support/get-faqs', [SupportController::class, 'getFaqs']);
+                Route::post('/support/doc', [SupportController::class, 'saveDocumentation']);
+                Route::get('/support/get-docs', [SupportController::class, 'getDocumentations']);
+                //ANALYTICS
+                Route::get('/analytics', [AnalyticsController::class, 'analytics']);
+                Route::get('/analytics/server-status', [AnalyticsController::class, 'getServerStatus']);
+                Route::get('/analytics/user-logins', [AnalyticsController::class, 'getUserLogins']);
            
         });
 

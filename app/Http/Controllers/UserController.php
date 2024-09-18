@@ -11,6 +11,7 @@ use App\Models\Division;
 use App\Models\Unit;
 use Illuminate\Validation\Rule;
 use App\Notifications\Registration;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -52,7 +53,7 @@ class UserController extends Controller
             return response()->json(['data' => $users, 'type'=>'unit']);
         }
 
-        if($this->isRole('division heads')){
+        if($this->isRole('division heads')){ 
             $divisions = Unit::where('division_id', auth()->user()->division_id)->get();
             return response()->json(['data'=>$divisions, 'type'=>'division']);
         }
@@ -217,8 +218,23 @@ class UserController extends Controller
 
     public function getUserUnreadNotification(){
         $user = auth()->user();
-        $notifications = $user->unreadNotifications;
-        return response()->json($notifications);
+        //$notifications = $user->unreadNotifications->take(20);
+        $notifications = $user->notifications;
+        $count = $notifications->whereNull('read_at')->count();
+        $notifications =  $notifications->groupBy(function ($notification) {
+            $createdAt = Carbon::parse($notification->created_at);
+    
+            if ($createdAt->isToday()) {
+                return 'Today';
+            } elseif ($createdAt->isYesterday()) {
+                return 'Yesterday';
+            } elseif ($createdAt->diffInDays(Carbon::now()) <= 7) {
+                return $createdAt->diffForHumans(null, true) . ' ago'; // e.g., "2 days ago"
+            } else {
+                return $createdAt->format('d F Y'); // e.g., "05 September 2024"
+            }
+        });
+        return response()->json(['notifications'=>$notifications, 'count'=>$count]);
     }
 
 }

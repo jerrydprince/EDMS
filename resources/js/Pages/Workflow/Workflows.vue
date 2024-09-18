@@ -10,7 +10,7 @@
           <div class="text-sm flex items-center gap-5 mt-4">
             <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
               <Icon icon="mynaui:key" />
-              <p>Director</p>
+              <p v-if="roles && roles.length > 0" class="capitalize">{{roles[0]}}</p>
             </div>
           </div>
         </div>
@@ -74,7 +74,7 @@
 
         <div class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
           <i class="pi pi-search text-gray-300" style="font-size: 1rem"></i>
-          <Input type="text" v-model="value" placeholder="Search Tasks"
+          <Input type="text" v-model="search" @input="getSearchResult" placeholder="Search Tasks"
             class="w-96 border-0 outline-none text-[#98A2B3]" />
         </div>
       </div>
@@ -164,7 +164,7 @@
               </td>
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
-                  <Link :href="'/dashboard/view-task/'+item.id" :data="{is_assigned: assignmentButton}">
+                  <Link :href="'/dashboard/view-task/'+item.id" method="post" :data="{is_assigned: item.is_assigned}">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
@@ -263,7 +263,7 @@
               <td class="align-top py-3">
                 <div class="flex items-center gap-3">
                  
-                  <Link :href="'/dashboard/view-task/'+item.id+'?is_assigned='+assignmentButton">
+                  <Link :href="'/dashboard/view-task/'+item.id" method="post" :data="{is_assigned: item.is_assigned}">
                     <button class="flex items-center gap-2 border-[2px]  py-3 px-3 border-gray-300 rounded-md">
                       <Icon icon="ph:eye" />
                       <p class="text-sm">View Task</p>
@@ -290,11 +290,12 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, watch } from "vue";
+import { ref, computed, defineProps, watch, inject } from "vue";
 //import paginator from "@/reusables/paginations.vue";
 import AssignTask from "../../components/Modals/Workflows/AssignTask.vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
-
+import debounce from "lodash.debounce"
+import { create } from "lodash";
 
 const AssignModal = ref(false)
 const assignmentButton = ref(1);
@@ -303,9 +304,14 @@ const currentPage = ref(1);
 const itemsPerPage = 10;
 const tasks = ref([])
 const page = usePage()
+const search = ref('')
 const props = defineProps(['created_task', 'assigned_task'])
 
 const roles = computed(()=> page.props.roles)
+
+const notifications = inject('notifications')
+const created_task = ref([])
+const assigned_task = ref([])
 
 const buttonSwitch = ref(1);
 const clickedButton = ref("");
@@ -377,18 +383,63 @@ const filteredItems = computed(() => {
 });
 
 const filteredTask = computed(()=>{
-  if( buttonSwitch.value !== 1){
-    return tasks.value
-  }else{
-    return props.created_task?.data
+  if( buttonSwitch.value == 1){
+    return created_task.value?.data
+  }else
+  if(buttonSwitch.value == 2){
+    let data = created_task.value.data.filter((item)=> item.status==='pending');
+    return data
+  }else
+  if(buttonSwitch.value == 3){
+    let data = created_task.value.data.filter((item)=>item.status=='in progress');
+    return data
+  }else
+  if(buttonSwitch.value == 4){
+    let data = created_task.value.data.filter((item)=>item.status=='under review');
+    return data
+  }else
+  if(buttonSwitch.value == 5){
+    let data = created_task.value.data.filter((item)=>item.status=='completed');
+    return data
+  }else
+  if(buttonSwitch.value == 6){
+    let data = created_task.value.data.filter((item)=>item.status=='uncompleted');
+    return data
   }
+  // else
+  // {
+  //   return props.created_task?.data
+  // }
 })
 
 const filteredAssignedTask = computed(()=>{
-  if(buttonSwitch.value !== 1){
-    return tasks.value
-  }else{
-    return props.assigned_task?.data
+  // if(buttonSwitch.value !== 1){
+  //   return tasks.value
+  // }else{
+  //   return props.assigned_task?.data
+  // }
+   if( buttonSwitch.value == 1){
+    return assigned_task.value?.data
+  }else
+  if(buttonSwitch.value == 2){
+    let data = assigned_task.value.data.filter((item)=> item.status==='pending');
+    return data
+  }else
+  if(buttonSwitch.value == 3){
+    let data = assigned_task.value.data.filter((item)=>item.status=='in progress');
+    return data
+  }else
+  if(buttonSwitch.value == 4){
+    let data = assigned_task.value.data.filter((item)=>item.status=='under review');
+    return data
+  }else
+  if(buttonSwitch.value == 5){
+    let data = assigned_task.value.data.filter((item)=>item.status=='completed');
+    return data
+  }else
+  if(buttonSwitch.value == 6){
+    let data = assigned_task.value.data.filter((item)=>item.status=='uncompleted');
+    return data
   }
 })
 const pageStart = ref(1);
@@ -416,6 +467,29 @@ watch(assignmentButton, (newVal)=>{
   //   router.reload({only:['assigned_task']})
   // }
 })
+
+watch(notifications, (newVal)=>{
+  if(newVal.Today && newVal.Today[0].data.task){
+      router.reload({ only: ['assigned_task'] })
+    }
+})
+
+const getSearchResult = debounce((event)=>{
+  let search_value = event.target.value;
+  axios.get('/dashboard/search-workflow',{params:{search:search_value}}).then((response)=>{
+    created_task.value = response.data.created_task
+    assigned_task.value = response.data.assigned_task
+  })
+}, 500)
+
+watch(()=>props.assigned_task, ()=>{
+  assigned_task.value = props.assigned_task
+},{immediate:true})
+
+watch(()=>props.created_task, ()=>{
+  created_task.value = props.created_task
+},{immediate:true})
+
 </script>
 
 <style scoped>

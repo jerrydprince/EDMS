@@ -43,6 +43,12 @@
         </div>
       </div>
 
+      <select  name="" v-model="medium"  id=""
+          class=" bg-gray-50 border border-gray-300 rounded-xl p-2 my-2 outline-none  mt-2 mb-8 w-full ">
+          <option value="correspondence">Correspondence</option>
+          <option value="via_mail">Send correspondence and mail file</option>
+      </select>
+
       <div v-if="files && files.length > 0">
         <div class=" w-full  mt-3 gap-4 flex items-center" v-for="file in files">
           <div class="border p-3 rounded-md w-full">
@@ -139,12 +145,13 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import {useForm} from '@inertiajs/vue3'
+import {useForm, router} from '@inertiajs/vue3'
 
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue"]);
 const loading = ref(true)
 const files = ref()
+const medium = ref("correspondence")
 const visible = computed({
   get() {
     return props.modelValue;
@@ -205,14 +212,17 @@ const getFileURL = (file) =>{
     }
 
 const submit = () => {
-  emit("update:modelValue", false);
+  router.post('/dashboard/correspondence',{files: files, medium: medium.value}, {onSuccess:page=>{
+    emit("update:modelValue", false);
   loading.value = false
-  //   toast.add({
-  //     severity: "success",
-  //     summary: '',
-  //     detail: "",
-  //     life: 3000,
-  //   });
+    toast.add({
+      severity: "success",
+      summary: '',
+      detail: "",
+      life: 3000,
+    });
+  }})
+  
 };
 </script>
 <style scoped>
