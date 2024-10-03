@@ -137,8 +137,8 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
-                
+                ->paginate(40);
+               
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
                     return $task;
@@ -165,7 +165,7 @@ class WorkFlowController extends Controller
                 })
                 ->latest()
                 ->paginate(10);
-    
+  
            // $assigned_task = $department->task()->with('assignedByDepartment')->paginate(10);
             $assigned_task = [];
 
@@ -175,7 +175,53 @@ class WorkFlowController extends Controller
             });
         }
 
-        if($type == 'unit' && !$this->isRole('unit heads')){
+        if($type == 'unit' && !$this->isRole('unit heads') && !$this->isRole('super users')){
+            //ordinary users cannot create task;
+            $created_task = [];
+            //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
+            $assigned_task = auth()->user()->task()
+                ->with('assignedBy')
+                ->when($searchTerm, function ($query, $searchTerm) {
+                    $query->where(function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('title', 'like', "%{$searchTerm}%")
+                                 ->orWhere('description', 'like', "%{$searchTerm}%")
+                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
+                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
+                    });
+                })
+                ->latest()
+                ->paginate(10);
+            
+                $assigned_task->getCollection()->transform(function ($task) {
+                    $task->is_assigned = 1;  // Add the attribute
+                    return $task;
+                });
+        }
+
+        if($type == 'division' && !$this->isRole('division heads') && !$this->isRole('super users')){
+            //ordinary users cannot create task;
+            $created_task = [];
+            //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
+            $assigned_task = auth()->user()->task()
+                ->with('assignedBy')
+                ->when($searchTerm, function ($query, $searchTerm) {
+                    $query->where(function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('title', 'like', "%{$searchTerm}%")
+                                 ->orWhere('description', 'like', "%{$searchTerm}%")
+                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
+                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
+                    });
+                })
+                ->latest()
+                ->paginate(10);
+            
+                $assigned_task->getCollection()->transform(function ($task) {
+                    $task->is_assigned = 1;  // Add the attribute
+                    return $task;
+                });
+        }
+
+        if($type == 'department' && !$this->isRole('directors') && !$this->isRole('super users')){
             //ordinary users cannot create task;
             $created_task = [];
             //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);

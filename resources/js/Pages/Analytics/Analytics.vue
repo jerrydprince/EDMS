@@ -35,8 +35,8 @@
 </div>
 </div>
 <EmployeeProductivity/> -->
-        <AccessLevel />
-        <LoginActivity v-if="logins.length > 0" :logins="logins" />
+        <AccessLevel v-if="roles" :roles="roles" />
+        <LoginActivity :logins="logins" />
         <!-- <Backup /> -->
         <!-- <ExecutiveSummary /> -->
         <!-- <SystemUptime /> -->
@@ -67,13 +67,14 @@ import image2 from "../../assets/images/Chart_loss.svg";
 const selectedIndex = ref(1);
 const stat = ref(null);
 const logins = ref([]);
+const roles = ref([]);
 const handleSelection = (index) => {
     selectedIndex.value = index;
     console.log(selectedIndex.value);
 };
 const getStat = async () => {
     try {
-        const response = await axios.get('/admin/analytics/server-status');
+        const response = await axios.get('/dashboard/analytics/server-status');
         stat.value = response.data;
         console.log('stats here', stat.value);
     } catch (error) {
@@ -81,18 +82,28 @@ const getStat = async () => {
     }
 };
 provide('stat', stat)
+provide('roles', roles)
 const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toISOString().slice(0, 19).replace('T', ' ');
 };
 const getLogins = async () => {
     try {
-        const response = await axios.get('/admin/analytics/user-logins');
+        const response = await axios.get('/dashboard/analytics/user-logins');
         logins.value = response.data.map(login => ({
             ...login,
             created_at: formatTimestamp(login.created_at)
         }));
         console.log('logins details here', logins.value);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+};
+const getRoles = async () => {
+    try {
+        const response = await axios.get('/dashboard/analytics/roles');
+        roles.value = response.data
+        console.log('roles here', roles.value);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
@@ -157,6 +168,7 @@ const overviews = [
 onMounted(() => {
     getStat()
     getLogins()
+    getRoles()
 })
 </script>
 

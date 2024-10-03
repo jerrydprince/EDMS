@@ -142,14 +142,79 @@ class ChatController extends Controller
 
         return response()->json(['message' => 'User added to group successfully!'], 200);
     }
+
+    public function getUserBranch(){
+        $user = auth()->user();
+        if($user->unit_id){
+            return 'unit';
+        }
+        if($user->division_id){
+            return 'division';
+        }
+        if($user->department_id){
+            return 'department';
+        }
+        if($user->hasRole('super users')){
+            return 'super users';
+        }
+        if($user->hasRole('admin') || $user->hasRole('super admin')){
+            return 'admin';
+        }
+    }
+
     public function getUserGroups()
     {
         $userId = Auth::id();
         $user = User::find($userId);
         //$groups = $user->groups()->get();
-        $unit = Unit::with('users')->get();
-        $division = Division::with('users')->get();
-        $department = Department::with('user')->get();
+        $branch = $this->getUserBranch();
+        $unit = [];
+        $division = [];
+        $department = [];
+
+        if($branch == 'unit' && !$user->hasRole('unit heads')){
+            $unit = Unit::with('users')->where('id', $user->unit_id)->get();
+            return response()->json(['unit'=>$unit]);
+        }
+        if($branch == 'division' && !$user->hasRole('division heads')){
+            $division = Division::with(['users'])->where('id', $user->division_id)->get();
+            $unit = $division->first()->unit()->with('users')->get();
+           return response()->json(['division'=>$division, 'unit'=> $unit]);
+        }
+        if($branch == 'department' && !$user->hasRole('directors')){
+            $department = Department::with(['user'])->where('id', $user->department_id)->get();
+           
+            return response()->json(['department'=>$department]);
+        }
+
+        //branch heads
+        if($user->hasRole('unit heads')){
+            $unit = Unit::with('users')->where('id', $user->unit_id)->get();
+            return response()->json(['unit'=>$unit]);
+        }
+        if($user->hasRole('division heads')){
+            $division = Division::with(['users', 'unit'=>function($query){
+                $query->with('users');
+            }])->find($user->division_id);
+            $unit = $division->unit;
+
+            return response()->json(['unit'=>$unit, 'division'=>$division]);
+        }
+        if($user->hasRole('directors')){
+            $department = Department::with(['user'])->where('id', $user->department_id)->get();
+            $division = $department->first()->division()->with(['users', 'unit'=>function($q){
+                $q->with('users');
+            }])->get();
+            $unit = $division->flatMap(function ($div) {
+                return $div->unit;
+            });
+            return response()->json(['unit'=>$unit, 'division'=>$division, 'department'=>$department]);
+        }
+        if($branch == 'super users' || $branch == 'admin'){
+            $unit = Unit::with('users')->get();
+            $division = Division::with('users')->get();
+            $department = Department::with('user')->get();
+        }
 
        return response()->json(['unit'=>$unit, 'division'=>$division, 'department'=>$department]);
     }
@@ -197,6 +262,7 @@ class ChatController extends Controller
             'created_at' => $message->created_at,
             'group_type' => $request->groupType,
             'group_id' => $request->group_id,
+            'group_name' => $request->groupName,
             //'is_sent_by_logged_in_user' => $isSentByLoggedInUser,
         ];
         broadcast(new GroupMessageSent($MessageArray, $request->group_id, $request->groupType))->toOthers();
@@ -258,7 +324,7 @@ class ChatController extends Controller
             $users = User::where('division_id', $user->division_id)->where('id', '!=', $loggedInUserId)->get();
         }
         if($branch_type == 'department'){
-            $users = User::where('department', $user->department)->where('id', '!=', $loggedInUserId)->get();
+            $users = User::where('department_id', $user->department_id)->where('id', '!=', $loggedInUserId)->get();
         }
         if(auth()->user()->hasRole('super user')  || auth()->user()->hasRole('admin')){
             $users = User::where('id', '!=', $loggedInUserId)->get();

@@ -644,10 +644,10 @@ class RegistryController extends Controller
         })
         ->with(['fileMovement' => function($query) {
             $query->where(function($query)  {
-                $query->where('sent_from_agf');
+                $query->where('sent_from_agf', 1);
                       //->where('sent_to_branch', 'unit');
             })->orWhere(function($query) {
-                $query->where('sent_to_agf');
+                $query->where('sent_to_agf', 1);
             });
         }])
         ->latest()
@@ -680,7 +680,7 @@ class RegistryController extends Controller
             $branch = $this->branchMap($branch);
             return response()->json($branch);
         }
-
+       
         if($user->unit_id || $request->branch_type =='unit'){
             $id = $request->branch_id? $request->branch_id: $user->unit_id;
             $branch = $this->getUnitFile($id);
@@ -699,7 +699,7 @@ class RegistryController extends Controller
             $branch = $this->branchMap($branch);
             return response()->json($branch);
         }
-
+        
         if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
             $branch = $this->getAGFFile();
             $branch = $this->branchMap($branch);

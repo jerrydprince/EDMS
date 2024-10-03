@@ -10,7 +10,7 @@ use App\Models\KRA;
 class KRAController extends Controller
 {
     public function createKRA(Request $request){
-        $department_id = auth()->user()->department_id;
+        $department_id = $request->department_id? $request->department_id: auth()->user()->department_id;
         if($department_id){
 
             DB::transaction(function () use ($request, $department_id) {
@@ -29,7 +29,8 @@ class KRAController extends Controller
                     'department_id' => $department_id,
                     'kra_id' => $kra->id,
                     'ordering' => 1,
-                    'created_at' => \Carbon\Carbon::now()
+                    'created_at' => \Carbon\Carbon::now(),
+                    'description' =>'Timeliness'
                     ],
                     [
                         'key' => 'accuracy',
@@ -58,7 +59,7 @@ class KRAController extends Controller
                         'department_id' => $department_id,
                         'kra_id' => $kra->id,
                         'ordering' => 4,
-                        'communication' =>'How effectively does the employee convey information and interact with others?',
+                        'description' =>'How effectively does the employee convey information and interact with others?',
                         'created_at' => \Carbon\Carbon::now()
                     ]
                 ];
@@ -71,11 +72,16 @@ class KRAController extends Controller
         return redirect()->back();
     }
 
-    public function getKRA(){
-        $department_id = auth()->user()->department_id;
-        if($department_id){
-            $kra = KRA::with('kpi')->where('department_id', $department_id)->first();
+    public function getKRA(Request $request){
+        if($request->id){
+            $kra = KRA::with('kpi')->where('department_id', $request->id)->first();
             return response()->json($kra);
+        }else{
+            $department_id = auth()->user()->department_id;
+            if($department_id){
+                $kra = KRA::with('kpi')->where('department_id', $department_id)->first();
+                return response()->json($kra);
+            }
         }
     }
 

@@ -212,7 +212,7 @@ const getFileURL = (file) =>{
     }
 
 const submit = () => {
-  router.post('/dashboard/correspondence',{files: files, medium: medium.value}, {onSuccess:page=>{
+  router.post('/dashboard/correspondence',{files: files.value, medium: medium.value}, {onSuccess:page=>{
     emit("update:modelValue", false);
   loading.value = false
     toast.add({

@@ -29,7 +29,7 @@ class AdminController extends Controller
         }
       
         if($user->hasRole('super users') || $user->hasRole('directors') || $user->hasRole('division heads')
-         || $user->hasRole('unit heads')){
+         || $user->hasRole('unit heads') || $user->hasRole('regular users')){
 
             if($user->hasRole('division heads')){
                 $division = Division::find(auth()->user()->division_id);

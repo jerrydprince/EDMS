@@ -1,24 +1,41 @@
 <template>
-     <div class=" rounded-2xl bg-white mt-5 p-5 overflow-x-auto lg:overflow-hidden">
+    <div class=" rounded-2xl bg-white mt-5 p-5 overflow-x-auto lg:overflow-hidden">
         <h1 class=" bg-slate-50 p-2 rounded-3xl w-fit px-5 mb-3">Access level summary</h1>
-      <Chart type="bar" :data="chartData" :options="chartOptions"   class=" w-full min-w-max" />
+        <Chart type="bar" :data="chartData" :options="chartOptions" class=" w-full min-w-max" />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted  } from 'vue';
-const chartData = ref();
-const chartOptions = ref();
-
+import { ref, computed, onMounted, inject, watch } from 'vue';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { Bar } from 'vue-chartjs';
+ChartJS.register(...registerables);
+const chartData = ref(null);
+const chartOptions = ref(null);
+const roles = inject('roles');
+console.log("now here:", roles);
+watch(roles, () => {
+    chartData.value = setChartData();
+    chartOptions.value = setChartOptions();
+});
 const setChartData = () => {
+    if (!roles.value) return { labels: [], datasets: [] };
+    // Create a map to count occurrences of each role
+    const roleCounts = roles.value.reduce((acc, role) => {
+        acc[role.name] = (acc[role.name] || 0) + 1; // Increment count
+        return acc;
+    }, {});
+    // Extract labels and counts from the aggregated data
+    const labels = Object.keys(roleCounts);
+    const dataCounts = Object.values(roleCounts);
     return {
-        labels: ['AGF', 'Super  Admin', 'Admin', 'Records Manager', 'Super Users','Directors','Division Head','Unit Head','Data Entry','Registrars','Users'],
+        labels: labels,
         datasets: [
             {
-                label: '',
-                data: [10, 325, 702, 620,10, 325, 702, 620,10, 325, 702],
-                backgroundColor: ['#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A','#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A','#A6F4C5', '#12B76A', '#A6F4C5'],
-                borderRadius:20
+                label: 'Access Level Count',
+                data: dataCounts,
+                backgroundColor: ['#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A', '#A6F4C5', '#12B76A', '#A6F4C5'],
+                borderRadius: 20
             }
         ]
     };
@@ -33,14 +50,16 @@ const setChartOptions = () => {
         plugins: {
             legend: {
                 labels: {
-                    color: textColor
+                    color: textColor,
+                    display: true,
                 }
             }
         },
         scales: {
             x: {
                 ticks: {
-                    color: textColorSecondary
+                    color: textColorSecondary,
+                    autoSkip: false,
                 },
                 grid: {
                     color: surfaceBorder
@@ -49,7 +68,9 @@ const setChartOptions = () => {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    color: textColorSecondary
+                    color: textColorSecondary,
+                    callback: (value) => Math.floor(value),
+                    stepSize: 1,
                 },
                 grid: {
                     color: surfaceBorder
@@ -60,11 +81,9 @@ const setChartOptions = () => {
 }
 
 onMounted(() => {
-  chartData.value = setChartData();
-  chartOptions.value = setChartOptions();
+    chartData.value = setChartData();
+    chartOptions.value = setChartOptions();
 });
 </script>
 
-<style>
-
-</style>
+<style></style>

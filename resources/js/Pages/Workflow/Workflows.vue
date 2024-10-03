@@ -17,12 +17,12 @@
       </div>
       <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm" v-if="!isRole('regular users')">
         <div class="bg-gray-100 flex items-center rounded-md p-1">
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignmentButton = 1"
+          <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignmentButton = 1"
             :class="{ activeButton: assignmentButton === 1 }">
             <p>Assigned to Me</p>
           </button>
-          <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignmentButton = 2"
-            :class="{ activeButton: assignmentButton === 2 }">
+          <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignmentButton = 2"
+            :class="{ activeButton: assignmentButton === 2  }">
             <p>Assigned by Me</p>
           </button>
         </div>
@@ -80,7 +80,7 @@
       </div>
 
       <!-- Assigned by me table -->
-      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2">
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2 && !roles.includes('regular users') || roles.includes('super users')">
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
@@ -178,7 +178,7 @@
       </div>
 
       <!-- Assigned to me table  -->
-      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1">
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1 && !roles.includes('super users') || roles.includes('regular users')">
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
@@ -290,7 +290,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, watch, inject } from "vue";
+import { ref, computed, defineProps, watch, inject, onMounted } from "vue";
 //import paginator from "@/reusables/paginations.vue";
 import AssignTask from "../../components/Modals/Workflows/AssignTask.vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
@@ -489,6 +489,12 @@ watch(()=>props.assigned_task, ()=>{
 watch(()=>props.created_task, ()=>{
   created_task.value = props.created_task
 },{immediate:true})
+
+onMounted(()=>{
+  if(roles.value.includes('super users')){
+    assignmentButton.value = 2;
+  }
+})
 
 </script>
 

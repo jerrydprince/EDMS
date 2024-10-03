@@ -1,16 +1,16 @@
 <template>
   <main class="px-7  pb-32">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 py-1">
 
-      <router-link to="/PMS/overview">
+      <a href="/dashboard/pms">
         <Icon icon="lucide:home" width="25" />
-      </router-link>
+      </a>
 
       <Icon icon="ic:baseline-greater-than" width="25" class="text-gray-300" />
-      <p>User Profile</p>
-      <Icon icon="ic:baseline-greater-than" width="25" class="text-gray-300" />
+      <!-- <a href="/dashboard/pms">PMS</a> -->
+      <!-- <Icon icon="ic:baseline-greater-than" width="25" class="text-gray-300" /> -->
       <button class="p-2 px-4 rounded-md bg-slate-100">
-        {{ activebutton === 1 ? "KPI" : "Tasks" }}
+        User Profile
       </button>
     </div>
 
@@ -20,7 +20,13 @@
           User Profile
         </h1>
         <div class="flex items-center gap-2">
-          <button
+          <button v-if="isStillOnLeave"
+            class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
+            @click="leaveModal = true">
+            
+            <p>X Cancel Leave</p>
+          </button>
+          <button v-if="!isStillOnLeave"
             class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
             @click="leaveModal = true">
             <Icon icon="ph:pause" />
@@ -79,7 +85,7 @@
 
     <div>
       <KPI v-if="activebutton === 1" :ratings="props.ratings" :user="props.user" :taskCompletionRate="props.taskCompletionRate" />
-      <Tasks v-else />
+      <Tasks :task="props.user?.task" v-else />
     </div>
   </main>
 
@@ -112,6 +118,22 @@ const getBranchName = ()=>{
   }
   if(props.user.department){
     return props.user.department.title
+  }
+}
+
+const isStillOnLeave = ()=>{
+  if(props.user.leave && props.user.leave.length > 0){
+    let end_date = new Date(props.user.leave[0]);
+    const today = new Date();
+
+    today.setHours(0,0,0,0);
+    end_date.setHours(0,0,0,0);
+    
+    if(today.getTime() >= end_date.getTime()){
+      return true;
+    }else{
+      return false;
+    }
   }
 }
 </script>

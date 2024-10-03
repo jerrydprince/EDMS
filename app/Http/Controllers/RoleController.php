@@ -97,6 +97,11 @@ class RoleController extends Controller
         return inertia('AcessConfig/AccessLevel', compact('roles','permissions'));
     }
 
+    public function getRoles(){
+        $roles = Role::all();
+        return response()->json($roles);
+    }
+
     public function toggleStatus(Request $request){
         $role = Role::find($request->id);
         $role->status = $request->status;

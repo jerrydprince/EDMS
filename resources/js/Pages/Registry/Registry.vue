@@ -102,9 +102,11 @@
                 </Column>
                 <template #expansion="slotProps">
                     <div class=" p-5">
-                        <div v-if="checkData" class="flex gap-5 ">
-                            <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' && slotProps.data.is_forwarded == 0"
-                                class="flex items-center gap-5">
+                        <div v-if="checkData" class=" gap-5 ">
+                            <!-- <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' && slotProps.data.is_forwarded == 0"
+                                class="flex items-center gap-5"> -->
+                            <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' "
+                                class="flex items-center gap-5 mb-4">
                                 <button @click="rejectFileHandler(slotProps.data.id)"
                                     class="flex gap-2 items-center font-semibold text-red-700 border-red-300 border-solid border rounded-lg py-2 px-3">
                                     <Icon icon="iconoir:cancel" />
@@ -117,8 +119,15 @@
                                     <p class=" text-xs ">Accept File</p>
                                 </button>
 
+                                <button class="flex gap-2 h-8 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3" @click="forwardFileHandler(slotProps.data)">
+                                    <Icon icon="charm:move" />
+                                    <p class=" text-xs ">Forward File</p>
+                                </button>
+
                             </div>
-                            <div v-if="slotProps.data.is_forwarded == 1">
+                            <div class="flex items-center">
+                                <div class="w-3 rounded-bl-md border border-r-0 border-t-0 h-14 border-gray-300"></div>
+                            <div>
                                 <p class="font-normal">Source</p>
                                 <div class="mt-5 flex items-center gap-2">
                                     <div class="p-3 rounded-full border w-fit">
@@ -130,20 +139,24 @@
                                             v-if="getSourceBranchType(slotProps.data) == 'division'">
                                         <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
                                             v-if="getSourceBranchType(slotProps.data) == 'department'">
+                                        <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
+                                            v-if="getSourceBranchType(slotProps.data) == 'agf'">
                                         <!-- <Icon icon="fa-solid:question" v-else /> -->
                                     </div>
                                     <div>
                                         <h1 class="font-medium" v-if="getSourceBranch(slotProps.data)">{{
-                getSourceBranch(slotProps.data) }}</h1>
+                                        getSourceBranch(slotProps.data) }}</h1>
                                         <h1 class="font-medium" v-else>Not set yet </h1>
                                     </div>
                                 </div>
                             </div>
-                            <button v-if="!slotProps.data.is_forwarded" @click="forwardFileHandler(slotProps.data)"
+                            <!-- <button v-if="!slotProps.data.is_forwarded" @click="forwardFileHandler(slotProps.data)"
                                 class="flex gap-2 h-8 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3">
                                 <Icon icon="charm:move" />
                                 <p class=" text-xs ">Forward File</p>
-                            </button>
+                            </button> -->
+                            </div>
+                            
                         </div>
                         <!-- <div v-if="checkDest">
                             <button class="flex gap-2 items-center border ml-4  rounded-lg py-2 px-4 absolute bottom-5"
@@ -259,6 +272,8 @@
                                 </button>
 
                             </div> -->
+                            <div class="flex items-center" >
+                                <div class="w-3 rounded-bl-md border border-r-0 border-t-0 h-14 border-gray-300"></div>
                             <div>
                                 <p class="font-normal">Destination</p>
                                 <div class="mt-5 flex items-center gap-2">
@@ -272,15 +287,19 @@
                                             v-if="getDestinationBranchType(slotProps.data) == 'division'">
                                         <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
                                             v-if="getDestinationBranchType(slotProps.data) == 'department'">
+                                        <img :src="page.props.base + '/images/department.svg'" alt="" width="20"
+                                            v-if="getDestinationBranchType(slotProps.data) == 'agf'">
                                         <!-- <Icon icon="fa-solid:question" v-else /> -->
                                     </div>
                                     <div>
                                         <h1 class="font-medium" v-if="getDestinationBranch(slotProps.data)">{{
-                getDestinationBranch(slotProps.data) }}</h1>
+                                    getDestinationBranch(slotProps.data) }}</h1>
                                         <h1 class="font-medium" v-else>Not set yet </h1>
                                     </div>
                                 </div>
                             </div>
+                            </div>
+                            
                             <!-- <button v-if="!slotProps.data.is_forwarded" @click="forwardFileHandler(slotProps.data)"
                                 class="flex gap-2 h-8 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3">
                                 <Icon icon="charm:move" />
@@ -410,7 +429,7 @@ const outgoing = computed(() => {
         return (filtered && filtered.length > 0) ? filtered : []
     }
     if (isPermissions('agf registry view')) {
-        let filtered = files.value.filter((item) => item.sent_from_agf == true)
+        let filtered = files.value.filter((item) => item.sent_to_agf == 1)
         return (filtered && filtered.length > 0) ? filtered : []
     }
 })
@@ -430,7 +449,7 @@ const incoming = computed(() => {
     }
 
     if (isPermissions('agf registry view')) {
-        let filtered = files.value.filter((item) => item.sent_to_agf == 1)
+        let filtered = files.value.filter((item) => item.sent_from_agf == 1)
         return (filtered && filtered.length > 0) ? filtered : []
     }
 })
@@ -531,6 +550,10 @@ const getDestinationBranch = (data) => {
             return null;
         }
     }
+
+    if (data.sent_to_agf) {
+       return 'AGF'
+    }
 }
 
 const getSourceBranch = (data) => {
@@ -567,6 +590,10 @@ const getSourceBranch = (data) => {
             return null;
         }
     }
+
+    if (data.sent_from_agf) {
+       return 'AGF'
+    }
 }
 
 const getDestinationBranchType = (data) => {
@@ -582,6 +609,10 @@ const getDestinationBranchType = (data) => {
     if (data.sent_to_department) {
         return 'department'
     }
+
+    if (data.sent_to_agf) {
+        return 'agf'
+    }
 }
 
 const getSourceBranchType = (data) => {
@@ -596,6 +627,10 @@ const getSourceBranchType = (data) => {
 
     if (data.sent_from_department) {
         return 'department'
+    }
+
+    if (data.sent_from_agf) {
+        return 'agf'
     }
 }
 

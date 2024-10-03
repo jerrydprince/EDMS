@@ -27,7 +27,7 @@
                             <p class="text-[#98A2B3]">
                                 {{ selectedMessage.users.length }} Members,
                             </p>
-                            <p class="text-green-500">1 Online</p>
+                            <p class="text-green-500 pl-2"> {{getTotalOnlineUsers(selectedMessage.users)}} Online</p>
                         </div>
                         <p class="text-xs text-[#98A2B3]" v-else>Offline</p>
                     </div>
@@ -38,7 +38,7 @@
             </div>
 
             <!-- ===============  message body ================= -->
-            <div class="flex-1 h-[70vh] overflow-y-scroll hide_scroll mx-7 pt-5 transition-all" id="chat-container">
+            <div class="flex-1 h-[74vh] overflow-y-scroll hide_scroll mx-7 pt-5 transition-all" id="chat-container">
                 <div v-for="(item, index) in sortedMessages" :key="item.date" class="mt-5">
                     <div class="flex items-center w-full justify-center">
                         <div class="h-0.5 w-[30%] bg-gray-100"></div>
@@ -467,7 +467,7 @@ const user = computed(()=>page.props.user)
 
 
 
-const props = defineProps(["selectedMessage", "clickedIndex", "clickedIndexGroup", "allMessagess", 'groupType']);
+const props = defineProps(["selectedMessage", "clickedIndex", "clickedIndexGroup", "allMessagess", 'groupType', 'clickedIndexGroupName']);
 const currentClickedIndex = ref(props.clickedIndex);
 const clickedIndexGroup = ref(props.clickedIndexGroup);
 const form = new FormData()
@@ -517,7 +517,7 @@ const triggerFileInput = () => {
     if (fileInput.value) {
         fileInput.value.click();
     } else {
-        console.error('fileInput ref is not defined.');
+       
     }
 };
 const profile = ref(false);
@@ -542,71 +542,20 @@ const files = [
     },
 ];
 
-const allFiles = [
-    {
-        day: "Today",
-        files: [
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-            {
-                icon: "vscode-icons:file-type-word",
-                name: "Communication.docx",
-            },
-            {
-                icon: "vscode-icons:file-type-excel2",
-                name: "Analysis Report.xls",
-            },
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-        ],
-    },
+const getTotalOnlineUsers = (users)=>{
+    let found_users = users.filter((item)=>{
+        return item.is_online == 1;
+    })
+    
+    if(found_users){
+        return found_users.length
+    }else{
+        return 0
+    }
+}
 
-    {
-        day: "Yesterday",
-        files: [
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-            {
-                icon: "vscode-icons:file-type-word",
-                name: "Communication.docx",
-            },
-            {
-                icon: "vscode-icons:file-type-excel2",
-                name: "Analysis Report.xls",
-            },
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-        ],
-    },
-    {
-        day: "1/04/23",
-        files: [
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-            {
-                icon: "vscode-icons:file-type-word",
-                name: "Communication.docx",
-            },
-            {
-                icon: "vscode-icons:file-type-excel2",
-                name: "Analysis Report.xls",
-            },
-            {
-                icon: "vscode-icons:file-type-powerpoint",
-                name: "Auditing Report.ppt",
-            },
-        ],
-    },
+const allFiles = [
+  
 ];
 const toggleMembers = () => {
     member_switch.value = !member_switch.value;
@@ -631,7 +580,7 @@ const returnLink = (linkData) => {
 }
 const fromLinkModel = (linkData) => {
     const linkHTML = `<a href="${returnLink(linkData)}" target="_blank">${linkData?.text}</a>`
-    console.log("emitted", linkData);
+    
     formData.value.message += linkHTML;
 }
 const scrollToBottom = () => {
@@ -644,7 +593,7 @@ const scrollToBottom = () => {
 };
 const handleFileChange = (event) => {
     const file = event.target.files[0];
-    console.log(file)
+   
     if (file) {
         formData.value.message += file.name;
         form.append("doc", file)
@@ -670,7 +619,7 @@ function formatDate(dateString) {
 }
 watch(() => props.allMessagess, (newMessage) => {
     if (newMessage) {
-        console.log('watching...', newMessage)
+       
         const messageDate = formatDate(newMessage.created_at);
 
         if (allMessages.value[messageDate]) {
@@ -692,8 +641,7 @@ watch(() => props.allMessagess, (newMessage) => {
 const userConversations = async () => {
     let toCheck = "user"
     const hasKey = toCheck in props.selectedMessage;
-    // console.log("inside", props.selectedMessage);
-    console.log(hasKey);
+  
     const token = localStorage.getItem('token');
     if (hasKey === true) {
         try {
@@ -734,21 +682,20 @@ const sendMessage = async () => {
       }
     let toCheck = "user"
     const hasKey = toCheck in props.selectedMessage;
-    console.log("inside send", props.selectedMessage);
+   
     const token = localStorage.getItem('token');
     if (hasKey === true) {
         try {
             form.append("message", formData.value.message)
             form.append("recipient_id", currentClickedIndex.value)
-            console.log("new data", form);
-            console.log("recipient", formData.value.recipient_id);
+           
             const responses = await axios.post(`/dashboard/chat/users/messages/`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
                 }
             });
-            console.log("on send", responses.data);
+           
             const newMessage = responses.data.sentMessage;
             const messageDate = formatDate(newMessage.created_at);
             if (allMessages.value[messageDate]) {
@@ -772,6 +719,7 @@ const sendMessage = async () => {
             form.append("message", formData.value.message)
             form.append("group_id", clickedIndexGroup.value)
             form.append('groupType', props.groupType)
+            form.append('groupName', props.clickedIndexGroupName)
             const responses = await axios.post(`/dashboard/chat/group/send-message`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -812,7 +760,7 @@ const sortedMessages = computed(() => {
 });
 
 onMounted(() => {
-    console.log("group id:", clickedIndexGroup.value)
+   
     //listenForTyping();
     scrollToBottom();
     userConversations()
@@ -824,7 +772,7 @@ onUpdated(() => {
     scrollToBottom();
 });
 watch(sortedMessages, (newMessages, oldMessages) => {
-    console.log('sorted:', sortedMessages);
+   
     if (newMessages.length !== oldMessages.length) {
         scrollToBottom();
     }

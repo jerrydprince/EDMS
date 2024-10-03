@@ -10,6 +10,16 @@
       </p>
     </div>
 
+    <div v-if="user_roles.includes('super admin') || user_roles.includes('super users') || user_roles.includes('admin') "
+      class="mt-6">
+        <h1 class=" text-gray-500 text-center">Currently viewing</h1>
+        <select @change="changeDepartment" name="" v-model="dept"  id=""
+          class=" bg-gray-50 border border-gray-300 rounded-3xl p-2 outline-none  mt-2 mb-8 min-w-[300px]  ">
+          <option v-for="dept in props.departments"  :value="dept.id">{{ dept.title }}</option>
+
+        </select>
+    </div>
+
     <div class="flex items-start gap-5">
       <div>
         <div  class="flex items-start gap-5 mt-16 relative" v-if="kpi && kpi.length >0">
@@ -85,13 +95,14 @@
   </main>
   <AddKPI v-model="add_kpi" :kraId="kra?.id" @refresh="refresh"/>
   <EditKPI v-model="edit_kpi" :kpi="selected_kpi" :kraId ='kra?.id' @refresh="refresh"/>
-  <AddKRA v-model="add_kra" @refresh="refresh" />
+  <AddKRA v-model="add_kra" @refresh="refresh" :department_id="dept" />
   <DeleteKRA v-model="deletekra_modal" :kra_id="kra.id" @refresh="refresh"  />
   <DeleteKPI v-model="deletekpi_modal" :kpi_id="selected_kpi.id" @refresh="refresh" />
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineProps, computed } from "vue";
+import {usePage} from "@inertiajs/vue3"
 import draggable from "vuedraggable";
 import AddKPI from "../../components/Modals/PMS/AddKPI.vue";
 import EditKPI from "../../components/Modals/PMS/EditKPI.vue";
@@ -106,6 +117,13 @@ const add_kra = ref(false)
 const kra = ref([])
 const selected_kpi = ref([])
 const edit_kpi = ref(false)
+const props = defineProps(['departments'])
+const page = usePage()
+const department = []
+const dept = ref()
+
+const user_roles = computed(()=> page.props.user_roles);
+
 const delete_icon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.85645 3.56696H2.9993M2.9993 3.56696H12.1422M2.9993 3.56696V11.567C2.9993 11.8701 3.11971 12.1608 3.33404 12.3751C3.54836 12.5894 3.83905 12.7098 4.14216 12.7098H9.85644C10.1595 12.7098 10.4502 12.5894 10.6646 12.3751C10.8789 12.1608 10.9993 11.8701 10.9993 11.567V3.56696H2.9993ZM4.71359 3.56696V2.42411C4.71359 2.121 4.834 1.83031 5.04832 1.61599C5.26265 1.40166 5.55334 1.28125 5.85645 1.28125H8.14216C8.44526 1.28125 8.73595 1.40166 8.95028 1.61599C9.16461 1.83031 9.28502 2.121 9.28502 2.42411V3.56696M5.85645 6.42411V9.85268M8.14216 6.42411V9.85268" stroke="#667085" stroke-width="1.10636" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -151,7 +169,28 @@ const kpi = ref([
 ]);
 
 const getKRA = ()=>{
-  axios.get('/dashboard/get-kra').then((response)=>{
+  if(props.departments && props.departments.length > 0){
+    department.value = props.departments[0]
+    dept.value = department.value.id
+  }
+
+  let id = department.value? department.value.id: '';
+
+  axios.get('/dashboard/get-kra', {params:{id: id}}).then((response)=>{
+   if(response.data){
+    if(response.data && response.data.kpi){
+      kpi.value = response.data.kpi;
+    }else{
+      kpi.value = []
+    }
+   
+    kra.value = response.data
+   }
+  })
+}
+
+const changeDepartment = ()=>{
+  axios.get('/dashboard/get-kra', {params:{id: dept.value}}).then((response)=>{
    if(response.data){
     if(response.data && response.data.kpi){
       kpi.value = response.data.kpi;

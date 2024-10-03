@@ -122,6 +122,7 @@ class AnalyticsController extends Controller
         $logins = LoginActivity::all();
         return response()->json($logins);
     }
+    
     // {
     //     // Define the time range to calculate uptime/downtime (last 24 hours)
     //     $startTime = Carbon::now()->subDay(); // 24 hours ago

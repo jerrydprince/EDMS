@@ -186,8 +186,14 @@ const userHasPermission = (permit) => {
   if (role.value.includes('super admin')) {
     return true;
   } else {
-    let perm = permissions.value.filter(permission => permission.name == permit);
-    if (perm && perm.length > 0) {
+    // let perm = permissions.value.filter(permission => permission.name == permit);
+    // if (perm && perm.length > 0) {
+    //   return true
+    // } else {
+    //   return false
+    // }
+    let index = permissions.value.findIndex(permission => permission.name == permit);
+    if (index != -1) {
       return true
     } else {
       return false

@@ -12,6 +12,8 @@ use App\Models\Unit;
 use Illuminate\Validation\Rule;
 use App\Notifications\Registration;
 use Carbon\Carbon;
+use App\Models\Leave;
+use App\Models\Misconduct;
 
 class UserController extends Controller
 {
@@ -122,7 +124,7 @@ class UserController extends Controller
     public function editUser(Request $request){
         $user = User::with('roles')->find($request->id);
         $user_roles = $user->roles->pluck('name');
-         $roles = Role::get();
+         $all_roles = Role::get();
         $departments = Department::with(['division'=>function($query){
             $query->with('unit');
         }])->get();
@@ -137,7 +139,7 @@ class UserController extends Controller
             $unit = Unit::find($user->unit_id);
         }
      
-        return inertia('users/EditUser', compact('user', 'roles', 'departments', 'dpt', 'division', 'unit','user_roles'));
+        return inertia('users/EditUser', compact('user', 'all_roles', 'departments', 'dpt', 'division', 'unit','user_roles'));
     }
 
     public function postEditUser(Request $request){
@@ -235,6 +237,41 @@ class UserController extends Controller
             }
         });
         return response()->json(['notifications'=>$notifications, 'count'=>$count]);
+    }
+
+    public function addLeave(Request $request){
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required',
+        ]);
+
+        Leave::create($request->all());
+        return redirect()->back();
+    }
+
+    public function misConduct(Request $request){
+        $path = null;
+        $request->validate([
+           // 'ticket' => 'required'
+        ]);
+
+        if($request->file){
+            $request->validate([
+                'file' => 'required',
+            ]);
+    
+            $image = $request->file('file');
+            $imageName = time() . '.' . $image->extension();
+            $path = 'misconduct'.'/'.$imageName;
+            $image->move(public_path('misconduct'), $imageName);
+        }
+
+        $mis = new Misconduct();
+        $mis->ticket = 'ticket';
+        $mis->complaint = $request->ticket;
+        $mis->file = $path;
+        $mis->user_id = $request->user_id;
+        $mis->save();
     }
 
 }

@@ -21,7 +21,7 @@
 <Divider class=" -mt-1"/>
 <div class="">
     <overview :users="props.users" :departments="props.departments" v-if="currentLink == '/dashboard/pms/overview'"/>
-    <settings v-if="currentLink == '/dashboard/pms/settings'"/>
+    <settings :departments="props.departments"  v-if="currentLink == '/dashboard/pms/settings'"/>
 </div>
   </main>
 </template>

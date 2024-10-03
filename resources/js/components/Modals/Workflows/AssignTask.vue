@@ -523,6 +523,11 @@ const removeUser = (user) => {
   users.value.push(user)
   let index = selectedUsers.value.findIndex((item) => item.id == user.id)
   selectedUsers.value.splice(index, 1)
+  
+  let index2 = form.users.findIndex((item)=>item.id == user.id);
+  if(index2){
+    form.users.splice(index,1)
+  }
 }
 
 const formatDate = (dateString) => {

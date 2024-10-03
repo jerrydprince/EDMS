@@ -15,11 +15,12 @@ use Illuminate\Support\Facades\DB;
 use App\Models\KRA;
 use App\Events\TaskEvent;
 use App\Notifications\CommentNotification;
+use App\Models\Correspondence;
 
 class TaskController extends Controller
 {
     public function createTask(Request $request){
-       
+     
         if($request->id){
             $request->validate([
                 'title' => 'required',
@@ -91,8 +92,9 @@ class TaskController extends Controller
             
             $task->save();
     
+            $docs = [];
             if($request->file('files')){
-                $docs = [];
+                
                 foreach($files as $file){
                   array_push($docs, [
                     'path' => $path.'/'.$file['fileName'],
@@ -103,8 +105,40 @@ class TaskController extends Controller
                     'updated_at' => \Carbon\Carbon::now()
                   ]);
                 }
+
+
                 TaskDoc::insert($docs);
             }
+
+             //add extra files from AGF assign task
+             if($request->extra_files){
+                $path =  "/task/".date('Y') . '/' . date('m');
+                foreach($request->extra_files as $file){
+                 
+                    array_push($docs, [
+                      'path' => $file['path'],
+                      'task_id' => $task->id,
+                      //'size' => $file['size'],
+                      //'file_name' => $file['original_name'],
+                      'size' => '22kb',
+                      'file_name' =>$this->getExtraFileName($file['path']),
+                      'created_at' => \Carbon\Carbon::now(),
+                      'updated_at' => \Carbon\Carbon::now()
+                    ]);
+                  }
+
+                  TaskDoc::insert($docs);
+            }
+
+            //mark the correspondence as assigned
+            if($request->is_from_correspondece){
+                $correspondence = Correspondence::find($request->correspondence_id);
+                $correspondence->is_assigned = true;
+                $correspondence->task_id = $task->id;
+                $correspondence->save();
+            }
+
+
             //$ids = explode(',', $request->users);
             if(!$request->id){
                 if(auth()->user()->hasRole('unit heads')){
@@ -149,6 +183,12 @@ class TaskController extends Controller
         }
 
         return redirect()->back();
+    }
+
+    public function getExtraFileName($path){
+        $parts = explode('/', $path);
+        $lastPart = end($parts);
+        return $lastPart;
     }
 
     function formatSize($bytes) {
@@ -369,10 +409,6 @@ class TaskController extends Controller
 
             $task = Task::with('taskdocs')->find($request->task_id);
             $task->status = 'in progress';
-            
-            if($request->description){
-                $task->description = $request->description;
-            }
             $task->save();
             
             $task2 = $task->replicate();
@@ -381,6 +417,10 @@ class TaskController extends Controller
                 $task2->assigned_by_unit = auth()->user()->unit_id;
                 $task2->assigned_by_division = null;
                 $task2->assigned_by_department = null;
+                if($request->description){
+                    $task->description = $request->description;
+                }
+                $task2->status = "pending";
                 $task2->save();
                 $task2->user()->sync($user_ids);
 
@@ -390,6 +430,10 @@ class TaskController extends Controller
             if($this->isRole('division heads')){
                 $task2->assigned_by_division = auth()->user()->division_id;
                 $task2->assigned_by_department = null;
+                if($request->description){
+                    $task->description = $request->description;
+                }
+                $task2->status = "pending";
                 $task2->save();
 
                 $branch_ids = $this->getBranchIds($request->users);
@@ -400,9 +444,26 @@ class TaskController extends Controller
 
             if($this->isRole('directors')){
                 $task2->assigned_by_department = auth()->user()->department_id;
+                if($request->description){
+                    $task->description = $request->description;
+                }
+                $task2->status = "pending";
                 $task2->save();
                 $branch_ids = $this->getBranchIds($request->users);
                 $task2->divisionTask()->sync($branch_ids);
+
+                $this->insertTaskDoc($task, $task2);
+            }
+
+            if($this->isRole('super users')){
+                $task2->assigned_by_super_user = auth()->user()->id;
+                if($request->description){
+                    $task->description = $request->description;
+                }
+                $task2->status = "pending";
+                $task2->save();
+                $branch_ids = $this->getBranchIds($request->users);
+                $task2->departmentTask()->sync($branch_ids);
 
                 $this->insertTaskDoc($task, $task2);
             }

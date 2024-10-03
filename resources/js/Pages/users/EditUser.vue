@@ -36,7 +36,7 @@
           </button> -->
         </div>
         <div class="  grid grid-cols-4 gap-3 mt-5">
-          <div v-for=" (item, index) in props.roles" :key="index">
+          <div v-for=" (item, index) in props.all_roles" :key="index">
             <div :style="{ borderColor: form.role.includes(item.name) ? '#3B82F6' : '#EAECF0' }"
               class="flex items-center border p-3 gap-3 rounded-md h-full "
               :class="{ 'bg-[#F8FBF9]': form.role.includes(item.name) }">
@@ -161,7 +161,7 @@
               <select class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @change="selectedDepartment"
                 v-model="form.department">
                 <option value="">Select a department</option>
-                <option v-for="department in props.departments" :value="department.id" :selected="dpt.title">{{ department.title }}</option>
+                <option v-for="department in props.departments" :value="department.id" :selected="dpt?.title">{{ department.title }}</option>
               </select>
               <span class="text-red-400 text-sm my-2" v-if="form.errors.department">{{ form.errors.department }}</span>
             </div>
@@ -218,7 +218,7 @@
   import { useToast } from "primevue/usetoast";
   import {Link} from "@inertiajs/vue3";
   
-  const props = defineProps(['roles', 'departments','user', 'dpt', 'unit', 'division','user_roles']);
+  const props = defineProps(['all_roles', 'departments','user', 'dpt', 'unit', 'division','user_roles']);
   const department = ref([]);
   const division = ref([]);
   const previewUrl = ref('');
@@ -272,12 +272,16 @@
   }
   
   const selectedDivision = () => {
+    if(getDivision.value && getDivision.value.length > 0){
+      let div = getDivision.value.filter((val) => {
+        return val.id === form.division
+      });
+      division.value = div? div: []
+    }else{
+      division.value = []
+    }
   
-    let div = getDivision.value.filter((val) => {
-      return val.id === form.division
-    });
-  
-    division.value = div
+   // division.value = div? div: []
   
   }
   
@@ -349,9 +353,7 @@
           return false
         }
         else
-          if (form.department == '') {
-            return false
-          } else
+        
             if (form.grade_level === '') {
               return false
             } else

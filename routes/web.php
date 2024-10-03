@@ -23,6 +23,7 @@ use App\Http\Controllers\KRAController;
 use App\Http\Controllers\RatingsController;
 use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\SupportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -240,18 +241,18 @@ Route::middleware('auth')->group(function () {
                 // Route::get('/chat', [ChatController::class, 'index'])->middleware('permission:chat view');
                 // Route::post('/chat', [ChatController::class, 'chat'])->middleware('permission:chat create');
 
-                Route::get('/chat', [ChatController::class, 'chat'])->name('chat');
-                Route::post('/chat', [ChatController::class, 'sendMessageToUser'])->name('chat');
-                Route::get('/chat/users', [ChatController::class, 'getAllUsers']);
-                Route::get('/chat/usersConversation/{userId}', [ChatController::class, 'getConversationWithUser']);
-                Route::post('/chat/group/send-message', [ChatController::class, 'sendMessageToGroup']);
-                Route::get('/chat/group/{groupId}/{groupType}', [ChatController::class, 'getGroupMessages']);
-                Route::post('/chat/groups', [ChatController::class, 'createGroup']);
-                Route::post('/chat/users/messages/', [ChatController::class, 'sendMessageToUser']);
-                Route::get('/chat/groups/{category}', [ChatController::class, 'getGroupsByCategory']);
-                Route::get('/chat/categories', [ChatController::class, 'getAllCategories']);
-                Route::get('/chat/groups/{category}/{groupId}', [ChatController::class, 'getGroupWithConversations']);
-                Route::get('/chat/all-groups', [ChatController::class, 'getUserGroups']);
+                Route::get('/chat', [ChatController::class, 'chat'])->name('chat')->middleware('permission:chat view');
+                Route::post('/chat', [ChatController::class, 'sendMessageToUser'])->name('chat')->middleware('permission:chat view');
+                Route::get('/chat/users', [ChatController::class, 'getAllUsers'])->middleware('permission:chat view');
+                Route::get('/chat/usersConversation/{userId}', [ChatController::class, 'getConversationWithUser'])->middleware('permission:chat view');
+                Route::post('/chat/group/send-message', [ChatController::class, 'sendMessageToGroup'])->middleware('permission:chat view');
+                Route::get('/chat/group/{groupId}/{groupType}', [ChatController::class, 'getGroupMessages'])->middleware('permission:chat view');
+                Route::post('/chat/groups', [ChatController::class, 'createGroup'])->middleware('permission:chat view');
+                Route::post('/chat/users/messages/', [ChatController::class, 'sendMessageToUser'])->middleware('permission:chat view');
+                Route::get('/chat/groups/{category}', [ChatController::class, 'getGroupsByCategory'])->middleware('permission:chat create');
+                Route::get('/chat/categories', [ChatController::class, 'getAllCategories'])->middleware('permission:chat create');
+                Route::get('/chat/groups/{category}/{groupId}', [ChatController::class, 'getGroupWithConversations'])->middleware('permission:chat create');
+                Route::get('/chat/all-groups', [ChatController::class, 'getUserGroups'])->middleware('permission:chat view');
 
                 //Access level or Roles
                 Route::get('/access-level', [RoleController::class, 'getAccessLevel'])->middleware('permission:access config view');
@@ -264,8 +265,10 @@ Route::middleware('auth')->group(function () {
                 Route::get('/profile', [DashboardController::class, 'settings']);
 
                 //Correspondence
-                Route::get('/correspondence', [CorrespondenceController::class, 'correspondence']);
+                Route::get('/correspondence', [CorrespondenceController::class, 'correspondence'])->middleware('role:super users');
                 Route::post('/correspondence', [CorrespondenceController::class, 'createCorrespondence']);
+                Route::get('/correspondence/view-files/{id}', [CorrespondenceController::class, 'viewFile'])->middleware('role:super users');
+                Route::get('/correspondence/departments', [CorrespondenceController::class, 'getDepartments']);
 
                 //support
                 Route::get('/support', [DashboardController::class, 'support']);
@@ -336,6 +339,13 @@ Route::middleware('auth')->group(function () {
                 Route::get('/analytics', [AnalyticsController::class, 'analytics']);
                 Route::get('/analytics/server-status', [AnalyticsController::class, 'getServerStatus']);
                 Route::get('/analytics/user-logins', [AnalyticsController::class, 'getUserLogins']);
+                Route::get('/analytics/roles', [RoleController::class, 'getRoles']);
+
+                //Add leave
+                Route::post('/add-leave', [UserController::class, 'addLeave']);
+
+                //Misconduct
+                Route::post('/report-misconduct', [UserController::class, 'misConduct']);
            
         });
 

@@ -10,13 +10,32 @@ use App\Models\Certificate;
 class PMSController extends Controller
 {
     public function index(){
-        $departments = Department::orderBy('title', 'ASC')->get();
-        if($departments){
-            $users = User::with('roles')->where('department_id', $departments->first()->id)->get();
+        $user = auth()->user();
+      
+        if($user->hasRole('directors')){
+            $users = User::with('roles')->where('department_id', $user->department_id)->get();
+            $departments = [];
+        }else
+        if($user->hasRole('unit heads')){
+            $users = User::with('roles')->where('unit_id', $user->unit_id)->get();
+            $departments = [];
+        }else
+        if($user->hasRole('division heads')){
+            $users = User::with('roles')->where('division_id', $user->division_id)->get();
+            $departments = [];
+        }else
+        if($user->hasRole('super users') || $user->hasRole('super admin') || $user->hasRole('admin')){
+            $departments = Department::orderBy('title', 'ASC')->get();
+            if($departments){
+                $users = User::with('roles')->where('department_id', $departments->first()->id)->get();
+            }else{
+                $users = [];
+            }
         }else{
             $users = [];
+            $departments = [];
         }
-        
+
         return inertia('PMS/index', compact('departments', 'users'));
     }
 
@@ -75,7 +94,11 @@ class PMSController extends Controller
     }
 
     public function viewPMSUserProfile($id){
-        $user = User::with(['unit', 'rating', 'division', 'certificates', 'department', 'task', 'attendance'=>function($query){
+        $user = User::with(['unit', 'leave'=>function($query){
+            $query->latest()->first();
+        }, 'rating', 'division', 'certificates', 'department', 'task'=>function($query){
+            $query->withCount('comments');
+        }, 'attendance'=>function($query){
             $query->orderBy('created_at', 'DESC');
         }])->find($id);
         $task = $user->task;

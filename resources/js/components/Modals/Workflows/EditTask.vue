@@ -187,7 +187,7 @@
               <div class="border p-3 rounded-md">
                 <div class="flex justify-between">
                   <div class="flex items-center gap-1 justify-center">
-                    <img :src="getFileURLExt(docs.path)" alt="" class="w-7" />
+                    <!-- <img :src="getFileURLExt(docs.path)" alt="" class="w-7" /> -->
                     <div class="">
                       <h1 class="text-[#1D2939] pr-2">{{ docs.file_name }}</h1>
                       <div class="flex items-center gap-5">
@@ -480,7 +480,7 @@ const getFileURLExt = (url) => {
   const extension = url.split('.').pop();
 
   if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'svg') {
-    return URL.createObjectURL(file);
+    return URL.createObjectURL(url);
   }
 
   if (extension == 'pdf') {

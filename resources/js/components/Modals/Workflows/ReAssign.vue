@@ -176,13 +176,16 @@ const closeModal = () => {
 
 const searchUsers = debounce(() => {
   branchType.value = ''
+ 
   axios.get('/dashboard/search-users', { 
     params: { search: search.value } }).then((response) => {
       if(response.data.type != 'unit'){
         branch.value = response.data.data
         branchType.value = response.data.type
+        clickOutside.value = false
       }else{
         users.value = response.data.data
+        clickOutside.value = false
       }
     
   })
@@ -196,7 +199,7 @@ const submit = () => {
   toast.add({
     severity: "success",
     summary: 'Task Submitted',
-    detail: "Your task as been marked as complete and is under review",
+    detail: "Your task has been re-assigned",
     life: 3000,
   });
   }})

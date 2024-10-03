@@ -141,7 +141,10 @@
                         </div>
                         <div class="flex items-center justify-between w-full">
                             <div>
-                                <h1 class="font-semibold text-base">{{ item.title }}</h1>
+                                <h1 class="font-semibold text-base flex">{{ item.title }}
+                                    <!-- <span  class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white ml-2">{{ getItemCount(item) }}</span> -->
+                                </h1>
+                               
                                 <p class="text-[#98A2B3] text-sm">
                                     {{ item.users?item.users.length:'' }} Members
                                 </p>
@@ -160,7 +163,7 @@
                 <div v-if="active === 0 || active === 1">
                     <Messages :selectedMessage="selectedMessage" :clickedIndexGroup="clickedIndexGroup"
                         :clickedIndex="clickedIndex" :selectedMessageGroup="selectedMessageGroup"
-                        :allMessagess="allMessagess" :groupType="groupType" />
+                        :allMessagess="allMessagess" :groupType="groupType" :clickedIndexGroupName="clickedIndexGroupName" />
                 </div>
             </div>
             <div v-else>
@@ -180,6 +183,7 @@ import EmptyChatRoom from "../../components/EmptyChatRoom.vue";
 import ReportDialog from "../../components/Modals/chat/ReportDialog.vue";
 import AddLink from "../../components/Modals/chat/AddLink.vue";
 import Messages from "../../components/Messages.vue";
+import {useStore} from "vuex"
 
 
 
@@ -206,6 +210,12 @@ const groupType = ref(null)
 const groupIndex = ref(null)
 const user = computed(()=>page.props.user)
 const userBranch = computed(()=>page.props.userBranch)
+const store = useStore()
+const global_chat = computed(()=>store.getters.getNewChat)
+const clickedIndexGroupName = ref('')
+
+const notifications = computed(()=> store.getters.getNotifications)
+
 function toggleBackground(item) {
     groupIndex.value = item.id
     Users.value = "";
@@ -215,12 +225,14 @@ function toggleBackground(item) {
     open.value = true;
     clickedIndex.value = item?.user?.id;
     clickedIndexGroup.value = item?.id;
+    clickedIndexGroupName.value = item?.title;
 }
 function handleKeyDown(event) {
     if (event.key === "Escape") {
         open.value = false;
     }
 }
+
 
 const getUserBranch = ()=>{
     if(userBranch.value.unit){
@@ -229,6 +241,27 @@ const getUserBranch = ()=>{
         return 'division'
     }else if(userBranch.value.department){
         return 'department'
+    }else{
+        return 'others';
+    }
+}
+
+const getItemCount = (itm)=>{
+    let filtered = global_chat.value.filter((item)=>{
+        return item.group_id ==itm.id && item.group_type == groupType.value
+    })
+
+    console.log('this is the filtered list ',filtered)
+    return filtered? filtered.length: 0;
+}
+
+const getUserBranchId = ()=>{
+    if(userBranch.value.unit){
+        return userBranch.value.unit.id
+    }else if(userBranch.value.division){
+        return userBranch.value.division.id
+    }else if(userBranch.value.department){
+        return userBranch.value.department.id
     }
 }
 
@@ -277,7 +310,7 @@ const getAllCategories = async () => {
                 'Authorization': `Bearer ${token}`,
             }
         });
-        console.log('display', response.data);
+       
         Branch_group.value = response.data;
         const newValues = ["gg:organisation", "icon-park-outline:fork", "tabler:box"]
         Branch_group.value.forEach((obj, index) => {
@@ -290,7 +323,7 @@ const getAllCategories = async () => {
             obj.icon = newValues[index]
         })
     } catch (error) {
-        console.error('Error fetching data:', error);
+       
     }
 };
 const getAllUserAndMessage = async () => {
@@ -301,21 +334,19 @@ const getAllUserAndMessage = async () => {
                 'Authorization': `Bearer ${token}`,
             }
         });
-        console.log('display here again', response.data);
+       
         inbox.value = response.data;
     } catch (error) {
-        console.error('Error fetching data:', error);
+       
     }
 };
 watch(() => inbox.value, (checkbox) => {
     newbox.value = checkbox
-    console.log("normal mesage", newbox.value);
-    console.log("listened mesage", allMessagess.value);
 })
 
 const filterRecipients = () => {
     const searchTerm = Users.value.toLowerCase();
-    console.log(searchTerm);
+   
     const combinedArray = inbox.value.concat(Branch_group.value);
     Suggestions.value = combinedArray.filter((item) => {
         if (item?.name) {
@@ -326,7 +357,8 @@ const filterRecipients = () => {
         }
         return false;
     });
-};
+}
+
 async function fetchUserGroups() {
     const token = localStorage.getItem('token');
     try {
@@ -335,12 +367,14 @@ async function fetchUserGroups() {
                 'Authorization': `Bearer ${token}`,
             }
         });
-        userGroups.value = response.data;
+    
+        userGroups.value = response.data
 
     } catch (error) {
-        console.error('Error fetching user groups:', error);
+        console.log(error)
     }
 }
+
 function listenToGroupMessages(groups) {
     //this line to be reviewed
     let total_length = Object.keys(groups).length
@@ -362,10 +396,10 @@ function listenToGroupMessages(groups) {
 
         
     // }
-
+    let grouptype = getUserBranch();
     for(let grp in groups){
         if(groups.hasOwnProperty(grp)){
-            let grouptype = getUserBranch();
+            
             let branch = null
             if(grouptype == 'unit'){
                 branch = userBranch.value['unit'];
@@ -376,18 +410,32 @@ function listenToGroupMessages(groups) {
             if(grouptype == 'department'){
                 branch = userBranch.value['department']
             }
+           
+        }
+           
+    }
 
-            window.Echo.private(`group.${branch.id}.${grouptype}`)
+    let branch_id = getUserBranchId()
+    window.Echo.private(`group.${branch_id}.${grouptype}`)
             .listen('GroupMessageSent', (event) => {
                
                 allMessagess.value = event.message;
                
                 allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === user.value.id;
+                    //if(event.message.group_id == clickedIndexGroup.value && event.message.group_type === grouptype){
+                        let data = {
+                          
+                            group_type: grouptype,
+                            group_id: event.message.group_id,
+                            type: 'chat',
+                            chat: event.message,
+                            date: new Date()
+                        }
+                        store.commit('setNewChat',data)
+                       // store.commit('setNotifications', values)
+                   // }
+                
             });
-           
-        }
-           
-    }
    
 }
 onMounted(async () => {
@@ -403,6 +451,7 @@ onMounted(async () => {
             .listen('MessageSent', (event) => {
                 allMessagess.value = event.message;
                 allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === $userId;
+                //store.commit('setNewChat')
             });
         
     } catch (error) {

@@ -1,23 +1,3 @@
-// import { reactive, ref, onMounted } from "vue"
-// import axios from 'axios';
-
-// const notifications = ref()
-// const total_task_notifications = ref();
-// const getUserNotifications = ()=>{
-//     axios.get('/user-notifications').then((response)=>{
-//       notifications.value = response.data.notifications
-//       total_task_notifications.value = response.data.count
-//     })
-//   }
-
-//   export const store = reactive({
-//     notifications: getUserNotifications(),
-//     total_task_notifications: total_task_notifications.value
-// })
-
-//   onMounted(()=>{
-//     getUserNotifications()
-//   })
 
   import { createStore } from 'vuex'
   import axios from "axios"
@@ -28,12 +8,17 @@
       return {
         notifications: [],
         total_task_notifications: 0,
-        new_chat: 0,
+        new_chat: [],
       }
     },
+
     getters:{
       getNotifications(state){
-        return state.notifications
+        if(state.notifications && state.notifications.length > 0){
+          return state.notifications
+        }else{
+          return []
+        }
       },
       getTotalTaskNotifications(state){
         return state.total_task_notifications
@@ -42,25 +27,36 @@
         return state.new_chat;
       }
     },
+
     mutations: {
-      setNotifications (state, notifications) {
-        state.notifications = notifications
+      setNotifications (state, nots) {
+        //state.notifications.push(nots)
+        state.notifications.push({task: nots})
+        // if (Array.isArray(nots)) {
+        //   state.notifications = nots; // Replace the notifications array with the new one
+        // } else {
+        //   state.notifications.push(nots); // Add a single notification if `nots` is not an array
+        // }
       },
 
       setTotalTaskNotifications(state, counter){
         state.total_task_notifications = counter
       },
 
-      setNewChat(state, chat){
-        state.new_chat = chat
+      setNewChat(state, data){
+        state.new_chat.push(data)
       }
     },
+    
     actions: {
-      fetchNotifications({commit}){
-        axios.get('/user-notifications').then((response)=>{
+      async fetchNotifications({commit}){
+        await axios.get('/user-notifications').then((response)=>{
           // notifications.value = response.data.notifications
           // total_task_notifications.value = response.data.count
-          commit('setNotifications', response.data.notifications)
+          //if(response.data.notifications && response.data.notifications.length > 0){
+            commit('setNotifications', response.data.notifications)
+          //}
+          
           commit("setTotalTaskNotifications", response.data.count)
         })
       }

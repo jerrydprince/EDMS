@@ -62,12 +62,13 @@ import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm } from "@inertiajs/vue3";
 
-const props = defineProps(["modelValue"]);
+const props = defineProps(["modelValue", 'department_id']);
 const emit = defineEmits(["update:modelValue", 'refresh']);
 const toast = useToast()
 const form = useForm({
   name:'',
-  description:''
+  description:'',
+  department_id: null
 })
 const visible = computed({
   get() {
@@ -87,6 +88,9 @@ const submit = () => {
   if(form.name ==''){
     document.getElementById('full_name').focus();
     return false;
+  }
+  if(props.department_id){
+    form.department_id = props.department_id
   }
   form.post('/dashboard/create-kra', {onSuccess: page=>{
     emit("update:modelValue", false);

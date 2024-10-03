@@ -2,7 +2,7 @@
   <main class="p-7">
     <div class="bg-white border border-gray-200 rounded-xl lg:flex items-start p-7 w-full justify-between">
       <div>
-        <h1 class="text-4xl">Hello, Dave!</h1>
+        <h1 class="text-4xl">Hello, {{user.first_name}}!</h1>
         <div class="text-sm flex items-center gap-5 mt-4">
           <p class="text-gray-500">welcome to your PMS dashboard</p>
           <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
@@ -17,8 +17,8 @@
       </button>
     </div>
 
-    <div class="p-7 bg-white border o  relative border-gray-200 mt-10 rounded-xl">
-      <div>
+     <div  class="p-7 bg-white border o  relative border-gray-200 mt-10 rounded-xl">
+      <div v-if="user_roles.includes('super admin') || user_roles.includes('super users') || user_roles.includes('admin') ">
         <h1 class=" text-gray-500">Currently viewing</h1>
         <select @change="changeDepartment" name="" v-model="department"  id=""
           class=" bg-gray-50 border border-gray-300 rounded-3xl p-2 outline-none  mt-2 mb-8 min-w-[300px]  ">
@@ -125,15 +125,18 @@
 <script setup>
 import axios from "axios";
 import { ref, watch, computed, defineProps, onMounted } from "vue";
-import {Link} from "@inertiajs/vue3"
+import {Link, usePage} from "@inertiajs/vue3"
 //import paginator from "@/reusables/paginations.vue";
 const currentPage = ref(1);
 const itemsPerPage = 10;
 const props = defineProps(['users', 'departments'])
 const department = ref();
 const departmentUsers = ref([])
+const page = usePage()
+const user = computed(()=> page.props.user);
+const user_roles = computed(()=> page.props.user_roles);
 
-const changeDepartment = (id)=>{
+const changeDepartment = ()=>{
   axios.get('/dashboard/get-department-users',{params:{id: department.value}}).then((response)=>{
     if(response.data){
       departmentUsers.value = response.data

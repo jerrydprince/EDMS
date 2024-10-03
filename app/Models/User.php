@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\SoftDeletes;
 // use LdapRecord\Models\Model;
 // use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 // use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
@@ -22,7 +23,7 @@ class User extends Authenticatable
      * Ldap authentication below in the comment
      */
     //use HasApiTokens, HasFactory, Notifiable, AuthenticatesWithLdap;
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -154,5 +155,15 @@ class User extends Authenticatable
     public function mails()
     {
         return $this->hasMany(Mail::class);
+    }
+
+    /**
+     * Get all of the leave for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function leave()
+    {
+        return $this->hasMany(Leave::class);
     }
 }

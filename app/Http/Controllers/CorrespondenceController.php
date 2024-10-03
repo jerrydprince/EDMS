@@ -5,17 +5,32 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Correspondence;
 use Illuminate\Support\Facades\DB;
+use App\Models\FileMovement;
+use App\Models\File;
+use App\Models\User;
+use App\Models\Department;
 
 class CorrespondenceController extends Controller
 {
-    public function correspondense(){
-        return inertia('correspondence/index');
+    public function correspondence(){
+        $correspondences = Correspondence::with('correspondenceFile', 'sentBy')->latest()->get();
+        return inertia('correspondence/correspondence', compact('correspondences'));
+    }
+
+    function formatSize($bytes) {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $bytes >= 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+    
+        return round($bytes, 2) . ' ' . $units[$i];
     }
 
     public function createCorrespondence(Request $request){
         
         $corr = new Correspondence();
         $corr->description = $request->description;
+        $corr->created_by = auth()->user()->id;
         $corr->save();
 
         if($request->file('files')){
@@ -42,47 +57,54 @@ class CorrespondenceController extends Controller
 
                 array_push($files, $arr);
             }
+            $name = $original_name? $original_name: 'Unknown';
 
             DB::table('correspondence_file')->insert($files);
 
+            $newFile = new File();
+            $newFile->name = $name;
+            $newFile->file_type = 'File';
+            $newFile->doc_no = null;
+            $newFile->description = $request->description;
+            $newFile->created_by = auth()->user()->id;
+           
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                $newFile->is_agf = true;
+            }
+            $newFile->save();
+
+            $superUsers = User::role('super users')->first();
+
             $fm = new FileMovement();
-            $fm->sent_from = null;
-            $fm->sent_to = null;
+            $fm->sent_from = auth()->user()->id;
+            $fm->sent_to = $superUsers->id;
             $fm->file_id = $newFile->id;
             $fm->status = "pending";
             $fm->file_movement_id = $this->getFileMovementUniqueId();
-            $fm->sent_to_branch = $request->branch_type;
-            if($request->branch_type == 'unit'){
-                $fm->sent_to_unit = $request->branch;
-               
-            }
-            if($request->branch_type == 'division'){
-                $fm->sent_to_division = $request->branch;
-                
-            }
-            if($request->branch_type == 'department'){
-                $fm->sent_to_department = $request->branch;
-                
-            }
-            if($logedInUserBranch == 'unit'){
-                $fm->unit_id = $branch_id;
-                $fm->sent_from_unit = $request->branch;
-            }
-            if($logedInUserBranch == 'division'){
-                $fm->division_id = $branch_id;
-                $fm->sent_from_division = $request->branch;
-            }
-            if($logedInUserBranch == 'department'){
-                $fm->department_id = $branch_id;
-                $fm->sent_from_department = $request->branch;
-            }
+            $fm->sent_to_branch = 'agf registry';
+           
             if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-                $fm->sent_from_agf = true;
+                $fm->sent_to_agf = true;
             }
 
     
             $fm->save();
 
         }
+    }
+
+    public function getFileMovementUniqueId(){
+        $uniqueId = substr(str_shuffle("0123456789"), 0, 9);
+        return $uniqueId;
+    }
+
+    public function viewFile($id){
+        $correspondence = Correspondence::with('correspondenceFile')->find($id);
+        return inertia('correspondence/viewFile', compact('correspondence'));
+    }
+
+    public function getDepartments(Request $request){
+        $department = Department::where('title','like', '%'.$request->search. '%')->get(); 
+        return response()->json($department);
     }
 }
