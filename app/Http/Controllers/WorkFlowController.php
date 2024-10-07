@@ -36,7 +36,7 @@ class WorkFlowController extends Controller
         if($this->isRole('division heads')){
             $division = Division::find(auth()->user()->division_id);
             $created_task = Task::with('assignedByDivision')
-                ->where('assigned_by_division', auth()
+                ->where('assigned_by_division', auth()->user()->division_id)
                 ->when($searchTerm, function ($query, $searchTerm) {
                     $query->where(function ($subQuery) use ($searchTerm) {
                         $subQuery->where('title', 'like', "%{$searchTerm}%")
@@ -45,7 +45,7 @@ class WorkFlowController extends Controller
                                  ->orWhere('due_date', 'like', "%{$searchTerm}%");
                     });
                 })
-                ->user()->division_id)
+               // ->user()->division_id)
                 ->latest()
                 ->paginate(10);
               

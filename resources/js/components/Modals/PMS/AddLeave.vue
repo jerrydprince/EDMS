@@ -66,7 +66,7 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import {useForm, usePage} from "@inertiajs/vue3"
+import {useForm, usePage, router} from "@inertiajs/vue3"
 
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue"]);
@@ -116,6 +116,7 @@ const submit = () => {
     return false
   }
   form.post('/dashboard/add-leave', {onSuccess: page=>{
+    router.reload({only:['user']})
     emit("update:modelValue", false);
        toast.add({
         severity: "success",

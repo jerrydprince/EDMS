@@ -17,18 +17,20 @@
                 </p>
                 <section>
                     <div v-for="(item, index) in main" :key="index" class="mb-1">
-                        <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
+                        <div v-if="checkPermission(item)">
+                          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
                                 ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
                                 : 'px-3') + (shouldShow ? ' w-fit' : '')
                             " class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
                             <!-- <Icon :icon="item.icon" width="25" /> -->
                             <span v-html="item.icon"></span>
                             <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
-                    </Link>
+                        </Link>
+                        </div>
                     </div>
                 </section>
             </div>
-            <div class="border-b border-dashed pb-4" :class="{ '-ml-4': shouldShow }">
+            <div v-if="role.includes('super admin') || role.includes('admin')"class="border-b border-dashed pb-4" :class="{ '-ml-4': shouldShow }">
                 <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ ' ml-3': shouldShow }">
                     Admin
                 </p>
@@ -45,12 +47,12 @@
                     </div>
                 </section>
             </div>
-            <div class="pb-4 mb-10">
+            <div class="pb-4 mb-10" v-if="branches && branches.length > 0">
                 <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3"
                     :class="{ ' -ml-3': shouldShow }">
                     <div class="flex items-center gap-2">
                         <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
-                        <p>Branches</p>
+                        <p>Branches </p>
                     </div>
                     <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" />
                 </div>
@@ -144,6 +146,20 @@ const toggleSearchState = () => {
     toggleSearch.value = !toggleSearch.value;
 };
 
+const checkPermission = (item)=>{
+  if(role.value.includes('record manager')){
+    console.log('from the record manager')
+    if(item.name == 'Dashboard'){
+      console.log('from the dashboard')
+      return false
+    }else{
+      return true;
+    }
+  }else{
+    return true;
+  }
+}
+
 const shouldShow = ref(false);
 
 const setDepartments = () => {
@@ -165,7 +181,7 @@ const setDepartments = () => {
     const branchType = userBranchName.value; 
     const branchData = userBranch.value[branchType]; 
 
-    if (branchData) {
+    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads')|| role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -296,25 +312,25 @@ const main = ref([
     name: "PMS",
     path: "/dashboard/pms",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_7456_17054)">
-<mask id="mask0_7456_17054" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="2" width="21" height="17">
-<path d="M16.8422 17.7117C20.147 14.4069 20.147 9.04891 16.8422 5.74414C13.5375 2.4394 8.17943 2.4394 4.87469 5.74414C1.56992 9.04891 1.56995 14.4069 4.87469 17.7117" stroke="white" stroke-width="1.41039" stroke-linecap="round"/>
-<path d="M13.7114 9.51888C15.5582 11.0872 15.7841 13.8557 14.2158 15.7026C12.6475 17.5494 9.879 17.7752 8.03215 16.207C6.1853 14.6387 0.839623 4.34406 0.839623 4.34406C0.839623 4.34406 11.8645 7.95062 13.7114 9.51888Z" fill="black"/>
-<path d="M12.5756 10.8565C13.6836 11.7974 13.8192 13.4586 12.8782 14.5667C11.9372 15.6749 10.2761 15.8103 9.168 14.8694C8.05985 13.9284 3.51487 6.61576 3.51487 6.61576C3.51487 6.61576 11.4674 9.91551 12.5756 10.8565Z" fill="white"/>
-</mask>
-<g mask="url(#mask0_7456_17054)">
-<path d="M22.1416 -0.495483H-0.424622V22.0707H22.1416V-0.495483Z" fill="#344054"/>
-</g>
-</g>
-<defs>
-<clipPath id="clip0_7456_17054">
-<rect width="20" height="20" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+      <g clip-path="url(#clip0_7456_17054)">
+      <mask id="mask0_7456_17054" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="2" width="21" height="17">
+      <path d="M16.8422 17.7117C20.147 14.4069 20.147 9.04891 16.8422 5.74414C13.5375 2.4394 8.17943 2.4394 4.87469 5.74414C1.56992 9.04891 1.56995 14.4069 4.87469 17.7117" stroke="white" stroke-width="1.41039" stroke-linecap="round"/>
+      <path d="M13.7114 9.51888C15.5582 11.0872 15.7841 13.8557 14.2158 15.7026C12.6475 17.5494 9.879 17.7752 8.03215 16.207C6.1853 14.6387 0.839623 4.34406 0.839623 4.34406C0.839623 4.34406 11.8645 7.95062 13.7114 9.51888Z" fill="black"/>
+      <path d="M12.5756 10.8565C13.6836 11.7974 13.8192 13.4586 12.8782 14.5667C11.9372 15.6749 10.2761 15.8103 9.168 14.8694C8.05985 13.9284 3.51487 6.61576 3.51487 6.61576C3.51487 6.61576 11.4674 9.91551 12.5756 10.8565Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask0_7456_17054)">
+      <path d="M22.1416 -0.495483H-0.424622V22.0707H22.1416V-0.495483Z" fill="#344054"/>
+      </g>
+      </g>
+      <defs>
+      <clipPath id="clip0_7456_17054">
+      <rect width="20" height="20" fill="white"/>
+      </clipPath>
+      </defs>
+      </svg>
 
 `,
-    permission: 'workflow view'
+    permission: 'pms view'
   },
 ]);
 

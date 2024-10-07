@@ -215,6 +215,7 @@ watch(()=>props.permissions, ()=>{
 }, {immediate:true})
 
 watch(()=>props.selectedPermission, ()=>{
+  selectedPermissions.value = []
  if(props.selectedPermission && props.selectedPermission.length > 0){
   let perm = props.selectedPermission;
   for(let i=0; i < perm.length; i++){

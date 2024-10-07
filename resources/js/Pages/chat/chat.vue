@@ -20,20 +20,20 @@
 
             <div class="mt-5">
                 <TabMenu v-model:activeIndex="active" :model="items" :pt="{
-            root: { class: 'text-primary' },
-            inkbar: { class: 'text-primary' },
-            action: ({ props, context, state }) => ({
-                class: `${context.index === state.d_activeIndex
-                    ? 'text-primary border-b-2 border-solid border-primary'
-                    : ''
-                    } p-1 pr-0 md:pr-1 md:p-3 pl-1 text-gray-500 -mb-[2px]`,
-            }),
-        }">
+                    root: { class: 'text-primary' },
+                    inkbar: { class: 'text-primary' },
+                    action: ({ props, context, state }) => ({
+                        class: `${context.index === state.d_activeIndex
+                            ? 'text-primary border-b-2 border-solid border-primary'
+                            : ''
+                            } p-1 pr-0 md:pr-1 md:p-3 pl-1 text-gray-500 -mb-[2px]`,
+                    }),
+                }">
                     <template #item="{ item, props }">
                         <p v-bind="props.action" class="flex align-items-center gap-1 md:gap-2 text-sm md:text-sm">
                             <span class="font-semibold text-sm cursor-pointer">{{
-            item.label
-        }}</span>
+                                item.label
+                                }}</span>
                         </p>
                     </template>
                 </TabMenu>
@@ -43,16 +43,18 @@
 
                 <div class="overflow-scroll h-[50vh] pb-20 hide_scroll px-3 pr-7 mt-5">
                     <div class="grid grid-cols-2 gap-5 justify-between">
-                        <div v-for="(item, index) in userGroups" :key="index" class="" @click="handleGroups(item, index)">
+                        <div v-for="(item, index) in userGroups" :key="index" class=""
+                            @click="handleGroups(item, index)">
                             <div
                                 class="flex items-center justify-center flex-col p-3 border border-solid cursor-pointer rounded-md border-gray-300">
                                 <div class="text-primary border bg-white p-3 w-fit rounded-full">
                                     <!-- <Icon :icon="item.icon" width="30" /> -->
                                     <img :src="getImageForGroup(index)" alt="" />
-                                   
+
                                 </div>
                                 <p class="mt-2 font-semibold">{{ index }}</p>
-                                <small v-if="item && item.length > 0" class="capitalize">({{item.length}} <span class="capitalize">{{ index }}</span>)</small>
+                                <small v-if="item && item.length > 0" class="capitalize">({{ item.length }} <span
+                                        class="capitalize">{{ index }}</span>)</small>
                             </div>
                         </div>
                     </div>
@@ -68,6 +70,7 @@
                         <div class="flex items-center py-3 px-3 justify-between w-full"
                             :class="{ ' bg-[#F5F9FF]': open && clickedIndex === suggestion.id }">
                             <div class="flex items-center gap-3 w-full">
+                                <!-- <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt=""> -->
                                 <img src="/images/display_picture.svg" alt="" class="flex-none" />
                                 <div class="flex items-center justify-between w-full">
                                     <div>
@@ -90,13 +93,14 @@
                         <div class="flex items-center py-3 px-3 justify-between w-full"
                             :class="{ ' bg-[#F5F9FF]': open && clickedIndex === item.id }">
                             <div class="flex items-center gap-3 w-full">
-                                <img v-if="message.profile_image" :src="page.props.base+message.sender+'/'+message.profile_image" alt="">
-                                    <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <img v-if="message.profile_image"
+                                    :src="page.props.base + message.sender + '/' + message.profile_image" alt="">
+                                <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
                                 <!-- <img src="/images/display_picture.svg" alt=""  /> -->
                                 <div class="flex items-center justify-between w-full">
                                     <div>
                                         <h1 class="font-semibold text-base">{{ item.user.first_name }}</h1>
-                                        <p>{{ item.last_message == null?'No messages yet':item.last_message.message
+                                        <p>{{ item.last_message == null ? 'No messages yet' : item.last_message.message
                                             }}</p>
                                     </div>
                                     <div class="p-1 border rounded-full">
@@ -128,25 +132,24 @@
                 <input type="text" :placeholder="groups?.name" class="outline-none h-full p-2 bg-gray-100" />
             </div>
 
-            <div v-for="(item, index) in groups" :key="index" class="cursor-pointer"
-                @click="toggleBackground(item)">
+            <div v-for="(item, index) in groups" :key="index" class="cursor-pointer" @click="toggleBackground(item)">
                 <!-- {{ item }} -->
                 <div class="flex items-center py-3 px-3 justify-between w-full"
-                    :class="{ ' bg-[#F5F9FF]': open && item.id == groupIndex  }">
+                    :class="{ ' bg-[#F5F9FF]': open && item.id == groupIndex }">
                     <div class="flex items-center gap-3 w-full">
                         <div
                             class="text-primary border border-gray-300 bg-white p-2 rounded-full overflow-hidden flex-none">
                             <!-- <Icon :icon="item.icon" width="25" /> -->
-                             <img :src="current_img" alt="">
+                            <img :src="current_img" alt="">
                         </div>
                         <div class="flex items-center justify-between w-full">
                             <div>
                                 <h1 class="font-semibold text-base flex">{{ item.title }}
                                     <!-- <span  class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white ml-2">{{ getItemCount(item) }}</span> -->
                                 </h1>
-                               
+
                                 <p class="text-[#98A2B3] text-sm">
-                                    {{ item.users?item.users.length:'' }} Members
+                                    {{ item.users ? item.users.length : '' }} Members
                                 </p>
                             </div>
                             <div class="p-1 border rounded-full">
@@ -154,7 +157,27 @@
                             </div>
                         </div>
                     </div>
-                    <div></div>
+                    <div>  
+                    </div>
+                </div>
+
+                <div v-for="(user, index) in item.users" :key="index" class="cursor-pointer px-10"
+                        @click="toggleBackground(user)">
+                        <div class="flex items-center py-3 px-3 justify-between w-full"
+                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === user.id }">
+                            <div class="flex items-center gap-3 w-full">
+                                <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt="">
+                                <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <div class="flex items-center justify-between w-full">
+                                    <div>
+                                        <h1 class="font-semibold text-base">{{ user.first_name+ " "+user.last_name }}</h1>
+                                        <!-- <p>{{ suggestion.messages[0]?.message ? suggestion.messages[0]?.message : 'No
+                                            messages yet'
+                                            }}</p> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
         </section>
@@ -163,7 +186,8 @@
                 <div v-if="active === 0 || active === 1">
                     <Messages :selectedMessage="selectedMessage" :clickedIndexGroup="clickedIndexGroup"
                         :clickedIndex="clickedIndex" :selectedMessageGroup="selectedMessageGroup"
-                        :allMessagess="allMessagess" :groupType="groupType" :clickedIndexGroupName="clickedIndexGroupName" />
+                        :allMessagess="allMessagess" :groupType="groupType"
+                        :clickedIndexGroupName="clickedIndexGroupName" />
                 </div>
             </div>
             <div v-else>
@@ -178,12 +202,12 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
-import {usePage} from "@inertiajs/vue3"
+import { usePage } from "@inertiajs/vue3"
 import EmptyChatRoom from "../../components/EmptyChatRoom.vue";
 import ReportDialog from "../../components/Modals/chat/ReportDialog.vue";
 import AddLink from "../../components/Modals/chat/AddLink.vue";
 import Messages from "../../components/Messages.vue";
-import {useStore} from "vuex"
+import { useStore } from "vuex"
 
 
 
@@ -208,21 +232,24 @@ const page = usePage()
 const current_img = ref(null)
 const groupType = ref(null)
 const groupIndex = ref(null)
-const user = computed(()=>page.props.user)
-const userBranch = computed(()=>page.props.userBranch)
+const user = computed(() => page.props.user)
+const userBranch = computed(() => page.props.userBranch)
 const store = useStore()
-const global_chat = computed(()=>store.getters.getNewChat)
+const global_chat = computed(() => store.getters.getNewChat)
 const clickedIndexGroupName = ref('')
 
-const notifications = computed(()=> store.getters.getNotifications)
+const notifications = computed(() => store.getters.getNotifications)
 
 function toggleBackground(item) {
+    console.log(item)
     groupIndex.value = item.id
     Users.value = "";
     Suggestions.value = [];
-    selectedMessage.value = item;
-    selectedMessageGroup.value = item;
-    open.value = true;
+    // selectedMessage.value = item;
+    // selectedMessageGroup.value = item;
+    selectedMessage.value = []
+    selectedMessage.value['user'] = item
+     open.value = true;
     clickedIndex.value = item?.user?.id;
     clickedIndexGroup.value = item?.id;
     clickedIndexGroupName.value = item?.title;
@@ -234,50 +261,50 @@ function handleKeyDown(event) {
 }
 
 
-const getUserBranch = ()=>{
-    if(userBranch.value.unit){
+const getUserBranch = () => {
+    if (userBranch.value.unit) {
         return 'unit'
-    }else if(userBranch.value.division){
+    } else if (userBranch.value.division) {
         return 'division'
-    }else if(userBranch.value.department){
+    } else if (userBranch.value.department) {
         return 'department'
-    }else{
+    } else {
         return 'others';
     }
 }
 
-const getItemCount = (itm)=>{
-    let filtered = global_chat.value.filter((item)=>{
-        return item.group_id ==itm.id && item.group_type == groupType.value
+const getItemCount = (itm) => {
+    let filtered = global_chat.value.filter((item) => {
+        return item.group_id == itm.id && item.group_type == groupType.value
     })
 
-    console.log('this is the filtered list ',filtered)
-    return filtered? filtered.length: 0;
+    console.log('this is the filtered list ', filtered)
+    return filtered ? filtered.length : 0;
 }
 
-const getUserBranchId = ()=>{
-    if(userBranch.value.unit){
+const getUserBranchId = () => {
+    if (userBranch.value.unit) {
         return userBranch.value.unit.id
-    }else if(userBranch.value.division){
+    } else if (userBranch.value.division) {
         return userBranch.value.division.id
-    }else if(userBranch.value.department){
+    } else if (userBranch.value.department) {
         return userBranch.value.department.id
     }
 }
 
 function getImageForGroup(item) {
-    
+
     switch (item) {
-      case 'department':
-        return page.props.base+'/images/department_active.svg';
-      case 'division':
-        return page.props.base+'/images/division_active.svg';
-      case 'unit':
-      return page.props.base+'/images/unit_active.svg';
-      default:
-        return ''; // Fallback or default image
+        case 'department':
+            return page.props.base + '/images/department_active.svg';
+        case 'division':
+            return page.props.base + '/images/division_active.svg';
+        case 'unit':
+            return page.props.base + '/images/unit_active.svg';
+        default:
+            return ''; // Fallback or default image
     }
-  }
+}
 
 document.addEventListener("keydown", handleKeyDown);
 const message = ref("");
@@ -288,11 +315,11 @@ const handleGroups = (item, index) => {
     groups.value = item;
     current_img.value = getImageForGroup(index)
 
-    if(index == 'department'){
+    if (index == 'department') {
         groupType.value = 'department'
-    }else if(index == 'division'){
+    } else if (index == 'division') {
         groupType.value = 'division'
-    }else{
+    } else {
         groupType.value = 'unit'
     }
 
@@ -310,7 +337,7 @@ const getAllCategories = async () => {
                 'Authorization': `Bearer ${token}`,
             }
         });
-       
+
         Branch_group.value = response.data;
         const newValues = ["gg:organisation", "icon-park-outline:fork", "tabler:box"]
         Branch_group.value.forEach((obj, index) => {
@@ -323,7 +350,7 @@ const getAllCategories = async () => {
             obj.icon = newValues[index]
         })
     } catch (error) {
-       
+
     }
 };
 const getAllUserAndMessage = async () => {
@@ -334,10 +361,10 @@ const getAllUserAndMessage = async () => {
                 'Authorization': `Bearer ${token}`,
             }
         });
-       
+
         inbox.value = response.data;
     } catch (error) {
-       
+
     }
 };
 watch(() => inbox.value, (checkbox) => {
@@ -346,7 +373,7 @@ watch(() => inbox.value, (checkbox) => {
 
 const filterRecipients = () => {
     const searchTerm = Users.value.toLowerCase();
-   
+
     const combinedArray = inbox.value.concat(Branch_group.value);
     Suggestions.value = combinedArray.filter((item) => {
         if (item?.name) {
@@ -367,7 +394,7 @@ async function fetchUserGroups() {
                 'Authorization': `Bearer ${token}`,
             }
         });
-    
+
         userGroups.value = response.data
 
     } catch (error) {
@@ -378,11 +405,11 @@ async function fetchUserGroups() {
 function listenToGroupMessages(groups) {
     //this line to be reviewed
     let total_length = Object.keys(groups).length
-   
+
     // if(groups && total_length > 0){
     //     groups.forEach(group => {
     //     let userId = window.authUserId;
-       
+
     //     // window.Echo.private(`group.${group.id}`)
     //     //     .listen('GroupMessageSent', (event) => {
     //     //         console.log('from group:', group.id, event);
@@ -391,52 +418,51 @@ function listenToGroupMessages(groups) {
     //     //         allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === userId;
     //     //     });
     //     let groupType = getUserBranch()
-       
+
     // });
 
-        
     // }
     let grouptype = getUserBranch();
-    for(let grp in groups){
-        if(groups.hasOwnProperty(grp)){
-            
+    for (let grp in groups) {
+        if (groups.hasOwnProperty(grp)) {
+
             let branch = null
-            if(grouptype == 'unit'){
+            if (grouptype == 'unit') {
                 branch = userBranch.value['unit'];
             }
-            if(grouptype == 'division'){
+            if (grouptype == 'division') {
                 branch = userBranch.value['division']
             }
-            if(grouptype == 'department'){
+            if (grouptype == 'department') {
                 branch = userBranch.value['department']
             }
-           
+
         }
-           
+
     }
 
     let branch_id = getUserBranchId()
     window.Echo.private(`group.${branch_id}.${grouptype}`)
-            .listen('GroupMessageSent', (event) => {
-               
-                allMessagess.value = event.message;
-               
-                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === user.value.id;
-                    //if(event.message.group_id == clickedIndexGroup.value && event.message.group_type === grouptype){
-                        let data = {
-                          
-                            group_type: grouptype,
-                            group_id: event.message.group_id,
-                            type: 'chat',
-                            chat: event.message,
-                            date: new Date()
-                        }
-                        store.commit('setNewChat',data)
-                       // store.commit('setNotifications', values)
-                   // }
-                
-            });
-   
+        .listen('GroupMessageSent', (event) => {
+
+            allMessagess.value = event.message;
+
+            allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === user.value.id;
+            //if(event.message.group_id == clickedIndexGroup.value && event.message.group_type === grouptype){
+            let data = {
+
+                group_type: grouptype,
+                group_id: event.message.group_id,
+                type: 'chat',
+                chat: event.message,
+                date: new Date()
+            }
+            store.commit('setNewChat', data)
+            // store.commit('setNotifications', values)
+            // }
+
+        });
+
 }
 onMounted(async () => {
     try {
@@ -446,16 +472,16 @@ onMounted(async () => {
         getAllUserAndMessage()
         getAllCategories()
         let userId = user.value.id;
-       
+
         window.Echo.private(`chat.${userId}`)
             .listen('MessageSent', (event) => {
                 allMessagess.value = event.message;
                 allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === $userId;
                 //store.commit('setNewChat')
             });
-        
+
     } catch (error) {
-      
+
     }
 
 })

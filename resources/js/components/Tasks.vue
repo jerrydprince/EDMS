@@ -34,6 +34,7 @@
             <div class="bg-white rounded-md shadow-md mt-3 w-[400px]">
               <div class="p-2 border-b">
                 <h1 class="font-semibold text-[#1D2939]">
+                  <!-- <Link :href="'/dashboard/view-task/'+item.id">{{ item.title }}</Link> -->
                   {{ item.title }}
                 </h1>
                 <p class="font-semibold text-[#1D2939] opacity-70 text-sm">
@@ -41,7 +42,8 @@
                 </p>
               </div>
               <div class="p-2 flex items-center justify-between">
-                <img src="../assets/images/members/1.svg" alt="" />
+                <img v-if="item.assigned_by && item.assigned_by.profile_image" width="50":src="page.props.base+'/'+item.assigned_by.profile_image" alt="">
+                <img v-else src="../assets/images/members/1.svg" alt="" />
                 <div class="flex gap-3 items-center">
                   <div class="flex items-center gap-1">
                     <Icon icon="iconamoon:comment" width="13" />
@@ -66,9 +68,11 @@
 <script setup>
 import { ref, defineProps } from "vue";
 import moment from "moment"
+import {usePage, Link} from "@inertiajs/vue3"
 
 const props = defineProps(['task'])
 const scrollContainer = ref(null);
+const page = usePage()
 const scroll = (offset) => {
   if (scrollContainer.value) {
     scrollContainer.value.scrollLeft += offset;

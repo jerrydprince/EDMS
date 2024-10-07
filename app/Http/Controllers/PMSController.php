@@ -96,8 +96,8 @@ class PMSController extends Controller
     public function viewPMSUserProfile($id){
         $user = User::with(['unit', 'leave'=>function($query){
             $query->latest()->first();
-        }, 'rating', 'division', 'certificates', 'department', 'task'=>function($query){
-            $query->withCount('comments');
+        }, 'rating', 'division', 'certificates', 'roles', 'department', 'task'=>function($query){
+            $query->withCount('comments')->with('assignedBy');
         }, 'attendance'=>function($query){
             $query->orderBy('created_at', 'DESC');
         }])->find($id);

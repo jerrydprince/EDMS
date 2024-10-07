@@ -246,6 +246,11 @@ class UserController extends Controller
         ]);
 
         Leave::create($request->all());
+
+        $user = User::find($request->user_id);
+        $user->is_on_leave = true;
+        $user->save(); 
+
         return redirect()->back();
     }
 
@@ -272,6 +277,16 @@ class UserController extends Controller
         $mis->file = $path;
         $mis->user_id = $request->user_id;
         $mis->save();
+    }
+
+    public function cancelLeave(Request $request){
+        $leave = Leave::find($request->leave_id);
+        $leave->delete();
+
+        $user = User::find($request->user_id);
+        $user->is_on_leave = false;
+        $user->save();
+        return redirect()->back();
     }
 
 }

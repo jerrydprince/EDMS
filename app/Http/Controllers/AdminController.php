@@ -27,6 +27,10 @@ class AdminController extends Controller
             }])->get()->take(4);
             return inertia('admin/index', compact('departments'));
         }
+
+        if($user->hasRole('data entry')){
+            return redirect()->to('/edms');
+        }
       
         if($user->hasRole('super users') || $user->hasRole('directors') || $user->hasRole('division heads')
          || $user->hasRole('unit heads') || $user->hasRole('regular users')){
@@ -44,7 +48,7 @@ class AdminController extends Controller
                         return $task;
                     });
             }
-    
+            else
             if($user->hasRole('unit heads')){
                 $unit = Unit::find(auth()->user()->unit_id);
                 $created_task = Task::with('assignedBy')
@@ -57,7 +61,7 @@ class AdminController extends Controller
                         return $task;
                     });
             }
-    
+            else
             if($user->hasRole('directors')){
                 $department = Department::find(auth()->user()->department_id);
                 $created_task = Task::with('assignedByDepartment')
@@ -71,7 +75,7 @@ class AdminController extends Controller
                     });
                 
             }
-    
+            else
             if(auth()->user()->hasRole('super users')){
                 
                 //$department = Department::find(auth()->user()->department_id);
@@ -84,6 +88,8 @@ class AdminController extends Controller
                     $task->is_assigned = 2;  // Add the attribute
                     return $task;
                 });
+            }else{
+                $created_task = [];
             }
 
             $mails = auth()->user()->mails()->orderBy('created_at', 'desc')->get();

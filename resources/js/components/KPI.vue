@@ -261,7 +261,11 @@ const getCheckOut = ()=>{
   if(props.user.attendance){
     let login = props.user?.attendance[0];
    if(login){
-    return (formatDate(login.logout_time))
+    if(login.logout_time){
+      return (formatDate(login.logout_time))
+    }else{
+      return 'NIL'
+    }
    }
   }else{
     return "NIL"
@@ -283,7 +287,12 @@ const timeDif = (login, logout)=>{
 const totalTimeSpent = ()=>{
   if(props.user?.attendance && props.user.attendance.length > 0){
     let login = props.user?.attendance[0];
-    return timeDif(login.login_time, login.logout_time)
+    if(login.logout_time){
+      return timeDif(login.login_time, login.logout_time)
+    }else{
+      return "--"
+    }
+   
   }
 }
 

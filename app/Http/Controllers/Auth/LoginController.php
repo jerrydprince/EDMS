@@ -100,8 +100,10 @@ class LoginController extends Controller
 
             //take the attendance
             Attendance::updateOrCreate(
-                ['user_id' => auth()->user()->id],
-                ['login_time' => Attendance::where('user_id', auth()->user()->id)->value('login_time') ?? now()]
+                ['user_id' => auth()->user()->id, 'date'=>now()->toDateString()],
+                ['login_time' => Attendance::where('user_id', auth()->user()->id)
+                            ->where('date', now()->toDateString())
+                            ->value('login_time') ?? now()]
             );
 
             session(['branch'=>$this->userBranchDetails($request)]);
@@ -121,7 +123,7 @@ class LoginController extends Controller
 
             $request->session()->regenerate();
             if(auth()->user()->hasRole('data entry')){
-                return redirect()->intended('data-entry');
+                return redirect()->intended('edms');
             }
             return redirect()->intended('dashboard');
         }
@@ -151,9 +153,8 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        Attendance::where('user_id', auth()->user()->id)
-        ->whereNull('logout_time')  
-        ->orderBy('login_time', 'desc') 
+        Attendance::where('user_id', auth()->user()->id)  
+        ->latest()
         ->first()  
         ?->update(['logout_time' => now()]); 
     

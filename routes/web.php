@@ -309,12 +309,12 @@ Route::middleware('auth')->group(function () {
                 Route::get('/admin-registry-branch', [RegistryController::class, 'getAdminRegistryBranch']);
 
                 //PMS
-                Route::get('/pms', [PMSController::class, 'index']);
-                Route::get('/pms/overview', [PMSController::class, 'overview']);
-                Route::get('/pms/settings', [PMSController::class, 'settings']);
-                Route::get('/get-department-users', [PMSController::class, 'getDepartmentUsers']);
-                Route::get('/pms-user-profile/{id}', [PMSController::class, 'viewPMSUserProfile']);
-                Route::get('/pms-attendance/{id}', [PMSController::class, 'getAttendance']);
+                Route::get('/pms', [PMSController::class, 'index'])->middleware('permission:pms view');
+                Route::get('/pms/overview', [PMSController::class, 'overview'])->middleware('permission:pms view');
+                Route::get('/pms/settings', [PMSController::class, 'settings'])->middleware('permission:pms view');
+                Route::get('/get-department-users', [PMSController::class, 'getDepartmentUsers'])->middleware('permission:pms view');
+                Route::get('/pms-user-profile/{id}', [PMSController::class, 'viewPMSUserProfile'])->middleware('permission:pms view');
+                Route::get('/pms-attendance/{id}', [PMSController::class, 'getAttendance'])->middleware('permission:pms view');
 
                 //KRA
                 Route::post('/create-kra', [KRAController::class, 'createKRA']);
@@ -343,6 +343,7 @@ Route::middleware('auth')->group(function () {
 
                 //Add leave
                 Route::post('/add-leave', [UserController::class, 'addLeave']);
+                Route::get('/cancel-leave', [UserController::class, 'cancelLeave']);
 
                 //Misconduct
                 Route::post('/report-misconduct', [UserController::class, 'misConduct']);
