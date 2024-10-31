@@ -106,7 +106,33 @@ class ChatController extends Controller
         // if (!$group->users->contains(Auth::id())) {
         //     return response()->json(['message' => 'User not a member of this group'], 403);
         // }
-        $formattedMessages = $branch->groupMessages->groupBy(function ($message) {
+        // $formattedMessages = $branch->groupMessages->groupBy(function ($message) {
+        //     return Carbon::parse($message->created_at)->format('Y-m-d');
+        // });
+
+        // $formattedMessages = $formattedMessages->map(function ($dayMessages, $date) use ($loggedInUserId) {
+        //     return [
+        //         'date' => $this->formatDate($date),
+        //         'messages' => $dayMessages->map(function ($message) use ($loggedInUserId) {
+        //             return [
+        //                 'id' => $message->id,
+        //                 'sender_name' => $message->user->first_name." ".$message->user->last_name, // Assuming 'first_name' is the column in the users table
+        //                 'message' => $message->message,
+        //                 'timestamp' => $message->created_at->format('H:i'),
+        //                 'created_at' => $message->created_at,
+        //                 'sender_id' => $message->user->id,
+        //                 'group_type' => $message->group_type,
+        //                 'group_id' => $message->group_id,
+        //                 //'is_sent_by_logged_in_user' => $message->user_id === $loggedInUserId,
+        //             ];
+        //         }),
+        //     ];
+        // });
+
+        $messages = $branch->groupMessages()->latest()->paginate(30); // Paginate the original query
+
+        // Format the paginated messages
+        $formattedMessages = $messages->groupBy(function ($message) {
             return Carbon::parse($message->created_at)->format('Y-m-d');
         })->map(function ($dayMessages, $date) use ($loggedInUserId) {
             return [
@@ -114,7 +140,7 @@ class ChatController extends Controller
                 'messages' => $dayMessages->map(function ($message) use ($loggedInUserId) {
                     return [
                         'id' => $message->id,
-                        'sender_name' => $message->user->first_name." ".$message->user->last_name, // Assuming 'first_name' is the column in the users table
+                        'sender_name' => $message->user->first_name." ".$message->user->last_name,
                         'message' => $message->message,
                         'timestamp' => $message->created_at->format('H:i'),
                         'created_at' => $message->created_at,
@@ -126,6 +152,18 @@ class ChatController extends Controller
                 }),
             ];
         });
+
+        // Add pagination metadata back if needed
+        $formattedMessages = [
+            'data' => $formattedMessages,
+            'pagination' => [
+                'current_page' => $messages->currentPage(),
+                'last_page' => $messages->lastPage(),
+                'per_page' => $messages->perPage(),
+                'total' => $messages->total(),
+            ],
+        ];
+
 
         return response()->json($formattedMessages, 200);
 
@@ -280,6 +318,7 @@ class ChatController extends Controller
             'message' => $request->message
         ]);
         $isSentByLoggedInUser = Auth::id() === $message->sender_id;
+       
         $formattedMessage = [
             'id' => $message->id,
             'user' => $message->sender->first_name,
@@ -287,6 +326,7 @@ class ChatController extends Controller
             'timestamp' => $message->created_at->format('H:i'),
             'created_at' => $message->created_at,
             'recipient_id' => $message->recipient_id,
+            'sender'=> auth()->user(),
             'sender_id' => $message->sender_id,
             'is_sent_by_logged_in_user' => $isSentByLoggedInUser
         ];
@@ -335,21 +375,22 @@ class ChatController extends Controller
         //$users = User::where('id', '!=', $loggedInUserId)->get();
 
         // Prepare the response data
-        $usersWithConversations = $users->map(function ($user) use ($loggedInUserId) {
-            $conversations = ChatMessage::where(function ($query) use ($user, $loggedInUserId) {
-                $query->where('sender_id', $loggedInUserId)
-                    ->where('recipient_id', $user->id);
-            })->orWhere(function ($query) use ($user, $loggedInUserId) {
-                $query->where('sender_id', $user->id)
-                    ->where('recipient_id', $loggedInUserId);
-            })->orderBy('created_at')->get();
+        // $usersWithConversations = $users->map(function ($user) use ($loggedInUserId) {
+        //     $conversations = ChatMessage::where(function ($query) use ($user, $loggedInUserId) {
+        //         $query->where('sender_id', $loggedInUserId)
+        //             ->where('recipient_id', $user->id);
+        //     })->orWhere(function ($query) use ($user, $loggedInUserId) {
+        //         $query->where('sender_id', $user->id)
+        //             ->where('recipient_id', $loggedInUserId);
+        //     })->orderBy('created_at')->get();
 
-            return [
-                'user' => $user,
-                'conversations' => $conversations,
-            ];
-        });
-        return response()->json($usersWithConversations);
+        //     return [
+        //         'user' => $user,
+        //         'conversations' => $conversations,
+        //     ];
+        // });
+        //return response()->json($usersWithConversations);
+        return response()->json($users);
     }
     public function getConversationWithUser($userId)
     {
@@ -362,10 +403,19 @@ class ChatController extends Controller
         } else {
             $conversation = ChatMessage::with('sender')->where(function ($query) use ($loggedInUserId, $userId) {
                 $query->where('sender_id', $loggedInUserId)->where('recipient_id', $userId);
-            })->orWhere(function ($query) use ($loggedInUserId, $userId) {
+            })
+            ->orWhere(function ($query) use ($loggedInUserId, $userId) {
                 $query->where('sender_id', $userId)->where('recipient_id', $loggedInUserId);
-            })->orderBy('created_at', 'asc')->get();
+            })
+            ->orderBy('created_at', 'DESC')->paginate(5);
         }
+        $pagination = [
+            'current_page' => $conversation->currentPage(),
+            'last_page' => $conversation->lastPage(),
+            'per_page' => $conversation->perPage(),
+            'total' => $conversation->total(),
+        ];
+
         $formattedMessages = $conversation->groupBy(function ($message) {
             return Carbon::parse($message->created_at)->format('Y-m-d');
         })
@@ -383,6 +433,7 @@ class ChatController extends Controller
                             'sender_id' => $message->sender_id,
                             'is_sent_by_logged_in_user' => $isSentByLoggedInUser,
                             'sender' => $message->sender,
+                            'created_at' => $message->created_at,
                             // 'attachments' => $message->attachments->map(function ($attachment) {
                             //     return [
                             //         'id' => $attachment->id,
@@ -395,7 +446,10 @@ class ChatController extends Controller
                 ];
             })->toArray();
         //broadcast(new MessageSent($formattedMessages, $userId))->toOthers();
-        return response()->json($formattedMessages, 200);
+        return response()->json([
+            'data' => $formattedMessages, // Transformed messages grouped by date
+            'pagination' => $pagination,  // Pagination metadata
+        ]);
     }
 
 

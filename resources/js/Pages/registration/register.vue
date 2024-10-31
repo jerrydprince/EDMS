@@ -214,7 +214,7 @@
                                     <div class="relative mt-4">
                                         <label for="password" class=" text-gray-600 block">Password </label>
                                         <div class="relative mt-1">
-                                            <input type="password" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter password (Min. of 8 characters)">
+                                            <input type="password" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" :placeholder="'Enter password (Min. of  '+props.passwordpolicy.number_of_characters+'  characters)'">
                                             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
@@ -222,11 +222,11 @@
                                             </div>
                                         </div>
                                         <div class="mt-1 " v-if="form.password.trim() != ''">
-                                            <span :class="!eightCharacters?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed   my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">8 characters minimum</span>
-                                            <span :class="!uppercase?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">An Uppercase letter</span>
-                                            <span :class="!lowercase?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A Lowercase letter</span>
-                                            <span :class="!specialCharacters?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A special character</span>
-                                            <span :class="!number?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A number</span>
+                                            <span :class="!eightCharacters?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed   my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">{{ props.passwordpolicy.number_of_characters }} characters minimum</span>
+                                            <span v-if="passwordpolicy.uppercase" :class="!uppercase?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">An Uppercase letter</span>
+                                            <span v-if="passwordpolicy.lowercase" :class="!lowercase?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A Lowercase letter</span>
+                                            <span v-if="passwordpolicy.special_character" :class="!specialCharacters?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A special character</span>
+                                            <span v-if="passwordpolicy.number" :class="!number?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed  my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">A number</span>
                                         </div>
                                     </div>
                                     <div class="relative mt-4" v-if="isPasswordValid">
@@ -323,7 +323,7 @@
 </template>
 
 <script setup>
-    import { ref, watch, computed } from 'vue'
+    import { ref, watch, computed, defineProps } from 'vue'
     import { useForm } from '@inertiajs/vue3'
     import { useToast } from "primevue/usetoast";
     import axios from 'axios';
@@ -333,6 +333,7 @@
     const form3 = ref(false);
     const formSuccess = ref(false);
     const toast = useToast();
+    const props = defineProps(['passwordpolicy'])
 
     const eightCharacters = ref(false);
     const uppercase = ref(false);
@@ -446,13 +447,41 @@
 
       
       // Check if password meets the criteria
-      let isValid = (
-        uppercaseRegex.test(form.password) &&
-        lowercaseRegex.test(form.password) &&
-        specialCharRegex.test(form.password) &&
-        numberRegex.test(form.password) &&
-        form.password.length >= 8 
-      );
+    //   let isValid = (
+    //     uppercaseRegex.test(form.password) &&
+    //     lowercaseRegex.test(form.password) &&
+    //     specialCharRegex.test(form.password) &&
+    //     numberRegex.test(form.password) &&
+    //     form.password.length >= props.passwordpolicy.number_of_characters 
+    //   );
+
+        let checkUppercase = props.passwordpolicy.uppercase;   
+        let checkLowercase = props.passwordpolicy.lowercase;   
+        let checkSpecialChar = props.passwordpolicy.special_character; 
+        let checkNumber = props.passwordpolicy.number;  
+        
+        let isValid = true;
+
+        // Apply validation checks based on the flags
+        if (checkUppercase) {
+        isValid = isValid && uppercaseRegex.test(form.password);
+        }
+
+        if (checkLowercase) {
+        isValid = isValid && lowercaseRegex.test(form.password);
+        }
+
+        if (checkSpecialChar) {
+        isValid = isValid && specialCharRegex.test(form.password);
+        }
+
+        if (checkNumber) {
+        isValid = isValid && numberRegex.test(form.password);
+        }
+
+        // Length validation
+        isValid = isValid && form.password.length >= props.passwordpolicy.number_of_characters;
+
      
       isPasswordValid.value = isValid
     };
@@ -559,7 +588,7 @@
       }else{
         number.value = false
       }
-      if(form.password.length >= 8){
+      if(form.password.length >= props.passwordpolicy.number_of_characters){
         eightCharacters.value = true
       }else{
         eightCharacters.value = false

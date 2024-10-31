@@ -411,5 +411,45 @@ class AdminController extends Controller
         $fileTypes = FileType::get();
         return response()->json($fileTypes);
     }
+
+    public function getBranchesByRole(){
+        $user = auth()->user();
+        $branches = [];
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super users')){
+            $branches = Department::with(['division'=> function($query){
+                $query->with('unit');
+            }])->get();
+        }
+
+        if($user->hasRole('directors')){
+            $department_id = $user->department_id;
+            $branches = Department::with(['division'=>function($query){
+                $query->with('unit');
+            }])->where('id', $department_id)->get();
+        }
+
+        if($user->hasRole('division heads')){
+            $division_id = $user->division_id;
+            $department_id = $user->department_id;
+            
+            $branches = Department::with(['division' =>function($query) use ($division_id){
+                $query->with('unit')->where('id', $division_id);
+            }])->where('id', $department_id)->get();
+        }
+
+        if($user->hasRole('unit heads')){
+            $division_id = $user->division_id;
+            $department_id = $user->department_id;
+            $unit_id = $user->unit_id;
+
+            $branches = Department::with(['division' =>function($query) use ($division_id, $unit_id){
+                $query->with(['unit'=>function($q) use($unit_id){
+                    $q->where('id', $unit_id);
+                }])->where('id', $division_id);
+            }])->where('id', $department_id)->get();
+        }
+
+        return response()->json($branches);
+    }
    
 }

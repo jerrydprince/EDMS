@@ -31,7 +31,7 @@
         "@inertiajs/vue3": "^1.0.14",
         "@popperjs/core": "^2.11.8",
         "@vitejs/plugin-vue": "^5.0.0",
-        "@vueuse/core": "^10.7.2",
+        "@vueuse/core": "^10.11.1",
         "alpinejs": "^3.13.4",
         "apexcharts": "^3.52.0",
         "bootstrap": "^5.3.2",

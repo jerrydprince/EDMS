@@ -713,6 +713,144 @@ class ArchiveController extends Controller
     //    // return inertia('dashboard/Branches', compact('doctypes', 'folders','archives','thumbnails'));
     // }
 
+    public function isUserPermittedToViewDivision($branch_id){
+        //check if the data entry user have access
+        $user = auth()->user();
+        if(auth()->user()->hasRole('data entry')){
+            if($user->unit_id && $user->unit_id == $branch_id){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //check if the unit head can access the said resources
+        if($user->hasRole('unit heads')){
+           return false;
+        }
+
+        //suepr admin, super users and admin can always access any of these
+        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+            return true;
+        }
+
+        //check if directors/departmental heads can access this
+        if($user->hasRole('directors')){
+            $department_id = $user->department_id;
+            $exists = Department::where('id', $department_id)
+                        ->whereHas('division.unit', function($query) use($branch_id){
+                            $query->where('unit.id', $branch_id);
+                        })->exists();
+            if($exists){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //check if divisional head can access this
+        if($user->hasRole('division heads')){
+            $division_id = $user->division_id;
+
+            $exists = Division::where('id', $division_id)
+                ->whereHas('unit', function($query) use($branch_id){
+                    $query->where('id', $branch_id);
+                })->exists();
+            
+            if($exists){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+
+    public function isUserPermittedToViewUnit($branch_id){
+        //check if the data entry user have access
+        $user = auth()->user();
+        if(auth()->user()->hasRole('data entry')){
+            if($user->unit_id && $user->unit_id == $branch_id){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //check if the unit head can access the said resources
+        if($user->hasRole('unit heads')){
+            if($user->unit_id == $branch_id){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //suepr admin, super users and admin can always access any of these
+        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+            return true;
+        }
+
+        //check if directors/departmental heads can access this
+        if($user->hasRole('directors')){
+            $department_id = $user->department_id;
+            $exists = Department::where('id', $department_id)
+                        ->whereHas('division', function($query) use($branch_id){
+                            $query->where('id', $branch_id);
+                        })->exists();
+            if($exists){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //check if divisional head can access this
+        if($user->hasRole('division heads')){
+            $division_id = $user->division_id;
+            if($division_id  == $user->division_id){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+
+    public function isUserPermittedToViewDepartment($branch_id){
+        //check if the data entry user have access
+        $user = auth()->user();
+        if(auth()->user()->hasRole('data entry')){
+            if($user->unit_id && $user->unit_id == $branch_id){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        //check if the unit head can access the said resources
+        if($user->hasRole('unit heads')){
+            return false;
+        }
+
+        //suepr admin, super users and admin can always access any of these
+        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+            return true;
+        }
+
+        //check if directors/departmental heads can access this
+        if($user->hasRole('directors')){
+           if($user->department_id == $branch_id){
+            return true;
+           }else{
+            return false;
+           }
+        }
+
+        //check if divisional head can access this
+        if($user->hasRole('division heads')){
+           return false;
+        }
+    }
+
     public function userBranches(){
        
         $search = request()->search;
@@ -759,9 +897,10 @@ class ArchiveController extends Controller
             }
 
             $folder = Folder::with(['fileType', 'subfolder']);
+            $user = auth()->user();
 
-          if($branch_name == 'Unit'){
-           
+          if($branch_name == 'Unit' && $this->isUserPermittedToViewUnit($branch_id)){
+          
             $branch = Unit::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($branch_id);
@@ -784,9 +923,8 @@ class ArchiveController extends Controller
           }
 
          // $division = request()->id? request()->id: auth()->user()->division_id;
-          if($branch_name == 'Division'){
+          if($branch_name == 'Division' && $this->isUserPermittedToViewDivision($branch_id)){
           
-           
             $branch = Division::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($branch_id);
@@ -808,7 +946,7 @@ class ArchiveController extends Controller
           }
           
           $department = request()->id? request()->id: auth()->user()->department_id;
-           if($department){
+           if($department && $this->isUserPermittedToViewDepartment($branch_id)){
              $branch = Department::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($department);
@@ -824,7 +962,10 @@ class ArchiveController extends Controller
                                 $query->where('name', 'like', '%' . $search . '%');
                             });
             }
-           
+          
+            if(!isset($branch)){
+                return redirect()->to('/dashboard');
+            }
             $folder = $folder->latest()->paginate(20)->withQueryString();
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
     

@@ -60,7 +60,7 @@
                 <div class="flex items-center font-medium gap-2">
                   <div class="p-2 rounded-full bg-gray-200">
                     <template v-if="page.props.roles.includes('data entry')">
-                      <Link  :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">
+                      <Link  :href="'/edms/folder-view/' + branch_name + '/' + folder.id">
                         <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
                       </Link>
                     </template>
@@ -71,7 +71,7 @@
                     </template>
 
                   </div>
-                  <Link v-if="page.props.roles.includes('data entry')" :href="'/data-entry/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
+                  <Link v-if="page.props.roles.includes('data entry')" :href="'/edms/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
                   <Link v-else  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">{{ folder.name }}</Link>
                 </div>
               </td>
@@ -87,7 +87,7 @@
                     </div>
                     <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
                   </div>
-                  <Link :href="'/data-entry/delete-folder/' + folder.id" class="px-3 text-red-500"
+                  <Link :href="'/edms/delete-folder/' + folder.id" class="px-3 text-red-500"
                     v-if="admin && admin.length > 0">delete</Link>
                 </div>
 
@@ -104,7 +104,7 @@
 
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" :url="'/data-entry/create-folder'" :folderId="''"/>
+    <CreateFolderDialog v-model="createFolderModal" :url="'/edms/create-folder'" :folderId="''"/>
     <BranchDetails v-model="branchDetailsModal" :file="selectedArchive" />
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
@@ -639,9 +639,9 @@ const getArchiveDocsVale = (data, search) => {
 
 const fetchFolders = async () => {
       try {
-        //const response = await axios.get('/data-entry/branches', { params: { search: search.value } });
+        //const response = await axios.get('/edms/branches', { params: { search: search.value } });
         let response = []
-          await router.get('/data-entry/branches', { search: search.value },{
+          await router.get('/edms/branches', { search: search.value },{
             onSuccess: page =>{
               response = page
               

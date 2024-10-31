@@ -49,7 +49,7 @@ import { router } from '@inertiajs/vue3'
        page.layout = page.layout || Layout2;
       }else if(window.location.pathname.startsWith('/edms')){
         page.layout = page.layout || Layout3;
-      }else if(window.location.pathname.startsWith('/dashboard')){
+      }else if(window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/settings')){
          page.layout =page.layout || Layout;
       }else if(window.location.pathname.startsWith('/password')){
         page.layout = page.layout || Layout4;

@@ -1,127 +1,212 @@
 <template>
-    <!-- <main class="h-screen flex w-full max-w-[1680px] fixed top-0"> -->
-        <section
-            class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"
-            :class="{ 'w-[7%]': shouldShow }">
-            <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 px-3"
-                :class="{ 'px-0': shouldShow }">
-                <img src="../../../public/images/default-logo.png" alt="" v-if="!shouldShow">
-                <div v-else>
-                    <logo />
-                </div>
+  <!-- <main class="h-screen flex w-full max-w-[1680px] fixed top-0"> -->
+  <section
+    class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"
+    :class="{ 'w-[7%]': shouldShow }">
+    <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 px-3"
+      :class="{ 'px-0': shouldShow }">
+      <img src="../../../public/images/default-logo.png" alt="" v-if="!shouldShow">
+      <div v-else>
+        <logo />
+      </div>
 
-            </div>
-            <div class="border-b border-dashed pb-4">
-                <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ 'text-center': shouldShow }">
-                    Main
-                </p>
-                <section>
-                    <div v-for="(item, index) in main" :key="index" class="mb-1">
-                        <div v-if="checkPermission(item)">
-                          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
-                                ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                                : 'px-3') + (shouldShow ? ' w-fit' : '')
-                            " class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                            <!-- <Icon :icon="item.icon" width="25" /> -->
-                            <span v-html="item.icon"></span>
-                            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
-                        </Link>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <div v-if="role.includes('super admin') || role.includes('admin')"class="border-b border-dashed pb-4" :class="{ '-ml-4': shouldShow }">
-                <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ ' ml-3': shouldShow }">
-                    Admin
-                </p>
-                <section>
-                    <div v-for="(item, index) in admin" :key="index" class="mb-1">
-                        <Link :href="item.path" v-if="userHasPermission(item.permission)"  :class="$page.url === item.path
-                                ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                                : 'hover:border-0 px-3'
-                            " class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                            <!-- <Icon :icon="item.icon" width="25" :class="{ 'ml-5': shouldShow }" /> -->
-                            <span v-html="item.icon" :class="{ 'ml-5': shouldShow }"></span>
-                            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
-                    </Link>
-                    </div>
-                </section>
-            </div>
-            <div class="pb-4 mb-10" v-if="branches && branches.length > 0">
-                <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3"
-                    :class="{ ' -ml-3': shouldShow }">
-                    <div class="flex items-center gap-2">
-                        <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
-                        <p>Branches </p>
-                    </div>
-                    <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" />
-                </div>
-                <section>
-                    <div v-for="(item, index) in branches" :key="index" class="mb-1">
-                        <Link :href="item.path" v-if="userHasPermission(item.permission)"  :class="$page.url === item.path
-                                ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                                : ' px-3  '
-                            " class="py-3 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                            <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
-                                <div class="h-4 w-4 rounded-full border border-gray-300"
-                                    :class="{ 'bg-primary': $page.url === item.path }" v-tooltip.right="{
-                                        value: item.name,
-                                        pt: {
-                                            arrow: {
-                                                style: {
-                                                    borderRightColor: '',
-                                                },
-                                            },
-                                            text: 'bg-[#1D2939] text-xs text-white font-medium px-2 py-1 rounded',
-                                        },
-                                    }"></div>
-                                <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
-                            </div>
-                            <!-- <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" /> -->
-                            <span v-html="item.icon" v-if="!shouldShow"></span>
-                        </Link>
-                    </div>
-                    <!-- <div class="mb-1">
-                        <div
-                            class="px-3 py-3 flex items-center justify-between text-gray-700 hover:border-0 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                            <div class="flex items-center gap-3" v-if="!shouldShow">
-                                <Icon icon="mdi:company" width="20" />
-                                <p class="text-lg">Add Department</p>
-                            </div>
-                            <Icon icon="material-symbols:add-box-outline" width="25" :class="{ 'ml-1': shouldShow }" />
-                        </div>
-                    </div> -->
-                </section>
-            </div>
-            <div class="border-t border-dashed pt-2 pb-4">
-                <section>
-                    <div class="mb-1">
-                        <Link :href="'/dashboard/support'"
-                            class="px-3 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
-                            :class="$page.url === '/support'
-                                    ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                                    : ' px-3  '
-                                "
-                                >
-                            <Icon icon="system-uicons:support" width="30" :class="{ ' ml-1': shouldShow }" />
-                            <p class="text-lg" v-if="!shouldShow">Support</p>
-                    </Link>
-                    </div>
-                    <div class="mb-1">
-                        <Link :href="'/settings'"
-                            class="px-3 py-3 flex gap-3 items-center text-[#344054] rounded-xl  hover:text-primary font-normal transition-all"
-                            :class="$page.url === '/settings'
-                                    ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                                    : ' px-3  '
-                                ">
-                            <Icon icon="uiw:setting-o" width="25" :class="{ 'ml-1.5': shouldShow }" />
-                            <p class="text-lg" v-if="!shouldShow">Settings</p>
-                    </Link>
-                    </div>
-                </section>
-            </div>
-        </section>
+    </div>
+    <div class="border-b border-dashed pb-4">
+      <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ 'text-center': shouldShow }">
+        Main
+      </p>
+      <section>
+        <div v-for="(item, index) in main" :key="index" class="mb-1">
+          <div v-if="checkPermission(item)">
+            <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+              "
+              class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+            <!-- <Icon :icon="item.icon" width="25" /> -->
+            <span v-html="item.icon"></span>
+            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div v-if="role.includes('super admin') || role.includes('admin')" class="border-b border-dashed pb-4"
+      :class="{ '-ml-4': shouldShow }">
+      <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ ' ml-3': shouldShow }">
+        Admin
+      </p>
+      <section>
+        <div v-for="(item, index) in admin" :key="index" class="mb-1">
+          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
+            ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : 'hover:border-0 px-3'
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <!-- <Icon :icon="item.icon" width="25" :class="{ 'ml-5': shouldShow }" /> -->
+          <span v-html="item.icon" :class="{ 'ml-5': shouldShow }"></span>
+          <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+          </Link>
+        </div>
+      </section>
+    </div>
     
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('data entry')">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3" :class="{ ' -ml-3': shouldShow }">
+        <div class="flex items-center gap-2">
+          <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
+          <p>Branches </p>
+        </div>
+        <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" />
+      </div>
+      <section>
+        <div v-for="(item, index) in branches" :key="index" class="mb-1">
+          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
+            ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : ' px-3  '
+            "
+            class="py-3 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
+            <div class="h-4 w-4 rounded-full border border-gray-300" :class="{ 'bg-primary': $page.url === item.path }"
+              v-tooltip.right="{
+                value: item.name,
+                pt: {
+                  arrow: {
+                    style: {
+                      borderRightColor: '',
+                    },
+                  },
+                  text: 'bg-[#1D2939] text-xs text-white font-medium px-2 py-1 rounded',
+                },
+              }"></div>
+            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+          </div>
+         
+          <span v-html="item.icon" v-if="!shouldShow"></span>
+          </Link>
+        </div>
+        
+      </section>
+    </div>
+
+    <div class="pb-4 mb-10" v-if="isBranches">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3 cursor-pointer group"
+        @click="branchesOpen = !branchesOpen" :class="{ ' -ml-3': shouldShow }">
+        <div class="flex items-center gap-3">
+          <Icon icon="octicon:git-branch-24" width="25" v-if="!shouldShow" />
+          <p>Branches</p>
+        </div>
+        <Icon :class="!branchesOpen ? '-rotate-90' : ''" icon="ep:arrow-down" width="19" v-if="!shouldShow" />
+      </div>
+      <section v-if="branchesOpen" class="border-gray-200 border-solid border-l-[1px] ml-4">
+        <Link :href="isDepartmentRole(item)" v-for="(item, index) in roleBranches" :key="index" class="mb-1 ml-2 cursor-pointer">
+          <div @mouseover="handleDivisionMouseOver(index, $event)"
+            class="py-2 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+            <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
+              <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+                {{ item.title }}
+              </p>
+
+              <!-- Divisions modal -->
+              <Teleport to="body">
+                <section v-if="openDivision === index" @mouseleave="handleDivisionMouseLeave"
+                  @mouseenter="cancelDivisionClose" :style="{
+                    top: `${divisionsPosition.top}px`,
+                    left: `${divisionsPosition.left}px`,
+                    zIndex: 9999,
+                  }" class="w-[20rem] absolute drop-shadow-xl left-[17%]">
+                  <div class="bg-white rounded-lg py-4 px-4 drop-shadow-sm">
+                    <p class="float-right text-gray-400 text-[14px]">
+                      Divisions
+                    </p>
+                    <br />
+                    <div>
+                      <section class="">
+                        <Link :href="isDivisionRole(division)" v-for="(division, divisionIndex) in item.division" @mouseover="
+                          handleUnitMouseOver(divisionIndex, $event)
+                          " :key="divisionIndex" class="mb-1 cursor-pointer">
+                          <div
+                            class="py-4 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+                            <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+                              {{ division.title }}
+                            </p>
+
+                            <!-- For Units -->
+                            <Teleport to="body">
+                              <section @mouseleave="handleUnitMouseLeave" @mouseenter="cancelDivisionClose"
+                                v-if="openUnit === divisionIndex" :style="{
+                                  top: `${unitsPosition.top}px`,
+                                  left: `${unitsPosition.left}px`,
+                                  zIndex: 9999,
+                                }" class="w-[20rem] absolute drop-shadow-xl">
+                                <div class="bg-white rounded-lg py-4 px-4">
+                                  <p class="float-right text-gray-400 text-[14px]">
+                                    Units
+                                  </p>
+                                  <br />
+                                  <section>
+                                    <Link :href="isUnitRole(unit)" v-for="(
+                                          unit, unitIndex
+                                        ) in division.unit" :key="unitIndex" @click="redirectBranch('Unit', unit)"
+                                      class="mb-1">
+                                      <div
+                                        class="py-4 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+                                        <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+                                          {{ unit.title }}
+                                        </p>
+                                      </div>
+                                    </Link>
+                                  </section>
+                                </div>
+                              </section>
+                            </Teleport>
+                          </div>
+                        </Link>
+                      </section>
+                    </div>
+                  </div>
+                </section>
+              </Teleport>
+            </div>
+            <Icon class="border-[1px] border-solid border-gray-200 rounded-md p-2 pr-3"
+              icon="fluent:ios-arrow-right-24-regular" width="35" v-if="!shouldShow" />
+          </div>
+        </Link>
+      </section>
+      <!-- More branches -->
+      <div class="cursor-pointer ml-4 bg-gray-100 text-gray-600 rounded-xl w-[30px]">
+        <Icon class="m-auto w-full" icon="solar:menu-dots-bold" width="17" />
+      </div>
+    </div>
+
+    <div class="border-t border-dashed pt-2 pb-4">
+      <section>
+        <div class="mb-1">
+          <Link :href="'/dashboard/support'"
+            class="px-3 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+            :class="$page.url === '/support'
+              ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : ' px-3  '
+              ">
+          <Icon icon="system-uicons:support" width="30" :class="{ ' ml-1': shouldShow }" />
+          <p class="text-lg" v-if="!shouldShow">Support</p>
+          </Link>
+        </div>
+        <div class="mb-1">
+          <Link :href="'/settings'"
+            class="px-3 py-3 flex gap-3 items-center text-[#344054] rounded-xl  hover:text-primary font-normal transition-all"
+            :class="$page.url === '/settings'
+              ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : ' px-3  '
+              ">
+          <Icon icon="uiw:setting-o" width="25" :class="{ 'ml-1.5': shouldShow }" />
+          <p class="text-lg" v-if="!shouldShow">Settings</p>
+          </Link>
+        </div>
+      </section>
+    </div>
+  </section>
+
 </template>
 
 <script setup>
@@ -136,26 +221,103 @@ const departments = computed(() => page.props.shared_departments)
 const permissions = computed(() => page.props.permissions)
 const role = computed(() => page.props.user_roles)
 const branches = ref([]);
-const userBranchName = computed(()=> page.props.branchName)
-const userBranch = computed(()=> page.props.userBranch)
-const current_page = computed(()=> page.url)
+const roleBranches = ref([])
+const userBranchName = computed(() => page.props.branchName)
+const userBranch = computed(() => page.props.userBranch)
+const current_page = computed(() => page.url)
+const isBranches = ref(false)
 
 const toggleSearch = ref(false);
 
 const toggleSearchState = () => {
-    toggleSearch.value = !toggleSearch.value;
+  toggleSearch.value = !toggleSearch.value;
 };
 
-const checkPermission = (item)=>{
-  if(role.value.includes('record manager')){
+
+const openDivision = ref(null); // Track the currently open division index
+const openUnit = ref(null); // Track the currently open unit index
+
+const branchesOpen = ref(false);
+const divisionsPosition = ref({ top: 0, left: 0 });
+const unitsPosition = ref({ top: 0, left: 0 });
+let divisionTimeout = null;
+
+// Branches mouse hover function
+const handleDivisionMouseOver = (index, event) => {
+  const parent = event.currentTarget;
+  const rect = parent.getBoundingClientRect();
+  divisionsPosition.value = {
+    top: rect.top + window.scrollY,
+    left: rect.right + 10, // Adjust to position next to the parent
+  };
+  console.log(divisionsPosition.value);
+  openDivision.value = index;
+};
+
+// Division mouse hover function
+const handleUnitMouseOver = (divisionIndex, event) => {
+  const parent = event.currentTarget;
+  const rect = parent.getBoundingClientRect();
+  unitsPosition.value = {
+    top: rect.top + window.scrollY,
+    left: rect.right + 20, // Adjust to position next to the division
+  };
+  openUnit.value = divisionIndex;
+};
+
+// Close the division modal with a slight delay to allow for movement between modals
+const handleDivisionMouseLeave = () => {
+  divisionTimeout = setTimeout(() => {
+    openDivision.value = null;
+    openUnit.value = null;
+  }, 500);
+};
+
+// Close the unit modal immediately
+const handleUnitMouseLeave = () => {
+  openUnit.value = null;
+  handleDivisionMouseLeave();
+};
+
+const isDepartmentRole = (item)=>{
+  if(role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')){
+      return '/dashboard/branches/department/'+item.id
+  }else{
+    return '#'
+  }
+}
+
+const isDivisionRole = (item)=>{
+  if(role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')
+  || role.value.includes('division heads')){
+      return '/dashboard/branches/division/'+item.id
+  }else{
+    return '#'
+  }
+}
+
+const isUnitRole = (item)=>{
+  if(role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')
+    || role.value.includes('division heads') || role.value.includes('unit heads')){
+      return '/dashboard/branches/unit/'+item.id
+  }else{
+    return '#'
+  }
+}
+
+const checkPermission = (item) => {
+  if (role.value.includes('record manager')) {
     console.log('from the record manager')
-    if(item.name == 'Dashboard'){
+    if (item.name == 'Dashboard') {
       console.log('from the dashboard')
       return false
-    }else{
+    } else {
       return true;
     }
-  }else{
+  } else {
     return true;
   }
 }
@@ -163,7 +325,7 @@ const checkPermission = (item)=>{
 const shouldShow = ref(false);
 
 const setDepartments = () => {
-  if(role.value.includes('super users')){
+  if (role.value.includes('super users')) {
     for (let dept of departments.value) {
       let data = {
         name: dept.title,
@@ -176,12 +338,12 @@ const setDepartments = () => {
       }
       branches.value.push(data)
     }
-  }else{
-   
-    const branchType = userBranchName.value; 
-    const branchData = userBranch.value[branchType]; 
+  } else {
 
-    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads')|| role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
+    const branchType = userBranchName.value;
+    const branchData = userBranch.value[branchType];
+
+    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads') || role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -196,7 +358,7 @@ const setDepartments = () => {
 }
 
 const userHasPermission = (permit) => {
-  if(permit ==''){
+  if (permit == '') {
     return true;
   }
   if (role.value.includes('super admin')) {
@@ -217,20 +379,6 @@ const userHasPermission = (permit) => {
   }
 
 }
-
-
-watch(current_page,
-    (newPath) => {console.log(newPath)
-        shouldShow.value =
-            newPath.startsWith("/settings") || newPath.startsWith("/dashboard/chat") || newPath.startsWith("/dashboard/workflow");
-    }
-);
-
-onMounted(() => {
-    setDepartments()
-    shouldShow.value =
-       current_page.value.startsWith("/settings") || current_page.value.startsWith("/dashboard/chat") || current_page.value.startsWith("/dashboard/workflow");
-});
 
 const main = ref([
   {
@@ -432,19 +580,48 @@ const admin = ref([
 //         icon: "clarity:circle-line",
 //     },
 // ]);
+
+
+
+const getBranchesByRole = () => {
+  axios.get('/dashboard/get-branches-by-role').then((response) => {
+    roleBranches.value = response.data
+  })
+}
+
+watch(current_page,
+  (newPath) => {
+    console.log(newPath)
+    shouldShow.value =
+      newPath.startsWith("/settings") || newPath.startsWith("/dashboard/chat") || newPath.startsWith("/dashboard/workflow");
+  }
+);
+
+onMounted(() => {
+  setDepartments()
+  shouldShow.value =
+    current_page.value.startsWith("/settings") || current_page.value.startsWith("/dashboard/chat") || current_page.value.startsWith("/dashboard/workflow");
+
+  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users')
+    || role.value.includes('directors') || role.value.includes('division heads') ||
+    role.value.includes('unit heads')) {
+    getBranchesByRole()
+    isBranches.value = true;
+  }
+});
 </script>
 
 <style>
 /* Hide scrollbar for Chrome, Safari and Opera */
 .hide_scroll::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .hide_scroll {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 </style>

@@ -24,6 +24,8 @@ use App\Http\Controllers\RatingsController;
 use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TwoFactorChallengeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,8 +44,8 @@ Route::get('/', function () {
 
 //login
 Route::middleware('guest')->group(function(){
-    Route::get('/login',[LoginController::class, 'login'])->name('login');
-    Route::post('/login', [LoginController::class, 'authenticate'])->name('post-login');
+    //Route::get('/login',[LoginController::class, 'login'])->name('login');
+   // Route::post('/login', [LoginController::class, 'authenticate'])->name('post-login');
     Route::get('/register', [RegistrationController::class, 'index'])->name('registration');
     Route::post('/register', [RegistrationController::class, 'register']);
     Route::get('/resend-verification-code', [RegistrationController::class, 'resendVerificationCode']);
@@ -56,11 +58,13 @@ Route::middleware('guest')->group(function(){
 });
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','check2fastatus'])->group(function () {
     // Route::prefix('admin')->middleware('role:super admin| role:admin')->group(function(){
         
         
     // });
+
+    Route::post('/forgot-password', [PasswordController::class, 'passwordRecovery']);
 
         //archiving
        // Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
@@ -101,11 +105,11 @@ Route::middleware('auth')->group(function () {
                 Route::get('/get-branch-file-type', [ArchiveController::class, 'getBranchFileType']);
     
                 //settings
-                Route::get('/settings', [DashboardController::class, 'settings']);
-                Route::get('/profile', [DashboardController::class, 'settings']);
-                Route::get('/preferences', [DashboardController::class, 'settings']);
-                Route::get('/security', [DashboardController::class, 'settings']);
-                Route::get('/localisation', [DashboardController::class, 'settings']);
+                Route::get('/settings', [SettingsController::class, 'settings']);
+                Route::get('/profile', [SettingsController::class, 'settings']);
+                Route::get('/preferences', [SettingsController::class, 'settings']);
+                Route::get('/security', [SettingsController::class, 'settings']);
+                Route::get('/localisation', [SettingsController::class, 'settings']);
     
                 //metadata
                 Route::get('/metadatas', [MetadataController::class, 'getMetadata']);
@@ -113,6 +117,7 @@ Route::middleware('auth')->group(function () {
     
                 //users
                 Route::post('/update-profile-image', [UserController::class, 'updateProfileImage']);
+
     
             });
         });
@@ -187,6 +192,7 @@ Route::middleware('auth')->group(function () {
                 //Branches
                 //Route::get('/branches', [ArchiveController::class, 'Branches']);
                 Route::get('/branches/{branch}/{id}', [ArchiveController::class, 'userBranches']);
+                Route::get('/get-branches-by-role', [AdminController::class, 'getBranchesByRole']);
 
                 //archiving /EDMS
                 Route::post('/upload-files', [ArchiveController::class, 'uploadFiles'])->middleware('permission:edms create');
@@ -259,10 +265,6 @@ Route::middleware('auth')->group(function () {
                 Route::post('/change-accessLevel-status', [RoleController::class, 'toggleStatus'])->middleware('permission:access config update');
                 Route::post('/create-role', [RoleController::class, 'createRole'])->middleware('permission:access config update');
                 Route::get('/delete-level', [RoleController::class, 'deleteAccessLevel'])->middleware('permission:access config update');
-
-                //settings
-                Route::get('/settings', [DashboardController::class, 'settings']);
-                Route::get('/profile', [DashboardController::class, 'settings']);
 
                 //Correspondence
                 Route::get('/correspondence', [CorrespondenceController::class, 'correspondence'])->middleware('role:super users');
@@ -351,7 +353,6 @@ Route::middleware('auth')->group(function () {
         });
 
       
-
    
 
     //Roles
@@ -384,4 +385,29 @@ Route::middleware('auth')->group(function () {
 
     //notifications 
     Route::get('/user-notifications', [UserController::class, 'getUserUnreadNotification']);
+
+     //settings
+     Route::get('/settings', [SettingsController::class, 'settings']);
+     Route::get('/profile', [SettingsController::class, 'settings']);
+     Route::get('/settings/organisation', [SettingsController::class, 'organisation']);
+     Route::post('/settings/organisation', [SettingsController::class, 'saveOrganisation']);
+     Route::get('/settings/get-organisation', [SettingsController::class, 'getOrganisation']);
+     Route::post('/settings/password-policies', [SettingsController::class, 'passwordPolicies']);
+     Route::get('/settings/get-password-policies', [SettingsController::class, 'getPasswordPolicies']);
+
+     Route::get('/user-sessions', [SettingsController::class, 'getUserSession']);
+     Route::get('/delete-user-sessions/{id}', [SettingsController::class, 'deleteUserSession']);
+     Route::get('/logout-all-other-devices', [SettingsController::class, 'logOutAllOtherDevices']);
+     Route::post('/enable-two-factor-authentication', [SettingsController::class, 'enableTwoFactorAuthentication']);
+     Route::post('/disable-to-factor-authentication/{id}', [SettingsController::class, 'disableTwoFactorAuthentication']);
+
+     //two factor authentication
+    //  Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');
+     //Route::post('2fa-challenge', [TwoFactorChallengeController::class, 'verify']);
+     Route::get('/2fa', [SettingsController::class, 'twoFA']);
+
+     Route::post('/update-profile-image', [UserController::class, 'updateProfileImage']);
+     Route::post('/update-user-2fa', [SettingsController::class, 'updateUser2FA']);
 });
+//Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');
+

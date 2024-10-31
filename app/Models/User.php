@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 // use LdapRecord\Models\Model;
 // use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 // use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
@@ -23,7 +24,7 @@ class User extends Authenticatable
      * Ldap authentication below in the comment
      */
     //use HasApiTokens, HasFactory, Notifiable, AuthenticatesWithLdap;
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -165,5 +166,15 @@ class User extends Authenticatable
     public function leave()
     {
         return $this->hasMany(Leave::class);
+    }
+
+    /**
+     * Get the userSession associated with the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function userSession()
+    {
+        return $this->hasOne(UserSession::class);
     }
 }

@@ -9,7 +9,7 @@
                 <div class="flex items-center justify-between mt-5 w-full">
                     <div class="flex items-center border w-[85%] border-solid rounded-3xl px-3 bg-gray-100">
                         <Icon icon="lucide:search" class="text-lg text-gray-500" />
-                        <input type="text" v-model="Users" @input="filterRecipients" placeholder="Search Messages "
+                        <input type="text" v-model="filter_users" @input="filterRecipients" placeholder="Search Users "
                             class="outline-none h-full p-2 bg-gray-100" />
                     </div>
                     <div class="mr-1">
@@ -53,7 +53,7 @@
 
                                 </div>
                                 <p class="mt-2 font-semibold">{{ index }}</p>
-                                <small v-if="item && item.length > 0" class="capitalize">({{ item.length }} <span
+                                <small class="capitalize">({{ item && item.length > 0? item.length: 0 }} <span
                                         class="capitalize">{{ index }}</span>)</small>
                             </div>
                         </div>
@@ -64,11 +64,11 @@
 
             <!-- =============    Direct Messages    =========== -->
             <div class="" v-else>
-                <div v-if="Users && Suggestions.length > 0" class="overflow-scroll h-[65vh] pb-10 hide_scroll">
+                <div v-if="filter_users && Suggestions.length > 0" class="overflow-scroll h-[65vh] pb-10 hide_scroll">
                     <div v-for="(suggestion, index) in Suggestions" :key="index" class="cursor-pointer"
-                        @click="toggleBackground(suggestion)">
+                        @click="toggleBackgroundUser(suggestion)">
                         <div class="flex items-center py-3 px-3 justify-between w-full"
-                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === suggestion.id }">
+                            :class="{ ' bg-[#F5F9FF]':  clickedIndex === suggestion.id }">
                             <div class="flex items-center gap-3 w-full">
                                 <!-- <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt=""> -->
                                 <img src="/images/display_picture.svg" alt="" class="flex-none" />
@@ -88,10 +88,10 @@
                     </div>
                 </div>
                 <div v-else class="overflow-scroll h-[65vh] pb-10 hide_scroll">
-                    <div v-for="(item, index) in newbox" :key="index" class="cursor-pointer"
-                        @click="toggleBackground(item)">
+                    <div v-for="(item, index) in users" :key="index" class="cursor-pointer"
+                        @click="toggleBackgroundUser(item)">
                         <div class="flex items-center py-3 px-3 justify-between w-full"
-                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === item.id }">
+                            :class="{ ' bg-[#F5F9FF]': clickedIndex === item.id }">
                             <div class="flex items-center gap-3 w-full">
                                 <img v-if="message.profile_image"
                                     :src="page.props.base + message.sender + '/' + message.profile_image" alt="">
@@ -99,12 +99,13 @@
                                 <!-- <img src="/images/display_picture.svg" alt=""  /> -->
                                 <div class="flex items-center justify-between w-full">
                                     <div>
-                                        <h1 class="font-semibold text-base">{{ item.user.first_name }}</h1>
-                                        <p>{{ item.last_message == null ? 'No messages yet' : item.last_message.message
-                                            }}</p>
+                                        <h1 class="font-semibold text-base">{{ item.first_name }}</h1>
+                                        <!-- <p>{{ item.last_message == null ? 'No messages yet' : item.last_message.message
+                                            }}</p> -->
+                                            <p>no message yet</p>
                                     </div>
                                     <div class="p-1 border rounded-full">
-                                        <Icon icon="uil:angle-right-b" width="20" />
+                                        <Icon icon="uil:angle-right-b" width="20"  />
                                     </div>
                                 </div>
                             </div>
@@ -119,24 +120,25 @@
                 <div class="p-2 border rounded-md cursor-pointer" @click="activeButton = 0">
                     <Icon icon="material-symbols:arrow-back" width="30" />
                 </div>
-                <div>
-                    <h1 class="font-semibold text-2xl">{{ groups?.name }}</h1>
-                    <p class="opacity-70">
-                        ({{ groups.length }})
+                <div class="flex">
+                    <h1 class="font-semibold text-2xl pr-3">{{ groupType}}</h1>
+                    <p class="opacity-70 mt-1" v-if="selectedBranchGroup">
+                        ({{ selectedBranchGroup?.length }})
                     </p>
                 </div>
             </div>
 
             <div class="flex items-center border mx-3 my-5 border-solid rounded-3xl px-3 bg-gray-100">
                 <Icon icon="lucide:search" class="text-lg text-gray-500" />
-                <input type="text" :placeholder="groups?.name" class="outline-none h-full p-2 bg-gray-100" />
+                <input type="text" v-model="filter_groups" :placeholder="'search '+groupType" class="outline-none h-full p-2 bg-gray-100" />
             </div>
 
-            <div v-for="(item, index) in groups" :key="index" class="cursor-pointer" @click="toggleBackground(item)">
+           <div v-if="groups && groups.length > 0">
+            <div v-for="(item, index) in filterGroups" :key="index" class="cursor-pointer">
                 <!-- {{ item }} -->
-                <div class="flex items-center py-3 px-3 justify-between w-full"
+                <div class="flex items-center py-3 px-3 justify-between w-full"  
                     :class="{ ' bg-[#F5F9FF]': open && item.id == groupIndex }">
-                    <div class="flex items-center gap-3 w-full">
+                    <div class="flex items-center gap-3 w-full" @click="toggleGroup(item)">
                         <div
                             class="text-primary border border-gray-300 bg-white p-2 rounded-full overflow-hidden flex-none">
                             <!-- <Icon :icon="item.icon" width="25" /> -->
@@ -152,42 +154,50 @@
                                     {{ item.users ? item.users.length : '' }} Members
                                 </p>
                             </div>
-                            <div class="p-1 border rounded-full">
+                            <!-- <div class="p-1 border rounded-full">
                                 <Icon icon="uil:angle-right-b" width="20" />
-                            </div>
+                            </div> -->
                         </div>
                     </div>
+                        <div class="p-1 border rounded-full" @click="toggleGroupUsers(item)">
+                                <Icon icon="uil:angle-right-b" width="20"  />
+                        </div>
                     <div>  
                     </div>
                 </div>
 
-                <div v-for="(user, index) in item.users" :key="index" class="cursor-pointer px-10"
-                        @click="toggleBackground(user)">
-                        <div class="flex items-center py-3 px-3 justify-between w-full"
-                            :class="{ ' bg-[#F5F9FF]': open && clickedIndex === user.id }">
-                            <div class="flex items-center gap-3 w-full">
-                                <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt="">
-                                <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
-                                <div class="flex items-center justify-between w-full">
-                                    <div>
-                                        <h1 class="font-semibold text-base">{{ user.first_name+ " "+user.last_name }}</h1>
-                                        <!-- <p>{{ suggestion.messages[0]?.message ? suggestion.messages[0]?.message : 'No
-                                            messages yet'
-                                            }}</p> -->
+                <div v-if="toggleUsers && groupIndex == item.id">
+                    <div v-for="(user, index) in item.users" :key="index" class="cursor-pointer px-10"
+                        @click="toggleBackgroundUser(user)">
+                            <div class="flex items-center py-3 px-3 justify-between w-full"
+                                :class="{ ' bg-[#F5F9FF]': open && clickedIndex === user.id }">
+                                <div class="flex items-center gap-3 w-full">
+                                    <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt="">
+                                    <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                    <div class="flex items-center justify-between w-full">
+                                        <div>
+                                            <h1 class="font-semibold text-base">{{ user.first_name+ " "+user.last_name }}</h1>
+                                            <!-- <p>{{ suggestion.messages[0]?.message ? suggestion.messages[0]?.message : 'No
+                                                messages yet'
+                                                }}</p> -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                    </div>
                 </div>
             </div>
+           </div>
+           
         </section>
         <section class="w-[75%]">
             <div v-if="open">
                 <div v-if="active === 0 || active === 1">
-                    <Messages :selectedMessage="selectedMessage" :clickedIndexGroup="clickedIndexGroup"
+                    <Messages :selectedUser="selectedUser" :selectedMessage="selectedMessage" :clickedIndexGroup="clickedIndexGroup"
                         :clickedIndex="clickedIndex" :selectedMessageGroup="selectedMessageGroup"
                         :allMessagess="allMessagess" :groupType="groupType"
-                        :clickedIndexGroupName="clickedIndexGroupName" />
+                        :clickedIndexGroupName="clickedIndexGroupName" :is_single="is_single" :is_group="is_group"
+                        :selectedGroup="selectedGroup" />
                 </div>
             </div>
             <div v-else>
@@ -227,33 +237,72 @@ const Branch_group = ref([])
 const userGroups = ref([])
 const inbox = ref([])
 const Suggestions = ref([]);
-const Users = ref("");
+const filter_users = ref("");
 const page = usePage()
 const current_img = ref(null)
 const groupType = ref(null)
 const groupIndex = ref(null)
 const user = computed(() => page.props.user)
+const users = ref([])
 const userBranch = computed(() => page.props.userBranch)
 const store = useStore()
 const global_chat = computed(() => store.getters.getNewChat)
 const clickedIndexGroupName = ref('')
+const selectedUser = ref()
+const is_group = ref(false)
+const is_single = ref(false)
+const toggleUsers = ref(false)
+const selectedGroup = ref([])
+const selectedBranchGroup = ref()
+const filter_groups = ref('');
+const filtered_groups = ref([])
 
 const notifications = computed(() => store.getters.getNotifications)
 
-function toggleBackground(item) {
-    console.log(item)
+function toggleGroup(item) {
+
     groupIndex.value = item.id
-    Users.value = "";
+    filter_users.value = "";
     Suggestions.value = [];
-    // selectedMessage.value = item;
-    // selectedMessageGroup.value = item;
-    selectedMessage.value = []
-    selectedMessage.value['user'] = item
+    selectedMessage.value = item;
+    selectedMessageGroup.value = item;
+     selectedMessage.value = []
+    // selectedMessage.value['user'] = item
      open.value = true;
     clickedIndex.value = item?.user?.id;
     clickedIndexGroup.value = item?.id;
     clickedIndexGroupName.value = item?.title;
+    //selectedUser.value['type'] = 'group'
+    is_group.value = true;
+    is_single.value = false;
+    selectedGroup.value = item
 }
+
+const filterGroups = computed(()=>{
+    if(filter_groups.value == ''){
+        return groups.value
+    }else{
+        return groups.value.filter(item=>
+            {
+                return item.title.toLowerCase().includes(filter_groups.value.toLowerCase())
+            }
+        );
+    }
+})
+
+function toggleBackgroundUser(item) {
+
+   // groupIndex.value = item.id
+    filter_users.value = "";
+    Suggestions.value = [];
+    selectedUser.value = item
+    selectedUser.value['type'] = 'single'
+    open.value = true;
+    is_group.value = false;
+    is_single.value = true;
+    clickedIndex.value = item.id
+}
+
 function handleKeyDown(event) {
     if (event.key === "Escape") {
         open.value = false;
@@ -292,6 +341,13 @@ const getUserBranchId = () => {
     }
 }
 
+const toggleGroupUsers = (item)=>{
+    groupIndex.value = item.id
+    
+    toggleUsers.value =!toggleUsers.value
+    
+}
+
 function getImageForGroup(item) {
 
     switch (item) {
@@ -314,6 +370,9 @@ const handleGroups = (item, index) => {
     activeButton.value = 1;
     groups.value = item;
     current_img.value = getImageForGroup(index)
+    is_group.value = true;
+    is_single.value = false;
+    selectedBranchGroup.value = item
 
     if (index == 'department') {
         groupType.value = 'department'
@@ -362,7 +421,8 @@ const getAllUserAndMessage = async () => {
             }
         });
 
-        inbox.value = response.data;
+        //inbox.value = response.data;
+        users.value = response.data;
     } catch (error) {
 
     }
@@ -372,7 +432,7 @@ watch(() => inbox.value, (checkbox) => {
 })
 
 const filterRecipients = () => {
-    const searchTerm = Users.value.toLowerCase();
+    const searchTerm = filter_users.value.toLowerCase();
 
     const combinedArray = inbox.value.concat(Branch_group.value);
     Suggestions.value = combinedArray.filter((item) => {
@@ -476,7 +536,7 @@ onMounted(async () => {
         window.Echo.private(`chat.${userId}`)
             .listen('MessageSent', (event) => {
                 allMessagess.value = event.message;
-                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === $userId;
+                allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === userId;
                 //store.commit('setNewChat')
             });
 

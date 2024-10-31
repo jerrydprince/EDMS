@@ -1,10 +1,10 @@
 <template>
     <div class="flex">
-        <div class="w-[100%] h-[91vh] bg-[#F5F9FF] relative border" :class="{ 'w-[65%]': profile }"
+        <div class="w-[100%] h-[91vh] bg-[#F5F9FF] relative border " :class="{ 'w-[65%]': profile }"
             style="transition: width 0.1s linear">
             <!-- ================= header ====================== -->
 
-            <div class="flex items-center justify-between bg-white px-7 py-3">
+            <!-- <div class="flex items-center justify-between bg-white px-7 py-3">
                 <div class="flex items-center gap-2">
                     <div class="" @click="profile = true">
                         <div v-if="selectedMessage.type === 'group'">
@@ -35,10 +35,46 @@
                 <div class="p-2 border cursor-pointer rounded-md">
                     <Icon icon="mi:options-vertical" width="25" />
                 </div>
-            </div>
+            </div> -->
 
+            <div class="flex items-center justify-between bg-white px-7 py-3">
+                <div class="flex items-center gap-2">
+                    <div class="" @click="profile = true">
+                        <div v-if="is_group">
+                            <div class="">
+                                <div
+                                    class="text-primary border border-primary bg-white p-2 rounded-full overflow-hidden flex-none">
+                                    <!-- <Icon :icon="selectedMessage.icon" width="25" /> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <img v-if="selectedUser.profile_image" width="30"
+                                :src="page.props.base + '/' + selectedUser.profile_image" alt="">
+                            <img v-else src="../assets/images/display_picture.svg" alt="" />
+                        </div>
+                    </div>
+                    <div>
+                        <p v-if="is_single" class="text-sm font-semibold">{{ selectedUser.first_name + " " +
+                            selectedUser.last_name }}
+                        </p>
+
+                        <div class="flex items-center text-xs mt-1" v-if="is_group">
+                            <p class="text-[#98A2B3] pr-2">
+                                {{ totalUsers() }} Members,
+                            </p>
+                            <p class="text-green-500">{{ getTotalOnlineUsers(selectedUser) }} Online</p>
+                        </div>
+                        <p class="text-xs text-[#98A2B3]" v-else>Offline</p>
+                    </div>
+                </div>
+                <div class="p-2 border cursor-pointer rounded-md">
+                    <Icon icon="mi:options-vertical" width="25" />
+                </div>
+            </div>
             <!-- ===============  message body ================= -->
-            <div class="flex-1 h-[74vh] overflow-y-scroll hide_scroll mx-7 pt-5 transition-all" id="chat-container">
+            <div @scroll="onScroll" ref="chatContainer" class="flex-1 h-[74vh] overflow-y-scroll hide_scroll mx-7 pt-5 transition-all"
+                id="chat-container">
                 <div v-for="(item, index) in sortedMessages" :key="item.date" class="mt-5">
                     <div class="flex items-center w-full justify-center">
                         <div class="h-0.5 w-[30%] bg-gray-100"></div>
@@ -46,14 +82,14 @@
                         <div class="h-0.5 w-[30%] bg-gray-100"></div>
                     </div>
                     <div v-for="(message, index) in item.messages" class="max-w-[40%] " :class="{
-                            'mb-8 w-fit   ': message.sender_id !== page.props.user.id,
-                            ' w-fit ml-auto   mb-5  p-3 text-base ':
+                        'mb-8 w-fit   ': message.sender_id !== page.props.user.id,
+                        ' w-fit ml-auto   mb-5  p-3 text-base ':
                             message.sender_id == page.props.user.id,
-                            'max-w-[50%]': profile,
-                        }">
-                        <div v-if="message.group_type === props.groupType && message.group_id == clickedIndexGroup ">
+                        'max-w-[50%]': profile,
+                    }">
+                        <div v-if="message.group_type === props.groupType && message.group_id == clickedIndexGroup">
                             <div class="flex items-center w-full text-xs justify-between mb-2">
-                              
+
                                 <h4 v-if="message.sender_id == page.props.user.id" class="mr-4"> You</h4>
                                 <div v-else class="py-2 flex items-center gap-2">
                                     <img src="../assets/images/display_picture.svg" alt="" />
@@ -66,10 +102,10 @@
                                 <p class="text-[#667085]">{{ message.timestamp }}</p>
                             </div>
                             <p :class="{
-                                        'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
-                                        message.sender_id !== page.props.user.id,
-                                        ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
-                                        message.sender_id == page.props.user.id,
+                                'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
+                                    message.sender_id !== page.props.user.id,
+                                ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
+                                    message.sender_id == page.props.user.id,
                             }">
                                 {{ message.message }}
                             </p>
@@ -80,26 +116,27 @@
                             <!-- </div> -->
                         </div>
 
-                        <div v-if="!message.group_type && (message.sender_id == clickedIndex ||message.sender_id ==user.id) ">
+                        <div v-if="!message.group_type">
                             <div class="flex items-center w-full text-xs justify-between mb-2">
-                              
+
                                 <h4 v-if="message.sender_id == page.props.user.id" class="mr-4"> You</h4>
                                 <div v-else class="py-2 flex items-center gap-2">
-                                    <img v-if="message.profile_image" :src="page.props.base+message.sender+'/'+message.profile_image" alt="">
+                                    <img v-if="message.profile_image"
+                                        :src="page.props.base + message.sender + '/' + message.profile_image" alt="">
                                     <img v-else src="../assets/images/display_picture.svg" alt="" />
                                     <div v-if="message.sender_id !== page.props.user.id">
                                         <h4 class="font-semibold mr-4" v-if="message.sender_id !== page.props.user.id">
-                                            {{ message.sender.first_name+" "+message.sender.last_name }}
+                                            {{ message?.sender?.first_name + " " + message?.sender?.last_name }}
                                         </h4>
                                     </div>
                                 </div>
                                 <p class="text-[#667085]">{{ message.timestamp }}</p>
                             </div>
                             <p :class="{
-                                        'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
-                                        message.sender_id !== page.props.user.id,
-                                        ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
-                                        message.sender_id == page.props.user.id,
+                                'p-3 text-base ml-10 -mt-5 bg-white text-[#101828] rounded-3xl rounded-tl-none pl-5 shadow-md  w-fit  ':
+                                    message.sender_id !== page.props.user.id,
+                                ' w-fit   bg-primary p-3 pr-5 text-base text-white rounded-3xl rounded-tr-none shadow-md ':
+                                    message.sender_id == page.props.user.id,
                             }">
                                 {{ message.message }}
                             </p>
@@ -134,8 +171,8 @@
                         <div v-if="isTyping">
                             {{ typingUser.name }} is typing...
                         </div>
-                        <Textarea v-model="formData.message" @input="handleTyping"  @keyup.enter="sendMessage" autoResize rows="1" cols="30"
-                            placeholder="Start a new message" class="p-inputtextarea" required />
+                        <Textarea v-model="formData.message" @input="handleTyping" @keyup.enter="sendMessage" autoResize
+                            rows="1" cols="30" placeholder="Start a new message" class="p-inputtextarea" required />
                         <input type="file" style="display: none;" ref="fileInput" @change="handleFileChange" />
                         <!-- {{ clickedIndex }} -->
                         <!-- {{selectedMessage}} -->
@@ -158,7 +195,7 @@
         </div>
         <!-- ===================   sidebar ================= -->
 
-        <section v-if="profile && selectedMessage.type !== 'group'" class="w-[35%] border-l" ref="sidebarRef">
+        <section v-if="profile && selectedUser.type !== 'group'" class="w-[35%] border-l" ref="sidebarRef">
             <div v-if="activePage === 1">
                 <div class="flex items-center justify-between bg-white px-7 border-b bord py-3">
                     <h1 class="font-semibold text-lg">Profile</h1>
@@ -176,7 +213,7 @@
                             </div>
                         </div>
                         <h1 class="font-semibold text-xl mt-2">
-                            {{ selectedMessage.name }}
+                            <!-- {{ selectedMessage.name }} -->
                         </h1>
                         <p class="text-sm text-[#667085] mt-2 bg-gray-50 px-4 py-1.5 rounded-2xl">
                             Product Manager
@@ -280,7 +317,7 @@
             </div>
         </section>
 
-        <section v-if="profile && selectedMessage.type === 'group'" class="w-[35%] border-l" ref="sidebarRef">
+        <section v-if="profile && selectedUser.type === 'group'" class="w-[35%] border-l" ref="sidebarRef">
             <div v-if="activePage === 1">
                 <div class="flex items-center gap-3 bg-white px-7 border-b bord py-3">
                     <div class="bg-[#F2F4F7] p-2 rounded-full cursor-pointer" @click="profile = false">
@@ -296,7 +333,7 @@
                             class="text-primary border border-primary bg-white p-5 rounded-full overflow-hidden flex-none">
                             <Icon :icon="selectedMessage.icon" width="80" />
                         </div>
-                        <h1 class="font-semibold text-xl mt-2">
+                        <!-- <h1 class="font-semibold text-xl mt-2">
                             {{ selectedMessage.name }}
                         </h1>
                         <div class="flex items-center text-xs mt-1">
@@ -304,7 +341,7 @@
                                 {{ selectedMessage.member }} Members,
                             </p>
                             <p class="text-green-500">15 Online</p>
-                        </div>
+                        </div> -->
                     </div>
 
                     <Divider />
@@ -344,8 +381,8 @@
                                 <Menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true">
                                     <template #item="{ item }">
                                         <div class="flex items-center gap-2 font-semibold p-2" :class="{
-            'text-red-500': item.label === 'Report Contact',
-        }" @click="handleMemberOption(item.label)">
+                                            'text-red-500': item.label === 'Report Contact',
+                                        }" @click="handleMemberOption(item.label)">
                                             <Icon :icon="item.icon" width="20" />
                                             <p>{{ item.label }}</p>
                                         </div>
@@ -446,12 +483,15 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, computed, onUpdated } from "vue";
+import { useInfiniteScroll } from '@vueuse/core'
+
 import { defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
 import { onClickOutside } from "@vueuse/core";
 import AddLink from "./Modals/chat/AddLink.vue";
 import ReportDialog from "./Modals/chat/ReportDialog.vue";
-import {usePage} from "@inertiajs/vue3"
+import { usePage } from "@inertiajs/vue3"
+import axios from "axios";
 
 const toast = useToast();
 const addLinkModal = ref(false);
@@ -462,15 +502,25 @@ const fileInput = ref(null);
 const typingUser = ref(null);
 const isTyping = ref(false);
 const page = usePage()
-const user = computed(()=>page.props.user)
+const user = computed(() => page.props.user)
 
+const chatContainer = ref(null);
+const currentPage = ref(1)
+const totalPages = ref(null)
+const isLoading = ref(false)
+const isScrollTop = ref(false)
+const lastPage = ref()
+const is_content_loaded = ref(false)
 
-
-
-const props = defineProps(["selectedMessage", "clickedIndex", "clickedIndexGroup", "allMessagess", 'groupType', 'clickedIndexGroupName']);
+const props = defineProps(["selectedMessage", 'selectedUser', "clickedIndex", "clickedIndexGroup",
+    "allMessagess", 'groupType', 'clickedIndexGroupName', 'is_group', 'is_single', 'selectedGroup']);
 const currentClickedIndex = ref(props.clickedIndex);
 const clickedIndexGroup = ref(props.clickedIndexGroup);
 const form = new FormData()
+const default_scrollheight = ref(0)
+
+import merge from "lodash/merge";
+
 const formData = ref({
     message: "",
     recipient_id: props.clickedIndex,
@@ -517,7 +567,7 @@ const triggerFileInput = () => {
     if (fileInput.value) {
         fileInput.value.click();
     } else {
-       
+
     }
 };
 const profile = ref(false);
@@ -542,27 +592,41 @@ const files = [
     },
 ];
 
-const getTotalOnlineUsers = (users)=>{
-    let found_users = users.filter((item)=>{
-        return item.is_online == 1;
-    })
-    
-    if(found_users){
-        return found_users.length
-    }else{
-        return 0
+const getTotalOnlineUsers = (users) => {
+    if (props.is_group) {
+        let found_users = props.selectedGroup.users.filter((item) => {
+            return item.is_online == 1;
+        })
+
+        if (found_users) {
+            return found_users.length
+        } else {
+            return 0
+        }
+    } else {
+        if (users.is_online) {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+const totalUsers = (users) => {
+    if (props.is_group) {
+        return props.selectedGroup.users.length
     }
 }
 
 const allFiles = [
-  
+
 ];
 const toggleMembers = () => {
     member_switch.value = !member_switch.value;
 };
 const member_switch = ref(false);
 const members = [
-   
+
 ];
 
 const menu = ref();
@@ -580,7 +644,7 @@ const returnLink = (linkData) => {
 }
 const fromLinkModel = (linkData) => {
     const linkHTML = `<a href="${returnLink(linkData)}" target="_blank">${linkData?.text}</a>`
-    
+
     formData.value.message += linkHTML;
 }
 const scrollToBottom = () => {
@@ -593,33 +657,44 @@ const scrollToBottom = () => {
 };
 const handleFileChange = (event) => {
     const file = event.target.files[0];
-   
+
     if (file) {
         formData.value.message += file.name;
         form.append("doc", file)
     }
 };
+
+const formattedDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`
+}
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     const today = new Date();
 
     // Compare the date with today's date
     if (date.toDateString() === today.toDateString()) {
-        return 'Today';
+        //return 'Today';
+        return formattedDate(today);
     }
 
     // Check if the date is yesterday
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     if (date.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
+        //return 'Yesterday';
+        return formattedDate(yesterday)
     }
 
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 watch(() => props.allMessagess, (newMessage) => {
     if (newMessage) {
-       
+
         const messageDate = formatDate(newMessage.created_at);
 
         if (allMessages.value[messageDate]) {
@@ -635,42 +710,194 @@ watch(() => props.allMessagess, (newMessage) => {
                 }
             };
         }
-       
+
     }
 }, { deep: true })
-const userConversations = async () => {
-    let toCheck = "user"
-    const hasKey = toCheck in props.selectedMessage;
-  
-    const token = localStorage.getItem('token');
-    if (hasKey === true) {
-        try {
-            const response = await axios.get(`/dashboard/chat/usersConversation/${currentClickedIndex.value}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-            allMessages.value = response.data;
-        } catch (error) {
-            
-        }
+
+const userConversations = () => {
+    is_content_loaded.value = false;
+
+    if (props.selectedUser && props.is_single) {
+        axios.get(`/dashboard/chat/usersConversation/${props.selectedUser.id}`).then((response) => {
+            allMessages.value = response.data.data
+            currentPage.value = response.data.pagination.current_page
+            totalPages.value = response.data.pagination.total
+            lastPage.value = response.data.pagination.last_page
+            scrollToBottom();
+        })
     } else {
-        try {
-            const responses = await axios.get(`/dashboard/chat/group/${clickedIndexGroup.value}/${props.groupType}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-            allMessages.value = responses.data
-           
-        } catch (error) {
-           
-        }
+        axios.get(`/dashboard/chat/group/${props.clickedIndexGroup}/${props.groupType}`).then((response) => {
+            allMessages.value = response.data.data
+            // allMessages.value = response.data.data
+            currentPage.value = response.data.pagination.current_page
+            totalPages.value = response.data.pagination.total
+            lastPage.value = response.data.pagination.last_page
+            scrollToBottom();
+        })
     }
+
 
 };
 
-watch([() => props.clickedIndex, () => props.clickedIndexGroup], ([newIndex, newGroup]) => {
+// const fetchMessages = async () => {
+//     // const previousScrollHeight = chatContainer.value.scrollHeight;
+//     // if (isLoading.value || currentPage.value > totalPages.value) return; // Don't load if already loading or pages are finished
+//     // isLoading.value = true;
+
+//     try {
+//         currentPage.value += 1;
+//         // is_content_loaded.value = true;
+
+//         if (currentPage.value <= lastPage.value) {
+//             if (props.selectedUser && props.is_single) {
+//                 const response = await axios.get(`/dashboard/chat/usersConversation/${props.selectedUser.id}?page=${currentPage.value}`);
+
+//                 //allMessages.value.push(response.data.data);
+//                 //allMessages.value = allMessages.value, response.data.data};
+//                 for (let item in response.data.data) {
+//                     if (Object.keys(allMessages.value).includes(item)) {
+//                         allMessages.value[item].messages = [...response.data.data[item].messages, ...allMessages.value[item].messages].sort((b, a) => new Date(a.created_at) - new Date(b.created_at))
+//                     } else {
+//                         allMessages.value = merge({}, allMessages.value, response.data.data)
+//                     }
+//                 }
+
+
+//                 //allMessages.value = merge({}, allMessages.value, response.data.data)
+//                 // currentPage.value = response.data.pagination.current_page
+//                 // totalPages.value = response.data.pagination.total
+//                 // lastPage.value = response.data.pagination.last_page
+
+//             } else {
+//                 axios.get(`/dashboard/chat/group/${props.clickedIndexGroup}/${props.groupType}?page=${currentPage.value}`).then((response) => {
+
+//                     //allMessages.value = response.data.data
+//                     // allMessages.value = response.data.data
+//                     // for (let item in response.data.data) {
+//                     //     if (Object.keys(allMessages.value).includes(item)) {
+//                     //         allMessages.value[item].messages = [...response.data.data[item].messages, ...allMessages.value[item].messages].sort((b, a) => new Date(a.created_at) - new Date(b.created_at))
+//                     //     } else {
+//                     //         allMessages.value = merge({}, allMessages.value, response.data.data)
+//                     //     }
+//                     // }
+//                     for (let item in response.data.data) {
+//                         if (Object.keys(allMessages.value).includes(item)) {
+//                             // If the date key already exists, add the new messages at the end and sort by created_at
+//                             allMessages.value[item].messages = [
+//                                 ...allMessages.value[item].messages,
+//                                 ...response.data.data[item].messages
+//                             ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+//                         } else {
+//                             // If the date key does not exist, append the new data at the end
+//                             allMessages.value = {
+//                                 ...allMessages.value, // Retain the existing data
+//                                 [item]: response.data.data[item] // Append the new data with the new key at the end
+//                             };
+//                         }
+//                     }
+
+//                 })
+//             }
+
+
+//         }
+//     } catch (error) {
+//         console.error("Error fetching messages:", error);
+//     } finally {
+//         isLoading.value = false;
+//     }
+// };
+
+const fetchMessages = async () => {
+    // Prevent loading if already in progress or if there are no more pages
+    if (isLoading.value || currentPage.value > lastPage.value) return;
+
+    isLoading.value = true; // Set loading state
+
+    try {
+        currentPage.value += 1;
+
+        let response;
+
+        // Fetch user conversation or group messages based on the condition
+        if (props.selectedUser && props.is_single) {
+            response = await axios.get(`/dashboard/chat/usersConversation/${props.selectedUser.id}?page=${currentPage.value}`);
+        } else {
+            response = await axios.get(`/dashboard/chat/group/${props.clickedIndexGroup}/${props.groupType}?page=${currentPage.value}`);
+        }
+
+        // Handle the response data
+        for (let item in response.data.data) {
+            if (Object.keys(allMessages.value).includes(item)) {
+                // If the date key already exists, add the new messages to the end and sort by created_at
+                allMessages.value[item].messages = [
+                    ...allMessages.value[item].messages,
+                    ...response.data.data[item].messages
+                ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            } else {
+                // If the date key does not exist, append it at the end
+                allMessages.value = {
+                    ...allMessages.value, // Retain existing data
+                    [item]: response.data.data[item] // Add the new data
+                };
+            }
+        }
+
+        // Reset the scroll after loading
+        //reset(); // This will adjust the scroll position after new messages are loaded
+
+        // Update pagination data if needed
+        lastPage.value = response.data.pagination.last_page;
+
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+    } finally {
+        isLoading.value = false; // Reset loading state
+    }
+};
+
+const onScroll = (event) => {
+    
+    let clientHeight = event.target.clientHeight;
+    let scrollHeight = event.target.scrollHeight;
+    let scroll_top = event.target.scrollTop;
+    //if (event.target.scrollTop == 0) {
+    console.log('client height ', clientHeight);
+    console.log('scroll height ', scrollHeight)
+    console.log('scroll top ', scroll_top)
+    console.log('final result ', scroll_top + clientHeight)
+    // if (scroll_top + clientHeight <= scrollHeight) {
+
+    //     isScrollTop.value = true;
+    //     if (currentPage.value < lastPage.value) {
+    //         currentPage.value += 1;
+            
+    //         fetchMessages();
+    //     }
+    //     // console.log(event.target.clientHeight)
+    //     // console.log(' client height ', event.target.clientHeight)
+    //     // console.log(' scroll height ', event.target.scrollHeight)
+    //     // event.target.scrollTo(0, (event.target.scrollHeight - event.target.clientHeight))
+    //     //event.target.scrollTop = event.target.clientHeight
+    //     //const currentScrollHeight = event.target.scrollTop
+    //     // console.log('this is the previous height ', previousScrollHeight)
+    //     // console.log('this is the current scroll height ', currentScrollHeight)
+    //     // event.target.scrollTop = 116
+    // }
+
+    if (scroll_top <= 10 && currentPage.value <= lastPage.value && !isLoading.value) {
+        isScrollTop.value = true;
+        currentPage.value += 1; // Increment the page for fetching
+
+        fetchMessages(); // Load more messages
+    }
+};
+
+watch(() => props.selectedUser, () => {
+    userConversations()
+}, { immediate: true })
+
+watch([() => props.clickedIndex, () => props.clickedIndexGroup, () => props.is_group], ([newIndex, newGroup]) => {
     currentClickedIndex.value = newIndex;
     clickedIndexGroup.value = newGroup;
     // getMessagesInGroup();
@@ -679,23 +906,25 @@ watch([() => props.clickedIndex, () => props.clickedIndexGroup], ([newIndex, new
 const sendMessage = async () => {
     if (formData.value.message.trim() === '') {
         return; // Do not send an empty message
-      }
+    }
     let toCheck = "user"
-    const hasKey = toCheck in props.selectedMessage;
-   
+    //const hasKey = toCheck in props.selectedMessage;
+
     const token = localStorage.getItem('token');
-    if (hasKey === true) {
+    is_content_loaded.value = false;
+
+    if (props.is_single) {
         try {
             form.append("message", formData.value.message)
-            form.append("recipient_id", currentClickedIndex.value)
-           
+            form.append("recipient_id", props.selectedUser.id)
+
             const responses = await axios.post(`/dashboard/chat/users/messages/`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
                 }
             });
-           
+
             const newMessage = responses.data.sentMessage;
             const messageDate = formatDate(newMessage.created_at);
             if (allMessages.value[messageDate]) {
@@ -709,12 +938,13 @@ const sendMessage = async () => {
                     }
                 };
             }
-
+            scrollToBottom();
             formData.value = {}
         } catch (error) {
-            
+
         }
-    } else {
+    }
+    else {
         try {
             form.append("message", formData.value.message)
             form.append("group_id", clickedIndexGroup.value)
@@ -726,7 +956,7 @@ const sendMessage = async () => {
                     'Authorization': `Bearer ${token}`,
                 }
             });
-           
+
             const newMessage = responses.data.sentMessage;
             const messageDate = formatDate(newMessage.created_at);
             if (allMessages.value[messageDate]) {
@@ -740,9 +970,10 @@ const sendMessage = async () => {
                     }
                 };
             }
+            scrollToBottom();
             formData.value = {}
         } catch (error) {
-          
+
         }
     }
 
@@ -750,31 +981,51 @@ const sendMessage = async () => {
 
 const sortedMessages = computed(() => {
     const messageDates = Object.keys(allMessages.value);
+
     const sortedDates = messageDates.sort((a, b) => new Date(a) - new Date(b));
     return sortedDates.map(date => {
         return {
             date: allMessages.value[date].date,
-            messages: allMessages.value[date].messages
+            messages: allMessages.value[date].messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
         };
     });
 });
 
+const handleScroll = (event) => {
+    const scrollTop = event.target.scrollTop;
+    const scrollHeight = event.target.scrollHeight;
+    const clientHeight = event.target.clientHeight;
+
+    // Check if user scrolled to the bottom
+    if (scrollTop + clientHeight >= scrollHeight) {
+        console.log('Reached the bottom');
+    }
+};
+
 onMounted(() => {
-   
+
     //listenForTyping();
     scrollToBottom();
-    userConversations()
+    //userConversations()
+    //onScroll()
+    chatContainer.value.addEventListener('scroll', handleScroll);
 });
 onBeforeUnmount(() => {
     window.Echo.leave(`chat.${currentClickedIndex}`);
 });
-onUpdated(() => {
-    scrollToBottom();
-});
+// onUpdated(() => {
+//     if (!isScrollTop.value) {
+//         //scrollToBottom();
+//     }
+//     // onScroll()
+// });
 watch(sortedMessages, (newMessages, oldMessages) => {
-   
+
     if (newMessages.length !== oldMessages.length) {
-        scrollToBottom();
+        if (!isScrollTop.value && !is_content_loaded.value) {
+            // scrollToBottom();
+        }
+
     }
 });
 const toggle = (event) => {
@@ -785,6 +1036,19 @@ const handleMemberOption = (item) => {
         reportModal.value = true;
     }
 };
+
+// const { reset } = useInfiniteScroll(
+//     chatContainer,
+//     () => {
+//         fetchMessages()
+//     },
+//     { distance: 10, direction: 'top' },
+// )
+
+// function resetList() {
+//     data.value = []
+//     reset()
+// }
 </script>
 
 <style scoped>

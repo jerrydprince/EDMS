@@ -34,7 +34,7 @@
 
 
          <button class="bg-white border-gray-300 border py-2 px-4 rounded-lg relative cursor-pointer" @click="uploadProfileImage">
-          Upload
+          Browse
          </button>
         <input type="file" @change="handleFileUpload" value="" class="opacity-0 absolute w-full cursor-pointer"  id="profile_img_file" />
        </div>
@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, watch } from 'vue';
+import { ref, defineProps, watch, computed } from 'vue';
 import VerifyEmail from '../../../components/Modals/VerifyEmail.vue';
 import { useForm, usePage } from '@inertiajs/vue3'
 import { useToast } from "primevue/usetoast";
@@ -124,6 +124,7 @@ const profile_img = ref('')
 const url = ref('')
 const toast = useToast();
 const page = usePage()
+const roles = computed(()=> page.props.user_roles)
 
 const form = useForm({
   file: null
@@ -142,7 +143,13 @@ const handleFileUpload = (event)=>{
 }
 
 const uploadImage = ()=>{
-  form.post('/data-entry/update-profile-image',{onSuccess: ()=>{
+  let url = '';
+  if(roles.value.includes('data entry')){
+    url = '/edms/update-profile-image'
+  }else{
+    url = '/dashboard/update-profile-image'
+  }
+  form.post(url,{onSuccess: ()=>{
     toast.add({
                     severity: "success",
                     summary: "File Uploaded",

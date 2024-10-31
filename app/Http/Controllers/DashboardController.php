@@ -78,9 +78,4 @@ class DashboardController extends Controller
         return inertia('dashboard/Support');
     }
 
-    public function settings(){
-        $user = auth()->user();
-        return inertia('dashboard/settings/Settings', compact('user'));
-    }
-
 }

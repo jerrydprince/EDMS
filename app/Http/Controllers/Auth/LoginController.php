@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\Crypt;
 use App\Models\Attendance;
 use Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\UserSession;
+use MakiDizajnerica\GeoLocation\Facades\GeoLocation;
+use Jenssegers\Agent\Agent;
+
 
 // use Jenssegers\Agent\Facades\Agent;
-use Jenssegers\Agent\Agent;
 use Stevebauman\Location\Facades\Location;
 
 class LoginController extends Controller
@@ -106,22 +110,26 @@ class LoginController extends Controller
                             ->value('login_time') ?? now()]
             );
 
-            session(['branch'=>$this->userBranchDetails($request)]);
+            //user session
+            $collection = GeoLocation::lookup($request->ip());
+            $location = $collection? $collection->get('country').", ".$collection->get('city'): null;
 
-            // $ip = $request->ip(); // Get the user's IP address
-            // $agent = new Agent();
-            // $browser = $agent->browser();
-            // $location = $this->getLocation($ip); // Optional: get the location based on the IP address
-            // LoginActivity::create([
-            //     'user_id'    => Auth::user()->id,
-            //     'name'       => Auth::user()->first_name,
-            //     'ip_address' => $ip,
-            //     'browser'    => $browser,
-            //     'location'   => $location,
-            //     'created_at' => now()
-            // ]);
+            $agent = new Agent();
+            $browser = $agent->browser();
+            $request->session()->put('browser', $browser);
+
+            session(['branch'=>$this->userBranchDetails($request)]);
+          
+             $browser = $agent->browser()? $agent->browser(): 'unknown';
+             session()->put(['browser'=>$browser, 'location' => $location]);
 
             $request->session()->regenerate();
+
+            //check if 2fa is active
+            if(auth()->user()->two_factor_confirmed_at){
+                return redirect()->to('2fa');
+            }
+           
             if(auth()->user()->hasRole('data entry')){
                 return redirect()->intended('edms');
             }

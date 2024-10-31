@@ -151,7 +151,8 @@
                                 </ul>
                             </div>
                         @endif
-                            <form action="{{route('post-login')}}" method="post">
+                            {{-- <form action="{{route('post-login')}}" method="post"> --}}
+                                <form action="{{url('/login')}}" method="post">
                                 <div>
                                     <label for="username" class=" text-gray-600">Username</label>
                                     <div class="relative mt-1">

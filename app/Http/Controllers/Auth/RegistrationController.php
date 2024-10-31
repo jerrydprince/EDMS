@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\Registration;
 use Illuminate\Validation\Rule;
+use App\Models\PasswordPolicy;
 use App\Models\User;
 use Hash;
 
@@ -16,7 +17,8 @@ class RegistrationController extends Controller
 {
     public function index(){
        // return view('register');
-       return inertia('registration/register');
+        $passwordpolicy = PasswordPolicy::first();
+       return inertia('registration/register', compact('passwordpolicy'));
     }
 
     function generateSixDigitCode() {
