@@ -95,7 +95,7 @@ const current_page = computed(()=> page.url)
     axios.get('/user-notifications').then((response)=>{
       notifications.value = response.data.notifications
       total_task_notifications.value = response.data.count
-      
+      store.commit('setNotifications', response.data)
     })
   }
   provide('notifications', notifications)
@@ -126,6 +126,7 @@ const current_page = computed(()=> page.url)
        Echo.private('comment.' + user.value.id)
         .notification((notification) => {
             getUserNotifications()
+            store.dispatch("fetchNotifications")
         });
   
     // Echo.private(`chat.${user.value.id}`)

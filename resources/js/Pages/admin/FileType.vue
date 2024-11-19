@@ -15,7 +15,7 @@
           root: { class: 'text-primary' },
           inkbar: { class: 'text-primary' },
           action: ({ props, context, state }) => ({
-            class: `${context.index === state.d_activeIndex
+            class: `${context.index == state.d_activeIndex
                 ? 'text-primary border-b-2 border-solid border-primary'
                 : ''
               } p-1 pr-0 md:pr-3 md:p-3 pl-1 text-gray-500 -mb-[2px]`,
@@ -83,7 +83,7 @@
   import { Link } from '@inertiajs/vue3'
   import { router } from '@inertiajs/vue3'
   
-  const active = ref(1);
+  const active = ref(2);
   const createFileType = ref(false);
   const updateFileType = ref(false)
 
@@ -131,7 +131,7 @@
     {
       label: "Metadata",
       icon: "",
-      link: "/dashboard/meta-data-setup",
+      link: "/dashboard/metadata-setup",
     },
     {
       label: "Document Type",

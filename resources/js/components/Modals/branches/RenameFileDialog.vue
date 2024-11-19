@@ -127,7 +127,7 @@
 
     const submitForm = () => {
      
-        form.post('/data-entry/rename-file',{onSuccess: ()=>{
+        form.post('/edms/rename-file',{onSuccess: ()=>{
             toast.add({
                 severity: "success",
                 summary: "Document Created",

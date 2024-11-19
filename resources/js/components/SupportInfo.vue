@@ -145,7 +145,7 @@ const closeModal = () => {
 const submit = async () => {
     try {
         console.log("support data",formData.value);
-        const response = await axios.post(`/admin/support/support-details`, formData.value)
+        const response = await axios.post(`/dashboard/support/support-details`, formData.value)
         console.log('sent:', response.data); // Log the response
         formData.value = {}
         toast.add({

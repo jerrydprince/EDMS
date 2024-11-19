@@ -8,12 +8,12 @@
         <p class="text-2xl lg:text-3xl text-gray-800 font-semibold">
           Welcome Back ! 👋🏼
         </p>
-        <div
+        <!-- <div
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg text-sm lg:text-base py-2 px-3 lg:px-4 cursor-pointer mt-6 lg:mt-0"
         >
           <Icon icon="ion:add-outline" width="25" />
           <p>Invite Members</p>
-        </div>
+        </div> -->
       </section> 
        <section
         class="w-full text-gray-800 bg-primary_bg border border-solid border-gray-300 rounded-xl mt-7 p-3 lg:p-6"

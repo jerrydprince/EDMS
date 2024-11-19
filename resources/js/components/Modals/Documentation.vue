@@ -128,7 +128,7 @@ const submit = async () => {
     formData.append(`docs[${index}][link]`, doc.link);
     })
     try {
-    const response = await axios.post('/admin/support/doc', formData)
+    const response = await axios.post('/dashboard/support/doc', formData)
     console.log("sent:", response.data)
   } catch (error) {
     console.error(error)

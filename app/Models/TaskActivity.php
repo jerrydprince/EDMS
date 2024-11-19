@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class TaskActivity extends Model
 {
     use HasFactory;
+
+    /**
+     * Get the user associated with the TaskActivity
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id','created_by');
+    }
 }

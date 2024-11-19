@@ -88,4 +88,11 @@ class MetadataController extends Controller
 
     return response()->json($metadata);
    }
+
+   //set default metadata
+   public function setDefaultMetadata(Request $request){
+    $metadata = Metadata::find($request->id);
+    $metadata->is_default = 1;
+    $metadata->save();
+   }
 }

@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('archive_docs', function (Blueprint $table) {
             $table->id();
-            $table->text('description')->nullable();
-            $table->string('text')->nullable();
-            $table->date('date')->nullable();
-            $table->string('number')->nullable();
-            $table->text('list')->nullable();
+            // $table->text('description')->nullable();
+            // $table->string('text')->nullable();
+            // $table->date('date')->nullable();
+            // $table->string('number')->nullable();
+            // $table->text('list')->nullable();
+            // $table->unsignedBigInteger('archive_id');
+            // $table->foreign('archive_id')->references('id')->on('archives');
+            $table->string('archive_keys');
+            $table->text('archive_values');
             $table->unsignedBigInteger('archive_id');
-            $table->foreign('archive_id')->references('id')->on('archives');
+            $table->foreign('archive_id')->references('id')->on('archive');
             $table->timestamps();
         });
     }

@@ -220,21 +220,25 @@ class UserController extends Controller
 
     public function getUserUnreadNotification(){
         $user = auth()->user();
-        //$notifications = $user->unreadNotifications->take(20);
-        $notifications = $user->notifications;
-        $count = $notifications->whereNull('read_at')->count();
-        $notifications =  $notifications->groupBy(function ($notification) {
-            $createdAt = Carbon::parse($notification->created_at);
-    
-            if ($createdAt->isToday()) {
-                return 'Today';
-            } elseif ($createdAt->isYesterday()) {
-                return 'Yesterday';
-            } elseif ($createdAt->diffInDays(Carbon::now()) <= 7) {
-                return $createdAt->diffForHumans(null, true) . ' ago'; // e.g., "2 days ago"
-            } else {
-                return $createdAt->format('d F Y'); // e.g., "05 September 2024"
-            }
+        $notifications = $user->notifications->groupBy('type'); // First, group notifications by type
+
+        $count = $notifications->flatten()->whereNull('read_at')->count(); // Flatten the collection for counting unread notifications
+
+        // Group each type of notification by date
+        $notifications = $notifications->map(function ($typeGroup) {
+            return $typeGroup->groupBy(function ($notification) {
+                $createdAt = Carbon::parse($notification->created_at);
+
+                if ($createdAt->isToday()) {
+                    return 'Today';
+                } elseif ($createdAt->isYesterday()) {
+                    return 'Yesterday';
+                } elseif ($createdAt->diffInDays(Carbon::now()) <= 7) {
+                    return $createdAt->diffForHumans(null, true) . ' ago'; // e.g., "2 days ago"
+                } else {
+                    return $createdAt->format('d F Y'); // e.g., "05 September 2024"
+                }
+            });
         });
         return response()->json(['notifications'=>$notifications, 'count'=>$count]);
     }

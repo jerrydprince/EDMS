@@ -8,6 +8,8 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Events\ChatEvent;
 use App\Listeners\UserEventSubscriber;
+use Illuminate\Auth\Events\Login;
+use App\Listeners\CheckDefaultPasswordOnLogin;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
             ChatEvent::class,
+        ],
+        Login::class => [
+            CheckDefaultPasswordOnLogin::class,
         ],
     ];
 

@@ -116,7 +116,7 @@
          </div>
          <!-- display searched result ends here -->
 
-          <div class="mb-6">
+          <!-- <div class="mb-6">
             <p class="text-sm lg:text-base">Set Department Head</p>
             <span class="text-gray-400 relative">
               <Icon icon="iconamoon:search-light" width="20"
@@ -130,7 +130,7 @@
                 <li v-for="(ind, val) in searchedData" :key="ind">{{ val.name }}</li>
               </ul>
             </div>
-          </div>
+          </div> -->
           
           <!-- USer Image is displayed here -->
          <div v-if="selectedHead.length != 0" class=" overflow-auto max-h-20">
@@ -191,7 +191,7 @@
             <Textarea v-model="divisionForm.description" rows="5" cols="30" class="mt-1 w-full"
               placeholder="Enter a description..." />
           </div>
-          <div class="mb-6">
+          <!-- <div class="mb-6">
             <p class="text-sm lg:text-base">Set Division Head</p>
             <span class="text-gray-400 relative">
               <Icon icon="iconamoon:search-light" width="20"
@@ -199,7 +199,7 @@
               <InputText id="division_head" class="mt-1 w-full pl-10" v-model="divisionForm.head"
                 aria-describedby="username-help" placeholder="Add by name or email" />
             </span>
-          </div>
+          </div> -->
           <!-- USer Image is displayed here -->
           <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -261,7 +261,7 @@
             <Textarea v-model="unitForm.description" rows="5" cols="30" class="mt-1 w-full"
               placeholder="Enter a description..." />
           </div>
-          <div class="mb-6">
+          <!-- <div class="mb-6">
             <p class="text-sm lg:text-base">Set Unit Head</p>
             <span class="text-gray-400 relative">
               <Icon icon="iconamoon:search-light" width="20"
@@ -269,7 +269,7 @@
               <InputText id="unit_head" class="mt-1 w-full pl-10" v-model="unitForm.head" aria-describedby="username-help"
                 placeholder="Add by name or email" />
             </span>
-          </div>
+          </div> -->
           <!-- USer Image is displayed here -->
           <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">

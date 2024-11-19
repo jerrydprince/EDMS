@@ -8,7 +8,7 @@
         <p class=" bg-gray-50 text-primary text-xs  md:text-sm font-semibold rounded-3xl py-2 px-5 w-fit mt-2 md:mt-0">
           Communication Division</p>
       </div>
-      <p class=" text-sm mt-2 text-gray-600">Monday, OcDeadline: 2024-06-01</p>
+      <!-- <p class=" text-sm mt-2 text-gray-600">Monday, OcDeadline: 2024-06-01</p> -->
     </section>
     <section class="w-full text-gray-800 bg-primary_bg border border-solid border-gray-300 rounded-xl mt-7 p-3 lg:p-6">
       <div class="flex items-center gap-5">
@@ -124,8 +124,8 @@
               <h1 class=" font-semibold text-gray-900  text-lg">No Task Update</h1>
               <p class=" text-sm text-gray-600 w-[60%] text-center">View latest update to task you’ve assigned at a
                 glance.</p>
-              <button class=" px-5 py-2 border border-solid border-gray-300 rounded-lg mt-2 text-sm">Open
-                Workflow</button>
+              <Link :href="'/dashboard/workflow'" class=" px-5 py-2 border border-solid border-gray-300 rounded-lg mt-2 text-sm">Open
+                Workflow</Link>
             </div>
           </div>
         </div>
@@ -141,7 +141,7 @@
             <h1 class=" font-semibold text-sm md:text-lg">Recent Mail</h1>
           </div>
           <div class=" flex items-center  gap-2 md:gap-5">
-            <p class=" bg-slate-100 text-red-500 text-xs w-fit px-3 p-1.5 rounded-2xl ">• 1 New Message</p>
+            <!-- <p class=" bg-slate-100 text-red-500 text-xs w-fit px-3 p-1.5 rounded-2xl ">• 1 New Message</p> -->
 
             <div class=" p-2 rounded-md border border-solid  bg-white md:text-[25px]">
               <Icon icon="akar-icons:link-out" />
@@ -171,8 +171,8 @@
               <img src="../../assets/images/empty-mail.svg" alt="" class=" w-28">
               <h1 class=" font-semibold text-gray-900  mt-2 text-lg">No Recent Mails</h1>
               <p class=" text-sm text-gray-600 w-[55%] text-center">View latest inbox at a glance on your dashboard</p>
-              <button class=" px-5 py-2 border border-solid border-gray-300 rounded-lg mt-2 text-sm">Open
-                Workflow</button>
+              <Link :href="'/dashboard/mails'" class=" px-5 py-2 border border-solid border-gray-300 rounded-lg mt-2 text-sm">Open
+                Mails</Link>
             </div>
           </div>
         </div>

@@ -45,7 +45,7 @@
 
             </div>
           </div>
-          <Link href="/dashboard/settings">
+          <Link href="/settings">
             <div class=" border-b">
               <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold "
                 @click=" Profile_option = false">
@@ -54,7 +54,7 @@
               </div>
             </div>
           </Link>
-          <router-link to="/settings/organisation" v-if="!roles.includes('data entry')">
+          <!-- <router-link to="/settings/organisation" v-if="!roles.includes('data entry')">
             <div class=" border-b">
               <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold "
                 @click=" Profile_option = false">
@@ -62,7 +62,7 @@
                 <p>Organization Settings </p>
               </div>
             </div>
-          </router-link>
+          </router-link> -->
           <Link href="/dashboard/support">
             <div class=" border-b">
               <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold ">

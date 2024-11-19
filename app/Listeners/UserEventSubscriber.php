@@ -12,6 +12,7 @@ use MakiDizajnerica\GeoLocation\Facades\GeoLocation;
 use Jenssegers\Agent\Agent;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
+use App\Models\User;
 
 class UserEventSubscriber
 {
@@ -49,6 +50,48 @@ class UserEventSubscriber
       
          $browser = $agent->browser()? $agent->browser(): 'unknown';
          session()->put(['browser'=>$browser, 'location' => $location]);
+
+          // adds to the activity log
+          $user = new User();
+          activity()
+          ->performedOn($user)
+          ->causedBy(auth()->user()->id)
+          ->withProperties([
+              'archive' => '',
+              'ip' => request()->ip(),
+              'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
+              'user_agent' => request()->userAgent(),
+              'event' => 'login',
+              'device' => $this->getDevice(),
+              'document_type' =>[],
+              'files' => [],
+              'department' =>auth()->user()->department,
+                'division' => auth()->user()->division,
+                'unit' => auth()->user()->unit
+              ])
+          ->log(auth()->user()->first_name.' '.auth()->user()->last_name." logged in");
+    }
+
+    public function getDevice(){
+        $agent = new Agent();
+
+            $isMobile = $agent->isMobile();   // Returns true if the device is a mobile
+            $isTablet = $agent->isTablet();   // Returns true if the device is a tablet
+            $isDesktop = $agent->isDesktop(); // Returns true if the device is a desktop
+            $browser = $agent->browser();     // e.g., Chrome, Safari
+            $platform = $agent->platform();   // e.g., iOS, Android, Windows
+
+            $device = '';
+
+            // Example usage
+            if ($isMobile) {
+                $device = 'Mobile';
+            } elseif ($isTablet) {
+                $device = 'Tablet';
+            } else {
+                $device = 'Desktop';
+            }
+        return $device;
     }
 
     public function userBranchDetails($request){
@@ -77,12 +120,33 @@ class UserEventSubscriber
                 ];
             }
         }
+        
     }
  
     /**
      * Handle user logout events.
      */
-    public function handleUserLogout(Logout $event): void {}
+    public function handleUserLogout(Logout $event): void {
+
+        $user = new User();
+        activity()
+            ->performedOn($user)
+            ->causedBy(auth()->user()->id)
+            ->withProperties([
+                'archive' => '',
+                'ip' => request()->ip(),
+                'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
+                'user_agent' => request()->userAgent(),
+                'event' => 'logout',
+                'device' => $this->getDevice(),
+                'document_type' =>[],
+                'files' => [],
+                'department' =>auth()->user()->department,
+                'division' => auth()->user()->division,
+                'unit' => auth()->user()->unit
+                ])
+            ->log(auth()->user()->first_name.' '.auth()->user()->last_name." logged out");
+    }
  
     /**
      * Register the listeners for the subscriber.

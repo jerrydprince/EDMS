@@ -14,7 +14,7 @@
           <p class="text-gray-700 text-[10px] font-normal">{{ item }}</p>
           <p
             class="bg-gray-100 text-gray-700 p-1 h-4 w-4 text-[8px] flex flex-col items-center justify-center rounded-sm">
-            <!-- {{ getTotalNotification(item) }} -->
+            {{ getTotalNotification(item) }}
           </p>
         </button>
       </div>
@@ -94,7 +94,7 @@
           </div>
 
           <div v-if="clickedButton == 'Task'">
-            <div v-for="(task_notifications, ind) in getNotification('task')">
+            <div v-for="(task_notifications, ind) in getNotificationType('task')">
               <h3 class="text-[10px] py-3">{{ ind }}</h3>
               <div v-for="notification in task_notifications">
                 <Link @click="closeNotification" v-if="notification.type == 'App\\Notifications\\TaskNotification'"
@@ -302,6 +302,8 @@ const base = computed(() => page.props.base)
 const store = useStore()
 const global_chat = computed(() => store.getters.getNewChat)
 const chats = computed(() => sortChatsByDate());
+const taskNotification = ref([])
+const commentNotification = ref([])
 
 const getItem = (item) => {
 
@@ -404,7 +406,12 @@ const closeNotification = () => {
 
 const getTotalNotification = (item) => {
   if (item === 'Task') {
-    return props.total_task_notifications
+    let count = 0;
+    const not = getNotification('task')
+    for(let item in not){
+      count += not[item].length
+    }
+      return count
   }
   if (item == 'Mail') {
     return 0
@@ -412,327 +419,76 @@ const getTotalNotification = (item) => {
   if (item == 'Chat') {
     return 0;
   }
+  if(item == 'Comments'){
+    let count = 0;
+    const not = getNotification('comments')
+    for(let item in not){
+      count += not[item].length
+    }
+      return count
+  }
   if (item == 'Other') {
     return 0;
   }
 }
 
-const getNotification = (type) => {
-  for (let item of props.notifications) {
-    if (item[type] !== undefined) {
-      console.log(item[type])
-      return item[type]
-    } else {
-      return []
+const getNotification = (type)=>{
+  if (props.notifications && props.notifications.length > 0) {
+    if (type === 'task') {
+        const firstNotification = props.notifications[0];
+        
+        // Check if the specific notification type key exists
+        if ('App\\Notifications\\TaskNotification' in firstNotification) {
+           taskNotification.value = firstNotification['App\\Notifications\\TaskNotification']
+            return firstNotification['App\\Notifications\\TaskNotification'];
+        } 
     }
-  }
+
+    if (type === 'comments') {
+        const firstNotification = props.notifications[0];
+       
+        // Check if the specific notification type key exists
+        if ('App\\Notifications\\CommentNotification' in firstNotification) {
+           commentNotification.value = firstNotification['App\\Notifications\\CommentNotification']
+            return firstNotification['App\\Notifications\\CommentNotification'];
+        } 
+    }
+}
 }
 
-const buttons = ref(["Chat", "Mail", "Mentions", "Task", "Other", "Unread"]);
-const notifications = ref([
-  {
-    day: "Today",
-    notifications: [
-      {
-        type: "task",
-        message: "assigned a task to you",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-29T10:45:00Z",
-        isRead: false,
-      },
-      {
-        type: "other",
-        message: "Mia Ward archived 10  documents to Accounting Folder",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-29T10:45:00Z",
-        isRead: false,
-      },
-      {
-        type: "other",
-        message: "Mia Ward archived 16  documents to Sales Division",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-29T10:45:00Z",
-        isRead: false,
-      },
-      {
-        type: "other",
-        message: "Mia Ward archived 16  documents to Sales Division",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-29T10:45:00Z",
-        isRead: false,
-      },
-      {
-        id: 2,
-        type: "task",
-        message: "approved your task",
-        sender: "Rich Wilson",
-        avatar: profile,
-        statusChange: {
-          from: {
-            name: "In Progress",
-            icon: "nonicons:loading-16"
-          },
-          to: {
-            name: "Completed",
-            icon: "teenyicons:tick-circle-solid"
-          },
-        },
-        date: "2024-07-29T12:30:00Z",
-        isRead: true,
-      },
-      {
-        id: 2,
-        type: "task",
-        message: "approved your task",
-        sender: "Rich Wilson",
-        avatar: profile,
-        statusChange: {
-          from: {
-            name: "Under Review",
-            icon: "mdi:timer-sand-complete"
-          },
-          to: {
-            name: "Uncompleted",
-            icon: "material-symbols:cancel"
-          },
-        },
-        date: "2024-07-29T12:30:00Z",
-        isRead: true,
-      },
-      {
-        id: 3,
-        type: "task",
-        message: " moved a Append signature task to uncompleted",
-        sender: "System",
-        avatar: profile,
-        statusChange: {
-          from: {
-            name: "In Progress",
-            icon: "nonicons:loading-16"
-          },
-          to: {
-            name: "Completed",
-            icon: "teenyicons:tick-circle-solid"
-          },
-        },
-        date: "2024-07-29T14:00:00Z",
-        isRead: false,
-      },
-      {
-        id: 4,
-        type: "mail",
-        message: "James Wilson sent you a new mail",
-        sender: "James Wilson",
-        avatar: profile,
-        attachments: [
-          {
-            name: "Payment Contract",
-            icon: "vscode-icons:file-type-powerpoint",
-          },
-        ],
-        date: "2024-07-29T10:45:00Z",
-        isRead: true,
-      },
-      {
-        id: 5,
-        type: "mail",
-        message: "AGF sent you a new mail",
-        sender: "AGF",
-        avatar: profile,
-        attachments: [],
-        date: "2024-07-29T09:30:00Z",
-        isRead: false,
-      },
-      {
-        id: 6,
-        type: "mail",
-        message: "Rich Wilson sent you a new mail",
-        sender: "Rich Wilson",
-        avatar: profile,
-        attachments: [
-          {
-            name: "Payment Contract",
-            icon: "vscode-icons:file-type-powerpoint",
-          },
-        ],
-        date: "2024-07-29T08:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 7,
-        type: "mentions",
-        message: "comment",
-        sender: "James Wilson",
-        avatar: profile,
-        context: "Great job on the budget proposal, it looks thorough and well-researched. I especially appreciate the detailed breakdown of projected expenses and revenue.",
-        date: "2024-07-29T11:00:00Z",
-        isRead: false,
-      },
-      {
-        id: 8,
-        type: "mentions",
-        message: "Append signature Task",
-        sender: "AGF",
-        avatar: profile,
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 8,
-        type: "chat",
-        isgroup: false,
-        message:
-          "It would be helpful to have a summary of completed tasks, any roadblocks encountered, and what the next steps are...",
-        sender: "James Wilson",
-        avatar: profile,
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 8,
-        type: "chat",
-        isgroup: true,
-        sender: "James Wilson",
-        group_member: [
-          {
-            name: 'Rich Greg',
-            avatar: profile
-          },
-          {
-            name: 'william',
-            avatar: profile_1
-          },
-          {
-            name: 'johnson',
-            avatar: profile_2
-          },
-        ],
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-    ],
-  },
-  {
-    day: "Yesterday",
-    notifications: [
-      {
-        id: 9,
-        type: "task",
-        message: "James Wilson assigned a task to you",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-28T10:45:00Z",
-        isRead: true,
-      },
+const getNotificationType = (type) => {
+  // for (let item of props.notifications) {
+  //   if (item[type] !== undefined) {
+  //     console.log(item[type])
+  //     return item[type]
+  //   } else {
+  //     return []
+  //   }
+  // }
 
-      {
-        id: 10,
-        type: "task",
-        message: "James Wilson assigned a task to you",
-        sender: "James Wilson",
-        avatar: profile,
-        status: "assigned",
-        date: "2024-07-28T08:30:00Z",
-        isRead: false,
-      },
-      {
-        id: 11,
-        type: "mail",
-        message: "James Wilson sent you a new mail",
-        sender: "James Wilson",
-        avatar: profile,
-        attachments: [
-          {
-            name: "Payment Contract",
-            icon: "vscode-icons:file-type-powerpoint",
-          },
-        ],
-        date: "2024-07-28T14:45:00Z",
-        isRead: true,
-      },
-      {
-        id: 8,
-        type: "mentions",
-        message: "Append signature Task",
-        sender: "AGF",
-        avatar: profile,
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 8,
-        type: "chat",
-        isgroup: false,
-        message:
-          "It would be helpful to have a summary of completed tasks, any roadblocks encountered, and what the next steps are...",
-        sender: "James Wilson",
-        avatar: profile,
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 8,
-        type: "chat",
-        isgroup: true,
-        sender: "James Wilson",
-        group_member: [
-          {
-            name: 'Rich Greg',
-            avatar: profile
-          },
-          {
-            name: 'william',
-            avatar: profile_1
-          },
-          {
-            name: 'johnson',
-            avatar: profile_2
-          },
-        ],
-        date: "2024-07-29T13:00:00Z",
-        isRead: true,
-      },
-      {
-        id: 12,
-        type: "mail",
-        message: "Jasmine Smith sent you a new mail",
-        sender: "Jasmine Smith",
-        avatar: profile,
-        attachments: [],
-        date: "2024-07-28T13:30:00Z",
-        isRead: false,
-      },
-      {
-        id: 13,
-        type: "mentions",
-        message: "comment",
-        sender: "Rich Wilson",
-        avatar: profile,
-        context: "Great job on the budget proposal, it looks thorough and well-researched. I especially appreciate the detailed breakdown of projected expenses and revenue.",
-        date: "2024-07-28T11:15:00Z",
-        isRead: true,
-      },
-      {
-        id: 14,
-        type: "mentions",
-        message: "Append signature Task",
-        sender: "Jasmine Smith",
-        avatar: profile,
-        date: "2024-07-28T12:45:00Z",
-        isRead: false,
-      },
-    ],
-  },
-]);
+  // if(props.notifications && props.notifications.length > 0){
+  //   if(type == 'task'){
+  //   for(let not in props.notifications[0]){
+  //     console.log(not)
+  //     console.log(typeof not)
+  //     if(not == 'App\Notifications\TaskNotification'){
+  //       console.log('yes')
+  //       console.log(props.notifications[0]['App\Notifications\TaskNotification'])
+  //       return props.notifications[0]['App\Notifications\TaskNotification']
+  //     }else{
+  //       console.log(' it is not ')
+  //     }
+  //   }
+  // }
+  // }
+
+  const not = getNotification(type)
+  return not
+
+}
+
+const buttons = ref(["Chat", "Mail", "Comments", "Task", "Other", "Unread"]);
+
 const filteredItems = computed(() => {
   return notifications.value
     .map((day) => {

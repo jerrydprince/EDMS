@@ -78,6 +78,7 @@ class LoginController extends Controller
      * Attempt to authenticate the request's credentials.
      *
      * @throws \Illuminate\Validation\ValidationException
+     * This authentication is no longer in use, rather laravel fortify is in use
      */
     public function authenticate(Request $request): RedirectResponse
     {
@@ -85,7 +86,7 @@ class LoginController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
- 
+
         if (Auth::attempt($credentials)) {
             //check if the user password is "password"
             if (Hash::check('password', Auth::user()->password)) {

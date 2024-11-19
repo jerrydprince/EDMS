@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('task_activities', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('archives', function (Blueprint $table) {
+            $table->unsignedBigInteger('deleted_by')->nullable();
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('task_activities');
+        Schema::table('archives', function (Blueprint $table) {
+            //
+        });
     }
 };

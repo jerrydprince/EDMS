@@ -173,10 +173,24 @@
           </div>
         </Link>
       </section>
+
+     
       <!-- More branches -->
       <div class="cursor-pointer ml-4 bg-gray-100 text-gray-600 rounded-xl w-[30px]">
         <Icon class="m-auto w-full" icon="solar:menu-dots-bold" width="17" />
       </div>
+      <Link href="/dashboard/shared-files"  :class="($page.url === '/dashboard/shared-files'
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+              "
+              class="py-3 mt-4 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+            
+            <span ><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M7.926 10.898 15 7.727m-7.074 5.39L15 16.29M8 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm12 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0-11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
+</svg>
+</span>
+            <p class="text-lg" v-if="!shouldShow">Shared Files</p>
+      </Link>
     </div>
 
     <div class="border-t border-dashed pt-2 pb-4">
@@ -420,6 +434,7 @@ const main = ref([
 `,
     permission: 'mail view'
   },
+ 
   {
     name: 'Registry',
     path: '/dashboard/registry',
@@ -538,7 +553,7 @@ const admin = ref([
   },
   {
     name: "Audit Log",
-    path: "/audit-log",
+    path: "/dashboard/audit-log",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66669 12.0833L10 16.25L18.3334 12.0833M10 3.75L1.66669 7.91667L10 12.0833L18.3334 7.91667L10 3.75Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -547,7 +562,7 @@ const admin = ref([
   },
   {
     name: "Recycle Bin",
-    path: "/recycle-bin",
+    path: "/dashboard/recycle-bin",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2.5 5.00008H4.16667M4.16667 5.00008H17.5M4.16667 5.00008V16.6667C4.16667 17.1088 4.34226 17.5327 4.65482 17.8453C4.96738 18.1578 5.39131 18.3334 5.83333 18.3334H14.1667C14.6087 18.3334 15.0326 18.1578 15.3452 17.8453C15.6577 17.5327 15.8333 17.1088 15.8333 16.6667V5.00008H4.16667ZM6.66667 5.00008V3.33341C6.66667 2.89139 6.84226 2.46746 7.15482 2.1549C7.46738 1.84234 7.89131 1.66675 8.33333 1.66675H11.6667C12.1087 1.66675 12.5326 1.84234 12.8452 2.1549C13.1577 2.46746 13.3333 2.89139 13.3333 3.33341V5.00008M8.33333 9.16675V14.1667M11.6667 9.16675V14.1667" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

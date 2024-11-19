@@ -26,7 +26,7 @@
       </div>
 
 
-      <div class=" flex items-center w-full bg-slate-50 p-1 text-gray-700 text-base mt-3">
+      <!-- <div class=" flex items-center w-full bg-slate-50 p-1 text-gray-700 text-base mt-3">
         <button @click="togglebutton = 1" class=" w-[50%]  py-2 rounded-md" :class="{ 'activebutton': togglebutton === 1 }">
           Search by user
         </button>
@@ -34,7 +34,7 @@
         <button class=" w-[50%] py-2 rounded-md" @click="togglebutton = 2" :class="{ 'activebutton': togglebutton === 2 }">
           Search by designation
         </button>
-      </div>
+      </div> -->
       <Divider />
       <div v-if="users && users.length > 0" class="rounded-md max-h-[35vh] overflow-y-scroll hide_scroll">
         <div v-for="(item, index) in users" :key="index">
@@ -42,7 +42,7 @@
             <input type="checkbox" class=" w-5 h-5" v-model="selectedUsers" :value="item.id">
             <div class=" flex items-center gap-5">
               <div>
-                <img :src="item.profile_image" alt="" class=" w-12">
+                <img :src="page.props.base+'/'+item.profile_image" alt="" class=" w-12">
               </div>
               <div>
                 <h1 class=" text-gray-800 font-semibold ">{{ item.first_name+" "+item.last_name }}</h1>
@@ -79,12 +79,18 @@
       class: 'py-2 bg-white px-8 border-gray-200 border border-solid rounded-lg',
     },
   }" @click="closeModal" label="Cancel" severity="secondary" outlined />
-        <Button label="Send" class="" :pt="{
+        <!-- <Button label="Send" class="" :pt="{
     root: {
       class:
         'py-2 bg-primary px-10 border-0 text-white font-light hover:bg-primary/90 rounded-lg',
     },
-  }" @click="send_option = true" autofocus />
+  }" @click="send_option = true" autofocus /> -->
+  <Button label="Send" class="" :pt="{
+    root: {
+      class:
+        'py-2 bg-primary px-10 border-0 text-white font-light hover:bg-primary/90 rounded-lg',
+    },
+  }" @click="submit" />
       </div>
     </template>
   </Dialog>
@@ -98,12 +104,14 @@ import {usePage, router} from "@inertiajs/vue3";
 import axios from "axios";
 
 
+
 const props = defineProps(["modelValue", "archive"]);
 const togglebutton = ref(1)
 const searchText = ref('')
 const users = ref([])
 const page = usePage();
 const selectedUsers = ref([])
+const toast = useToast()
 
 const send_option = ref(false)
 
@@ -131,16 +139,17 @@ const closeModal = () => {
 
 const submit = () => {
  
-  // router.post('/share-file', {ids: selectedUsers.value, archive_id: props.archive.id}, {onSuccess: page=>{
-  //   emit("update:modelValue", false);
-  //   send_option.value = false
-  //     toast.add({
-  //       severity: "success",
-  //       summary: '',
-  //       detail: "",
-  //       life: 3000,
-  //     });
-  // }})
+  router.post('/share-file', {ids: selectedUsers.value, archive_id: props.archive.id}, {onSuccess: page=>{
+    emit("update:modelValue", false);
+    send_option.value = false
+    selectedUsers.value = []
+      toast.add({
+        severity: "success",
+        summary: 'File shared successfully',
+        detail: "",
+        life: 3000,
+      });
+  }})
   
 };
 

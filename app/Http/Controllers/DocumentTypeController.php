@@ -19,18 +19,21 @@ class DocumentTypeController extends Controller
         $doctype->save();
 
         if($request->metadata){
+            $metadata = array_unique($request->metadata);
             if($request->id){
-                $doctype->metadata()->sync($request->metadata,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
+                $doctype->metadata()->sync($metadata,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
             }else{
-                $doctype->metadata()->attach($request->metadata,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
+                $doctype->metadata()->attach($metadata,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
             }
         }else{
-            $metadata = Metadata::where('is_default',1)->get();
-            $ids = $metadata->pluck('id')->toArray();
-            $doctype->metadata()->attach($ids,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
+            if(!$request->id){
+                $metadata = Metadata::where('is_default',1)->get();
+                $ids = $metadata->pluck('id')->toArray();
+                $doctype->metadata()->attach($ids,['created_at'=>\Carbon\Carbon::now(), 'updated_at'=>\Carbon\Carbon::now()]);
+            }
         }
 
-        return redirect()->to("/admin/setup-document-type");
+        return redirect()->to("/dashboard/setup-document-type");
     }
 
     public function SetupDocumentType(){
@@ -45,7 +48,7 @@ class DocumentTypeController extends Controller
 
     public function configureMetaData(Request $request){
         DocumentType::find($request->id)->metadata()->sync($request->metadata);
-        return redirect()->to('/admin/setup-document-type');
+        return redirect()->to('/dashboard/setup-document-type');
     }
 
     public function duplicateDocumentType(Request $request){

@@ -26,6 +26,8 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TwoFactorChallengeController;
+use App\Http\Controllers\AuditController;
+use App\Http\Controllers\RecycleBinController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +41,8 @@ use App\Http\Controllers\TwoFactorChallengeController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    //return view('welcome');
+    return redirect()->to('/login');
 });
 
 //login
@@ -68,18 +71,18 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
         //archiving
        // Route::get('/archiving/{id}', [ArchiveController::class, 'Archiving']);
-        Route::post('/upload-files', [ArchiveController::class, 'uploadFiles'])->middleware('permission:archiving create');
-        Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles'])->middleware('permission:archiving create');
-        Route::get('/delete-archive', [ArchiveController::class, 'deleteArchives'])->middleware('permission:archiving delete');
-        Route::get('/download-file', [ArchiveController::class, 'downloadFile'])->middleware('permission:archiving view');
-        Route::post('/duplicate-file', [ArchiveController::class, 'DuplicateFile'])->middleware('permission:archiving view');
-        Route::post('/change-file-format', [ArchiveController::class, 'changeFileFormat'])->middleware('permission:archiving update');
-        Route::post('/upload-new-document', [ArchiveController::class, 'uploadNewDocument'])->middleware('permission:archiving create');
-        Route::post('/restore-file-version', [ArchiveController::class, 'restoreFileVersion'])->middleware('permission:archiving update');
-        Route::post('/lock-document', [ArchiveController::class, 'lockDocument'])->middleware('permission:archiving update');
-        Route::get('/delete-file-version', [ArchiveController::class, 'deleteFileVersion'])->middleware('permission:archiving delete');
-        Route::get('/share-file-search', [ArchiveController::class, 'shareFileSearch'])->middleware('permission:archiving view');
-        Route::post('/share-file', [ArchiveController::class, 'shareFile'])->middleware('permission:archiving view');
+        Route::post('/upload-files', [ArchiveController::class, 'uploadFiles'])->middleware('permission:edms create');
+        Route::post('/archive-files', [ArchiveController::class, 'ArchiveFiles'])->middleware('permission:edms create');
+        Route::get('/delete-archive', [ArchiveController::class, 'deleteArchives'])->middleware('permission:edms delete');
+        Route::get('/download-file', [ArchiveController::class, 'downloadFile'])->middleware('permission:edms view');
+        Route::post('/duplicate-file', [ArchiveController::class, 'DuplicateFile'])->middleware('permission:edms view');
+        Route::post('/change-file-format', [ArchiveController::class, 'changeFileFormat'])->middleware('permission:edms update');
+        Route::post('/upload-new-document', [ArchiveController::class, 'uploadNewDocument'])->middleware('permission:edms create');
+        Route::post('/restore-file-version', [ArchiveController::class, 'restoreFileVersion'])->middleware('permission:edms update');
+        Route::post('/lock-document', [ArchiveController::class, 'lockDocument'])->middleware('permission:edms update');
+        Route::get('/delete-file-version', [ArchiveController::class, 'deleteFileVersion'])->middleware('permission:edms delete');
+        Route::get('/share-file-search', [ArchiveController::class, 'shareFileSearch'])->middleware('permission:edms view');
+        Route::post('/share-file', [ArchiveController::class, 'shareFile'])->middleware('permission:edms view');
 
         Route::prefix('edms')->group(function(){
             Route::middleware('permission:edms view')->group(function () {
@@ -159,7 +162,8 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::post('/delete-metadata', [MetadataController::class, 'deleteMetaData'])->middleware('permission:metadata setup delete');
                 Route::get('/metadatas', [MetadataController::class, 'getMetadata'])->middleware('permission:branch setup view');
                 Route::get('/metadata-part', [MetadataController::class, 'getMetadata'])->middleware('permission:branch setup view');
-            
+                Route::post('/set-default-metadata', [MetadataController::class, 'setDefaultMetadata']);
+
                 // document type
                 Route::post('/create-document-type', [DocumentTypeController::class, 'createDocumentType'])->middleware('permission:document type create');
                 Route::get('/setup-document-type', [DocumentTypeController::class, 'SetupDocumentType'])->middleware('permission:document type create');
@@ -201,7 +205,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::get('/create-folder',[ArchiveController::class, 'createFolder'])->middleware('permission:edms create');
                 Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder'])->middleware('permission:edms create');
                 Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit'])->middleware('permission:edms create');
-                Route::get('/folder-view/{branch}/{id}/{branch_id?}', [ArchiveController::class, 'folderView'])->middleware('permission:edms create');
+                Route::get('/folder-view/{branch}/{folder_id}/{branch_id?}', [ArchiveController::class, 'folderView'])->middleware('permission:edms view');
 
                 //Mails
                 Route::get('/mails', [MailController::class, 'mail'])->middleware('permission:mails view');
@@ -316,6 +320,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::get('/pms/settings', [PMSController::class, 'settings'])->middleware('permission:pms view');
                 Route::get('/get-department-users', [PMSController::class, 'getDepartmentUsers'])->middleware('permission:pms view');
                 Route::get('/pms-user-profile/{id}', [PMSController::class, 'viewPMSUserProfile'])->middleware('permission:pms view');
+                Route::get('/pms-current-user-profile', [PMSController::class, 'viewPMSCurrentUserProfile'])->middleware('permission:pms view');
                 Route::get('/pms-attendance/{id}', [PMSController::class, 'getAttendance'])->middleware('permission:pms view');
 
                 //KRA
@@ -349,6 +354,15 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
                 //Misconduct
                 Route::post('/report-misconduct', [UserController::class, 'misConduct']);
+
+                //Audit log
+                Route::get('/audit-log', [AuditController::class, 'index']);
+
+                //Recycle bin
+                Route::get('/recycle-bin', [RecycleBinController::class, 'index']);
+
+                //Shared files
+                Route::get('/shared-files', [ArchiveController::class, 'sharedFiles'])->middleware('permission:edms view');
            
         });
 

@@ -28,20 +28,20 @@
           </button> -->
           
           <button
-            v-if="isStillOnLeave() && user.is_on_leave == 1"
+            v-if="isStillOnLeave() && user.is_on_leave == 1 && !roles.includes('regular users')"
             class="p-2 ml-3 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
             @click="cancelLeaveModal = true"
           >
             <Icon icon="iconoir:cancel" width="15" />
             <p>Cancel Leave</p>
           </button>
-          <button v-if="!isStillOnLeave() && user.is_on_leave == 0"
+          <button v-if="!isStillOnLeave() && user.is_on_leave == 0 && !roles.includes('regular users')"
             class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
             @click="leaveModal = true">
             <Icon icon="ph:pause" />
             <p>Add Leave</p>
           </button>
-          <button
+          <button v-if="!roles.includes('regular users')"
             class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
             @click="reportModal = true">
             <Icon icon="icon-park-outline:caution" />
@@ -110,7 +110,7 @@
 import KPI from "../../components/KPI.vue";
 
 import Tasks from "../../components/Tasks.vue";
-import { ref, defineProps } from "vue";
+import { ref, defineProps, computed } from "vue";
 import ReportMisconduct from '../../components/Modals/PMS/ReportMisconduct.vue';
 import AddLeave from '../../components/Modals/PMS/AddLeave.vue';
 import CancelLeave from "../../components/Modals/PMS/CancelLeave.vue";
@@ -120,7 +120,7 @@ const reportModal = ref(false);
 const leaveModal = ref(false)
 const cancelLeaveModal = ref(false)
 const props = defineProps(['user', 'taskCompletionRate', 'ratings'])
-
+const roles = computed(()=> page.props.roles)
 const activebutton = ref(1)
 const page = usePage()
 

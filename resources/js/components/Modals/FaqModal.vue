@@ -146,7 +146,7 @@ const submit = async () => {
         }
     })
     try {
-    const response = await axios.post('/admin/support/faqs', formData, {
+    const response = await axios.post('/dashboard/support/faqs', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

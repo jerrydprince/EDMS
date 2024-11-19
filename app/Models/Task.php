@@ -151,4 +151,14 @@ class Task extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+    /**
+     * Get the taskActivity associated with the Task
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function taskActivity()
+    {
+        return $this->hasMany(TaskActivity::class);
+    }
 }

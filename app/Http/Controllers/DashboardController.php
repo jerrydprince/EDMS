@@ -12,7 +12,11 @@ class DashboardController extends Controller
 {
     public function index(){
        // if(auth()->user()->hasRole('data entry')){
+       $task = [];
+
+       if(isset(auth()->user()->task)){
         $task = auth()->user()->task;
+       }
        
         if(auth()->user()->unit_id){
             // $branch = auth()->user()->unit()->with(['archive'=>function($query){

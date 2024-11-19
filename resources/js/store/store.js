@@ -31,7 +31,11 @@
     mutations: {
       setNotifications (state, nots) {
         //state.notifications.push(nots)
-        state.notifications.push({task: nots})
+
+        // // //state.notifications.push({task: nots})
+
+        state.notifications.splice(0,1, nots)
+
         // if (Array.isArray(nots)) {
         //   state.notifications = nots; // Replace the notifications array with the new one
         // } else {

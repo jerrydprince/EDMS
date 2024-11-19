@@ -32,6 +32,8 @@ class WorkFlowController extends Controller
 
         $type = $this->getBranchType();
         $searchTerm = $request->search; 
+        $created_task = [];
+        $assigned_task = [];
         
         if($this->isRole('division heads')){
             $division = Division::find(auth()->user()->division_id);
@@ -47,7 +49,7 @@ class WorkFlowController extends Controller
                 })
                // ->user()->division_id)
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
               
             $assigned_task = $division->task()
                 ->with('assignedByDepartment')
@@ -60,7 +62,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
               
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
@@ -86,7 +88,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
                 
             $assigned_task = $unit->task()
                 ->with('assignedByDivision')
@@ -99,7 +101,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
                
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
@@ -124,7 +126,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
                 
             $assigned_task = $department->task()
                 ->with('assignedBySuperUser')
@@ -137,7 +139,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(40);
+                ->paginate(40)->withQueryString();
                
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
@@ -164,7 +166,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
   
            // $assigned_task = $department->task()->with('assignedByDepartment')->paginate(10);
             $assigned_task = [];
@@ -190,7 +192,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
             
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
@@ -213,7 +215,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
             
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute
@@ -236,7 +238,7 @@ class WorkFlowController extends Controller
                     });
                 })
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)->withQueryString();
             
                 $assigned_task->getCollection()->transform(function ($task) {
                     $task->is_assigned = 1;  // Add the attribute

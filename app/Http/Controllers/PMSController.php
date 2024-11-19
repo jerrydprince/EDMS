@@ -25,12 +25,14 @@ class PMSController extends Controller
             $departments = [];
         }else
         if($user->hasRole('super users') || $user->hasRole('super admin') || $user->hasRole('admin')){
-            $departments = Department::orderBy('title', 'ASC')->get();
-            if($departments){
-                $users = User::with('roles')->where('department_id', $departments->first()->id)->get();
-            }else{
-                $users = [];
-            }
+            // $departments = Department::orderBy('title', 'ASC')->get();
+            // if($departments){
+            //     $users = User::with('roles')->where('department_id', $departments->first()->id)->get();
+            // }else{
+            //     $users = [];
+            // }
+            $users = [];
+            $departments = [];
         }else{
             $users = [];
             $departments = [];
@@ -101,6 +103,22 @@ class PMSController extends Controller
         }, 'attendance'=>function($query){
             $query->orderBy('created_at', 'DESC');
         }])->find($id);
+        $task = $user->task;
+        $ratings = $user->rating;
+        $ratings = $ratings->groupBy('key');
+        $taskCompletionRate = $this->completionRate($task);
+       
+        return inertia('PMS/ViewProfile', compact('user','ratings', 'taskCompletionRate'));
+    }
+
+    public function viewPMSCurrentUserProfile(){
+        $user = User::with(['unit', 'leave'=>function($query){
+            $query->latest()->first();
+        }, 'rating', 'division', 'certificates', 'roles', 'department', 'task'=>function($query){
+            $query->withCount('comments')->with('assignedBy');
+        }, 'attendance'=>function($query){
+            $query->orderBy('created_at', 'DESC');
+        }])->find(auth()->user()->id);
         $task = $user->task;
         $ratings = $user->rating;
         $ratings = $ratings->groupBy('key');

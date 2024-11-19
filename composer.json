@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.8",
         "makidizajnerica/laravel-geolocation": "^2.0",
         "phpoffice/phpword": "^1.2",
+        "spatie/laravel-activitylog": "^4.9",
         "spatie/laravel-permission": "^6.3",
         "spatie/pdf-to-image": "^1.2",
         "thiagoalessio/tesseract_ocr": "^2.13"

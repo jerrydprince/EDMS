@@ -46,7 +46,7 @@
                     </div>
                     <!-- display searched result ends here -->
 
-                    <div class="mb-6">
+                    <!-- <div class="mb-6">
                         <p class="text-sm lg:text-base">Set Division Head</p>
                         <span class="text-gray-400 relative">
                             <Icon icon="iconamoon:search-light" width="20"
@@ -54,7 +54,7 @@
                             <InputText id="division_head" class="mt-1 w-full pl-10" v-model="divisionForm.head"   @keyup="Search($event.target.value)"
                                 aria-describedby="username-help" placeholder="Add by name or email" />
                         </span>
-                    </div>
+                    </div> -->
                     <!-- USer Image is displayed here -->
                     <!-- <div class="mb-6 flex items-center justify-between">
                         <div class="flex items-center gap-3">

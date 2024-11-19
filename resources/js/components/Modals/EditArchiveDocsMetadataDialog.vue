@@ -134,7 +134,7 @@ const submitForm = ()=>{
 }
 
 const saveForms = (data)=>{
-    axios.post('/data-entry/update-branch-metadata',{form:data}).then((response)=>{
+    axios.post('/edms/update-branch-metadata',{form:data}).then((response)=>{
         emit('formsubmited',true);
     })
 }
@@ -170,7 +170,7 @@ watch(()=>props.file, ()=>{
 
 
 onMounted(()=>{
-    axios.get('/data-entry/metadatas').then((response)=>{
+    axios.get('/edms/metadatas').then((response)=>{
         metadata.value = response.data
         for(let docs of archiveDocs.value){
             if(document.getElementById(docs.archive_keys)){

@@ -346,8 +346,8 @@
               Task Activity
             </h1>
 
-            <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5">
-              <div v-for="(step, index) in TaskAction" :key="index">
+            <div class="p-5 mx-7 bg-slate-50 rounded-lg mt-5" v-if="props.task && props.task.task_activity && props.task.task_activity.length > 0">
+              <div v-for="(item, index) in props.task.task_activity" :key="index">
                 <div class="flex items-start gap-5">
                   <div class="flex flex-col items-center">
 
@@ -356,13 +356,13 @@
                     <div class="w-[2px] my-1 h-10 bg-[#EBF3FE]" v-if="index < 4"></div>
                   </div>
                   <div class="text-[#475467]">
-                    <h1 class="font-medium text-lg">{{ step.progress }}:</h1>
+                    <h1 class="font-medium text-lg">{{ item.description }}:</h1>
                     <div class=" flex items-center  text-sm gap-1">
-                      <p class="opacity-70">{{ step.to }}</p>
+                      <p class="opacity-70">{{ item?.user?.first_name+' '+item?.user?.last_name }}</p>
                       <p class=" opacity-100">•</p>
-                      <p class="opacity-70">{{ step.date }}</p>
+                      <p class="opacity-70">{{ moment(item.created_at).format('YYYY-MM-DD') }}</p>
                       <p class=" opacity-100">•</p>
-                      <p class="opacity-70">{{ step.time }}</p>
+                      <p class="opacity-70">{{ moment(item.created_at).format('hh:mm A') }}</p>
                     </div>
                   </div>
                 </div>
@@ -938,38 +938,6 @@ const getFileExtension = (file) => {
   }
 }
 
-const TaskAction = ref([
-  {
-    progress: "Task created",
-    to: "Dave Miye (You)",
-    date: "2024-02-14",
-    time: " 10:00 AM"
-  },
-  {
-    progress: "Task Assigned to Patricia Darlene ",
-    to: "Dave Miye (You)",
-    date: "2024-02-14",
-    time: " 10:00 AM"
-  },
-  {
-    progress: "Task Re-assigned to John Smith (Deputy director)",
-    to: "John smith",
-    date: "2024-02-14",
-    time: " 10:00 AM"
-  },
-  {
-    progress: "Added Comments & Feedback",
-    to: "Dave Miye (You)",
-    date: "2024-02-14",
-    time: " 10:00 AM"
-  },
-  {
-    progress: "Appended Signature",
-    to: "Dave Miye (You)",
-    date: "2024-02-14",
-    time: " 10:00 AM"
-  }
-])
 
 const fileType = (file) => {
   const f_path = file.path
@@ -1015,8 +983,13 @@ onMounted(()=>{
   
   // Echo.private('comment.' + current_user.value.id)
   //     .notification((notification) => {
+  //       console.log(notification)
+  //       alert('yes')
   //         //getUserNotifications()
   //     });
+
+  
+
 })
 
 </script>

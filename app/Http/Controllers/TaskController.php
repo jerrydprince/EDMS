@@ -16,6 +16,10 @@ use App\Models\KRA;
 use App\Events\TaskEvent;
 use App\Notifications\CommentNotification;
 use App\Models\Correspondence;
+use App\Models\TaskActivity;
+use App\Models\Unit;
+use App\Models\Division;
+use App\Models\Department;
 
 class TaskController extends Controller
 {
@@ -138,18 +142,31 @@ class TaskController extends Controller
                 $correspondence->save();
             }
 
+            //task activities
+            $ta = new TaskActivity();
+            $ta->description = "Task created";
+            $ta->task_id = $task->id;
+            $ta->created_by = auth()->user()->id;
+            $ta->save();
+
 
             //$ids = explode(',', $request->users);
             if(!$request->id){
                 if(auth()->user()->hasRole('unit heads')){
                     $task->user()->sync($request->users); 
                     $users = $task->user()->get();
+
+                    //task activities
+                    $this->assignedTaskActivity($request->users, 'unit heads', $task);
                 }
 
                 if(auth()->user()->hasRole('division heads')){
                     //branch can only assign to units
                     $task->unitTask()->sync($request->users);
                     $users = User::role('unit heads')->get();
+
+                    //task activities
+                    $this->assignedTaskActivity($request->users, 'divisions heads', $task);
                 }
 
                 if(auth()->user()->hasRole('directors')){
@@ -157,12 +174,18 @@ class TaskController extends Controller
                     $task->divisionTask()->sync($request->users);
                     $users = User::role('division heads')->get();
                     //$task->departmentTask()->sync($request->users);
+
+                    //task activities
+                    $this->assignedTaskActivity($request->users, 'directors', $task);
                 }
 
                 if(auth()->user()->hasRole('super users')){
                    // $task->superuserTask()->sync($request->users);
                    $task->departmentTask()->sync($request->users);
                    $users = User::role('directors')->get();
+
+                   //task activities
+                   $this->assignedTaskActivity($request->users, 'super users', $task);
                 }
                
                  //user notification
@@ -170,6 +193,7 @@ class TaskController extends Controller
             }else{
                 $users = $task->user()->get();
             }
+
            DB::commit();
            //$users = User::where('id', $request->users)->get();
            //dd($users);
@@ -183,6 +207,50 @@ class TaskController extends Controller
         }
 
         return redirect()->back();
+    }
+
+    public function addToTaskActivity($data, $text, $task){
+                $ta = new TaskActivity();
+                $ta->description = $text.$data;
+                $ta->task_id = $task->id;
+                $ta->created_by = auth()->user()->id;
+                $ta->save();
+    }
+
+    public function assignedTaskActivity($users, $branch, $task, $text=''){
+        if(auth()->user()->hasRole('unit heads')){
+            $users = User::whereIn('id', $users)
+                ->select(DB::raw("CONCAT(first_name,' ',last_name) AS full_name"))
+                ->pluck('full_name')
+                ->implode(', ');
+            
+                $text = $text? $text: 'Task assigned to ';
+             $this->addToTaskActivity($users, $text, $task);   
+        }
+         if(auth()->user()->hasRole('division heads')){
+            $users = Unit::whereIn('id', $users)
+                ->pluck('title')
+                ->implode(', '); 
+
+                $text = $text? $text: 'Task assigned to ';
+                $this->addToTaskActivity($users, $text, $task); 
+        }
+         if(auth()->user()->hasRole('directors')){
+            $users = Division::whereIn('id', $users)
+                ->pluck('title')
+                ->implode(', '); 
+
+                $text = $text? $text: 'Task assigned to ';
+                $this->addToTaskActivity($users, $text, $task); 
+        }
+         if(auth()->user()->hasRole('super users')){
+            $users = Department::whereIn('id', $users)
+                ->pluck('title')
+                ->implode(', '); 
+
+                $text = $text? $text: 'Task assigned to ';
+                $this->addToTaskActivity($users, $text, $task); 
+        }
     }
 
     public function getExtraFileName($path){
@@ -209,14 +277,70 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
+    public function isUserPermittedToViewTask($task){
+        $user = auth()->user();
+        //for directors
+        if($user->hasRole('directors')){
+            if($task->assigned_by_department == $user->department_id){
+                return true;
+            }
+
+            if($task->superuserTask->count() > 0){
+                $super_user = $task->superuserTask->where('department_id', $user->department_id);
+                if($super_user){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //for division heads
+        if($user->hasRole('division heads')){
+            if($task->assigned_by_division == $user->division_id){
+                return true;
+            }
+
+            if($task->divisionTask->count() > 0){ 
+                $division_task = $task->divisionTask->where('division_id', $user->division_id);
+                if($division_task){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //for unit heads
+        if($user->hasRole('unit heads')){
+            if($task->assigned_by_unit == $user->unit_id){
+                return true;
+            }
+            if($task->unitTask->count() > 0){
+                $unit_task = $task->unitTask->where('unit_id', $user->unit_id);
+                if($unit_task){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //for super admin, admin and super users, they have all access
+        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+            return true;
+        }
+
+        //for users
+        if($user->hasRole('regular users')){
+            if($user->user->count() > 0){
+                $found = $user->user->where('user_id', $user->id);
+                if($found){
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public function viewTask(Request $request, $id) {
-        
-    //   if($request->is_assigned){
-    //     $request->session()->put('is_assigned', $request->is_assigned);
-    //     $is_assigned = $request->is_assigned;
-    //   }else{
-    //     $is_assigned = $request->session()->get('is_assigned');
-    //   }
 
       //mark notification as read if found
       if($request->notification_id){
@@ -225,13 +349,19 @@ class TaskController extends Controller
             ->update(['read_at'=> \Carbon\Carbon::now()]);
       }
 
-        $task = Task::with(['unitTask', 'divisionTask', 'departmentTask', 'taskdocs','user', 'rating', 'taskSubmission'=>function($query){
+        $task = Task::with(['unitTask', 'superuserTask', 'taskActivity' => function($query){
+            $query->with('user')->oldest();
+        }, 'divisionTask', 'departmentTask', 'taskdocs','user', 'rating', 'taskSubmission'=>function($query){
             $query->with('taskSubmissionFiles', 'user');
         }, 'comments' => function($query) {
             $query->with(['user' => function($query) {
                 $query->select('id', 'first_name', 'last_name','profile_image');
             }])->latest();
         }])->find($id);
+
+        // if(!$this->isUserPermittedToViewTask($task)){
+        //     return redirect()->to('dashboard/workflow');
+        // }
 
        $user = auth()->user();
        if($user->hasRole('super users')){
@@ -305,15 +435,15 @@ class TaskController extends Controller
 
              //comment communication from top to down
             if($user->hasRole('super users')){
-                $director = User::role('directors')->first();
+                $director = User::role('directors')->get();
                 Notification::send($director, new CommentNotification($comment,$director));
             }
             if($user->hasRole('directors')){
-                $div_head = User::role('division heads')->first();
+                $div_head = User::role('division heads')->get();
                 Notification::send($div_head, new CommentNotification($comment,$div_head));
             }
             if($user->hasRole('division heads')){
-                $unit_head = User::role('unit heads')->first();
+                $unit_head = User::role('unit heads')->get();
                 Notification::send($unit_head, new CommentNotification($comment,$unit_head));
             }
             if($user->hasRole('unit heads')){
@@ -345,8 +475,12 @@ class TaskController extends Controller
             }
         }
 
-         //comment communication from down to top users
-         
+        //task activity
+        $ta = new TaskActivity();
+        $ta->task_id = $request->task_id;
+        $ta->description = 'Added Comments & Feedback:';
+        $ta->created_by = auth()->user()->id;
+        $ta->save();
         
         return redirect()->back()->with(['success'=>true]);
     }
@@ -425,6 +559,9 @@ class TaskController extends Controller
                 $task2->user()->sync($user_ids);
 
                 $this->insertTaskDoc($task, $task2);
+
+                //task activity
+                $this->assignedTaskActivity($user_ids, 'unit heads', $task, 'Task Re-assigned to ');
             }
 
             if($this->isRole('division heads')){
@@ -440,6 +577,9 @@ class TaskController extends Controller
                 $task2->unitTask()->sync($branch_ids);
 
                 $this->insertTaskDoc($task, $task2);
+
+                 //task activity
+                 $this->assignedTaskActivity($branch_ids, 'unit heads', $task, 'Task Re-assigned to ');
             }
 
             if($this->isRole('directors')){
@@ -453,6 +593,9 @@ class TaskController extends Controller
                 $task2->divisionTask()->sync($branch_ids);
 
                 $this->insertTaskDoc($task, $task2);
+
+                 //task activity
+                 $this->assignedTaskActivity($branch_ids, 'unit heads', $task, 'Task Re-assigned to ');
             }
 
             if($this->isRole('super users')){
@@ -466,6 +609,9 @@ class TaskController extends Controller
                 $task2->departmentTask()->sync($branch_ids);
 
                 $this->insertTaskDoc($task, $task2);
+
+                //task activity
+                $this->assignedTaskActivity($branch_ids, 'unit heads', $task, 'Task Re-assigned to ');
             }
             
         }
@@ -477,7 +623,7 @@ class TaskController extends Controller
         $title = 'New task assigned';
         if($this->isRole('unit heads')){
              $users = User::whereIn('id', $user_ids)->get();
-            Notification::send($users, new TaskNotification($title));
+           // Notification::send($users, new TaskNotification($title));
         }
        
         return redirect()->back();
@@ -546,6 +692,13 @@ class TaskController extends Controller
         $task = Task::find($request->id);
         $task->status = 'completed';
         $task->save();
+
+        //task activity
+        // $ta = new TaskActivity();
+        // $ta->task_id = $request->id;
+        // $ta->description = 'Task marked as completed';
+        // $ta->created_by = auth()->user()->id;
+        // $ta->save();
         return redirect()->back();
     }
 
@@ -561,6 +714,13 @@ class TaskController extends Controller
             $comment->user_id = auth()->user()->id;
             $comment->save();
         }
+
+        //task activity
+        // $ta = new TaskActivity();
+        // $ta->task_id = $request->id;
+        // $ta->description = 'Requested Revision';
+        // $ta->created_by = auth()->user()->id;
+        // $ta->save();
         return redirect()->back();
     }
 
@@ -568,6 +728,13 @@ class TaskController extends Controller
         $task = Task::find($request->id);
         $task->status = 'pending';
         $task->save();
+
+        //task activity
+        // $ta = new TaskActivity();
+        // $ta->task_id = $request->id;
+        // $ta->description = 'Task reopened';
+        // $ta->created_by = auth()->user()->id;
+        // $ta->save();
         return redirect()->back();
     }
 

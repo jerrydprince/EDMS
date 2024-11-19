@@ -173,7 +173,7 @@
                         </div>
                         <Textarea v-model="formData.message" @input="handleTyping" @keyup.enter="sendMessage" autoResize
                             rows="1" cols="30" placeholder="Start a new message" class="p-inputtextarea" required />
-                        <input type="file" style="display: none;" ref="fileInput" @change="handleFileChange" />
+                        <input type="file" multiple style="display: none;" ref="fileInput" @change="handleFileChange" />
                         <!-- {{ clickedIndex }} -->
                         <!-- {{selectedMessage}} -->
                     </div>
@@ -503,6 +503,7 @@ const typingUser = ref(null);
 const isTyping = ref(false);
 const page = usePage()
 const user = computed(() => page.props.user)
+const files = []
 
 const chatContainer = ref(null);
 const currentPage = ref(1)
@@ -564,33 +565,32 @@ onClickOutside(sidebarRef, (event) => {
     profile.value = false;
 });
 const triggerFileInput = () => {
-    if (fileInput.value) {
+   
         fileInput.value.click();
-    } else {
 
-    }
 };
+
 const profile = ref(false);
 const activePage = ref(1);
 const activeButton = ref(1);
-const files = [
-    {
-        icon: "vscode-icons:file-type-powerpoint",
-        name: "Auditing Report.ppt",
-    },
-    {
-        icon: "vscode-icons:file-type-word",
-        name: "Communication.docx",
-    },
-    {
-        icon: "vscode-icons:file-type-excel2",
-        name: "Analysis Report.xls",
-    },
-    {
-        icon: "vscode-icons:file-type-powerpoint",
-        name: "Auditing Report.ppt",
-    },
-];
+// const files = [
+//     {
+//         icon: "vscode-icons:file-type-powerpoint",
+//         name: "Auditing Report.ppt",
+//     },
+//     {
+//         icon: "vscode-icons:file-type-word",
+//         name: "Communication.docx",
+//     },
+//     {
+//         icon: "vscode-icons:file-type-excel2",
+//         name: "Analysis Report.xls",
+//     },
+//     {
+//         icon: "vscode-icons:file-type-powerpoint",
+//         name: "Auditing Report.ppt",
+//     },
+// ];
 
 const getTotalOnlineUsers = (users) => {
     if (props.is_group) {
@@ -656,12 +656,30 @@ const scrollToBottom = () => {
     });
 };
 const handleFileChange = (event) => {
-    const file = event.target.files[0];
+    alert(' there was a change')
+    console.log(event.target.files)
+    //const file = event.target.files[0];
+    files.value = event.target.files;
 
-    if (file) {
-        formData.value.message += file.name;
-        form.append("doc", file)
+    const selectedFiles = event.target.files;
+    
+    // Assign the selected files to the reactive `files` variable
+    files.value = selectedFiles;
+
+    // If you need to append the files to FormData for sending to a server:
+    const form = new FormData();
+    for (let i = 0; i < selectedFiles.length; i++) {
+        //formData.value.message.append(`file${i}`, selectedFiles[i]);
+        form.append(`files${i}`, selectedFiles[i])
     }
+
+    sendMessage()
+   // if (file) {
+        // formData.value.message += file.name;
+        // form.append("doc", file)
+        
+      
+    //}
 };
 
 const formattedDate = (date) => {
@@ -904,7 +922,7 @@ watch([() => props.clickedIndex, () => props.clickedIndexGroup, () => props.is_g
     userConversations()
 });
 const sendMessage = async () => {
-    if (formData.value.message.trim() === '') {
+    if (formData.value.message.trim() === '' && files.value.length == 0) {
         return; // Do not send an empty message
     }
     let toCheck = "user"
@@ -917,6 +935,7 @@ const sendMessage = async () => {
         try {
             form.append("message", formData.value.message)
             form.append("recipient_id", props.selectedUser.id)
+            form.append('files', files)
 
             const responses = await axios.post(`/dashboard/chat/users/messages/`, form, {
                 headers: {
@@ -950,6 +969,7 @@ const sendMessage = async () => {
             form.append("group_id", clickedIndexGroup.value)
             form.append('groupType', props.groupType)
             form.append('groupName', props.clickedIndexGroupName)
+            form.append('files', files)
             const responses = await axios.post(`/dashboard/chat/group/send-message`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

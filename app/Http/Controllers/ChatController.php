@@ -307,7 +307,7 @@ class ChatController extends Controller
         return response()->json(['message' => 'Message sent to group successfully!', 'sentMessage' => $MessageArray], 200);
     }
     public function sendMessageToUser(Request $request)
-    {
+    {dd($request->all());
         $request->validate([
             'recipient_id' => 'required|exists:users,id',
             'message' => 'required|string|max:1000',

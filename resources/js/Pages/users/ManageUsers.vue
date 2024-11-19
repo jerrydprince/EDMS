@@ -164,7 +164,7 @@
 import { ref, watch, defineProps, computed, onMounted } from "vue";
 import DeleteUsers from "../../components/Modals/DeleteUsers.vue";
 import AccountRequestModal from "../../components/Modals/AccountRequestModal.vue";
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 
 const deleteModal = ref(false)
 const buttonToggle = ref(1);
@@ -218,7 +218,7 @@ const handleDelete = (id) => {
   axios.get('/dashboard/delete-user/'+itemIdToDelete.value).then((response)=>{
     itemIdToDelete.value = null;
     deleteModal.value = !deleteModal.value
-    router.reload({only:['role']})
+    router.reload({only:['roles']})
   })
 };
 

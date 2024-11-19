@@ -229,7 +229,7 @@ const singleSlider = (item, event)=>{
   let obj = {
     user_id: props.task.task_submission[0]?.user_id,
     key: item.key,
-    value: event.target.value,
+    value: event.target.value?event.target.value: 4,
     kra_value: item.value,
     string: item.string,
     task_id: props.task.id,
@@ -253,7 +253,7 @@ const Slider = (item, event)=>{
   let obj = {
     user_id: props.task.task_submission[0]?.user_id,
     key: item.key,
-    value: event.target.value,
+    value: event.target.value?event.target.value: 4,
     kra_value: item.value,
     string: item.string,
     task_id: props.task.id,

@@ -24,7 +24,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\FileActivity;
 use App\Models\Version;
 use App\Models\User;
-use App\Modesl\Share;
+use App\Models\Share;
+use App\Mail\ShareFile;
+use Illuminate\Support\Facades\Mail;
 
 class ArchiveController extends Controller
 {
@@ -92,14 +94,22 @@ class ArchiveController extends Controller
         DB::transaction(function () use($request) {
             $folder2 = Folder::find($request->id);
 
-            if(auth()->user()->hasRole('data entry')){
-                $department = auth()->user()->department_id;
-                $division = auth()->user()->division_id;
-                $unit = auth()->user()->unit_id;
-            }else{
-                $department = $request->department;
-                $division = $request->division;
-                $unit = $request->unit;
+            // if(auth()->user()->hasRole('data entry')){
+            //     $department = auth()->user()->department_id;
+            //     $division = auth()->user()->division_id;
+            //     $unit = auth()->user()->unit_id;
+            // }else{
+            //     $department = $request->department;
+            //     $division = $request->division;
+            //     $unit = $request->unit;
+            // }
+
+            $department = auth()->user()->department_id;
+            $division = auth()->user()->division_id;
+            $unit = auth()->user()->unit_id;
+
+            if(!$department){
+                return redirect()->back();
             }
 
             $fullPath = '';
@@ -236,7 +246,6 @@ class ArchiveController extends Controller
 
         $uploadedFiles = [];
         
-
         if($request->file('files')){
             // $department = auth()->user()->department_id;
             // $division = auth()->user()->division_id;
@@ -717,7 +726,7 @@ class ArchiveController extends Controller
         //check if the data entry user have access
         $user = auth()->user();
         if(auth()->user()->hasRole('data entry')){
-            if($user->unit_id && $user->unit_id == $branch_id){
+            if($user->division_id && $user->division_id == $branch_id){
                 return true;
             }else{
                 return false;
@@ -739,7 +748,7 @@ class ArchiveController extends Controller
             $department_id = $user->department_id;
             $exists = Department::where('id', $department_id)
                         ->whereHas('division.unit', function($query) use($branch_id){
-                            $query->where('unit.id', $branch_id);
+                            $query->where('id', $branch_id);
                         })->exists();
             if($exists){
                 return true;
@@ -819,7 +828,7 @@ class ArchiveController extends Controller
         //check if the data entry user have access
         $user = auth()->user();
         if(auth()->user()->hasRole('data entry')){
-            if($user->unit_id && $user->unit_id == $branch_id){
+            if($user->department_id && $user->department_id == $branch_id){
                 return true;
             }else{
                 return false;
@@ -900,7 +909,7 @@ class ArchiveController extends Controller
             $user = auth()->user();
 
           if($branch_name == 'Unit' && $this->isUserPermittedToViewUnit($branch_id)){
-          
+        
             $branch = Unit::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($branch_id);
@@ -924,7 +933,7 @@ class ArchiveController extends Controller
 
          // $division = request()->id? request()->id: auth()->user()->division_id;
           if($branch_name == 'Division' && $this->isUserPermittedToViewDivision($branch_id)){
-          
+         
             $branch = Division::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($branch_id);
@@ -1328,6 +1337,7 @@ class ArchiveController extends Controller
     }
 
     public function shareFile(Request $request){
+
         if($request->ids){
             $data = [];
 
@@ -1341,8 +1351,15 @@ class ArchiveController extends Controller
                 ];
                 array_push($data, $arr);
             }
+            Share::insert($data);
         }
-        Share::insert($data);
+
+        // $user_mails = User::whereIn('id', $request->ids)->pluck('email');
+        // $archive = Archive::with('filePath')->find($request->archive_id);
+
+        // foreach ($user_mails as $recipient) {
+        //     Mail::to($recipient)->send(new ShareFile($archive->filePath->pluck('path')));
+        // }
 
         return redirect()->back()->with(['success'=>true]);
     }
@@ -1369,5 +1386,28 @@ class ArchiveController extends Controller
             }
         
     }
+
+   public function sharedFiles(Request $request){
+    $search = $request->search;
+
+    // $archive = Archive::with(['filePath', 'fileActivity', 'archiveDocs','department','division', 'unit', 'version' => function($query){
+    //     $query->latest();
+    // }]);
+
+        $shared = Share::with(['archive'=>function($query) use($search){
+            $query->with(['filePath', 'fileActivity', 'archiveDocs'])
+            ->whereHas('archiveDocs', function($q) use ($search) {
+                $q->where('archive_values', 'like', "%{$search}%");
+                // ->orWhere('amount', 'like', "%{$search}%")
+                // ->orWhere('description', 'like', "%{$search}%");
+            });
+        }])->where('shared_id', auth()->user()->id)->paginate(30);
+        
+        $archives = $shared->getCollection()->flatMap(function($share){
+            return $share->archive;
+        });
+
+        return inertia('dashboard/sharedFiles', compact('shared', 'archives'));
+   }
 
 }

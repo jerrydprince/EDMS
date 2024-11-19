@@ -13,7 +13,7 @@
 
         <button v-if="is_folder_open"
           class="flex gap-2 items-center text-[#F04438] w-32  hover:bg-[#FFFBFA] hover:border hover:border-[#FECDCA] rounded-lg py-2 px-4">
-          <Link :href="'/data-entry/close-folder/' + folder_id" method="post" as="button">
+          <Link :href="'/edms/close-folder/' + folder_id" method="post" as="button">
           <p>Close File</p>
           </Link>
         </button>
@@ -36,7 +36,7 @@
         </button>
 
         <div v-if="props.is_folder_open">
-          <Link :href="'/data-entry/archiving/' + page.props.branch + '/' + folder_id">
+          <Link :href="'/edms/archiving/' + page.props.branch + '/' + folder_id">
           <button class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
             <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
             <p>Upload Documents</p>
@@ -205,7 +205,7 @@
       </div>
     </div>
   </main>
-  <CreateFolderDialog v-model="createFolderModal" :url="'/data-entry/create-folder'" :folderId="folder_id" />
+  <CreateFolderDialog v-model="createFolderModal" :url="'/edms/create-folder'" :folderId="folder_id" />
   <BranchDetails v-model="branchDetailsModal" :file="state.selectedArchive" :folder="props.folder"
     @updateDocument="handleUpdateDocument" />
   <LockDocument v-model="LockDocumentModal" :file="state.selectedArchive" />
@@ -245,7 +245,7 @@ import EditArchiveDocsMetadataDialog from "../../components/Modals/EditArchiveDo
 import AddArchiveDocsMetadataDialog from "../../components/Modals/AddArchiveDocsMetadataDialog.vue";
 import fileActivity from "../../components/Modals/FileActivityModal.vue";
 import fileVersion from "../../components/Modals/VersionModal.vue";
-import share from "../../components/Modals/branches/share.vue";
+import share from "../../components/Modals/branches/Share.vue";
 
 const createFolderModal = ref(false);
 const branchDetailsModal = ref(false);
@@ -684,7 +684,8 @@ const filteredfiles = computed(() => {
 onMounted(() => {
   let url = new URL(window.location.href);
   let folderid = url.pathname.split('/').pop()
-  folder_id.value = folderid;
+  //folder_id.value = folderid;
+  folder_id.value = props.folder_id;
 })
 </script>
 

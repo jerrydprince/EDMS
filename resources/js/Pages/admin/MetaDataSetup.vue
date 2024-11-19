@@ -38,7 +38,7 @@
         root: { class: 'text-primary' },
         inkbar: { class: 'text-primary' },
         action: ({ props, context, state }) => ({
-          class: `${context.index === state.d_activeIndex
+          class: `${context.index == state.d_activeIndex
               ? 'text-primary border-b-2 border-solid border-primary'
               : ''
             } p-1 md:p-3 pl-1 text-gray-500 -mb-[2px]`,
@@ -96,9 +96,9 @@
                     <div class="h-full">
                       <Icon icon="majesticons:more-menu-vertical" width="30" />
                     </div>
-                    <Menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true">
+                    <Menu ref="menu" id="overlay_menu" :model="menuItems" class="cursor-default" :popup="true">
                       <template #item="{ item, props }">
-                        <div v-if="data.category !== item.value" class="flex gap-2 px-3 py-2 items-center">
+                        <div v-if="data.category !== item.value" class="flex gap-2 px-3 py-2 items-center cursor-default">
                           <i :class="item.icon" />
                           <p>{{ item.label }}</p>
                         </div>
@@ -246,7 +246,16 @@ const menuItems = ref([
         }
       } 
   },
-  { label: (singleMetadata.is_default===1?"Make Variable":"Make Default"), icon: "pi pi-info-circle", value: "Variable" },
+  { 
+    label: singleMetadata.value.is_default==1?"Make Variable":"Make Default", 
+    icon: "pi pi-info-circle", 
+    value: "Variable" ,
+    command: ()=>{
+      router.post('/dashboard/set-default-metadata',{id: singleMetadata.value.id}, {page:()=>{
+       router.reload({only:['metadatas']})
+      }});
+    }
+  },
   // { 
   //   label: "Make Default", 
   //   icon: "pi pi-info-circle", 

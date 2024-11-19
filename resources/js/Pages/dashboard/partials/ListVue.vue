@@ -389,7 +389,7 @@ const searchFile = async () => {
   if(!page.props.roles.includes('data entry')){
     url = `/dashboard/folder-view/${props.branch_type}/${props.folder_id}/${props.branch_id}`
   }else{
-    url = `/data-entry/folder-view/${props.branch_type}/${props.folder_id}`
+    url = `/edms/folder-view/${props.branch_type}/${props.folder_id}`
   }
       await router.get(url, { search: searchQuery.value }, {
         onSuccess: (page) => {

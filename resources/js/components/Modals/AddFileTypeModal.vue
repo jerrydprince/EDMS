@@ -94,6 +94,8 @@ const submitForm = () => {
             detail: "You've successfully added file type to "+props.branch,
             life: 3000,
         });
+         
+        selectedFileTypes.value.length = 0
     }})
     
     emit("update:modelValue", false);

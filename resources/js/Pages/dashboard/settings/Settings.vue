@@ -13,7 +13,9 @@
             ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
             : ' px-3'
           "
-          class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+          v-if="item.permission == '' || (roles.includes('super admin') || roles.includes('admin'))"
+          >
         <Icon :icon="item.icon" width="25" />
         <p class=" text-base">{{ item.name }}</p>
       </a>
@@ -27,7 +29,7 @@
       <security v-if="settings[2].path == currentUrl" />
       <localisation v-if="settings[3].path == currentUrl" /> -->
       <profile v-if="settings[0].path == currentUrl" :user="props.user" />
-      <organisation  v-if="settings[1].path == currentUrl"/>
+      <organisation  v-if="settings[1].path == currentUrl && (roles.includes('super admin') || roles.includes('admin'))"/>
       <preferences v-if="settings[2].path == currentUrl"/>
       <notification v-if="settings[3].path == currentUrl"/>
       <security :user="props.user" @refreshUser="refreshUserHandler" v-if="settings[4].path == currentUrl && is_passwordPolicies" @passwordPolicies="handlePasswordPolicies" />
@@ -60,6 +62,7 @@ const currentUrl = ref()
 const current_page = computed(()=> page.url)
 const props = defineProps(['user'])
 const is_passwordPolicies = ref(true)
+const roles = computed(()=> page.props.roles)
 
 const refreshUserHandler = ()=>{
   router.reload({only: ['user']})
@@ -102,42 +105,50 @@ const settings = ref([
     name: "Profile",
     path: "/settings",
     icon: "ep:user",
+    permission:'',
   },
   {
     name: "Organisation",
     path: "/settings/organisation",
     icon: "mdi:company",
+    permission: 'super admin'
   },
   {
     name: "Preferences",
     path: "/settings/preferences",
     icon: "material-symbols:room-preferences-rounded",
+    permission: ''
   },
   {
     name: "Notifications Config",
     path: "/settings/notifications-config",
     icon: "basil:notification-outline",
+    permission: ''
   },
   {
     name: "Security & Recovery",
     path: "/settings/security-recovery",
     icon: "lucide:lock",
+    permission: 'super admin'
   },
   {
     name: "Integrations",
     path: "/settings/integrations",
     icon: "mi:filter",
+    permission: ''
   },
 
   {
     name: "Localisation",
     path: "/settings/localisation",
     icon: "jam:world",
+    permission: ''
   },
   {
     name: "Development",
     path: "/settings/development-team",
-    icon: "mdi:code"
+    icon: "mdi:code",
+    permission:''
   }
 ]);
 

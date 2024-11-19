@@ -27,7 +27,7 @@
         <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click="Profile_option = !Profile_option">
           <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" />
           <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" />
-          <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{page.props.roles[0]}}</p>
+          <!-- <p class=" text-primary absolute text-xs px-1.5 py-0.5 rounded-xl bg-white right-6 top-11 capitalize text-center">{{page.props.roles[0]}}</p> -->
         </div>
 
          <div

@@ -105,6 +105,7 @@ const submitForm = () => {
         detail: "You've successfully created a new document.",
         life: 3000,
       });
+      form.reset()
       emit("update:modelValue", false);
     }
   })

@@ -5,16 +5,17 @@
         <h1 class="text-4xl">Hello, {{user.first_name}}!</h1>
         <div class="text-sm flex items-center gap-5 mt-4">
           <p class="text-gray-500">welcome to your PMS dashboard</p>
-          <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
+          <!-- <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
             <Icon icon="mynaui:key" />
             <p>Brand lead</p>
-          </div>
+          </div> -->
         </div>
       </div>
-      <button class=" mt-3 lg:mt-0 flex items-center gap-2 border p-2 border-gray-300 rounded-md">
+      <Link :href="'/dashboard/pms-current-user-profile'" class=" mt-3 lg:mt-0 flex items-center gap-2 border p-2 border-gray-300 rounded-md" v-if="roles.includes('directors') 
+      || roles.includes('division heads') || roles.includes('unit heads') || roles.includes('regular users')">
         <Icon icon="ph:eye" />
         <p>View Rating</p>
-      </button>
+    </Link>
     </div>
 
      <div  class="p-7 bg-white border o  relative border-gray-200 mt-10 rounded-xl">
@@ -26,7 +27,7 @@
 
         </select>
       </div>
-      <div class=" overflow-x-scroll  lg:overflow-hidden  ">
+      <div class=" overflow-x-scroll  lg:overflow-hidden " v-if="!props.roles.includes('regular users')">
         <table class=" min-w-max w-full  border">
           <thead class="bg-gray-100">
             <tr class="text-left">
@@ -89,9 +90,9 @@
                       <p class="text-sm">View Profile</p>
                     </button>
                   </Link>
-                  <button class=" border p-2 border-gray-300 rounded-md">
+                  <!-- <button class=" border p-2 border-gray-300 rounded-md">
                     <Icon icon="ph:file" />
-                  </button>
+                  </button> -->
                 </div>
               </td>
             </tr>
@@ -129,7 +130,7 @@ import {Link, usePage} from "@inertiajs/vue3"
 //import paginator from "@/reusables/paginations.vue";
 const currentPage = ref(1);
 const itemsPerPage = 10;
-const props = defineProps(['users', 'departments'])
+const props = defineProps(['users', 'departments', 'roles'])
 const department = ref();
 const departmentUsers = ref([])
 const page = usePage()

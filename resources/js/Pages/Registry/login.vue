@@ -26,7 +26,7 @@ const formData = ref({
 const onSubmit = async () => {
     try {
         console.log('inside',formData.value);
-        const response = await axios.post('/admin/registry/loginUser', formData.value);
+        const response = await axios.post('/dashboard/registry/loginUser', formData.value);
         console.log('login', response.data);
         toast.add({
             severity: "success",

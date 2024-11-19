@@ -141,7 +141,7 @@ const toggleExpandable = (index) => {
 };
 const getSupport = async () => {
     try {
-        const response = await axios.get('/admin/support/support-details');
+        const response = await axios.get('/dashboard/support/support-details');
         support.value = response.data.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -149,7 +149,7 @@ const getSupport = async () => {
 };
 const getFaqs = async () => {
     try {
-        const response = await axios.get('/admin/support/get-faqs');
+        const response = await axios.get('/dashboard/support/get-faqs');
         faqs.value = response.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -157,7 +157,7 @@ const getFaqs = async () => {
 };
 const getDocs = async () => {
     try {
-        const response = await axios.get('/admin/support/get-docs');
+        const response = await axios.get('/dashboard/support/get-docs');
         docs.value = response.data;
         console.log('docs here:', docs.value);
     } catch (error) {

@@ -2,7 +2,7 @@
   <main class=" bg-slate-50  min-h-[100vh] ">
     <div class=" flex p-7 gap-5">
     <div v-for="(item,index) in Routes"  :key="index" class=" ">
-        <a @click="setLink(item.path)"
+        <a @click="setLink(item.path)" v-if="!roles.includes('regular users')"
               href="#"
               :class="
                 (currentLink === item.path
@@ -20,21 +20,23 @@
 </div>
 <Divider class=" -mt-1"/>
 <div class="">
-    <overview :users="props.users" :departments="props.departments" v-if="currentLink == '/dashboard/pms/overview'"/>
-    <settings :departments="props.departments"  v-if="currentLink == '/dashboard/pms/settings'"/>
+    <overview :users="props.users" :roles="roles" :departments="props.departments" v-if="currentLink == '/dashboard/pms/overview'"/>
+    <settings :departments="props.departments"  v-if="currentLink == '/dashboard/pms/settings' && !roles.includes('regular users')"/>
 </div>
   </main>
 </template>
 
 <script setup>
-import {ref, defineProps} from 'vue';
-import {Link} from "@inertiajs/vue3"
+import {ref, defineProps, computed} from 'vue';
+import {Link, usePage} from "@inertiajs/vue3"
 import overview from "../PMS/Overview.vue"
 import settings from "../PMS/Settings.vue"
 //import { useRoute } from "vue-router";
 //const route = useRoute();
 
 const props = defineProps(['users', 'departments'])
+const page = usePage();
+const roles = computed(()=>page.props.roles)
 const Routes = [
     {
         name: 'Overview',

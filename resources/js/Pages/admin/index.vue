@@ -33,11 +33,11 @@
             <p class="text-2xl lg:text-3xl text-gray-800 font-semibold">
                 Welcome Back ! 👋🏼
             </p>
-            <div
+            <!-- <div
                 class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg text-sm lg:text-base py-2 px-3 lg:px-4 cursor-pointer mt-6 lg:mt-0">
                 <Icon icon="ion:add-outline" width="25" />
                 <p>Invite Members</p>
-            </div>
+            </div> -->
         </section>
         <section class="w-full text-gray-800 bg-primary_bg border border-solid border-gray-300 rounded-xl mt-7 p-3 lg:p-6">
             <div class="flex items-center gap-5">
@@ -45,7 +45,7 @@
                 <p class="text-xl lg:text-2xl font-medium">Quick Actions</p>
             </div>
             <div class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10">
-                <Link :href="'admin/metadata-setup'">
+                <Link :href="'/dashboard/metadata-setup'">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions1 class="absolute top-0 left-[6%]" />
                     <QuickActions1_1 class="absolute top-20 z-[999] left-[12%]" />
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 </Link>
-                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                <Link href='/settings' class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions2 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
                         <p class="text-xl font-semibold mb-2">Security Settings.</p>
@@ -65,7 +65,7 @@
                             Manage security roles, compliance, and data privacy.
                         </p>
                     </div>
-                </div>
+                </Link>
                 <Link href="/dashboard/manage-users">
                 <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
                     <QuickActions3 class="absolute top-0 left-[6%]" />

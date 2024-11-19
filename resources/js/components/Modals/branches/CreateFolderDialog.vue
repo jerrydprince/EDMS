@@ -19,12 +19,12 @@
 						File Name <span class="text-red-600">*</span>
 					</p>
 					<InputText id="folder_name" class="mt-1 w-full" v-model="form.name" aria-describedby="username-help"
-						placeholder="Enter folder name" />
+						placeholder="Enter file name" />
 				</div>
 				<div class="mb-5 mt-4">
 					<p class="text-sm lg:text-base">File Number</p>
 					<InputText id="folder_number" class="mt-1 w-full" v-model="form.number" aria-describedby="username-help"
-						placeholder="Enter folder number" />
+						placeholder="Enter file number" />
 				</div>
 				<div class="mb-5 mt-4">
 					<p class="text-sm lg:text-base">File Type</p>
@@ -69,7 +69,7 @@
 				</div>
 
 				<div class="mb-5 mt-4">
-					<p class="text-sm lg:text-base">File Description</p>
+					<p class="text-sm lg:text-base">File Description (optional)</p>
 					<textarea name="" id="" class=" w-full border border-gray-300 rounded-md px-4 py-2" v-model="form.description" rows="3"></textarea>
 				</div>
 				
@@ -196,7 +196,7 @@ const submitForm = () => {
 }
 
 const getFileType = ()=>{
-	axios.get('/data-entry/get-branch-file-type').then((response)=>{
+	axios.get('/edms/get-branch-file-type').then((response)=>{
 		fileType.value = response.data
 	})
 }
