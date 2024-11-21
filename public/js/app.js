@@ -32916,12 +32916,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Modals_RecycleBin_DeleteFile_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../components/Modals/RecycleBin/DeleteFile.vue */ "./resources/js/components/Modals/RecycleBin/DeleteFile.vue");
 /* harmony import */ var _components_Modals_RecycleBin_RestoreFile_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../components/Modals/RecycleBin/RestoreFile.vue */ "./resources/js/components/Modals/RecycleBin/RestoreFile.vue");
 /* harmony import */ var _components_Modals_RecycleBin_EmptyRecycle_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/Modals/RecycleBin/EmptyRecycle.vue */ "./resources/js/components/Modals/RecycleBin/EmptyRecycle.vue");
-/* harmony import */ var _vueuse_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @vueuse/core */ "./node_modules/@vueuse/core/index.mjs");
+/* harmony import */ var _vueuse_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @vueuse/core */ "./node_modules/@vueuse/core/index.mjs");
 /* harmony import */ var vue_datepicker_ui_lib_vuedatepickerui_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue-datepicker-ui/lib/vuedatepickerui.css */ "./node_modules/vue-datepicker-ui/lib/vuedatepickerui.css");
 /* harmony import */ var vue_datepicker_ui__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue-datepicker-ui */ "./node_modules/vue-datepicker-ui/lib/vuedatepickerui.umd.js");
 /* harmony import */ var vue_datepicker_ui__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(vue_datepicker_ui__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 /* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @inertiajs/vue3 */ "./node_modules/@inertiajs/vue3/dist/index.esm.js");
+/* harmony import */ var primevue_usetoast__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! primevue/usetoast */ "./node_modules/primevue/usetoast/usetoast.esm.js");
+/* harmony import */ var _dashboard_partials_pagination_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../dashboard/partials/pagination.vue */ "./resources/js/Pages/dashboard/partials/pagination.vue");
+
+
+
 
 
 
@@ -32932,7 +32938,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'RecycleBin',
-  props: ['deleted_files'],
+  props: ['deleted_files', 'type'],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose;
     __expose();
@@ -32940,91 +32946,139 @@ __webpack_require__.r(__webpack_exports__);
     var DeleteFile = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var RestoreFile = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var EmptyRecycle = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
-    var action = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+    var action = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('File deletion');
     var Dropdown = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
     var modalRef = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
     var selectedIndex = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
     var props = __props;
-    (0,_vueuse_core__WEBPACK_IMPORTED_MODULE_7__.onClickOutside)(modalRef, function (event) {
+    var data = {
+      search: '',
+      date: '',
+      type: ''
+    };
+    var toast = (0,primevue_usetoast__WEBPACK_IMPORTED_MODULE_8__.useToast)();
+    var selectedId = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
+    (0,_vueuse_core__WEBPACK_IMPORTED_MODULE_10__.onClickOutside)(modalRef, function (event) {
       Dropdown.value = false;
     });
-    var action_type = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(["File deletion", "User deletion", "Workflow deletion", "Branch deletion", "Metadata deletion", "Mail deletion"]);
+    var action_type = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(["Deleted Files", "Deleted Users", "Deleted Task", "Deleted Metadata", "Deleted Mails", "Deleted Units", "Deleted Divisions", "Deleted Departments"]);
     var formatDate = function formatDate(date) {
       if (date) {
         return moment__WEBPACK_IMPORTED_MODULE_6___default()(date).format('YYYY-MM-DD hh:mm A');
       }
     };
+    var getDeletedFileName = function getDeletedFileName(item) {
+      if (props.type == 'Deleted Files') {
+        var _data = item.archive_docs.filter(function (item) {
+          return item.archive_keys == 'title';
+        });
+        console.log('this is the data', _data);
+        if (_data && _data.length > 0) {
+          var _data$;
+          return (_data$ = _data[0]) === null || _data$ === void 0 ? void 0 : _data$.archive_values;
+        } else {
+          '';
+        }
+      }
+      if (props.type == 'Deleted Users') {
+        return item.first_name + " " + item.last_name;
+      }
+      if (props.type == 'Deleted Task') {}
+      if (props.type == 'Deleted Metadata') {
+        return item.name;
+      }
+      if (props.type == 'Deleted Mails') {
+        return item.subject;
+      }
+      if (props.type == 'Deleted Units') {
+        return item.title;
+      }
+      if (props.type == 'Deleted Divisions') {
+        return item.title;
+      }
+      if (props.type == 'Deleted Departments') {
+        return item.title;
+      }
+    };
+    var getFileRestore = function getFileRestore(id) {
+      selectedId.value = id;
+      RestoreFile.value = true;
+    };
+    var getFileDelete = function getFileDelete(id) {
+      selectedId.value = id;
+      DeleteFile.value = true;
+    };
+    var restoreRecycleFile = function restoreRecycleFile() {
+      var data = {
+        id: selectedId.value,
+        type: props.type
+      };
+      _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router.post('/dashboard/recycle-bin-restore', data, {
+        onSuccess: function onSuccess(page) {
+          _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router.reload({
+            only: ['deleted_files']
+          });
+          toast.add({
+            severity: "success",
+            summary: 'Item Restored',
+            detail: "The item has been successfully restored to its original location",
+            life: 3000
+          });
+        }
+      });
+    };
+    var deleteRecyle = function deleteRecyle() {
+      var data = {
+        id: selectedId.value,
+        type: props.type
+      };
+      _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router.get('/dashboard/recycle-bin-delete', data, {
+        onSuccess: function onSuccess(page) {
+          _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router.reload({
+            only: ['deleted_files']
+          });
+          toast.add({
+            severity: "success",
+            summary: 'Item Deleted',
+            detail: "The item has been successfully deleted",
+            life: 3000
+          });
+        }
+      });
+    };
+    var deleteFileHandler = function deleteFileHandler() {
+      deleteRecyle();
+    };
+    var restoreHandler = function restoreHandler() {
+      restoreRecycleFile();
+    };
     var updateAction = function updateAction(param, index) {
       action.value = param;
       selectedIndex.value = index;
     };
-    // const table = ref([
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "Workflow deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "File deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "Log deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "User profile deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "File deletion",
-    //   },
-
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "File deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "Log deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "User profile deletion",
-    //   },
-    //   {
-    //     Timestamp: "2024 -02-21 08:30 AM",
-    //     Actor: "Jane smith",
-    //     icon: "prime:box",
-    //     deleted_item: "Bug Fixing",
-    //     doc_name: "File deletion",
-    //   },
-    // ]);
-
+    var refresh = function refresh() {
+      selectedDate.value = [new Date(), new Date(Date.now() + 9 * 24 * 60 * 60 * 1000)];
+      data.search = '';
+    };
+    var filter = function filter() {
+      data.date = selectedDate.value;
+      data.type = action.value;
+      if (data.search == '' && data.type == '' && data.date == '') {
+        return false;
+      }
+      _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router.get('/dashboard/recycle-bin', data, {
+        onSuccess: function onSuccess(e) {
+          console.log(e);
+        }
+      });
+    };
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
+      var url = window.location.href;
+      var urlObj = new URL(url);
+      var type = urlObj.searchParams.get('type');
+      var val = type ? type : 'Deleted Files';
+      action.value = val;
+    });
     var __returned__ = {
       selectedDate: selectedDate,
       DeleteFile: DeleteFile,
@@ -33035,22 +33089,42 @@ __webpack_require__.r(__webpack_exports__);
       modalRef: modalRef,
       selectedIndex: selectedIndex,
       props: props,
+      data: data,
+      toast: toast,
+      selectedId: selectedId,
       action_type: action_type,
       formatDate: formatDate,
+      getDeletedFileName: getDeletedFileName,
+      getFileRestore: getFileRestore,
+      getFileDelete: getFileDelete,
+      restoreRecycleFile: restoreRecycleFile,
+      deleteRecyle: deleteRecyle,
+      deleteFileHandler: deleteFileHandler,
+      restoreHandler: restoreHandler,
       updateAction: updateAction,
+      refresh: refresh,
+      filter: filter,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
+      onMounted: vue__WEBPACK_IMPORTED_MODULE_0__.onMounted,
       DeleteFileModal: _components_Modals_RecycleBin_DeleteFile_vue__WEBPACK_IMPORTED_MODULE_1__["default"],
       RestoreFileModal: _components_Modals_RecycleBin_RestoreFile_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
       EmptyRecycleModal: _components_Modals_RecycleBin_EmptyRecycle_vue__WEBPACK_IMPORTED_MODULE_3__["default"],
       get onClickOutside() {
-        return _vueuse_core__WEBPACK_IMPORTED_MODULE_7__.onClickOutside;
+        return _vueuse_core__WEBPACK_IMPORTED_MODULE_10__.onClickOutside;
       },
       get Datepicker() {
         return (vue_datepicker_ui__WEBPACK_IMPORTED_MODULE_5___default());
       },
       get moment() {
         return (moment__WEBPACK_IMPORTED_MODULE_6___default());
-      }
+      },
+      get router() {
+        return _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_7__.router;
+      },
+      get useToast() {
+        return primevue_usetoast__WEBPACK_IMPORTED_MODULE_8__.useToast;
+      },
+      pagination: _dashboard_partials_pagination_vue__WEBPACK_IMPORTED_MODULE_9__["default"]
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
@@ -38425,7 +38499,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
       name: "Mails",
       path: "/dashboard/mails",
       icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M18.3334 10.0007H13.3334L11.6667 12.5007H8.33335L6.66669 10.0007H1.66669M18.3334 10.0007V15.0007C18.3334 15.4427 18.1578 15.8666 17.8452 16.1792C17.5326 16.4917 17.1087 16.6673 16.6667 16.6673H3.33335C2.89133 16.6673 2.4674 16.4917 2.15484 16.1792C1.84228 15.8666 1.66669 15.4427 1.66669 15.0007V10.0007M18.3334 10.0007L15.4584 4.25898C15.3204 3.98131 15.1077 3.74763 14.8441 3.58422C14.5806 3.42081 14.2768 3.33415 13.9667 3.33398H6.03335C5.72328 3.33415 5.41941 3.42081 5.15589 3.58422C4.89237 3.74763 4.67967 3.98131 4.54169 4.25898L1.66669 10.0007\" stroke=\"#344054\" stroke-width=\"1.66667\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>\n",
-      permission: 'mail view'
+      permission: 'mails view'
     }, {
       name: 'Registry',
       path: '/dashboard/registry',
@@ -42101,6 +42175,7 @@ __webpack_require__.r(__webpack_exports__);
     var emit = __emit;
     var selectedHead = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
     var unitHead = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+    var toast = (0,primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.useToast)();
 
     //forms
     var divisionForm = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm)({
@@ -42185,6 +42260,7 @@ __webpack_require__.r(__webpack_exports__);
       emit: emit,
       selectedHead: selectedHead,
       unitHead: unitHead,
+      toast: toast,
       divisionForm: divisionForm,
       visible: visible,
       closeModal: closeModal,
@@ -47138,7 +47214,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'DeleteFile',
   props: ["modelValue"],
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "deletefile"],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose,
       __emit = _ref.emit;
@@ -47159,12 +47235,13 @@ __webpack_require__.r(__webpack_exports__);
     };
     var submit = function submit() {
       emit("update:modelValue", false);
-      toast.add({
-        severity: "success",
-        summary: 'Item Deleted',
-        detail: "The item has been successfully deleted",
-        life: 3000
-      });
+      emit('deletefile');
+      // toast.add({
+      //   severity: "success",
+      //   summary: 'Item Deleted',
+      //   detail: "The item has been successfully deleted",
+      //   life: 3000,
+      // });
     };
     var __returned__ = {
       toast: toast,
@@ -47276,7 +47353,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   __name: 'RestoreFile',
   props: ["modelValue"],
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", 'restore'],
   setup: function setup(__props, _ref) {
     var __expose = _ref.expose,
       __emit = _ref.emit;
@@ -47297,12 +47374,13 @@ __webpack_require__.r(__webpack_exports__);
     };
     var submit = function submit() {
       emit("update:modelValue", false);
-      toast.add({
-        severity: "success",
-        summary: 'Item Restored',
-        detail: "The item has been successfully restored to its original location",
-        life: 3000
-      });
+      emit('restore');
+      // toast.add({
+      //   severity: "success",
+      //   summary: 'Item Restored',
+      //   detail: "The item has been successfully restored to its original location",
+      //   life: 3000,
+      // });
     };
     var __returned__ = {
       toast: toast,
@@ -67635,75 +67713,68 @@ var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 var _hoisted_11 = {
   "class": "flex items-center mt-2 border bg-white rounded-md w-full p-3 outline-none border-gray-300"
 };
-var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-  type: "text",
-  placeholder: "search file by name,number or date",
-  "class": "w-full bg-white text-xs h-full outline-none"
-}, null, -1 /* HOISTED */);
-var _hoisted_13 = {
+var _hoisted_12 = {
   "class": "-mb-2.5 text-[#344054] font-semibold w-full mt-3 md:mt-0 md:w-[50%]"
 };
-var _hoisted_14 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_13 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "Action"
 }, "Date", -1 /* HOISTED */);
-var _hoisted_15 = {
+var _hoisted_14 = {
   "class": "mt-3 lg:mt-0 md:flex justify-start lg:justify-end items-end gap-10 w-full lg:w-[50%]"
 };
-var _hoisted_16 = {
+var _hoisted_15 = {
   "class": "text-[#344054] font-semibold w-full md:w-[60%] relative"
 };
-var _hoisted_17 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_16 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "Action"
 }, "Action Type", -1 /* HOISTED */);
-var _hoisted_18 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("br", null, null, -1 /* HOISTED */);
-var _hoisted_19 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_17 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("br", null, null, -1 /* HOISTED */);
+var _hoisted_18 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "absolute w-full h-full"
 }, null, -1 /* HOISTED */);
-var _hoisted_20 = {
+var _hoisted_19 = {
   key: 0,
   "class": "absolute z-50 bg-white w-full top-20 rounded-md shadow-md"
 };
-var _hoisted_21 = ["onClick"];
-var _hoisted_22 = {
+var _hoisted_20 = ["onClick"];
+var _hoisted_21 = {
   "class": ""
 };
-var _hoisted_23 = {
+var _hoisted_22 = {
   key: 0
 };
-var _hoisted_24 = {
+var _hoisted_23 = {
   "class": "w-full flex items-center gap-5 mt-3 md:mt-0"
 };
-var _hoisted_25 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
-  "class": "bg-primary text-white px-3 rounded-md p-2"
-}, " Apply filter ", -1 /* HOISTED */);
-var _hoisted_26 = {
+var _hoisted_24 = {
   key: 0,
   "class": "px-7 my-10"
+};
+var _hoisted_25 = {
+  "class": ""
+};
+var _hoisted_26 = {
+  "class": "flex items-center gap-3 font-semibold"
 };
 var _hoisted_27 = {
   "class": ""
 };
-var _hoisted_28 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-  "class": "flex items-center gap-3 font-semibold"
-}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <Icon :icon=\"slotProps.data.icon\" width=\"25\" /> "), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-  "class": ""
-})], -1 /* HOISTED */);
-var _hoisted_29 = {
+var _hoisted_28 = {
   "class": "flex gap-5 items-center"
 };
-var _hoisted_30 = {
+var _hoisted_29 = {
   key: 1,
   "class": "flex items-center h-[65vh] justify-center flex-col"
 };
-var _hoisted_31 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_30 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: _assets_images_empty_bin_svg__WEBPACK_IMPORTED_MODULE_1__["default"],
   alt: ""
 }, null, -1 /* HOISTED */);
-var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+var _hoisted_31 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
   "class": "font-semibold text-lg"
 }, "Recycle Bin Empty", -1 /* HOISTED */);
-var _hoisted_33 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Deleted files and actions would appear here", -1 /* HOISTED */);
-var _hoisted_34 = [_hoisted_31, _hoisted_32, _hoisted_33];
+var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Deleted files and actions would appear here", -1 /* HOISTED */);
+var _hoisted_33 = [_hoisted_30, _hoisted_31, _hoisted_32];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   var _component_Divider = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Divider");
@@ -67722,29 +67793,36 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     width: "25"
   }), _hoisted_5])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider, {
     "class": "-mt-1"
-  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [_hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(), _hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [_hoisted_12, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [_hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(), _hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "text",
+    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
+      return $setup.data.search = $event;
+    }),
+    placeholder: "search file by name,number",
+    "class": "w-full bg-white text-xs h-full outline-none"
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.data.search]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "iconamoon:search-light",
     width: "20"
-  })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["Datepicker"], {
+  })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["Datepicker"], {
     range: "",
     lang: "en",
     modelValue: $setup.selectedDate,
-    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
       return $setup.selectedDate = $event;
     }),
     "class": "flex items-center rounded-md w-full p-2"
-  }, null, 8 /* PROPS */, ["modelValue"])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [_hoisted_17, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(), _hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  }, null, 8 /* PROPS */, ["modelValue"])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [_hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(), _hoisted_17, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "mt-2 border rounded-md w-full relative p-3 bord flex items-center justify-between outline-none border-gray-300 cursor-pointer",
-    onClick: _cache[3] || (_cache[3] = function ($event) {
+    onClick: _cache[4] || (_cache[4] = function ($event) {
       return $setup.Dropdown = true;
     }),
     ref: "modalRef"
-  }, [_hoisted_19, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, [_hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "text",
     "class": "w-full bg-transparent outline-none",
     disabled: "",
     placeholder: "Select action type",
-    "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
+    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
       return $setup.action = $event;
     })
   }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.action]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
@@ -67752,23 +67830,26 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
       'rotate-180': $setup.Dropdown
     })
-  }, null, 8 /* PROPS */, ["class"])], 512 /* NEED_PATCH */), $setup.Dropdown ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_20, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.action_type, function (action, index) {
+  }, null, 8 /* PROPS */, ["class"])], 512 /* NEED_PATCH */), $setup.Dropdown ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_19, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.action_type, function (action, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
       key: index,
       onClick: function onClick($event) {
         return $setup.updateAction(action, index);
       },
       "class": "font-normal p-1 px-2 hover:bg-slate-100 flex items-center w-full justify-between"
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_22, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(action), 1 /* TEXT */), $setup.selectedIndex === index ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(action), 1 /* TEXT */), $setup.selectedIndex === index ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
       icon: "mdi:tick"
-    })])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_21);
-  }), 128 /* KEYED_FRAGMENT */))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_24, [_hoisted_25, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+    })])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_20);
+  }), 128 /* KEYED_FRAGMENT */))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    onClick: $setup.filter,
+    "class": "bg-primary text-white px-3 rounded-md p-2"
+  }, " Apply filter "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "tabler:refresh",
-    width: "30"
-  })])])])])]), $props.deleted_files.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_26, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DataTable, {
-    paginator: "",
-    rows: 10,
-    value: $props.deleted_files,
+    "class": "cursor-pointer",
+    width: "30",
+    onClick: $setup.refresh
+  })])])])])]), $props.deleted_files.data.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_24, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DataTable, {
+    value: $props.deleted_files.data,
     tableStyle: "min-width: 50rem"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
@@ -67778,7 +67859,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         "class": ""
       }, {
         body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function (slotProps) {
-          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.formatDate(slotProps.data.deleted_at)), 1 /* TEXT */)])];
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_25, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.formatDate(slotProps.data.deleted_at)), 1 /* TEXT */)])];
         }),
         _: 1 /* STABLE */
       }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Column, {
@@ -67786,7 +67867,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         header: "Deleted by"
       }, {
         body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function (slotProps) {
-          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(slotProps.data.deleted_by.first_name + " " + slotProps.data.deleted_by.last_name), 1 /* TEXT */)])];
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(slotProps.data.deleted_by ? slotProps.data.deleted_by.first_name + " " + slotProps.data.deleted_by.last_name : ''), 1 /* TEXT */)])];
         }),
         _: 1 /* STABLE */
       }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Column, {
@@ -67794,50 +67875,59 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         header: "Deleted item"
       }, {
         body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function (slotProps) {
-          return [_hoisted_28];
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_26, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <Icon :icon=\"slotProps.data.icon\" width=\"25\" /> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.getDeletedFileName(slotProps.data)), 1 /* TEXT */)])];
         }),
         _: 1 /* STABLE */
       }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Column, {
         field: "action_type",
         header: "Action Type"
+      }, {
+        body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.type), 1 /* TEXT */)])];
+        }),
+        _: 1 /* STABLE */
       }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Column, {
         field: "",
         header: "Actions"
       }, {
-        body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+        body: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function (slotProps) {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
             icon: "basil:refresh-outline",
             width: "25",
             "class": "cursor-pointer",
-            onClick: _cache[4] || (_cache[4] = function ($event) {
-              return $setup.RestoreFile = true;
-            })
-          }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+            onClick: function onClick($event) {
+              return $setup.getFileRestore(slotProps.data.id);
+            }
+          }, null, 8 /* PROPS */, ["onClick"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
             icon: "material-symbols:delete-outline",
             width: "25",
             "class": "cursor-pointer",
-            onClick: _cache[5] || (_cache[5] = function ($event) {
-              return $setup.DeleteFile = true;
-            })
-          })])];
+            onClick: function onClick($event) {
+              return $setup.getFileDelete(slotProps.data.id);
+            }
+          }, null, 8 /* PROPS */, ["onClick"])])];
         }),
         _: 1 /* STABLE */
       })];
     }),
     _: 1 /* STABLE */
-  }, 8 /* PROPS */, ["value"])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_30, [].concat(_hoisted_34)))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["DeleteFileModal"], {
+  }, 8 /* PROPS */, ["value"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["pagination"], {
+    archives: $props.deleted_files
+  }, null, 8 /* PROPS */, ["archives"])])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_29, [].concat(_hoisted_33)))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["DeleteFileModal"], {
     modelValue: $setup.DeleteFile,
-    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
+    "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
       return $setup.DeleteFile = $event;
-    })
+    }),
+    onDeletefile: $setup.deleteFileHandler
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["RestoreFileModal"], {
     modelValue: $setup.RestoreFile,
-    "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
+    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
       return $setup.RestoreFile = $event;
-    })
+    }),
+    onRestore: $setup.restoreHandler
   }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["EmptyRecycleModal"], {
     modelValue: $setup.EmptyRecycle,
-    "onUpdate:modelValue": _cache[8] || (_cache[8] = function ($event) {
+    "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
       return $setup.EmptyRecycle = $event;
     })
   }, null, 8 /* PROPS */, ["modelValue"])], 64 /* STABLE_FRAGMENT */);
@@ -101028,7 +101118,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-245e50c4] {\r\n    display: none;\r\n    width: 20%;\n}\r\n  ", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-245e50c4] {\r\n  display: none;\r\n  width: 20%;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -101052,7 +101142,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-31c7b6c3] {\r\n    display: none;\r\n    width: 20%;\n}\r\n  ", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-31c7b6c3] {\r\n  display: none;\r\n  width: 20%;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -101076,7 +101166,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-0b5ad106] {\r\n    display: none;\r\n    width: 20%;\n}\r\n  ", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.custom-dialog .p-dialog-header[data-v-0b5ad106] {\r\n  display: none;\r\n  width: 20%;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

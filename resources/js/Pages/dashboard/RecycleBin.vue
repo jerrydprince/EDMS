@@ -22,7 +22,7 @@
         <div class="text-[#344054] font-semibold w-full md:w-[50%]">
           <label for="Action">Search</label> <br />
           <div class="flex items-center mt-2 border bg-white rounded-md w-full p-3 outline-none border-gray-300">
-            <input type="text" placeholder="search file by name,number or date"
+            <input type="text" v-model="data.search" placeholder="search file by name,number"
               class="w-full bg-white text-xs h-full outline-none" />
             <Icon icon="iconamoon:search-light" width="20" />
           </div>
@@ -56,19 +56,19 @@
         </div>
         <div>
           <div class="w-full flex items-center gap-5 mt-3 md:mt-0">
-            <button class="bg-primary text-white px-3 rounded-md p-2">
+            <button @click="filter" class="bg-primary text-white px-3 rounded-md p-2">
               Apply filter
             </button>
             <div>
-              <Icon icon="tabler:refresh" width="30" />
+              <Icon icon="tabler:refresh" class="cursor-pointer" width="30" @click="refresh"/>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="px-7 my-10" v-if="deleted_files.length > 0">
-      <DataTable paginator :rows="10" :value="deleted_files" tableStyle="min-width: 50rem">
+    <div class="px-7 my-10" v-if="deleted_files.data.length > 0">
+      <DataTable  :value="deleted_files.data" tableStyle="min-width: 50rem">
         <Column field="Timestamp" header="Timestamp" class="">
           <template #body="slotProps">
             <div>
@@ -79,7 +79,7 @@
         <Column field="Actor" header="Deleted by">
           <template #body="slotProps">
             <div>
-              <p>{{ slotProps.data.deleted_by.first_name+" "+slotProps.data.deleted_by.last_name }}</p>
+              <p>{{ slotProps.data.deleted_by?slotProps.data.deleted_by.first_name+" "+slotProps.data.deleted_by.last_name: '' }}</p>
             </div>
           </template>
         </Column>
@@ -87,21 +87,29 @@
           <template #body="slotProps">
             <div class="flex items-center gap-3 font-semibold">
               <!-- <Icon :icon="slotProps.data.icon" width="25" /> -->
-              <p class=" "></p>
+              <p class=" ">{{ getDeletedFileName(slotProps.data) }}</p>
             </div>
           </template>
         </Column>
-        <Column field="action_type" header="Action Type"></Column>
-        <Column field="" header="Actions">
+        <Column field="action_type" header="Action Type">
           <template #body>
+            <div>
+              <p>{{type}}</p>
+            </div>
+          </template>
+        </Column>
+        <Column field="" header="Actions">
+          <template #body="slotProps">
             <div class="flex gap-5 items-center">
-              <Icon icon="basil:refresh-outline" width="25" class="cursor-pointer" @click="RestoreFile = true" />
+              <Icon icon="basil:refresh-outline" width="25" class="cursor-pointer" @click="getFileRestore(slotProps.data.id)" />
               <Icon icon="material-symbols:delete-outline" width="25" class="cursor-pointer"
-                @click="DeleteFile = true" />
+                @click="getFileDelete(slotProps.data.id)" />
             </div>
           </template>
         </Column>
       </DataTable>
+
+      <pagination :archives="deleted_files"/>
     </div>
 
     <div v-else class="flex items-center h-[65vh] justify-center flex-col">
@@ -110,13 +118,13 @@
       <p>Deleted files and actions would appear here</p>
     </div>
   </main>
-  <DeleteFileModal v-model="DeleteFile" />
-  <RestoreFileModal v-model="RestoreFile" />
+  <DeleteFileModal v-model="DeleteFile" @deletefile="deleteFileHandler" />
+  <RestoreFileModal v-model="RestoreFile" @restore="restoreHandler" />
   <EmptyRecycleModal v-model="EmptyRecycle" />
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, onMounted } from "vue";
 import DeleteFileModal from "../../components/Modals/RecycleBin/DeleteFile.vue";
 import RestoreFileModal from "../../components/Modals/RecycleBin/RestoreFile.vue";
 import EmptyRecycleModal from "../../components/Modals/RecycleBin/EmptyRecycle.vue";
@@ -124,6 +132,9 @@ import { onClickOutside } from "@vueuse/core";
 import "vue-datepicker-ui/lib/vuedatepickerui.css";
 import Datepicker from "vue-datepicker-ui";
 import moment from "moment";
+import { router } from "@inertiajs/vue3";
+import { useToast } from "primevue/usetoast";
+import pagination from "../dashboard/partials/pagination.vue"
 
 const selectedDate = ref([
   new Date(),
@@ -132,22 +143,31 @@ const selectedDate = ref([
 const DeleteFile = ref(false);
 const RestoreFile = ref(false);
 const EmptyRecycle = ref(false);
-const action = ref(null);
+const action = ref('File deletion');
 const Dropdown = ref(false);
 const modalRef = ref(null);
 const selectedIndex = ref(null);
-const props = defineProps(['deleted_files'])
+const props = defineProps(['deleted_files', 'type'])
+const data = {
+  search:'',
+  date:'',
+  type:''
+}
+const toast = useToast()
+const selectedId = ref()
 
 onClickOutside(modalRef, (event) => {
   Dropdown.value = false;
 });
 const action_type = ref([
-  "File deletion",
-  "User deletion",
-  "Workflow deletion",
-  "Branch deletion",
-  "Metadata deletion",
-  "Mail deletion",
+  "Deleted Files",
+  "Deleted Users",
+  "Deleted Task",
+  "Deleted Metadata",
+  "Deleted Mails",
+  "Deleted Units",
+  "Deleted Divisions",
+  "Deleted Departments"
 ]);
 
 const formatDate = (date)=>{
@@ -156,76 +176,134 @@ const formatDate = (date)=>{
   }
 }
 
+const getDeletedFileName = (item)=>{
+  if(props.type == 'Deleted Files'){
+    let data = item.archive_docs.filter((item)=>{
+      return item.archive_keys =='title'
+    });
+    console.log('this is the data', data)
+    if(data && data.length > 0){
+      return data[0]?.archive_values
+    }else{
+      ''
+    }
+  }
+
+  if(props.type == 'Deleted Users'){
+    return item.first_name+" "+item.last_name
+  }
+
+  if(props.type == 'Deleted Task'){
+
+  }
+
+  if(props.type == 'Deleted Metadata'){
+    return item.name
+  }
+
+  if(props.type == 'Deleted Mails'){
+    return item.subject
+  }
+
+  if(props.type == 'Deleted Units'){
+    return item.title
+  }
+
+  if(props.type == 'Deleted Divisions'){
+    return item.title
+  }
+
+  if(props.type == 'Deleted Departments'){
+    return item.title
+  }
+  
+}
+
+const getFileRestore = (id)=>{
+  selectedId.value = id
+  RestoreFile.value = true
+}
+
+const getFileDelete = (id)=>{
+  selectedId.value = id
+  DeleteFile.value = true
+}
+
+const restoreRecycleFile = ()=>{
+  let data = {
+    id: selectedId.value,
+    type: props.type
+  }
+  router.post('/dashboard/recycle-bin-restore', data, {onSuccess: page=>{
+    router.reload({only: ['deleted_files']})
+    toast.add({
+      severity: "success",
+      summary: 'Item Restored',
+      detail: "The item has been successfully restored to its original location",
+      life: 3000,
+    });
+  }})
+}
+
+const deleteRecyle = ()=>{
+  let data = {
+    id: selectedId.value,
+    type: props.type
+  }
+
+  router.get('/dashboard/recycle-bin-delete', data, {onSuccess:page=>{
+    router.reload({only: ['deleted_files']})
+    toast.add({
+      severity: "success",
+      summary: 'Item Deleted',
+      detail: "The item has been successfully deleted",
+      life: 3000,
+    });
+  }})
+}
+
+const deleteFileHandler = ()=>{
+  deleteRecyle()
+}
+
+const restoreHandler = ()=>{
+  restoreRecycleFile()
+}
+
 const updateAction = (param, index) => {
   action.value = param;
   selectedIndex.value = index;
 };
-// const table = ref([
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "Workflow deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "File deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "Log deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "User profile deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "File deletion",
-//   },
 
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "File deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "Log deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "User profile deletion",
-//   },
-//   {
-//     Timestamp: "2024 -02-21 08:30 AM",
-//     Actor: "Jane smith",
-//     icon: "prime:box",
-//     deleted_item: "Bug Fixing",
-//     doc_name: "File deletion",
-//   },
-// ]);
+const refresh = ()=>{
+  selectedDate.value = [
+    new Date(),
+    new Date(Date.now() + 9 * 24 * 60 * 60 * 1000),
+  ]
+  data.search = ''
+}
+
+const filter = ()=>{
+  data.date = selectedDate.value;
+  data.type = action.value
+
+  if(data.search =='' &&  data.type == '' && data.date ==''){
+    return false;
+  }
+
+  router.get('/dashboard/recycle-bin', data, {onSuccess: (e)=>{
+    console.log(e)
+  }})
+
+}
+
+onMounted(()=>{
+  let url = window.location.href
+  let urlObj = new URL(url);
+  const type = urlObj.searchParams.get('type');
+  let val = type? type: 'Deleted Files';
+  action.value = val
+})
 </script>
 
 <style></style>

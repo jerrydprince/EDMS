@@ -360,6 +360,8 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
                 //Recycle bin
                 Route::get('/recycle-bin', [RecycleBinController::class, 'index']);
+                Route::post('/recycle-bin-restore', [RecycleBinController::class, 'restoreRecycleBin']);
+                Route::get('/recycle-bin-delete', [RecycleBinController::class, 'deleteRecyleBinFile']);
 
                 //Shared files
                 Route::get('/shared-files', [ArchiveController::class, 'sharedFiles'])->middleware('permission:edms view');

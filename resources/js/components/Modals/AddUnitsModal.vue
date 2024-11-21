@@ -140,6 +140,7 @@ const props = defineProps(["modelValue", "division"]);
 const emit = defineEmits(["update:modelValue"]);
 const selectedHead = ref([])
 const unitHead = ref([])
+const toast = useToast()
 
 //forms
 const divisionForm = useForm({title:'', description:'',head:'', division_id: props.division.id})

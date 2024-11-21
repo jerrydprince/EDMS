@@ -178,4 +178,20 @@ class User extends Authenticatable
         return $this->hasOne(UserSession::class);
     }
     
+    protected static function booted(){
+        static::deleted(function($user){
+            $user->deleted_by = auth()->user()->id;
+            $user->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
 }

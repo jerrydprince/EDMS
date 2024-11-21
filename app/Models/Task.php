@@ -161,4 +161,21 @@ class Task extends Model
     {
         return $this->hasMany(TaskActivity::class);
     }
+
+    protected static function booted(){
+        static::deleted(function($task){
+            $task->deleted_by = auth()->user()->id;
+            $task->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
 }

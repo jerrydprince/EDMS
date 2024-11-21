@@ -99,4 +99,21 @@ class Division extends Model
     {
         return $this->hasMany(GroupMessages::class, 'division_id', 'id');
     }
+
+    protected static function booted(){
+        static::deleted(function($division){
+            $division->deleted_by = auth()->user()->id;
+            $division->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
 }

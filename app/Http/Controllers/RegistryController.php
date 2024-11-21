@@ -329,7 +329,11 @@ class RegistryController extends Controller
                 $fm->sent_from_department = $request->branch;
             }
             if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-                $fm->sent_from_agf = true;
+                if($request->branch_type =='agf'){
+                    $fm->sent_to_agf = true;
+                }else{
+                    $fm->sent_from_agf = true;
+                }
             }
 
     
@@ -338,30 +342,30 @@ class RegistryController extends Controller
         });
 
         //notification
-        if($request->branch_type == 'unit'){
-           $users = User::where('unit_id', $request->branch)->get();
-           $branch = Unit::find($request->branch);
-           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-           Notification::sendNow($users, new RegistryNotification($data));
-        }
-        if($request->branch_type == 'division'){
-            $users = User::where('unit_id', $request->branch)->get();
-           $branch = Division::find($request->branch);
-           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-           Notification::sendNow($users, new RegistryNotification($data));
+        // if($request->branch_type == 'unit'){
+        //    $users = User::where('unit_id', $request->branch)->get();
+        //    $branch = Unit::find($request->branch);
+        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+        //    Notification::sendNow($users, new RegistryNotification($data));
+        // }
+        // if($request->branch_type == 'division'){
+        //     $users = User::where('unit_id', $request->branch)->get();
+        //    $branch = Division::find($request->branch);
+        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+        //    Notification::sendNow($users, new RegistryNotification($data));
             
-        }
-        if($request->branch_type == 'department'){
-            $users = User::where('unit_id', $request->branch)->get();
-           $branch = Department::find($request->branch);
-           $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-           Notification::sendNow($users, new RegistryNotification($data));
-        }
+        // }
+        // if($request->branch_type == 'department'){
+        //     $users = User::where('unit_id', $request->branch)->get();
+        //    $branch = Department::find($request->branch);
+        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
+        //    Notification::sendNow($users, new RegistryNotification($data));
+        // }
 
-        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-            $data = ['branch_type' => 'AGF', 'branch'=>'NIL'];
-            Notification::sendNow($users, new RegistryNotification($data));
-        }
+        // if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+        //     $data = ['branch_type' => 'AGF', 'branch'=>'NIL'];
+        //     Notification::sendNow($users, new RegistryNotification($data));
+        // }
 
        // broadcast(new RegistryEvent($request->branch, $request->branch_type));
 

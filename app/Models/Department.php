@@ -105,5 +105,22 @@ class Department extends Model
     {
         return $this->hasMany(GroupMessages::class, 'department_id', 'id');
     }
+
+    protected static function booted(){
+        static::deleted(function($department){
+            $department->deleted_by = auth()->user()->id;
+            $department->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
     
 }

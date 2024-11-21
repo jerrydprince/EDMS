@@ -26,6 +26,23 @@ class Mail extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected static function booted(){
+        static::deleted(function($mail){
+            $mail->deleted_by = auth()->user()->id;
+            $mail->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
 }
 
 

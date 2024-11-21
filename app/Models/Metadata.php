@@ -23,4 +23,21 @@ class Metadata extends Model
     public function documentType(){
         return $this->belongsToMany(DocumentType::class);
     }
+
+    protected static function booted(){
+        static::deleted(function($meta){
+            $meta->deleted_by = auth()->user()->id;
+            $meta->save();
+        });
+    }
+
+    /**
+    * Get the deletedBy associated with the Archive
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function deletedBy()
+   {
+       return $this->hasOne(User::class, 'id', 'deleted_by');
+   }
 }
