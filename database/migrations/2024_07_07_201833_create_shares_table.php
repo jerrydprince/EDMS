@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('sharing_id');
             $table->unsignedBigInteger('shared_id');
             $table->unsignedBigInteger('archive_id');
-            $table->foreign('archive_id')->references('id')->on('archive');
+            $table->foreign('archive_id')->references('id')->on('archives');
             $table->timestamps();
         });
     }

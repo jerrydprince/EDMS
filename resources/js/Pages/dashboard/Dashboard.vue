@@ -3,10 +3,10 @@
     <section class=" flex-col lg:flex-row items-start lg:items-center justify-between cursor-pointer">
       <div class=" md:flex items-center gap-5">
         <p class="text-2xl lg:text-3xl text-gray-800 font-semibold">
-          Welcome Back
+          Welcome Back, {{user.first_name}}
         </p>
-        <p class=" bg-gray-50 text-primary text-xs  md:text-sm font-semibold rounded-3xl py-2 px-5 w-fit mt-2 md:mt-0">
-          Communication Division</p>
+        <!-- <p class=" bg-gray-50 text-primary text-xs  md:text-sm font-semibold rounded-3xl py-2 px-5 w-fit mt-2 md:mt-0">
+          Communication Division</p> -->
       </div>
       <!-- <p class=" text-sm mt-2 text-gray-600">Monday, OcDeadline: 2024-06-01</p> -->
     </section>
@@ -189,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps,computed } from "vue";
 import Actions from "../../assets/Dashboard/Actions.vue";
 import QuickActions1 from "../../assets/Dashboard/workflow.vue";
 import QuickActions1_1 from "../../assets/Dashboard/QuickActions1_1.vue";
@@ -198,7 +198,7 @@ import QuickActions3 from "../../assets/Dashboard/pms.vue";
 import QuickActions4 from "../../assets/Dashboard/interface.vue";
 import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDialog.vue";
 
-import {Link} from "@inertiajs/vue3"
+import {Link, usePage} from "@inertiajs/vue3"
 const menu = ref();
 const departmentalModal = ref(false);
 const props = defineProps(['created_task', 'mails']);
@@ -215,6 +215,8 @@ const items = ref([
   { label: "Edit", icon: "pi pi-pencil" },
   { label: "Delete", icon: "pi pi-trash" },
 ]);
+const page = usePage()
+const user = computed(()=>page.props.user)
 
 const Tasks = ref([
   {

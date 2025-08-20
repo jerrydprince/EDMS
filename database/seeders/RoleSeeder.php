@@ -57,6 +57,13 @@ class RoleSeeder extends Seeder
                 'updated_at'=>\Carbon\Carbon::now()
             ], 
             [
+                'name' => 'AGF record manager', 
+                'guard_name' => 'web', 
+                'description' => "Specialized in records management, ensuring compliance with government regulations",
+                'created_at'=>\Carbon\Carbon::now(), 
+                'updated_at'=>\Carbon\Carbon::now()
+            ], 
+            [
                 'name' => 'super users', 
                 'guard_name' => 'web', 
                 'description' => 'Manages cross-department activities, oversees all files/documents, delegates tasks, tracks file activities',

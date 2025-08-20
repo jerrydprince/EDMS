@@ -424,6 +424,8 @@
 
   watch(()=> form.department, ()=>{
     selectedDepartment()
+    form.unit = null
+    form.division = null
   })
 
   watch(()=>form.division, ()=>{

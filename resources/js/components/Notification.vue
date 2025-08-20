@@ -24,7 +24,7 @@
       <div class="text-gray-700">
         <h3 class="text-[10px]">{{ index }}</h3>
         <div>
-          <div >
+          <div>
             <div v-for="(nots, index) in chats">
               <div v-for="chat in nots">
                 <div v-if="clickedButton == 'Chat'"
@@ -189,35 +189,33 @@
             </div>
           </div> -->
 
-          <!-- <div v-if="notification.type === 'mentions'">
-            <div
+          <div v-if="clickedButton === 'Comments'">
+            <div v-for="(comments, ind) in getNotificationType('comments')">
+              <h3 class="text-[10px] py-3">{{ ind }}</h3>
+              <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
-            >
+              v-for="notification in comments"
+              >
+
               <div class="flex items-start gap-4">
-                <img :src="notification.avatar" class="h-7 mt-1" alt="" />
+                <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
+                    :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
+                  <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
                 <div>
                   <p class="font-semibold text-[12px]">
-                    {{ notification.sender }}
-                    <span class="font-normal text-gray-500"
-                      >mentioned you in
-                      <span v-if="notification.message === 'comment'"> a </span>
-                      <span class="text-gray-800 text-[12px] font-semibold">{{
-                        notification.message
-                      }}</span></span
-                    ><span></span>
+                    {{ notification.data.comment.user?.first_name+" "+notification.data.comment.user?.last_name}}
+                    <span class="font-normal text-gray-500">mentioned you in
+                      <!-- <span v-if="notification.message === 'comment'"> a </span> -->
+                      <span>a</span>
+                      <span class="text-gray-800 text-[12px] font-semibold"> comment</span></span><span></span>
                   </p>
-                  <p
-                    class="text-[10px] font-normal leading-[13px] text-gray-500"
-                  >
-                    1 hour ago
+                  <p class="text-[10px] font-normal leading-[13px] text-gray-500">
+                    {{ formatRelativeTime(notification.created_at) }}
                   </p>
-                  <p
-                  v-if="notification.context"
-                      class="text-[10px] font-normal leading-[16px] bg-white border border-gray-100 rounded-lg p-4 mt-2"
-                    >
-                      {{ notification.context}}
+                  <p class="text-[10px] font-normal leading-[16px] bg-white border border-gray-100 rounded-lg p-4 mt-2">
+                      {{textTruncate(notification.data?.comment?.comment)}}
                     </p>
-                  <div
+                  <!-- <div
                     class="bg-gray-50 mb-2 rounded-2xl px-4 py-1 w-fit flex items-center gap-3"
                     v-for="(attached, index) in notification.attachments"
                     :key="index"
@@ -226,15 +224,17 @@
                     <p class="text-[10px] font-normal text-gray-500">
                       {{ attached.name }}
                     </p>
-                  </div>
+                  </div> -->
                 </div>
               </div>
-              <div v-if="notification.isRead">
+              <div v-if="comments.read_at">
                 <Icon icon="icon-park-outline:dot" class="text-green-500" />
               </div>
             </div>
+            </div>
           </div>
 
+          <!--
           <div v-if="notification.type === 'other'">
             <div
               class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
@@ -347,6 +347,10 @@ function classifyDate(dateString) {
   }
 }
 
+function textTruncate(text){
+  return text.length > 50? text.slice(0, 50)+"...": text
+}
+
 // Main function to sort chats by date
 function sortChatsByDate() {
   const sortedChats = {
@@ -378,7 +382,7 @@ function sortChatsByDate() {
           }
           sortedChats.Today[`${key}`].push(chat);
         }
-        else{
+        else {
           sortedChats.Today.push(chat);
         }
       } else if (classifiedDate === 'Yesterday') {
@@ -408,10 +412,10 @@ const getTotalNotification = (item) => {
   if (item === 'Task') {
     let count = 0;
     const not = getNotification('task')
-    for(let item in not){
+    for (let item in not) {
       count += not[item].length
     }
-      return count
+    return count
   }
   if (item == 'Mail') {
     return 0
@@ -419,41 +423,41 @@ const getTotalNotification = (item) => {
   if (item == 'Chat') {
     return 0;
   }
-  if(item == 'Comments'){
+  if (item == 'Comments') {
     let count = 0;
     const not = getNotification('comments')
-    for(let item in not){
+    for (let item in not) {
       count += not[item].length
     }
-      return count
+    return count
   }
   if (item == 'Other') {
     return 0;
   }
 }
 
-const getNotification = (type)=>{
+const getNotification = (type) => {
   if (props.notifications && props.notifications.length > 0) {
     if (type === 'task') {
-        const firstNotification = props.notifications[0];
-        
-        // Check if the specific notification type key exists
-        if ('App\\Notifications\\TaskNotification' in firstNotification) {
-           taskNotification.value = firstNotification['App\\Notifications\\TaskNotification']
-            return firstNotification['App\\Notifications\\TaskNotification'];
-        } 
+      const firstNotification = props.notifications[0];
+
+      // Check if the specific notification type key exists
+      if ('App\\Notifications\\TaskNotification' in firstNotification) {
+        taskNotification.value = firstNotification['App\\Notifications\\TaskNotification']
+        return firstNotification['App\\Notifications\\TaskNotification'];
+      }
     }
 
     if (type === 'comments') {
-        const firstNotification = props.notifications[0];
-       
-        // Check if the specific notification type key exists
-        if ('App\\Notifications\\CommentNotification' in firstNotification) {
-           commentNotification.value = firstNotification['App\\Notifications\\CommentNotification']
-            return firstNotification['App\\Notifications\\CommentNotification'];
-        } 
+      const firstNotification = props.notifications[0];
+
+      // Check if the specific notification type key exists
+      if ('App\\Notifications\\CommentNotification' in firstNotification) {
+        commentNotification.value = firstNotification['App\\Notifications\\CommentNotification']
+        return firstNotification['App\\Notifications\\CommentNotification'];
+      }
     }
-}
+  }
 }
 
 const getNotificationType = (type) => {
@@ -487,7 +491,7 @@ const getNotificationType = (type) => {
 
 }
 
-const buttons = ref(["Chat", "Mail", "Comments", "Task", "Other", "Unread"]);
+const buttons = ref(["Chat", "Mail", "Comments", "Task"]);
 
 const filteredItems = computed(() => {
   return notifications.value

@@ -32,26 +32,54 @@ class ArchiveController extends Controller
 {
     public function Archiving($branch, $id){
         //$doctypes = DocumentType::with('metadata')->get();
-       
+  // dd($id);
+
+        $user = auth()->user();
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user')){
+            $branchId = request()->query('branch_id');
+           // dd($branchId);
+            if($branch == 'unit'){
+                $selected_branch = Unit::find($branchId);
+                $branch_id = $selected_branch->id;
+            }
+            if($branch == 'division'){
+                $selected_branch = Division::find($branchId);
+                $branch_id = $selected_branch->id;
+            }
+            if($branch == 'department'){
+                $selected_branch = Department::find($branchId);
+                $branch_id = $selected_branch->id;
+            }
+        }else{
+            if($branch == 'unit'){
+                $branch_id = $user->unit_id;
+            }
+            if($branch == 'division'){
+                $branch_id = $user->division_id;
+            }
+            if($branch == 'department'){
+                $branch_id = $user->department_id;
+            }
+        }
         if($branch == 'unit'){
              $branches = Unit::with(['folder', 'documentType'=>function($query){
                 $query->with('metadata');
-            }])->where('id', auth()->user()->unit_id)->first();
-           
+            }])->where('id', $branch_id)->first();
         }
 
         if($branch == 'division'){
                 $branches = Division::with(['folder', 'documentType'=>function($query){
                 $query->with('metadata');
-            }])->where('id', auth()->user()->division_id)->first();
+            }])->where('id', $branch_id)->first();
+            //dd($id);
         }
 
        if($branch == 'department'){
                 $branches = Department::with(['folder', 'documentType'=>function($query){
                 $query->with('metadata');
-            }])->where('id', auth()->user()->department_id)->first();
+            }])->where('id', $branch_id)->first();
         }
-       
+  
         $doctypes = isset($branches->documentType)? $branches->documentType : [];
         // if(count($doctypes)==0){
         //    if(auth()->user()->division_id){
@@ -84,13 +112,13 @@ class ArchiveController extends Controller
     }
 
     public function createFolder(Request $request){
-       
+     
         $request->validate([
             'name' => 'required|unique:folder',
             'number' =>'required',
             'year' => 'required',
         ]);
-
+      
         DB::transaction(function () use($request) {
             $folder2 = Folder::find($request->id);
 
@@ -104,9 +132,9 @@ class ArchiveController extends Controller
             //     $unit = $request->unit;
             // }
 
-            $department = auth()->user()->department_id;
-            $division = auth()->user()->division_id;
-            $unit = auth()->user()->unit_id;
+            $department = $request->deptId? $request->deptId: auth()->user()->department_id;
+            $division = $request->divId? $request->divId: auth()->user()->division_id;
+            $unit = $request->unitId? $request->unitId: auth()->user()->unit_id;
 
             if(!$department){
                 return redirect()->back();
@@ -368,10 +396,35 @@ class ArchiveController extends Controller
         //     'date' => 'sometimes|required',
         //     'number' => 'sometimes|required'
         // ]);
-
-        $department = auth()->user()->department_id;
-        $division = auth()->user()->division_id;
-        $unit = auth()->user()->unit_id;
+        $user = auth()->user();
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user')){
+           
+            if($request->branch_type == 'department'){
+               $dept = Department::find($request->branch_id);
+               $department = $dept->id;
+               $division = null;
+               $unit = null;
+            }
+            if($request->branch_type == 'division'){
+                $div = Division::find($request->branch_id);
+                $dept = $div->department;
+                $department = $dept->id;
+                $division = $div->id;
+                $unit = null;
+             }
+             if($request->branch_type == 'unit'){
+                $unt = Unit::find($request->branch_id);
+                $div = $unt->division;
+                $dept = $div->department;
+                $department = $dept->id;
+                $division = $div->id;
+                $unit = $unt->id;
+             }
+        }else{
+            $department = auth()->user()->department_id;
+            $division = auth()->user()->division_id;
+            $unit = auth()->user()->unit_id;
+        }
 
         $archive = new Archive();
         $archive->department_id = $department;
@@ -444,6 +497,9 @@ class ArchiveController extends Controller
         //     $request->session()->forget('archives');
         // }
 
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user') || $user->hasRole('directors') || $user->hasRole('division heads') || $user->hasRole('unit heads')){
+            return redirect()->route('folder-view2',[$request->branch_type, $request->folder_id, $request->branch_id]);
+        }
         return redirect()->route('folder-view',[$request->branch_type, $request->folder_id]);
     }
 
@@ -860,8 +916,8 @@ class ArchiveController extends Controller
         }
     }
 
-    public function userBranches(){
-       
+    public function userBranches(Request $request){
+     
         $search = request()->search;
 
             // if(request()->search){
@@ -885,31 +941,48 @@ class ArchiveController extends Controller
             //            return $folder;
             // }
 
+           
             
             if(request()->branch){
-                $branch_id = request()->id;
+               
+               // $branch_id = request()->id;
                 $branch_name = ucfirst(request()->branch);
-             
+        
+                if($branch_name == 'Unit'){
+                    $branch_id =  $request->unitId;
+                }else if($branch_name == 'Division'){
+                    $branch_id = $request->divId;
+                }else if($branch_name == 'Department'){
+                    $branch_id = $request->deptId;
+                }
+
+                if($branch_id == 0){
+                    return redirect()->back();
+                }
+        
             }else{ 
                 if(auth()->user()->unit_id){
                     $branch_id = auth()->user()->unit_id;
                     $branch_name = 'Unit';
                 }else
                 if(auth()->user()->division_id){
-                    $branch_id = auth()->user()->division_id;
+                    $branch_id =  auth()->user()->division_id;
                     $branch_name = "Division";
                 }else
                 if(auth()->user()->department_id){
-                    $branch_id = auth()->user()->department_id;
+                    $branch_id =  auth()->user()->department_id;
                     $branch_name = "Department";
                 }
             }
+            $unitId = filled($request->unitId)? $request->unitId: auth()->user()->unit_id;
+            $divId = filled($request->divId)? $request->divId: auth()->user()->division_id;
+            $deptId = filled($request->deptId)? $request->deptId: auth()->user()->department_id;
 
             $folder = Folder::with(['fileType', 'subfolder']);
             $user = auth()->user();
 
           if($branch_name == 'Unit' && $this->isUserPermittedToViewUnit($branch_id)){
-        
+            
             $branch = Unit::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
             }, 'fileType'])->find($branch_id);
@@ -928,7 +1001,7 @@ class ArchiveController extends Controller
           
             $folder = $folder->latest()->paginate(20)->withQueryString();
            
-            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder', 'unitId', 'divId', 'deptId'));
           }
 
          // $division = request()->id? request()->id: auth()->user()->division_id;
@@ -951,7 +1024,7 @@ class ArchiveController extends Controller
 
             $folder = $folder->latest()->paginate(20)->withQueryString();
 
-            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder', 'unitId', 'divId', 'deptId'));
           }
           
           $department = request()->id? request()->id: auth()->user()->department_id;
@@ -976,11 +1049,11 @@ class ArchiveController extends Controller
                 return redirect()->to('/dashboard');
             }
             $folder = $folder->latest()->paginate(20)->withQueryString();
-            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder'));
+            return inertia('dashboard/Branches', compact('branch', 'branch_name','folder' , 'unitId', 'divId', 'deptId'));
     
      }
 
-    public function folderView($branch, $id){
+    public function folderView(Request $request, $branch, $id){
 
        $archive_id = request()->archive_id;
         $branch = strtolower($branch);
@@ -989,6 +1062,7 @@ class ArchiveController extends Controller
        }])->find($id);
 
        $folder_id = $id;
+       $branch_name = $branch;
 
        $archive = Archive::with(['filePath', 'fileActivity', 'archiveDocs','department','division', 'unit', 'version' => function($query){
                 $query->latest();
@@ -996,6 +1070,7 @@ class ArchiveController extends Controller
 
         if($branch == 'unit'){
             $branch_id = request()->branch_id? request()->branch_id: auth()->user()->unit_id;
+            $branch = Unit::find($branch_id);
             if(!is_null($archive_id)){
                 $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('unit_id',  $branch_id);
                 
@@ -1016,13 +1091,13 @@ class ArchiveController extends Controller
             $is_folder_open = $folder->is_open;
             $branch_type = 'unit';
             $folder_name = $folder->name;
-            
            // $document_type = $archives->archiveDocs->unique('archive_keys');
-            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder', 'folder_id'));
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type','folder_name', 'folder', 'folder_id', 'branch', 'branch_name'));
         }
 
         if($branch == 'division'){
             $branch_id = request()->branch_id? request()->branch_id: auth()->user()->division_id;
+            $branch = Division::find($branch_id);
             if(request()->archive_id){
                 $archives =        $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('division_id',  $branch_id);
             }else{
@@ -1037,13 +1112,15 @@ class ArchiveController extends Controller
             }
 
             $archives = $archive->latest()->paginate(20);
-           
+         
             $is_folder_open = $folder? $folder->is_open : true;
             $branch_type = 'division';
-            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id'));
+            return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id', 'branch', 'branch_name'));
         }
 
+       if($branch == 'department'){
         $branch_id = request()->branch_id? request()->branch_id: auth()->user()->department_id;
+        $branch = Department::find($branch_id);
         
         if(request()->archive_id){
               $archive->where('id', 'LIKE', $archive_id."%")->where('folder_id', $id)->where('department_id',  $branch_id);
@@ -1061,7 +1138,8 @@ class ArchiveController extends Controller
         $archives = $archive->latest()->paginate(20);
         $is_folder_open = $folder->is_open;
         $branch_type = 'department';
-        return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id'));
+        return inertia('dashboard/FolderView', compact('archives','branch_id', 'is_folder_open', 'branch_type', 'folder', 'folder_id', 'branch', 'branch_name'));
+       }
     }
 
     public function getDivisionWithUnit(Request $request){

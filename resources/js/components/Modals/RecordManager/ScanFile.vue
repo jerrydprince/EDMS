@@ -39,7 +39,7 @@
      
       </template>
     </Dialog>
-    <ComputerUpload  v-model="uploadComputerModal"/>
+    <ComputerUpload  v-model="uploadComputerModal" @update="update"/>
   </template>
     
     <script setup>
@@ -50,7 +50,7 @@
  const uploadComputerModal = ref(false)
   const props = defineProps(["modelValue"]);
 
-  const emit = defineEmits(["update:modelValue"]);
+  const emit = defineEmits(["update:modelValue", "updateData"]);
   const visible = computed({
     get() {
       return props.modelValue;
@@ -64,6 +64,10 @@
     emit("update:modelValue", false);
   
   };
+
+  const update = ()=>{
+    emit('updateData')
+  }
 const scanModal = ref(false)
   const toggleUploadModal = (event)=>{
     closeModal()

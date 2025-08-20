@@ -49,7 +49,7 @@ import { router } from '@inertiajs/vue3'
        page.layout = page.layout || Layout2;
       }else if(window.location.pathname.startsWith('/edms')){
         page.layout = page.layout || Layout3;
-      }else if(window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/settings')){
+      }else if(window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/settings') || window.location.pathname.startsWith('/finance-and-accounts')){
          page.layout =page.layout || Layout;
       }else if(window.location.pathname.startsWith('/password')){
         page.layout = page.layout || Layout4;
@@ -66,6 +66,8 @@ import { router } from '@inertiajs/vue3'
       app.use(PrimeVue, { unstyled: true, pt: Tailwind })
       app.use(ToastService)
       app.use(store)
+      //remove during production
+      app.config.devtools = true;
       app.mount(el)
   },
 })

@@ -963,7 +963,7 @@ const fileType = (file) => {
 }
 
 watch(notifications,(newVal)=>{
-
+console.log(newVal)
   if(newVal && newVal.Today){
     // alert('yes')
     let new_comment = newVal.Today[0].data.comment;

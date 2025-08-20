@@ -194,4 +194,14 @@ class User extends Authenticatable
    {
        return $this->hasOne(User::class, 'id', 'deleted_by');
    }
+
+   /**
+    * Get the assignedBy associated with the User
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+   public function assignedBy()
+   {
+       return $this->hasOne(User::class, 'assigned_by', 'id');
+   }
 }

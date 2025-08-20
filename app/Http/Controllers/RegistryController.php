@@ -15,9 +15,12 @@ use Illuminate\Support\Facades\Validator as FacadesValidator;
 //use PhpOffice\PhpWord\Shared\Validate;
 use Illuminate\Support\Facades\DB;
 use App\Events\RegistryEvent;
+use App\Models\FinanceFilePaths;
 use App\Notifications\RegistryNotification;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
+use PhpParser\Node\Expr\FuncCall;
+use App\Models\FinanceFiles;
 
 class RegistryController extends Controller
 {
@@ -530,7 +533,8 @@ class RegistryController extends Controller
     }
 
     public function branchMap($branch){
-        $branch = $branch->map(function($files){
+      if($branch){
+        $new_branch = $branch->getCollection()->map(function($files){
             return $files->fileMovement->map(function($file) use($files){
                 return [
                     "id" => $file->id,
@@ -561,7 +565,10 @@ class RegistryController extends Controller
             });
         })->collapse();
 
-        return $branch;
+        return $branch->setCollection($new_branch);
+      }else{
+        return [];
+      }
     }
 
     public function getUnitFile($id){
@@ -583,7 +590,7 @@ class RegistryController extends Controller
             });
         }])
         ->latest()
-        ->get();
+        ->paginate(20);
         
         return $branch;
     }
@@ -607,33 +614,57 @@ class RegistryController extends Controller
             });
         }])
         ->latest()
-        ->get();
+        ->paginate(20);
 
         return $branch;
     }
 
     public function getDepartmentFile($id){
-        $user = auth()->user();
-        $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
-            $query->where(function($query) use ($user, $id) {
-                $query->where('department_id', $id);
-                     // ->where('sent_to_branch', 'unit');
-            })->orWhere(function($query) use ($user, $id) {
-                $query->where('sent_to_department', $id);
-            });
+         $user = auth()->user();
+        // $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
+        //     $query->where(function($query) use ($user, $id) {
+        //         $query->where('department_id', $id);
+        //              // ->where('sent_to_branch', 'unit');
+        //     })->orWhere(function($query) use ($user, $id) {
+        //         $query->where('sent_to_department', $id);
+        //     });
+        // })
+        // ->with(['fileMovement' => function($query) use ($user, $id) {
+        //     $query->where(function($query) use ($user, $id) {
+        //         $query->where('department_id', $id);
+        //               //->where('sent_to_branch', 'unit');
+        //     })->orWhere(function($query) use ($user, $id) {
+        //         $query->where('sent_to_department', $id);
+        //     });
+        // }])
+        // ->latest()
+        // ->paginate(20);
+
+        // Outgoing Files
+        $outgoing = File::whereHas('fileMovement', function ($query) use ($user, $id) {
+            $query->where('department_id', $id)->where('sent_from_department', $user->department_id);
         })
-        ->with(['fileMovement' => function($query) use ($user, $id) {
-            $query->where(function($query) use ($user, $id) {
-                $query->where('department_id', $id);
-                      //->where('sent_to_branch', 'unit');
-            })->orWhere(function($query) use ($user, $id) {
-                $query->where('sent_to_department', $id);
-            });
+        ->with(['fileMovement' => function ($query) use ($user, $id) {
+            $query->where('department_id', $id)->where('sent_from_department', $user->department_id);
         }])
         ->latest()
-        ->get();
+        ->paginate(20);
 
-        return $branch;
+        // Incoming Files
+        $incoming = File::whereHas('fileMovement', function ($query) use ($user, $id) {
+            $query->where('department_id', $id)->where('sent_to_department', $user->department_id);
+        })
+        ->with(['fileMovement' => function ($query) use ($user, $id) {
+            $query->where('department_id', $id)->where('sent_to_department', $user->department_id);
+        }])
+        ->latest()
+        ->paginate(20);
+
+        // return $branch;
+        return [
+            'outgoing' => $outgoing,
+            'incoming' => $incoming,
+        ];
     }
 
     public function getAGFFile(){
@@ -655,9 +686,13 @@ class RegistryController extends Controller
             });
         }])
         ->latest()
-        ->get();
+        ->paginate(20);
 
-        return $branch;
+        //return $branch;
+        return [
+            'outgoing' => $branch,
+            'incoming' => [],
+        ];
     }
 
     public function getBranchFiles(Request $request)
@@ -700,14 +735,19 @@ class RegistryController extends Controller
         if($user->department_id || $request->branch_type == 'department'){
             $id = $request->branch_id? $request->branch_id: $user->department_id;
             $branch = $this->getDepartmentFile($id);
-            $branch = $this->branchMap($branch);
-            return response()->json($branch);
+            $incoming = $this->branchMap($branch['incoming']);
+            $outgoing = $this->branchMap($branch['outgoing']);
+            return response()->json(['incoming'=>$incoming, 'outgoing'=>$outgoing]);
         }
         
         if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
             $branch = $this->getAGFFile();
-            $branch = $this->branchMap($branch);
-            return response()->json($branch);
+            // $branch = $this->branchMap($branch);
+            // return response()->json($branch);
+           // dd(gettype($branch['outgoing']));
+            $incoming = $this->branchMap($branch['incoming']);
+            $outgoing = $this->branchMap($branch['outgoing']);
+            return response()->json(['incoming'=>$incoming, 'outgoing'=>$outgoing]);
         }
 
 
@@ -938,5 +978,106 @@ class RegistryController extends Controller
 
         $branches = $department->merge($division->merge($unit));
         return response()->json($branches);
+    }
+
+    function formatSize($bytes) {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $bytes >= 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+    
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    public function setFandARegistryFiles(Request $request){
+    
+        if($request->file('files')){
+            $files = [];
+            $file_name = '';
+            $size = 0;
+            $paths = [];
+            foreach($request->file('files') as $file){
+
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $file_name = $fileName;
+                $original_name = $file->getClientOriginalName();
+                $path =  "/finance/".date('Y') . '/' . date('m');
+                //$size = $this->formatSize(filesize($file));
+                $size += filesize($file);
+                $fullPath = public_path($path);
+
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0777, true);
+                }
+                $file->move(public_path($path),$fileName);
+                $paths[] = $path.'/'.$fileName;
+                // $arr = [
+                //     'file_name' => $path.'/'.$fileName,
+                    
+                //     // 'name' => $original_name,
+                //      'size'=>$size,
+                //      'uploaded_by' => auth()->user()->id,
+                //      'uploaded_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
+                //      'created_at' =>now(),
+                //      'updated_at' => now()
+                // ];
+
+                //array_push($files, $arr);
+
+                $name = $original_name? $original_name: 'Unknown';
+
+                $newFile = new File();
+                $newFile->name = $name;
+                $newFile->file_type = 'File';
+                $newFile->doc_no = null;
+               // $newFile->description = $request->description;
+                $newFile->created_by = auth()->user()->id;
+            
+                if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                    $newFile->is_agf = true;
+                }
+                $newFile->save();
+            }
+
+            //DB::table('finance_files')->insert($files);
+             $ff = new FinanceFiles();
+             $ff->file_name = $file_name;
+             $ff->size = $this->formatSize($size);
+             $ff->uploaded_by = auth()->user()->id;
+             $ff->uploaded_by_name = auth()->user()->last_name." ".auth()->user()->first_name;
+             $ff->save();
+
+             //save in finance files path
+             $data = [];
+             foreach($paths as $path){
+                $data[] = [
+                    'path' => $path,
+                    'finance_files_id' => $ff->id,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+             }
+             FinanceFilePaths::insert($data);
+
+            $superUsers = User::role('super users')->first();
+            if($superUsers){
+                $fm = new FileMovement();
+                $fm->sent_from = auth()->user()->id;
+                //edit this section
+                $fm->sent_to = $superUsers->id;
+                $fm->file_id = $newFile->id;
+                $fm->status = "pending";
+                $fm->file_movement_id = $this->getFileMovementUniqueId();
+                $fm->sent_to_branch = 'finance';
+            }
+           
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                $fm->sent_to_agf = true;
+            }
+
+    
+            $fm->save();
+
+        }
     }
 }

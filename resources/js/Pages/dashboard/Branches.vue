@@ -104,7 +104,7 @@
 
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" :url="'/edms/create-folder'" :folderId="''"/>
+    <CreateFolderDialog v-model="createFolderModal" :url="'/edms/create-folder?unitId='+props.unitId+'&divId='+props.divId+'&deptId='+props.deptId" :folderId="''"/>
     <BranchDetails v-model="branchDetailsModal" :file="selectedArchive" />
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
@@ -160,7 +160,7 @@ const user = page.props.user;
 const admin = page.props.roles.filter((data) => data == 'super admin')
 //const allFolders = toRef(props, 'folder');
 
-const props = defineProps(['branch', 'branch_name', 'folder']);
+const props = defineProps(['branch', 'branch_name', 'folder', 'divId', 'deptId', 'unitId']);
 const fetchedFolders = ref([]);
 const pageFolders = ref([]);
 

@@ -15,11 +15,17 @@
                 <div class=" flex items-center">
                   
                     <div>
-                        <Link :href="'/edms/folder-view/'+props.branch_type+'/'+folderId">
-                        <svg class="border ml-[35px] mr-5 border-gray-300 p-2 w-10 h-10 rounded-lg" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.079 10.9989H4.92105M4.92105 10.9989L11 17.0778M4.92105 10.9989L11 4.91992" stroke="#363C46" stroke-width="1.73684" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </Link>
+                        <Link :href="'/dashboard/folder-view/'+props.branch_type+'/'+folderId+'/'+props.branches.id" v-if="page.props.roles.includes('super admin') || page.props.roles.includes('admin') || page.props.roles.includes('super user')
+                        || page.props.roles.includes('directors') ||page.props.roles.includes('division heads') || page.props.roles.includes('unit heads') ">
+                            <svg class="border ml-[35px] mr-5 border-gray-300 p-2 w-10 h-10 rounded-lg" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.079 10.9989H4.92105M4.92105 10.9989L11 17.0778M4.92105 10.9989L11 4.91992" stroke="#363C46" stroke-width="1.73684" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </Link>
+                        <Link :href="'/edms/folder-view/'+props.branch_type+'/'+folderId" v-else>
+                            <svg class="border ml-[35px] mr-5 border-gray-300 p-2 w-10 h-10 rounded-lg" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.079 10.9989H4.92105M4.92105 10.9989L11 17.0778M4.92105 10.9989L11 4.91992" stroke="#363C46" stroke-width="1.73684" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </Link>
                     </div>
                   
                     <div>
@@ -458,7 +464,8 @@ const form = useForm({
   folder:null,
   folder_id:null,
   branch_type: '',
-  input_obj: []
+  input_obj: [],
+  branch_id: null
 })
 const description = ref('')
 const text = ref('')
@@ -625,6 +632,7 @@ const formatSize = (size) => {
         }
 
         form.input_obj = input_obj
+        form.branch_id = props.branches.id
         form.post('/archive-files',{
             onSuccess: page => {
                

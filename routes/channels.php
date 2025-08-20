@@ -50,6 +50,10 @@ Broadcast::channel('group.{groupId}.{groupType}', function ($user, $groupId, $gr
     return false;
 });
 
+Broadcast::channel('pressence.{userId}', function($user){
+    return (int)$user->id == $userId;
+});
+
 // Broadcast::channel('task.{userId}.{roles}', function($user, $userId, $roles){
 //      if($roles ==  'unit heads'){
 //         return (int) $user->id == (int)$userId;

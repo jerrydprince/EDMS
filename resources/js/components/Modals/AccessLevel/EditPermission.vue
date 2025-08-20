@@ -32,10 +32,10 @@
             <input type="checkbox"  class="h-5 w-5" :value="isGroupSelected(permissionGroup)" :checked="isGroupSelected(permissionGroup)" @change="toggleGroup(permissionGroup)" />
           </div>
           <div class="bg-slate-50 p-3 rounded-lg overflow-hidden duration-500 transition-all" :class="[
-    openPermssion[index]
-      ? 'max-h-[500px] py-3 mt-3 '
-      : 'h-0 mt-0 max-h-0 py-0',
-  ]">
+              openPermssion[index]
+                ? 'max-h-[500px] py-3 mt-3 '
+                : 'h-0 mt-0 max-h-0 py-0',
+            ]">
           <div v-for="(permission, pIndex) in permissionGroup" :key="pIndex">
              <div v-for="(perm, pIndex) in permission" :key="pIndex"
               class="flex my-3 text-gray-900 text-base items-center w-full justify-between">

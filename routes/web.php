@@ -28,6 +28,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TwoFactorChallengeController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\RecycleBinController;
+use App\Http\Controllers\FandAController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +49,7 @@ Route::get('/', function () {
 //login
 Route::middleware('guest')->group(function(){
     //Route::get('/login',[LoginController::class, 'login'])->name('login');
-   // Route::post('/login', [LoginController::class, 'authenticate'])->name('post-login');
+    //Route::post('/login', [LoginController::class, 'authenticate'])->name('post-login');
     Route::get('/register', [RegistrationController::class, 'index'])->name('registration');
     Route::post('/register', [RegistrationController::class, 'register']);
     Route::get('/resend-verification-code', [RegistrationController::class, 'resendVerificationCode']);
@@ -195,7 +196,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
                 //Branches
                 //Route::get('/branches', [ArchiveController::class, 'Branches']);
-                Route::get('/branches/{branch}/{id}', [ArchiveController::class, 'userBranches']);
+                Route::get('/branches/{branch}/{deptId}/{divId}/{unitId}', [ArchiveController::class, 'userBranches']);
                 Route::get('/get-branches-by-role', [AdminController::class, 'getBranchesByRole']);
 
                 //archiving /EDMS
@@ -205,7 +206,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::get('/create-folder',[ArchiveController::class, 'createFolder'])->middleware('permission:edms create');
                 Route::post('/close-folder{id}', [ArchiveController::class, 'closeFolder'])->middleware('permission:edms create');
                 Route::get('/get-division-with-unit', [ArchiveController::class, 'getDivisionWithUnit'])->middleware('permission:edms create');
-                Route::get('/folder-view/{branch}/{folder_id}/{branch_id?}', [ArchiveController::class, 'folderView'])->middleware('permission:edms view');
+                Route::get('/folder-view/{branch}/{folder_id}/{branch_id?}', [ArchiveController::class, 'folderView'])->name('folder-view2')->middleware('permission:edms view');
 
                 //Mails
                 Route::get('/mails', [MailController::class, 'mail'])->middleware('permission:mails view');
@@ -365,6 +366,8 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
                 //Shared files
                 Route::get('/shared-files', [ArchiveController::class, 'sharedFiles'])->middleware('permission:edms view');
+
+                Route::post('/update-profile-image', [UserController::class, 'updateProfileImage']);
            
         });
 
@@ -422,8 +425,22 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
      //Route::post('2fa-challenge', [TwoFactorChallengeController::class, 'verify']);
      Route::get('/2fa', [SettingsController::class, 'twoFA']);
 
-     Route::post('/update-profile-image', [UserController::class, 'updateProfileImage']);
      Route::post('/update-user-2fa', [SettingsController::class, 'updateUser2FA']);
+
+     Route::prefix('finance-and-accounts')->group(function(){
+        Route::get('/', [FandAController::class, 'payments'])->name('f-and-a');
+        Route::post('/set-registry-files', [RegistryController::class, 'setFandARegistryFiles']);
+        Route::get('/get-registry-files', [FandAController::class, 'getRegistryFiles']);
+        Route::post('/initiate-payment', [FandAController::class, 'initiatePayment']);
+        Route::get('/get-division-heads', [FandAController::class, 'getDivisionHeads']);
+        Route::get('/get-unit-heads', [FandAController::class, 'getUnitHeads']);
+        Route::get('/get-active-payments', [FandAController::class, 'getActivePayments']);
+        Route::get('/view-payment/{id}', [FandAController::class, 'viewPayment'])->name('view-payment');
+        Route::post('/reject-payment', [FandAController::class, 'rejectPayment']);
+        Route::post('/accept-division-payment', [FandAController::class, 'acceptDivisionPayment']);
+        Route::get('/get-advanced-section-and-other-charges-users', [FandAController::class, 'getAdvancedSectionAndOtherChargesUsers']);
+        Route::post('/assign-to-advance-other-section', [FandAController::class, 'assignToAdvanceOtherSection']);
+     });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');
 

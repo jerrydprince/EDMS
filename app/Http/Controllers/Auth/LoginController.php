@@ -112,8 +112,8 @@ class LoginController extends Controller
             );
 
             //user session
-            $collection = GeoLocation::lookup($request->ip());
-            $location = $collection? $collection->get('country').", ".$collection->get('city'): null;
+            //$collection = GeoLocation::lookup($request->ip());
+           // $location = $collection? $collection->get('country').", ".$collection->get('city'): null;
 
             $agent = new Agent();
             $browser = $agent->browser();
@@ -122,7 +122,7 @@ class LoginController extends Controller
             session(['branch'=>$this->userBranchDetails($request)]);
           
              $browser = $agent->browser()? $agent->browser(): 'unknown';
-             session()->put(['browser'=>$browser, 'location' => $location]);
+             session()->put(['browser'=>$browser, 'location' => 'temp']);
 
             $request->session()->regenerate();
 
@@ -130,7 +130,7 @@ class LoginController extends Controller
             if(auth()->user()->two_factor_confirmed_at){
                 return redirect()->to('2fa');
             }
-           
+          
             if(auth()->user()->hasRole('data entry')){
                 return redirect()->intended('edms');
             }

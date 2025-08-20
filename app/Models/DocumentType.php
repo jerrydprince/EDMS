@@ -43,7 +43,7 @@ class DocumentType extends Model
      */
     public function division()
     {
-        return $this->belongsToMany(Division::class, 'divisions_document_types');
+        return $this->belongsToMany(Division::class, 'divisions_document_types', 'document_type_id', 'division_id');
     }
 
     /**

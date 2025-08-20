@@ -35,9 +35,19 @@ class Division extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
+    // public function documentType()
+    // {
+    //     return $this->belongsToMany(DocumentType::class, 'divisions_document_types', 'division_id', 'document_type_id');
+    // }
+
+    /**
+     * The documentType that belong to the Division
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function documentType()
     {
-        return $this->belongsToMany(DocumentType::class, 'divisions_document_types');
+        return $this->belongsToMany(DocumentType::class, 'divisions_document_types', 'division_id', 'document_type_id');
     }
 
     /**

@@ -539,6 +539,12 @@ onMounted(async () => {
                 allMessagess.value.is_sent_by_logged_in_user = allMessagess.value.sender_id === userId;
                 //store.commit('setNewChat')
             });
+        
+        Window.Echo.join(`presence.${userId}`)
+            .here((users)=>{
+                console.log('user is online', users);
+            })
+            
 
     } catch (error) {
 

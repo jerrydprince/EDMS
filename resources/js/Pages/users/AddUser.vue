@@ -156,7 +156,7 @@
         </div>
 
         <div class=" w-[45%]">
-          <div :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users')}">
+          <div :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('AGF record manager')}">
             <label for="Department" class=" font-medium">Department</label>
             <select class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @change="selectedDepartment"
               v-model="form.department">
@@ -166,7 +166,7 @@
             <span class="text-red-400 text-sm my-2" v-if="form.errors.department">{{ form.errors.department }}</span>
           </div>
 
-          <div class="mt-5 " :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors')}">
+          <div class="mt-5 " :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors') || form.role.includes('AGF record manager')}">
             <label for="Division" class=" font-medium">Division</label>
             <select v-model="form.division" @change="selectedDivision"
               class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
@@ -175,7 +175,7 @@
             </select>
           </div>
 
-          <div class=" mt-5" :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors') || form.role.includes('division heads')}">
+          <div class=" mt-5" :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors') || form.role.includes('division heads') || form.role.includes('AGF record manager')}">
             <label for="Unit" class=" font-medium">Unit</label>
             <select v-model="form.unit" name="" id="" class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
               <option value="">Select from dropdown</option>

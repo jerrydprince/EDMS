@@ -13,13 +13,13 @@
 
         <button v-if="is_folder_open"
           class="flex gap-2 items-center text-[#F04438] w-32  hover:bg-[#FFFBFA] hover:border hover:border-[#FECDCA] rounded-lg py-2 px-4">
-          <Link :href="'/edms/close-folder/' + folder_id" method="post" as="button">
+          <Link :href="'/dashboard/close-folder/' + folder_id" method="post" as="button" v-if="!page.props.roles.includes('data entry')">
           <p>Close File</p>
           </Link>
         </button>
 
         <button v-else class="flex gap-2 items-center text-green-500 hover:bg-green-100  rounded-lg py-2 px-4">
-          <Link :href="'#'">
+          <Link :href="'#'" v-if="!page.props.roles.includes('data entry')">
           <p>Open File</p>
           </Link>
         </button>
@@ -36,12 +36,18 @@
         </button>
 
         <div v-if="props.is_folder_open">
-          <Link :href="'/edms/archiving/' + page.props.branch + '/' + folder_id">
-          <button class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
-            <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
-            <p>Upload Documents</p>
-          </button>
+          <Link :href="'/edms/archiving/' + props.branch_name + '/' + folder_id" v-if="page.props.roles.includes('data entry')">
+            <button class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
+              <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
+              <p>Upload Documents</p>
+            </button>
+          </Link>
 
+          <Link :href="'/dashboard/archiving/' + props.branch_name + '/' + folder_id+'?branch_id='+props.branch.id" v-else>
+            <button class="flex gap-2 items-center text-white bg-[#3B82F6] rounded-lg py-2 px-4">
+              <i class="pi pi-cloud-upload" style="font-size: 1rem"></i>
+              <p>Upload Documents</p>
+            </button>
           </Link>
         </div>
       </div>
@@ -125,8 +131,67 @@
     </section>
     <Divider class=" " />
 
-    <!-- ===============    File table    ============ -->
+    <!-- ===============    Folder table    ============ -->
+ <!-- Folders View -->
+ <div  class="mb-10 mt-8 text-sm" v-if="folder.subfolder && folder.subfolder.length > 0">
+  <h1 class=" text-lg font-semibold pl-7">Files</h1>
+<table class="w-full text-left">
+  <thead class=" bg-gray-50">
+    <tr class="border text-[#667085]">
+      <!-- <th class="p-3 pl-5 w-[70px]">
+        <Checkbox class="mr-1" />
+      </th> -->
+      <th class="py-5 pl-4">File Name</th>
+      <th class="py-5">File Number</th>
+      <th class="py-5">File Type</th>
+      <th class="py-5">Last Modified</th>
+      <th class="py-5">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border" v-for="(folder, key) in folder.subfolder">
+  
+      <td class="py-3 pl-4">
+        <div class="flex items-center font-medium gap-2">
+          <div class="p-2 rounded-full bg-gray-200">
+            <template v-if="page.props.roles.includes('data entry')">
+              <Link  :href="'/edms/folder-view/' + branch_name + '/' + folder.my_id">
+                <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+              </Link>
+            </template>
+            <template v-else>
+               <Link  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.my_id+'/'+props.branch.id">
+              <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+              </Link>
+            </template>
 
+          </div>
+          <Link v-if="page.props.roles.includes('data entry')" :href="'/edms/folder-view/' + branch_name + '/' + folder.my_id">{{ folder.name }}</Link>
+          <Link v-else  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.my_id+'/'+props.branch.id">{{ folder.name }}</Link>
+        </div>
+      </td>
+      <td class="py-3">{{ folder.number }}</td>
+      <td>{{ folder?.file_type?.name }}</td>
+      <td class="py-3" v-if="folder.file_type">{{ moment(folder?.file_type?.updated_at).format('DD MM YY') }}</td>
+      <td class="py-3">
+        <div class="card flex justify-content-center">
+          <div @click="toggle($event, key)" aria-haspopup="true" aria-controls="overlay_menu"
+            class="flex items-center font-normal h-full border border-gray-300 rounded-lg cursor-pointer">
+            <div class="h-full">
+              <Icon icon="majesticons:more-menu-vertical" width="30" />
+            </div>
+            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+          </div>
+          <Link :href="'/edms/delete-folder/' + folder.id" class="px-3 text-red-500"
+            v-if="admin && admin.length > 0">delete</Link>
+        </div>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
 
     
 
@@ -164,9 +229,7 @@
             </div>
             <h1 class="truncate">{{ file?.name }}</h1>
             <div class="flex gap-3 items-center">
-              <!-- <div @click="toggleMenu(i)" class="p-2 border cursor-pointer rounded-md">
-                                <Icon icon="simple-line-icons:options-vertical" class="" />
-                            </div> -->
+            
               <div @click="toggle2($event, file, key)" aria-haspopup="true" aria-controls="overlay_menu">
                 <div class="flex items-center font-normal h-full">
                   <div>
@@ -246,6 +309,7 @@ import AddArchiveDocsMetadataDialog from "../../components/Modals/AddArchiveDocs
 import fileActivity from "../../components/Modals/FileActivityModal.vue";
 import fileVersion from "../../components/Modals/VersionModal.vue";
 import share from "../../components/Modals/branches/Share.vue";
+import moment from "moment";
 
 const createFolderModal = ref(false);
 const branchDetailsModal = ref(false);
@@ -271,7 +335,7 @@ const modalRef = ref(null)
 const folderRef = ref(null)
 const submenu = ref(false)
 const page = usePage();
-const props = defineProps(['archives', 'branch_id', 'is_folder_open', 'branch_type', 'folder_name', 'folder', 'folder_id', 'branch_type'])
+const props = defineProps(['archives', 'branch_id', 'is_folder_open', 'branch_type', 'folder_name', 'folder', 'folder_id', 'branch_type','branch', 'branch_name'])
 const selectedArchiveId = ref();
 //const state.selectedArchive = ref();
 const menu = ref()

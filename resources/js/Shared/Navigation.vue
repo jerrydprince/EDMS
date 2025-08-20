@@ -50,7 +50,7 @@
         </div>
       </section>
     </div>
-    
+
     <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('data entry')">
       <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3" :class="{ ' -ml-3': shouldShow }">
         <div class="flex items-center gap-2">
@@ -87,6 +87,27 @@
         </div>
         
       </section>
+    </div>
+
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('super users')">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between" :class="{ ' -ml-3': shouldShow }">
+        <div class="flex items-center gap-2">
+          <!-- <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" /> -->
+          
+          <Link :href="'/dashboard/correspondence'"  :class="$page.url === '/dashboard/correspondence'
+            ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : ' px-3  '
+            "
+            class="py-3 w-full flex justify-between items-center text-gray-700  rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+            <svg v-if="!shouldShow" data-v-7c742e76="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="30" height="30" viewBox="0 0 24 24" class="iconify iconify--lucide"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></g></svg>
+            <svg v-else data-v-7c742e76="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="30" height="30" viewBox="0 0 24 24" class="iconify iconify--lucide"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></g></svg>
+         <span class="pl-3">Correspondence</span>
+          <!-- <span v-html="item.icon" v-if="!shouldShow"></span> -->
+         
+          </Link>
+        </div>
+        <!-- <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" /> -->
+      </div>
     </div>
 
     <div class="pb-4 mb-10" v-if="isBranches">
@@ -505,7 +526,7 @@ const admin = ref([
 <path d="M14.1666 17.5V15.8333C14.1666 14.9493 13.8155 14.1014 13.1903 13.4763C12.5652 12.8512 11.7174 12.5 10.8333 12.5H4.16665C3.28259 12.5 2.43474 12.8512 1.80962 13.4763C1.1845 14.1014 0.833313 14.9493 0.833313 15.8333V17.5M19.1666 17.5V15.8333C19.1661 15.0948 18.9203 14.3773 18.4678 13.7936C18.0153 13.2099 17.3818 12.793 16.6666 12.6083M13.3333 2.60833C14.0503 2.79192 14.6858 3.20892 15.1397 3.79359C15.5935 4.37827 15.8398 5.09736 15.8398 5.8375C15.8398 6.57764 15.5935 7.29673 15.1397 7.88141C14.6858 8.46608 14.0503 8.88308 13.3333 9.06667M10.8333 5.83333C10.8333 7.67428 9.34093 9.16667 7.49998 9.16667C5.65903 9.16667 4.16665 7.67428 4.16665 5.83333C4.16665 3.99238 5.65903 2.5 7.49998 2.5C9.34093 2.5 10.8333 3.99238 10.8333 5.83333Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `,
-    permission: 'manage user view'
+    permission: 'manage users view'
   },
   {
     name: "Branch Setup",

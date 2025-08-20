@@ -31,7 +31,7 @@
     <main class="p-4 lg:p-7">
         <section class="flex flex-col lg:flex-row items-start lg:items-center justify-between cursor-pointer">
             <p class="text-2xl lg:text-3xl text-gray-800 font-semibold">
-                Welcome Back ! 👋🏼
+                Welcome Back, {{ user.first_name }} ! 👋🏼
             </p>
             <!-- <div
                 class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg text-sm lg:text-base py-2 px-3 lg:px-4 cursor-pointer mt-6 lg:mt-0">
@@ -105,7 +105,7 @@
                         <p class="py-2 px-2 lg:px-3 bg-gray-50 rounded-lg font-semibold">
                             All Departments
                         </p>
-                        <p class="hover:bg-gray-50 rounded-lg py-2 px-2 lg:px-3">Pinned</p>
+                        <!-- <p class="hover:bg-gray-50 rounded-lg py-2 px-2 lg:px-3">Pinned</p> -->
                     </div>
                     <div class="flex items-center text-xs lg:text-base gap-2 cursor-pointer">
                         <p>View All</p>
@@ -127,7 +127,7 @@
                                     <path d="M11.25 6.75012V14.6251H14.625V6.75012H11.25ZM10.6875 5.62512H15.1875C15.3367 5.62512 15.4798 5.68439 15.5852 5.78987C15.6907 5.89536 15.75 6.03844 15.75 6.18762V15.1876C15.75 15.3368 15.6907 15.4799 15.5852 15.5854C15.4798 15.6909 15.3367 15.7501 15.1875 15.7501H10.6875C10.5383 15.7501 10.3952 15.6909 10.2898 15.5854C10.1843 15.4799 10.125 15.3368 10.125 15.1876V6.18762C10.125 6.03844 10.1843 5.89536 10.2898 5.78987C10.3952 5.68439 10.5383 5.62512 10.6875 5.62512Z" fill="black"/>
                                 </svg>
                             </div>
-                            <Link :href="'/dashboard/branches/department/'+dept.id">
+                            <Link :href="'/dashboard/branches/department/'+dept.id+'/0/0'">
                                 <div class="ml-2">
                                     <h5 class=" font-semibold text-sm">{{dept.title}}</h5>
                                     <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
@@ -154,7 +154,7 @@
                                             </svg>
                                             
                                         </button>
-                                        <Link :href="'/dashboard/branches/division/'+division.id">
+                                        <Link :href="'/dashboard/branches/division/'+dept.id+'/'+division.id+'/0'">
                                             <div class="ml-2">
                                                 <h5 class=" font-semibold text-sm">{{division.title}}</h5>
                                                 <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
@@ -164,7 +164,7 @@
                                     <div class="inner-menu border-l border-gray-300 ml-6 -mt-3 pb-3 hidden" :id="dept.title+'_'+division.title+'_'+index">
                                         <ul>
                                             <li v-for="(unit, ind) in division.unit" :key="ind" class="pt-2 cursor-pointer hover:bg-gray-50 left-line">
-                                                <Link :href="'/dashboard/branches/unit/'+unit.id">
+                                                <Link :href="'/dashboard/branches/unit/'+dept.id+'/'+division.id+'/'+unit.id">
                                                     <div class="ml-10">
                                                         <h5 class=" font-semibold text-sm">{{unit.title}}</h5>
                                                         <p class=" text-gray-400 text-xs">Last Updated a day ago</p>
@@ -188,7 +188,7 @@
 </template>
   
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, computed } from "vue";
 import Actions from "../../assets/Dashboard/Actions.vue"
 import QuickActions1 from "../../assets/Dashboard/QuickActions1.vue";
 import QuickActions1_1 from "../../assets/Dashboard/QuickActions1_1.vue";
@@ -197,10 +197,11 @@ import QuickActions3 from "../../assets/Dashboard/QuickActions3.vue";
 import QuickActions4 from "../../assets/Dashboard/QuickActions4.vue";
 import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDialog.vue";
 import EmptyState from "../../components/EmptyState.vue";
-import { Link } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 
 const props = defineProps(['departments']);
-
+const page = usePage()
+const user = computed(()=>page.props.user)
 const menu = ref();
 const departmentalModal = ref(false);
 const step = ref(1);

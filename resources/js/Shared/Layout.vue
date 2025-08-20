@@ -55,6 +55,7 @@ const notifications = computed(()=> store.getters.getNotifications)
 const total_task_notifications = computed(()=>store.getters.getTotalTaskNotifications)
 const store = useStore()
 const current_page = computed(()=> page.url)
+const comment = ref()
 
 
   const toggleSearchState = () => {
@@ -99,6 +100,7 @@ const current_page = computed(()=> page.url)
     })
   }
   provide('notifications', notifications)
+  provide('comments', comment)
   onMounted(()=>{
     
     //getUserNotifications()
@@ -124,7 +126,9 @@ const current_page = computed(()=> page.url)
       });
 
        Echo.private('comment.' + user.value.id)
-        .notification((notification) => {
+        .notification((nots) => {
+            comment.value = nots
+            console.log(comment.value)
             getUserNotifications()
             store.dispatch("fetchNotifications")
         });

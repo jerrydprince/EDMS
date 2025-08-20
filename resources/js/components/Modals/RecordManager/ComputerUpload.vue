@@ -43,11 +43,15 @@
         </div>
       </div>
 
+      <div class="mt-2">
+        <label for="" >Send as/to</label>
       <select  name="" v-model="medium"  id=""
           class=" bg-gray-50 border border-gray-300 rounded-xl p-2 my-2 outline-none  mt-2 mb-8 w-full ">
           <option value="correspondence">Correspondence</option>
           <option value="via_mail">Send correspondence and mail file</option>
+          <option value="finance">F & A</option>
       </select>
+      </div>
 
       <div v-if="files && files.length > 0">
         <div class=" w-full  mt-3 gap-4 flex items-center" v-for="file in files">
@@ -148,7 +152,7 @@ import { useToast } from "primevue/usetoast";
 import {useForm, router} from '@inertiajs/vue3'
 
 const props = defineProps(["modelValue"]);
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue",'update']);
 const loading = ref(true)
 const files = ref()
 const medium = ref("correspondence")
@@ -212,16 +216,35 @@ const getFileURL = (file) =>{
     }
 
 const submit = () => {
-  router.post('/dashboard/correspondence',{files: files.value, medium: medium.value}, {onSuccess:page=>{
-    emit("update:modelValue", false);
-  loading.value = false
-    toast.add({
-      severity: "success",
-      summary: '',
-      detail: "",
-      life: 3000,
-    });
-  }})
+  if(medium.value == 'correspondence' || medium.value == 'via_mail'){
+    router.post('/dashboard/correspondence',{files: files.value, medium: medium.value}, {onSuccess:page=>{
+      emit("update:modelValue", false);
+      emit('update')
+      files.value = null
+      medium.value =''
+      loading.value = false
+      toast.add({
+        severity: "success",
+        summary: '',
+        detail: "",
+        life: 3000,
+      });
+    }})
+  }else if(medium.value == 'finance'){
+    router.post('/finance-and-accounting/set-registry-files',{files: files.value, medium: medium.value}, {onSuccess:page=>{
+      emit("update:modelValue", false);
+      emit('update')
+      files.value = null
+      medium.value =''
+      loading.value = false
+      toast.add({
+        severity: "success",
+        summary: '',
+        detail: "",
+        life: 3000,
+      });
+    }})
+  }
   
 };
 </script>

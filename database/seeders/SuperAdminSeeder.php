@@ -22,7 +22,7 @@ class SuperAdminSeeder extends Seeder
             'grade_level' => '2',
             'phone' => '08000000001',
             'email' => 'super_admin@ansel.com',
-            'password' => Hash::make('super_admin@ansel.com'),
+            'password' => Hash::make('password'),
             'is_approved' => true
         ]);
 

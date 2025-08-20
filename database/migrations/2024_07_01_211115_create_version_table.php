@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->json('versions');
             $table->unsignedBigInteger('archive_id');
-            $table->foreign('archive_id')->references('id')->on('archive');
+            $table->foreign('archive_id')->references('id')->on('archives');
             $table->timestamps();
         });
     }

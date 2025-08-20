@@ -27,7 +27,6 @@ class CorrespondenceController extends Controller
     }
 
     public function createCorrespondence(Request $request){
-        
         $corr = new Correspondence();
         $corr->description = $request->description;
         $corr->created_by = auth()->user()->id;
@@ -74,14 +73,15 @@ class CorrespondenceController extends Controller
             $newFile->save();
 
             $superUsers = User::role('super users')->first();
-
-            $fm = new FileMovement();
-            $fm->sent_from = auth()->user()->id;
-            $fm->sent_to = $superUsers->id;
-            $fm->file_id = $newFile->id;
-            $fm->status = "pending";
-            $fm->file_movement_id = $this->getFileMovementUniqueId();
-            $fm->sent_to_branch = 'agf registry';
+            if($superUsers){
+                $fm = new FileMovement();
+                $fm->sent_from = auth()->user()->id;
+                $fm->sent_to = $superUsers->id;
+                $fm->file_id = $newFile->id;
+                $fm->status = "pending";
+                $fm->file_movement_id = $this->getFileMovementUniqueId();
+                $fm->sent_to_branch = 'agf registry';
+            }
            
             if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
                 $fm->sent_to_agf = true;

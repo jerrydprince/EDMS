@@ -42,9 +42,9 @@
     <Divider />
     <div class="px-7">
         <!-- incoming  -->
-        <div class=" mb-52" v-if="clickedButton == 'incoming'">
+        <div class=" mb-52" v-if="clickedButton == 'incoming' && incoming && incoming.data">
 
-            <DataTable v-model:expandedRows="expandedRows" :value="incoming" dataKey="id" paginator :rows="10"
+            <DataTable v-model:expandedRows="expandedRows" :value="incoming.data" dataKey="id"
                 @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem" :pt="{
                 root: {
                     class: ' border rounded-md pb-10 overflow-hidden relative'
@@ -196,9 +196,9 @@
         </div>
 
         <!-- outgoing -->
-        <div class=" mb-52" v-if="clickedButton == 'outgoing'">
+        <div class=" mb-52" v-if="clickedButton == 'outgoing' && outgoing && outgoing.data">
 
-            <DataTable v-model:expandedRows="expandedRows" :value="outgoing" dataKey="id" paginator :rows="10"
+            <DataTable v-model:expandedRows="expandedRows" :value="outgoing.data" dataKey="id"
                 @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem" :pt="{
                 root: {
                     class: ' border rounded-md pb-10 overflow-hidden relative'
@@ -349,7 +349,7 @@
     <TrackPackage v-model="TrackPackageModel" :department="props.department" :division="props.division"
         :unit="props.unit" />
     <ScannedFiles v-model="scanModal" />
-    <ScanFile v-model="openScan" />
+    <ScanFile v-model="openScan" @updateData="updateData" />
 </template>
 <script setup>
 import { ref, onMounted, computed, defineProps, watchEffect, watch } from "vue";
@@ -388,8 +388,23 @@ const branches = ref([]);
 const destBranchType = ref()
 const props = defineProps(['department', 'division', 'unit']);
 const selected_branch = ref()
+const raw_files = ref([])
+const incoming = ref([])
+const outgoing = ref([])
 
 const user_branch = computed(() => page.props.userBranch)
+
+const updateData = ()=>{
+    toast.add({
+            severity: "success",
+            summary: 'File forwrded',
+            detail: "file has been forwarded to outgoing files.",
+            life: 3000,
+        });
+    getBranchFiles()
+    getBranchFiles()
+    getUserBranches()
+}
 
 const getUserBranch = () => {
     if (user_branch.value.unit_id) {
@@ -415,44 +430,44 @@ const getUserBranchType = () => {
     }
 }
 
-const outgoing = computed(() => {
-    if (user_branch.value.unit_id) {
-        let filtered = files.value.filter((item) => item.sent_from_unit === user_branch.value.unit_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-    if (user_branch.value.division_id) {
-        let filtered = files.value.filter((item) => item.sent_from_division === user_branch.value.division_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-    if (user_branch.value.department_id) {
-        let filtered = files.value.filter((item) => item.sent_from_department === user_branch.value.department_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-    if (isPermissions('agf registry view')) {
-        let filtered = files.value.filter((item) => item.sent_to_agf == 1)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-})
+// const outgoing = computed(() => {
+//     if (user_branch.value.unit_id) {
+//         let filtered = files.value.filter((item) => item.sent_from_unit === user_branch.value.unit_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+//     if (user_branch.value.division_id) {
+//         let filtered = files.value.filter((item) => item.sent_from_division === user_branch.value.division_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+//     if (user_branch.value.department_id) {
+//         let filtered = files.value.filter((item) => item.sent_from_department === user_branch.value.department_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+//     if (isPermissions('agf registry view')) {
+//         let filtered = files.value.filter((item) => item.sent_to_agf == 1)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+// })
 
-const incoming = computed(() => {
-    if (user_branch.value.unit_id) {
-        let filtered = files.value.filter((item) => item.sent_to_unit == user_branch.value.unit_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-    if (user_branch.value.division_id) {
-        let filtered = files.value.filter((item) => item.sent_to_division == user_branch.value.division_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-    if (user_branch.value.department_id) {
-        let filtered = files.value.filter((item) => item.sent_to_department == user_branch.value.department_id)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
+// const incoming = computed(() => {
+//     if (user_branch.value.unit_id) {
+//         let filtered = files.value.filter((item) => item.sent_to_unit == user_branch.value.unit_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+//     if (user_branch.value.division_id) {
+//         let filtered = files.value.filter((item) => item.sent_to_division == user_branch.value.division_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+//     if (user_branch.value.department_id) {
+//         let filtered = files.value.filter((item) => item.sent_to_department == user_branch.value.department_id)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
 
-    if (isPermissions('agf registry view')) {
-        let filtered = files.value.filter((item) => item.sent_from_agf == 1)
-        return (filtered && filtered.length > 0) ? filtered : []
-    }
-})
+//     if (isPermissions('agf registry view')) {
+//         let filtered = files.value.filter((item) => item.sent_from_agf == 1)
+//         return (filtered && filtered.length > 0) ? filtered : []
+//     }
+// })
 
 const isPermissions = (perm) =>{
     let found = permissions.value.find((item)=>{
@@ -484,7 +499,10 @@ const formatDate = (inputDate) => {
 
 const getBranchFiles = () => {
     axios.get(`/dashboard/registry/branchFiles`).then((response) => {
-        files.value = response.data;
+        files.value = response.data.data;
+        incoming.value = response.data.incoming 
+        outgoing.value = response.data.outgoing
+        raw_files.value = response.data;
     })
 
 };

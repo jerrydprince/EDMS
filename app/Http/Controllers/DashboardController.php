@@ -15,10 +15,10 @@ class DashboardController extends Controller
        $task = [];
         $branch = [];
 
-       if(isset(auth()->user()->task)){
+       if(auth()->user()->task()->exists()){
         $task = auth()->user()->task;
        }
-       
+     
         if(auth()->user()->unit_id){
             // $branch = auth()->user()->unit()->with(['archive'=>function($query){
             //     $query->with(['filePath', 'archiveDocs'])->paginate(10);
@@ -26,10 +26,11 @@ class DashboardController extends Controller
        
 
             $unit = Unit::find(auth()->user()->unit_id);
-            if($unit->archive){
+            
+            if($unit->archive()->exists()){
                 $branch= $unit->archive()->with(['filePath', 'archiveDocs'])->latest()->take(10)->get();
             }
-           
+    
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $perPage = 10;
             $total = $branch->count();
@@ -47,7 +48,7 @@ class DashboardController extends Controller
             //         }])->first();
 
             $division = Division::find(auth()->user()->division_id);
-            if($division->archive){
+            if($division->archive()->exists()){
                 $branch= $division->archive()->with(['filePath', 'archiveDocs'])->paginate(10);
             }
 
@@ -58,12 +59,14 @@ class DashboardController extends Controller
         //     $query->with(['filePath', 'archiveDocs']);
         // }])->first();
 
+       if(auth()->user()->department_id){
         $department = Department::find(auth()->user()->department_id);
-        if($department->archive){
+        if($department->archive()->exists()){
             $branch= $department->archive()->with(['filePath', 'archiveDocs'])->paginate(10);
         }
            
         return inertia('dashboard/index', compact('branch', 'task'));
+       }
        // }
        
     }

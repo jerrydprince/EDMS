@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('archive_keys');
             $table->text('archive_values');
             $table->unsignedBigInteger('archive_id');
-            $table->foreign('archive_id')->references('id')->on('archive');
+            $table->foreign('archive_id')->references('id')->on('archives');
             $table->timestamps();
         });
     }
