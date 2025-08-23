@@ -1511,9 +1511,6 @@ video {
 .h-\[242px\] {
   height: 242px;
 }
-.h-\[250px\] {
-  height: 250px;
-}
 .h-\[270px\] {
   height: 270px;
 }
@@ -1725,6 +1722,9 @@ video {
 .min-h-\[12rem\] {
   min-height: 12rem;
 }
+.min-h-\[150px\] {
+  min-height: 150px;
+}
 .min-h-\[30vh\] {
   min-height: 30vh;
 }
@@ -1748,9 +1748,6 @@ video {
 }
 .min-h-screen {
   min-height: 100vh;
-}
-.min-h-\[150px\] {
-  min-height: 150px;
 }
 .\!w-screen {
   width: 100vw !important;

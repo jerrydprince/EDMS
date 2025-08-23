@@ -49326,6 +49326,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var recipient = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
     var assistantDirectors = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
     var advance_section_users = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+    var checking = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+    var checkingStaff = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
     var form = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm)({
       generalComment: "",
       dueDate: "",
@@ -49343,6 +49345,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
     //for advance section heads
     var form3 = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm)({
+      generalComment: "",
+      dueDate: "",
+      recipient: "",
+      payment_id: props.paymentId
+    });
+
+    //for advance section
+    var form4 = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm)({
       generalComment: "",
       dueDate: "",
       recipient: "",
@@ -49488,6 +49498,54 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       });
     };
+    var assignToChecking = function assignToChecking() {
+      form4.generalComment = form.generalComment;
+      form4.dueDate = form.dueDate;
+      if (form4.recipient === "") {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Please select a recipient.",
+          life: 3000
+        });
+        return;
+      } else if (form4.generalComment.trim() === "") {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Please add a general comment.",
+          life: 3000
+        });
+        return;
+      } else if (form4.dueDate.trim() === "") {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Please set a due date.",
+          life: 3000
+        });
+        return;
+      }
+      form4.post('/finance-and-accounts/assign-to-checking', {
+        onSuccess: function onSuccess() {
+          toast.add({
+            severity: "success",
+            summary: "Task Accepted",
+            detail: "The file has been passed to the Advance section.",
+            life: 3000
+          });
+          emit("cancelled");
+        },
+        onError: function onError(error) {
+          toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: error.response.data.message || "An error occurred while accepting the task.",
+            life: 3000
+          });
+        }
+      });
+    };
     var currentRole = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("Advance Section");
     // Roles - Deputy Director, Assistant Director, Advance Section
     var acceptTask = function acceptTask() {
@@ -49502,6 +49560,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }
       if (roles.value.includes('advance section(HOS)')) {
         assignToAdvanceSection();
+      }
+      if (roles.value.includes('advance section')) {
+        assignToChecking();
       }
 
       // if(roles.value.includes('advance section') || roles.includes('other charges')){
@@ -49553,24 +49614,43 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         return _ref3.apply(this, arguments);
       };
     }();
-    var getUnitHeads = /*#__PURE__*/function () {
+    var getCheckingUsers = /*#__PURE__*/function () {
       var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-        var response;
         return _regeneratorRuntime().wrap(function _callee3$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
             case 0:
-              _context3.prev = 0;
-              _context3.next = 3;
+              _context3.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_5__["default"].get('/finance-and-accounts/get-checking-users').then(function (response) {
+                checking.value = response.data;
+              });
+            case 2:
+            case "end":
+              return _context3.stop();
+          }
+        }, _callee3);
+      }));
+      return function getCheckingUsers() {
+        return _ref4.apply(this, arguments);
+      };
+    }();
+    var getUnitHeads = /*#__PURE__*/function () {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+        var response;
+        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+          while (1) switch (_context4.prev = _context4.next) {
+            case 0:
+              _context4.prev = 0;
+              _context4.next = 3;
               return axios__WEBPACK_IMPORTED_MODULE_5__["default"].get('/finance-and-accounts/get-unit-heads');
             case 3:
-              response = _context3.sent;
+              response = _context4.sent;
               assistantDirectors.value = response.data;
-              _context3.next = 11;
+              _context4.next = 11;
               break;
             case 7:
-              _context3.prev = 7;
-              _context3.t0 = _context3["catch"](0);
-              console.error("Error fetching unit heads:", _context3.t0);
+              _context4.prev = 7;
+              _context4.t0 = _context4["catch"](0);
+              console.error("Error fetching unit heads:", _context4.t0);
               toast.add({
                 severity: "error",
                 summary: "Error",
@@ -49579,12 +49659,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               });
             case 11:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
-        }, _callee3, null, [[0, 7]]);
+        }, _callee4, null, [[0, 7]]);
       }));
       return function getUnitHeads() {
-        return _ref4.apply(this, arguments);
+        return _ref5.apply(this, arguments);
       };
     }();
     var staffList = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([{
@@ -49609,6 +49689,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         return (item === null || item === void 0 || (_item$first_name = item.first_name) === null || _item$first_name === void 0 ? void 0 : _item$first_name.toLowerCase().includes(searchStaffValue.value.toLowerCase())) || (item === null || item === void 0 || (_item$last_name = item.last_name) === null || _item$last_name === void 0 ? void 0 : _item$last_name.toLowerCase().includes(searchStaffValue.value.toLowerCase()));
       });
     });
+    var filterCheckingUsers = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(function () {
+      return checking.value.filter(function (item) {
+        var _item$first_name2, _item$last_name2;
+        return (item === null || item === void 0 || (_item$first_name2 = item.first_name) === null || _item$first_name2 === void 0 ? void 0 : _item$first_name2.toLowerCase().includes(checkingStaff.value.toLowerCase())) || (item === null || item === void 0 || (_item$last_name2 = item.last_name) === null || _item$last_name2 === void 0 ? void 0 : _item$last_name2.toLowerCase().includes(checkingStaff.value.toLowerCase()));
+      });
+    });
     var cancelModal = function cancelModal() {
       emit("cancelled");
     };
@@ -49619,6 +49705,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }
       if (roles.value.includes('advance section(HOS)')) {
         getAdvanceSectionUser();
+      }
+      if (roles.value.includes('advance section')) {
+        getCheckingUsers();
       }
     });
     var __returned__ = {
@@ -49634,22 +49723,28 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       recipient: recipient,
       assistantDirectors: assistantDirectors,
       advance_section_users: advance_section_users,
+      checking: checking,
+      checkingStaff: checkingStaff,
       form: form,
       form2: form2,
       form3: form3,
+      form4: form4,
       assignAdvanceOtherCharges: assignAdvanceOtherCharges,
       assignToUnit: assignToUnit,
       assignToAdvanceSection: assignToAdvanceSection,
+      assignToChecking: assignToChecking,
       currentRole: currentRole,
       acceptTask: acceptTask,
       isFormValid: isFormValid,
       selectRecipient: selectRecipient,
       getAdvancedSectionAndOtherChargesUsers: getAdvancedSectionAndOtherChargesUsers,
       getAdvanceSectionUser: getAdvanceSectionUser,
+      getCheckingUsers: getCheckingUsers,
       getUnitHeads: getUnitHeads,
       staffList: staffList,
       filteredStaffList: filteredStaffList,
       filteredAdvanceSection: filteredAdvanceSection,
+      filterCheckingUsers: filterCheckingUsers,
       cancelModal: cancelModal,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       computed: vue__WEBPACK_IMPORTED_MODULE_0__.computed,
@@ -53805,6 +53900,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 /* harmony import */ var primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/usetoast */ "./node_modules/primevue/usetoast/usetoast.esm.js");
+/* harmony import */ var _DropdownComp_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../DropdownComp.vue */ "./resources/js/components/DropdownComp.vue");
+/* harmony import */ var _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @inertiajs/vue3 */ "./node_modules/@inertiajs/vue3/dist/index.esm.js");
+
+
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -53818,23 +53917,50 @@ __webpack_require__.r(__webpack_exports__);
     var emit = __emit;
     var visible = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(true);
     var addNewVote = function addNewVote() {
-      toast.add({
-        severity: "success",
-        summary: "Vote successfully added!",
-        detail: "The new vote has been added to the system.",
-        life: 3000
+      form.post('/finance-and-accounts/create-vote-book', {
+        onSuccess: function onSuccess() {
+          toast.add({
+            severity: "success",
+            summary: "Vote successfully added!",
+            detail: "The new vote has been added to the system.",
+            life: 3000
+          });
+          emit("cancelled");
+        },
+        onError: function onError() {
+          toast.add({
+            severity: "error",
+            summary: "Error!",
+            detail: "Failed to create votebook.",
+            life: 3000
+          });
+        }
       });
-      emit("cancelled");
     };
-    var form = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)({
-      voteName: "",
-      accountNumber: "",
-      GIFMISCode: "",
-      dateCreated: "",
+
+    // const form = ref({
+    //   voteName: "",
+    //   accountNumber: "",
+    //   GIFMISCode: "",
+    //   dateCreated: "",
+    //   balance: "",
+    // });
+
+    var form = (0,_inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm)({
+      name: "",
+      account_number: "",
+      gifmis_code: "",
+      date_created: new Date(),
+      account_type: "",
       balance: ""
     });
+    var accountType = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([{
+      name: "Standard Account"
+    }, {
+      name: "Special Account"
+    }]);
     var isFormValid = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(function () {
-      return form.value.voteName.trim() !== "" && form.value.dateCreated.trim() !== "" && form.value.GIFMISCode.trim() !== "" && form.value.accountNumber.trim() !== "" && form.value.balance.trim() !== "";
+      return form.name.trim() !== "" && form.date_created.trim() !== "" && form.gifmis_code.trim() !== "" && form.account_number.trim() !== "" && form.account_type !== "" && form.balance.trim() !== "";
     });
     var cancelModal = function cancelModal() {
       emit("cancelled");
@@ -53845,12 +53971,17 @@ __webpack_require__.r(__webpack_exports__);
       visible: visible,
       addNewVote: addNewVote,
       form: form,
+      accountType: accountType,
       isFormValid: isFormValid,
       cancelModal: cancelModal,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       computed: vue__WEBPACK_IMPORTED_MODULE_0__.computed,
       get useToast() {
         return primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.useToast;
+      },
+      DropdownComp: _DropdownComp_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
+      get useForm() {
+        return _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_3__.useForm;
       }
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
@@ -64088,7 +64219,7 @@ var _hoisted_127 = {
   "class": "text-base text-gray-500 my-4"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  var _$setup$data$appended, _$props$payment, _$props$payment2, _$props$payment3;
+  var _$setup$data$appended, _$props$payment;
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   var _component_Divider = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Divider");
   var _directive_tooltip = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveDirective)("tooltip");
@@ -64271,7 +64402,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       icon: "ph:eye-light",
       width: "25"
     })])], 10 /* CLASS, PROPS */, _hoisted_70);
-  }), 128 /* KEYED_FRAGMENT */))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" GENERATE VOUCHER AND APPENDED VOUCHER BLOCK START "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Append Voucher Block "), $setup.roles.includes('advance section') || $setup.roles.includes('advance section(HOS)') && !((_$props$payment = $props.payment) !== null && _$props$payment !== void 0 && _$props$payment.voucher) && $props.payment.ledger_count > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_75, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)(((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+  }), 128 /* KEYED_FRAGMENT */))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" GENERATE VOUCHER AND APPENDED VOUCHER BLOCK START "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Append Voucher Block "), ($setup.roles.includes('advance section') || $setup.roles.includes('advance section(HOS)')) && $props.payment.voucher.length == 0 && $props.payment.ledger_count > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_75, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)(((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     onClick: _cache[8] || (_cache[8] = function () {
       if ($setup.data.ledgerCreated) $setup.createVoucherModal = true;
     }),
@@ -64292,10 +64423,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }
   }, void 0, {
     bottom: true
-  }]])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" View Appended Voucher Block "), (_$props$payment2 = $props.payment) !== null && _$props$payment2 !== void 0 && _$props$payment2.voucher ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_77, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_78, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_79, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
+  }]])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" View Appended Voucher Block "), $props.payment.voucher.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_77, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_78, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_79, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "ri:coupon-2-line",
     width: "17"
-  }), _hoisted_80]), $setup.roles.includes('advance section(HOS)') || $setup.roles.includes('advanced section') ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_81, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+  }), _hoisted_80]), ($setup.roles.includes('advance section(HOS)') || $setup.roles.includes('advanced section')) && $props.payment.voucher.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_81, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "text-sm",
     onClick: $setup.editVoucher
   }, "Edit Voucher info"), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
@@ -64338,7 +64469,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }, null, 8 /* PROPS */, _hoisted_97), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_98, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.getAssignedTo()), 1 /* TEXT */)])]);
   }), 128 /* KEYED_FRAGMENT */))])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_99, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_100, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Icon, {
     icon: "lucide:calendar"
-  }), _hoisted_101]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_102, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.formatDate((_$props$payment3 = $props.payment) === null || _$props$payment3 === void 0 || (_$props$payment3 = _$props$payment3.assigned_by) === null || _$props$payment3 === void 0 ? void 0 : _$props$payment3.due_date)), 1 /* TEXT */)])])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider, {
+  }), _hoisted_101]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_102, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.formatDate((_$props$payment = $props.payment) === null || _$props$payment === void 0 || (_$props$payment = _$props$payment.assigned_by) === null || _$props$payment === void 0 ? void 0 : _$props$payment.due_date)), 1 /* TEXT */)])])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Divider, {
     "class": "mt-10"
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "px-5 flex w-full items-center pb-5 justify-between cursor-pointer",
@@ -93444,16 +93575,41 @@ var _hoisted_33 = {
   "class": "text-sm text-center w-full text-gray-700 py-8"
 };
 var _hoisted_34 = {
+  key: 3,
+  "class": "w-full mt-4"
+};
+var _hoisted_35 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+    "class": "text-gray-700 text-sm"
+  }, "Select Staff", -1 /* HOISTED */);
+});
+var _hoisted_36 = {
+  "class": "bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]"
+};
+var _hoisted_37 = {
+  "class": "flex flex-col justify-between items-start gap-y-2 max-h-full h-auto overflow-y-scroll hide_scroll rounded-2xl py-2"
+};
+var _hoisted_38 = {
+  "class": "bg-gray-100 p-4 rounded-lg flex items-center gap-x-6"
+};
+var _hoisted_39 = {
+  "class": "text-xs text-gray-600"
+};
+var _hoisted_40 = {
+  key: 1,
+  "class": "text-sm text-center w-full text-gray-700 py-8"
+};
+var _hoisted_41 = {
   "class": "flex items-center justify-end gap-3 mt-5 pb-2 pr-7"
 };
-var _hoisted_35 = ["disabled"];
+var _hoisted_42 = ["disabled"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Icon = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Icon");
   var _component_Checkbox = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Checkbox");
   var _component_Dialog = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Dialog");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Dialog, {
     visible: $setup.visible,
-    "onUpdate:visible": _cache[7] || (_cache[7] = function ($event) {
+    "onUpdate:visible": _cache[9] || (_cache[9] = function ($event) {
       return $setup.visible = $event;
     }),
     closable: false,
@@ -93483,7 +93639,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "class": ".custom-dialog"
   }, {
     footer: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_41, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         onClick: $setup.cancelModal,
         "class": "py-2 w-auto border-gray-200 border border-solid rounded-lg px-10 bg-white",
         label: "Cancel"
@@ -93493,7 +93649,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         disabled: !$setup.isFormValid,
         severity: "secondary",
         outlined: ""
-      }, " Proceed ", 8 /* PROPS */, _hoisted_35)])];
+      }, " Proceed ", 8 /* PROPS */, _hoisted_42)])];
     }),
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
@@ -93560,7 +93716,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         key: 0,
         src: $setup.checkBox,
         "class": "absolute top-3 right-3"
-      }, null, 8 /* PROPS */, _hoisted_26)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Advance Section Authorization "), $setup.roles.includes('advance section(HOS)') ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_27, [_hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Search Filter "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, null, 8 /* PROPS */, _hoisted_26)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Advance Section Authorization HOS "), $setup.roles.includes('advance section(HOS)') ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_27, [_hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_30, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Search Filter "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "search",
         "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
           return $setup.searchStaffValue = $event;
@@ -93581,7 +93737,28 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           }),
           "class": ""
         }, null, 8 /* PROPS */, ["value", "modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_32, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(staff.last_name + " " + staff.first_name), 1 /* TEXT */)])])]);
-      }), 128 /* KEYED_FRAGMENT */)) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_33, " No staff found! "))])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])])];
+      }), 128 /* KEYED_FRAGMENT */)) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_33, " No staff found! "))])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Advance Section Authorization  "), $setup.roles.includes('advance section') ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_34, [_hoisted_35, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Search Filter "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+        type: "search",
+        "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
+          return $setup.checkingStaff = $event;
+        }),
+        "class": "outline-primary/60 border border-solid border-gray-300 rounded-md w-full px-3 py-2 text-xs",
+        placeholder: "Search Staff List"
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.checkingStaff]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Staff List "), $setup.filterCheckingUsers.length ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+        key: 0
+      }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($setup.filterCheckingUsers, function (staff, index) {
+        return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+          key: index,
+          "class": "w-full"
+        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Checkbox, {
+          value: staff.id,
+          modelValue: $setup.form4.recipient,
+          "onUpdate:modelValue": _cache[8] || (_cache[8] = function ($event) {
+            return $setup.form4.recipient = $event;
+          }),
+          "class": ""
+        }, null, 8 /* PROPS */, ["value", "modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(staff.last_name + " " + staff.first_name), 1 /* TEXT */)])])]);
+      }), 128 /* KEYED_FRAGMENT */)) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("p", _hoisted_40, " No staff found! "))])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])])];
     }),
     _: 1 /* STABLE */
   }, 8 /* PROPS */, ["visible"]);
@@ -99033,6 +99210,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   render: () => (/* binding */ render)
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+/* harmony import */ var _assets_images_votebook_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../assets/images/votebook.svg */ "./resources/js/assets/images/votebook.svg");
+
 
 var _withScopeId = function _withScopeId(n) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.pushScopeId)("data-v-5d9c9be7"), n = n(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.popScopeId)(), n;
@@ -99044,7 +99223,7 @@ var _hoisted_2 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "items-start justify-start flex flex-col border-b-2 border-solid border-[#E6E6E6] w-full pb-4"
   }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
-    src: "/assets/images/votebook.svg",
+    src: _assets_images_votebook_svg__WEBPACK_IMPORTED_MODULE_1__["default"],
     alt: "reject task",
     "class": "-ml-2 drop-shadow-lg"
   }), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
@@ -99104,17 +99283,30 @@ var _hoisted_13 = /*#__PURE__*/_withScopeId(function () {
     "class": "text-gray-700 font-normal mb-2 text-sm"
   }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": ""
-  }, "Date Created")], -1 /* HOISTED */);
+  }, "Account type")], -1 /* HOISTED */);
 });
 var _hoisted_14 = {
+  "class": ""
+};
+var _hoisted_15 = {
+  "class": "self-start mt-5"
+};
+var _hoisted_16 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    "class": "text-gray-700 font-normal mb-2 text-sm"
+  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+    "class": ""
+  }, "Date Created")], -1 /* HOISTED */);
+});
+var _hoisted_17 = {
   "class": "flex items-center justify-end gap-3 mt-5 py-3 pr-5 border-t-2 border-solid border-[#E6E6E6]"
 };
-var _hoisted_15 = ["disabled"];
+var _hoisted_18 = ["disabled"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Dialog = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Dialog");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Dialog, {
     visible: $setup.visible,
-    "onUpdate:visible": _cache[5] || (_cache[5] = function ($event) {
+    "onUpdate:visible": _cache[6] || (_cache[6] = function ($event) {
       return $setup.visible = $event;
     }),
     closable: false,
@@ -99144,7 +99336,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "class": ".custom-dialog"
   }, {
     footer: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         onClick: $setup.cancelModal,
         "class": "py-2 w-auto border-gray-200 border-2 border-solid rounded-lg px-10 bg-white",
         label: "Cancel"
@@ -99154,24 +99346,24 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         disabled: !$setup.isFormValid,
         severity: "secondary",
         outlined: ""
-      }, " Create ", 8 /* PROPS */, _hoisted_15)])];
+      }, " Create ", 8 /* PROPS */, _hoisted_18)])];
     }),
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_1, [_hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" THE FORM GOES HERE "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("section", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [_hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-          return $setup.form.voteName = $event;
+          return $setup.form.name = $event;
         }),
         type: "text",
         placeholder: "Enter Vote Name",
         "class": "py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.voteName]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_hoisted_7, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.name]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_hoisted_7, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
-          return $setup.form.accountNumber = $event;
+          return $setup.form.account_number = $event;
         }),
         type: "text",
         placeholder: "Enter Account Number",
         "class": "py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.accountNumber]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [_hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.account_number]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [_hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
           return $setup.form.balance = $event;
         }),
@@ -99180,19 +99372,25 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         "class": "py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
       }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.balance]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
-          return $setup.form.GIFMISCode = $event;
+          return $setup.form.gifmis_code = $event;
         }),
         type: "text",
         placeholder: "Enter GIFMIS Code",
         "class": "py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.GIFMISCode]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.gifmis_code]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["DropdownComp"], {
+        modelValue: $setup.form.account_type,
         "onUpdate:modelValue": _cache[4] || (_cache[4] = function ($event) {
-          return $setup.form.dateCreated = $event;
+          return $setup.form.account_type = $event;
+        }),
+        items: $setup.accountType
+      }, null, 8 /* PROPS */, ["modelValue", "items"])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [_hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+        "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
+          return $setup.form.date_created = $event;
         }),
         type: "datetime-local",
         placeholder: "Add Comments",
         "class": "py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.dateCreated]])])])])])];
+      }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.form.date_created]])])])])])];
     }),
     _: 1 /* STABLE */
   }, 8 /* PROPS */, ["visible"]);

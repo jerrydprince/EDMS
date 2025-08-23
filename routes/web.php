@@ -445,9 +445,12 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/assign-to-advance-other-section', [FandAController::class, 'assignToAdvanceOtherSection']);
         Route::post('/assign-to-advance-section', [FandAController::class, 'assignToAdvanceSection']);
         Route::get('/get-advance-section-users', [FandAController::class, 'getAdvanceSectionUsers']);
+        Route::get('/get-checking-users', [FandAController::class, 'getCheckingUsers']);
+        Route::post('/assign-to-checking', [FandAController::class, 'assignToChecking']);
 
         //votebook
         Route::get('/vote-book', [VoteBookController::class, 'index'])->name('vote-book');
+        Route::post('/create-vote-book', [VoteBookController::class, 'createVoteBook']);
 
         //ledger
         Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');

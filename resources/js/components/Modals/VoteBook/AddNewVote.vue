@@ -18,7 +18,7 @@
         class="items-start justify-start flex flex-col border-b-2 border-solid border-[#E6E6E6] w-full pb-4"
       >
         <img
-          src="/assets/images/votebook.svg"
+          src="../../../assets/images/votebook.svg"
           alt="reject task"
           class="-ml-2 drop-shadow-lg"
         />
@@ -34,7 +34,7 @@
           </div>
           <div>
             <input
-              v-model="form.voteName"
+              v-model="form.name"
               type="text"
               placeholder="Enter Vote Name"
               class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
@@ -47,7 +47,7 @@
           </div>
           <div>
             <input
-              v-model="form.accountNumber"
+              v-model="form.account_number"
               type="text"
               placeholder="Enter Account Number"
               class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
@@ -73,7 +73,7 @@
           </div>
           <div>
             <input
-              v-model="form.GIFMISCode"
+              v-model="form.gifmis_code"
               type="text"
               placeholder="Enter GIFMIS Code"
               class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
@@ -82,11 +82,19 @@
         </div>
         <div class="self-start mt-5">
           <div class="text-gray-700 font-normal mb-2 text-sm">
+            <p class="">Account type</p>
+          </div>
+          <div class="">
+            <DropdownComp v-model="form.account_type" :items="accountType" />
+          </div>
+        </div>
+        <div class="self-start mt-5">
+          <div class="text-gray-700 font-normal mb-2 text-sm">
             <p class="">Date Created</p>
           </div>
           <div>
             <input
-              v-model="form.dateCreated"
+              v-model="form.date_created"
               type="datetime-local"
               placeholder="Add Comments"
               class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
@@ -125,34 +133,64 @@
 <script setup>
 import { defineEmits, ref, computed } from "vue";
 import { useToast } from "primevue/usetoast";
+import DropdownComp from "../../DropdownComp.vue";
+import { useForm } from "@inertiajs/vue3";
+
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);
 const visible = ref(true);
 const addNewVote = () => {
-  toast.add({
-    severity: "success",
-    summary: "Vote successfully added!",
-    detail: "The new vote has been added to the system.",
-    life: 3000,
-  });
+  form.post('/finance-and-accounts/create-vote-book', {onSuccess:()=>{
+    toast.add({
+      severity: "success",
+      summary: "Vote successfully added!",
+      detail: "The new vote has been added to the system.",
+      life: 3000,
+    });
   emit("cancelled");
+  },
+  onError: ()=>{
+    toast.add({
+      severity: "error",
+      summary: "Error!",
+      detail: "Failed to create votebook.",
+      life: 3000,
+    });
+  }
+})
 };
 
-const form = ref({
-  voteName: "",
-  accountNumber: "",
-  GIFMISCode: "",
-  dateCreated: "",
-  balance: "",
-});
+// const form = ref({
+//   voteName: "",
+//   accountNumber: "",
+//   GIFMISCode: "",
+//   dateCreated: "",
+//   balance: "",
+// });
+
+const form = useForm({
+  name: "",
+  account_number: "",
+  gifmis_code: "",
+  date_created: new Date(),
+  account_type: "",
+  balance: ""
+})
+
+const accountType = ref([
+
+  { name: "Standard Account" },
+  { name: "Special Account" },
+]);
 
 const isFormValid = computed(() => {
   return (
-    form.value.voteName.trim() !== "" &&
-    form.value.dateCreated.trim() !== "" &&
-    form.value.GIFMISCode.trim() !== "" &&
-    form.value.accountNumber.trim() !== "" &&
-    form.value.balance.trim() !== ""
+    form.name.trim() !== "" &&
+    form.date_created.trim() !== "" &&
+    form.gifmis_code.trim() !== "" &&
+    form.account_number.trim() !== "" &&
+    form.account_type !== "" &&
+    form.balance.trim() !== ""
   );
 });
 

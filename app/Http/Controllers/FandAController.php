@@ -304,7 +304,43 @@ class FandAController extends Controller
         return response()->json($users);
     }
 
+    public function getCheckingUsers(){
+        $users = User::role('checking')->select('id','first_name', 'last_name')->get();
+        return response()->json($users);
+    }
+
      public function assignToAdvanceSection(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'dueDate' => 'required|date',
+            'recipient' => 'required',
+            'generalComment' => 'nullable|string',
+        ]);
+
+            //$user = User::with('roles')->findOrFail($data['recipient']);
+            $recipient = User::findOrFail($data['recipient'][0]);
+               $recipient_role = $recipient->roles->first()->name;
+               $recipient_role_id = $recipient->roles->first()->id;
+
+        DB::table('payment_assignment')
+           ->insert([
+                'due_date' => $data['dueDate'],
+                'status' => 'pending',
+                'comments' => $data['generalComment'] ?? '',
+                'role'=> $recipient_role,
+                'role_id' => $recipient_role_id,
+                'recipient_id' => $recipient->id,
+                'payment_id' => $data['payment_id'],
+                'assigned_by' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+    }
+
+     public function assignToChecking(Request $request)
     {
         $data = $request->validate([
             'payment_id' => 'required|exists:payments,id',

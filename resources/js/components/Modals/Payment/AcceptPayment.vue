@@ -94,7 +94,7 @@
               </div>
             </div>
           </div>
-          <!-- Advance Section Authorization -->
+          <!-- Advance Section Authorization HOS -->
           <div v-if="roles.includes('advance section(HOS)')" class="w-full mt-4">
             <p class="text-gray-700 text-sm">Select Staff</p>
             <div class="bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]">
@@ -109,6 +109,33 @@
                   class="w-full">
                   <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
                     <Checkbox :value="staff.id" v-model="form3.recipient" class="" />
+                    <div>
+                      <p class="text-xs text-gray-600">{{ staff.last_name+" "+staff.first_name }}</p>
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="text-sm text-center w-full text-gray-700 py-8">
+                  No staff found!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advance Section Authorization  -->
+          <div v-if="roles.includes('advance section')" class="w-full mt-4">
+            <p class="text-gray-700 text-sm">Select Staff</p>
+            <div class="bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]">
+              <div
+                class="flex flex-col justify-between items-start gap-y-2 max-h-full h-auto overflow-y-scroll hide_scroll rounded-2xl py-2">
+                <!-- Search Filter -->
+                <input type="search" v-model="checkingStaff"
+                  class="outline-primary/60 border border-solid border-gray-300 rounded-md w-full px-3 py-2 text-xs"
+                  placeholder="Search Staff List" />
+                <!-- Staff List -->
+                <div v-for="(staff, index) in filterCheckingUsers" :key="index" v-if="filterCheckingUsers.length"
+                  class="w-full">
+                  <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
+                    <Checkbox :value="staff.id" v-model="form4.recipient" class="" />
                     <div>
                       <p class="text-xs text-gray-600">{{ staff.last_name+" "+staff.first_name }}</p>
                     </div>
@@ -160,6 +187,8 @@ const hos_other_charges = ref();
 const recipient = ref()
 const assistantDirectors = ref([]);
 const advance_section_users = ref([])
+const checking = ref([])
+const checkingStaff = ref('')
 
 const form = useForm({
   generalComment: "",
@@ -178,6 +207,14 @@ const form2 = useForm({
 
 //for advance section heads
 const form3 = useForm({
+  generalComment: "",
+  dueDate: "",
+  recipient: "",
+  payment_id: props.paymentId
+})
+
+//for advance section
+const form4 = useForm({
   generalComment: "",
   dueDate: "",
   recipient: "",
@@ -332,6 +369,57 @@ const assignToAdvanceSection = ()=>{
   });
 }
 
+const assignToChecking = ()=>{
+  form4.generalComment = form.generalComment
+  form4.dueDate = form.dueDate
+
+   if (form4.recipient === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please select a recipient.",
+      life: 3000,
+    });
+    return;
+  } else if (form4.generalComment.trim() === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please add a general comment.",
+      life: 3000,
+    });
+    return;
+  } else if (form4.dueDate.trim() === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please set a due date.",
+      life: 3000,
+    });
+    return;
+  }
+
+  form4.post('/finance-and-accounts/assign-to-checking', {
+    onSuccess: () => {
+      toast.add({
+        severity: "success",
+        summary: "Task Accepted",
+        detail: "The file has been passed to the Advance section.",
+        life: 3000,
+      });
+      emit("cancelled");
+    },
+    onError: (error) => {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: error.response.data.message || "An error occurred while accepting the task.",
+        life: 3000,
+      });
+    },
+  });
+}
+
 const currentRole = ref("Advance Section");
 // Roles - Deputy Director, Assistant Director, Advance Section
 const acceptTask = () => {
@@ -348,6 +436,10 @@ const acceptTask = () => {
 
   if(roles.value.includes('advance section(HOS)')){
     assignToAdvanceSection()
+  }
+
+  if(roles.value.includes('advance section')){
+    assignToChecking()
   }
 
   // if(roles.value.includes('advance section') || roles.includes('other charges')){
@@ -375,6 +467,12 @@ const getAdvancedSectionAndOtherChargesUsers = async ()=>{
 const getAdvanceSectionUser = async ()=>{
   await axios.get('/finance-and-accounts/get-advance-section-users').then((response)=>{
     advance_section_users.value = response.data;
+  })
+}
+
+const getCheckingUsers = async ()=>{
+  await axios.get('/finance-and-accounts/get-checking-users').then((response)=>{
+    checking.value = response.data;
   })
 }
 
@@ -426,6 +524,15 @@ const filteredAdvanceSection = computed(()=>{
   })
 })
 
+const filterCheckingUsers = computed(()=>{
+  return checking.value.filter((item)=>{
+    return (
+      item?.first_name?.toLowerCase().includes(checkingStaff.value.toLowerCase()) ||
+      item?.last_name?.toLowerCase().includes(checkingStaff.value.toLowerCase())
+    )
+  })
+})
+
 const cancelModal = () => {
   emit("cancelled");
 };
@@ -437,6 +544,10 @@ onMounted(() => {
   }
   if(roles.value.includes('advance section(HOS)')){
     getAdvanceSectionUser()
+  }
+
+  if(roles.value.includes('advance section')){
+    getCheckingUsers()
   }
 });
 </script>

@@ -253,7 +253,7 @@
                 <!-- GENERATE VOUCHER AND APPENDED VOUCHER BLOCK START -->
                 <section>
                   <!-- Append Voucher Block -->
-                  <div v-if="roles.includes('advance section') || roles.includes('advance section(HOS)') && !payment?.voucher && payment.ledger_count > 0" class="mt-6">
+                  <div v-if="(roles.includes('advance section') || roles.includes('advance section(HOS)')) && payment.voucher.length ==0 && payment.ledger_count > 0" class="mt-6">
                     <div @click="
                       () => {
                         if (data.ledgerCreated) createVoucherModal = true;
@@ -279,13 +279,13 @@
                     </div>
                   </div>
                   <!-- View Appended Voucher Block -->
-                  <div v-if="payment?.voucher" class="mt-6">
+                  <div v-if="payment.voucher.length > 0" class="mt-6">
                     <div class="flex justify-between mb-5">
                       <div class="flex items-center gap-3 text-gray-500">
                         <Icon icon="ri:coupon-2-line" width="17" />
                         <p class="font-light text-sm">Appended Voucher(s)</p>
                       </div>
-                      <div v-if="roles.includes('advance section(HOS)') || roles.includes('advanced section')" class="flex items-center gap-2 text-[#0B5C16] cursor-pointer">
+                      <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advanced section')) && payment.voucher.length > 0" class="flex items-center gap-2 text-[#0B5C16] cursor-pointer">
                         <p class="text-sm" @click="editVoucher">Edit Voucher info</p>
                         <Icon
                           icon="tdesign:chevron-right"
