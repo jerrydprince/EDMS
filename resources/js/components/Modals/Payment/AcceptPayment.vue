@@ -95,9 +95,9 @@
             </div>
           </div>
           <!-- Advance Section Authorization -->
-          <div v-if="roles.includes('advance section')" class="w-full mt-4">
+          <div v-if="roles.includes('advance section(HOS)')" class="w-full mt-4">
             <p class="text-gray-700 text-sm">Select Staff</p>
-            <div class="bg-white px-3 mt-2 rounded-2xl py-3 h-[250px]">
+            <div class="bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]">
               <div
                 class="flex flex-col justify-between items-start gap-y-2 max-h-full h-auto overflow-y-scroll hide_scroll rounded-2xl py-2">
                 <!-- Search Filter -->
@@ -105,14 +105,12 @@
                   class="outline-primary/60 border border-solid border-gray-300 rounded-md w-full px-3 py-2 text-xs"
                   placeholder="Search Staff List" />
                 <!-- Staff List -->
-                <div v-for="(staff, index) in filteredStaffList" :key="index" v-if="filteredStaffList.length"
+                <div v-for="(staff, index) in filteredAdvanceSection" :key="index" v-if="filteredAdvanceSection.length"
                   class="w-full">
                   <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
-                    <Checkbox :model-value="form.recipient === staff" @update:modelValue="
-                      (val) => val && selectRecipient(staff)
-                    " class="" />
+                    <Checkbox :value="staff.id" v-model="form3.recipient" class="" />
                     <div>
-                      <p class="text-xs text-gray-600">{{ staff.name }}</p>
+                      <p class="text-xs text-gray-600">{{ staff.last_name+" "+staff.first_name }}</p>
                     </div>
                   </div>
                 </div>
@@ -161,6 +159,8 @@ const hos_advanced_section = ref();
 const hos_other_charges = ref();
 const recipient = ref()
 const assistantDirectors = ref([]);
+const advance_section_users = ref([])
+
 const form = useForm({
   generalComment: "",
   dueDate: "",
@@ -168,12 +168,21 @@ const form = useForm({
   payment_id: props.paymentId,
 });
 
+//for unit heads
 const form2 = useForm({
   generalComment: "",
   dueDate: "",
   recipient: "",
   payment_id: props.paymentId,
 });
+
+//for advance section heads
+const form3 = useForm({
+  generalComment: "",
+  dueDate: "",
+  recipient: "",
+  payment_id: props.paymentId
+})
 
 const assignAdvanceOtherCharges = ()=>{
   if(form2.generalComment.trim() === ""){
@@ -270,7 +279,59 @@ const assignToUnit = ()=>{
     },
   });
 }
-// This is just a mock up to be updated after permissions are added
+
+
+const assignToAdvanceSection = ()=>{
+  form3.generalComment = form.generalComment
+  form3.dueDate = form.dueDate
+
+   if (form3.recipient === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please select a recipient.",
+      life: 3000,
+    });
+    return;
+  } else if (form3.generalComment.trim() === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please add a general comment.",
+      life: 3000,
+    });
+    return;
+  } else if (form3.dueDate.trim() === "") {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Please set a due date.",
+      life: 3000,
+    });
+    return;
+  }
+
+  form3.post('/finance-and-accounts/assign-to-advance-section', {
+    onSuccess: () => {
+      toast.add({
+        severity: "success",
+        summary: "Task Accepted",
+        detail: "The file has been passed to the Advance section.",
+        life: 3000,
+      });
+      emit("cancelled");
+    },
+    onError: (error) => {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: error.response.data.message || "An error occurred while accepting the task.",
+        life: 3000,
+      });
+    },
+  });
+}
+
 const currentRole = ref("Advance Section");
 // Roles - Deputy Director, Assistant Director, Advance Section
 const acceptTask = () => {
@@ -283,6 +344,10 @@ const acceptTask = () => {
     form2.generalComment = form.generalComment
     form2.dueDate = form.dueDate
     assignAdvanceOtherCharges();
+  }
+
+  if(roles.value.includes('advance section(HOS)')){
+    assignToAdvanceSection()
   }
 
   // if(roles.value.includes('advance section') || roles.includes('other charges')){
@@ -304,6 +369,12 @@ const getAdvancedSectionAndOtherChargesUsers = async ()=>{
   await axios.get('/finance-and-accounts/get-advanced-section-and-other-charges-users').then((response)=>{
     hos_advanced_section.value = response.data.advance_section_hos
     hos_other_charges.value = response.data.other_charges_hos
+  })
+}
+
+const getAdvanceSectionUser = async ()=>{
+  await axios.get('/finance-and-accounts/get-advance-section-users').then((response)=>{
+    advance_section_users.value = response.data;
   })
 }
 
@@ -346,6 +417,15 @@ const filteredStaffList = computed(() => {
   );
 });
 
+const filteredAdvanceSection = computed(()=>{
+  return advance_section_users.value.filter((item)=>{
+    return (
+      item?.first_name?.toLowerCase().includes(searchStaffValue.value.toLowerCase()) ||
+      item?.last_name?.toLowerCase().includes(searchStaffValue.value.toLowerCase())
+    )
+  })
+})
+
 const cancelModal = () => {
   emit("cancelled");
 };
@@ -354,6 +434,9 @@ onMounted(() => {
   getUnitHeads();
   if(roles.value.includes('unit heads')){
     getAdvancedSectionAndOtherChargesUsers()
+  }
+  if(roles.value.includes('advance section(HOS)')){
+    getAdvanceSectionUser()
   }
 });
 </script>

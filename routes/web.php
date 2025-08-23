@@ -29,6 +29,9 @@ use App\Http\Controllers\TwoFactorChallengeController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\RecycleBinController;
 use App\Http\Controllers\FandAController;
+use App\Http\Controllers\VoteBookController;
+use App\Http\Controllers\LedgerController;
+use App\Http\Controllers\VoucherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -440,6 +443,20 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/accept-division-payment', [FandAController::class, 'acceptDivisionPayment']);
         Route::get('/get-advanced-section-and-other-charges-users', [FandAController::class, 'getAdvancedSectionAndOtherChargesUsers']);
         Route::post('/assign-to-advance-other-section', [FandAController::class, 'assignToAdvanceOtherSection']);
+        Route::post('/assign-to-advance-section', [FandAController::class, 'assignToAdvanceSection']);
+        Route::get('/get-advance-section-users', [FandAController::class, 'getAdvanceSectionUsers']);
+
+        //votebook
+        Route::get('/vote-book', [VoteBookController::class, 'index'])->name('vote-book');
+
+        //ledger
+        Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
+        Route::post('/create-ledger-entry', [LedgerController::class, 'createLedgerEntry'])->name('create-ledger-entry');
+        Route::get('/get-workflow', [LedgerController::class, 'getWorkflow'])->name('get-workflow');
+        Route::get('/get-ledger/{id}', [LedgerController::class, 'getLedger'])->name('get-ledger');
+
+        //voucher
+        Route::post('/create-voucher', [VoucherController::class, 'createVoucher']);
      });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');

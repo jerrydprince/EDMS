@@ -9,6 +9,7 @@ use App\Models\FinanceFiles;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Division;
+use App\Models\Ledger;
 use Spatie\Permission\Models\Role;
 
 class FandAController extends Controller
@@ -164,17 +165,19 @@ class FandAController extends Controller
     public function viewPayment($id)
     {
         if(auth()->user()->hasRole('directors')){
-            $payment = Payment::with(['files', 'recipient', 'assignedTo' => function($query) {
+            $payment = Payment::with(['files', 'voucher', 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id);
             }])
+            ->withCount('ledger')
             ->findOrFail($id);
             
         } else {
-            $payment = Payment::with(['files', 'recipient', 'assignedTo' => function($query) {
+            $payment = Payment::with(['files', 'voucher', 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id );
             }, 'assignedBy'=>function($query){
                 $query->with(['user'])->where('recipient_id', auth()->user()->id);
              }])
+             ->withCount('ledger')
             ->whereHas('assignedTo', function ($q) {
                 $q->where('recipient_id', auth()->user()->id);
             })
@@ -289,11 +292,48 @@ class FandAController extends Controller
 
     public function getAdvancedSectionAndOtherChargesUsers(){
         $other_charges_hos = User::role('other charges(HOS)')->first();
-        $advance_section_hos = User::role('advanced section(HOS)')->first();
+        $advance_section_hos = User::role('advance section(HOS)')->first();
         return response()->json([
             'other_charges_hos' => $other_charges_hos,
             'advance_section_hos' => $advance_section_hos,
         ]);
     }
+
+    public function getAdvanceSectionUsers(){
+        $users = User::role('advance section')->select('id','first_name', 'last_name')->get();
+        return response()->json($users);
+    }
+
+     public function assignToAdvanceSection(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'dueDate' => 'required|date',
+            'recipient' => 'required',
+            'generalComment' => 'nullable|string',
+        ]);
+
+            //$user = User::with('roles')->findOrFail($data['recipient']);
+            $recipient = User::findOrFail($data['recipient'][0]);
+               $recipient_role = $recipient->roles->first()->name;
+               $recipient_role_id = $recipient->roles->first()->id;
+
+        DB::table('payment_assignment')
+           ->insert([
+                'due_date' => $data['dueDate'],
+                'status' => 'pending',
+                'comments' => $data['generalComment'] ?? '',
+                'role'=> $recipient_role,
+                'role_id' => $recipient_role_id,
+                'recipient_id' => $recipient->id,
+                'payment_id' => $data['payment_id'],
+                'assigned_by' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+    }
+
         
 }

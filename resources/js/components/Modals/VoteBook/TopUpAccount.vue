@@ -85,7 +85,8 @@
 <script setup>
 import { defineEmits, ref, computed } from "vue";
 import { useToast } from "primevue/usetoast";
-import { formatWithCommas, formatAmount } from "@/utils/formatAmount";
+//import { formatWithCommas, formatAmount } from "../../utils/formatAmount";
+import { formatWithCommas, formatAmount } from "../../../utils/formatAmount";
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);
 // Defining Props which is the Account details

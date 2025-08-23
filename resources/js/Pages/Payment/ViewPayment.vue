@@ -44,7 +44,7 @@
             </div>
             <p class="text-base md:text-2xl text-gray-900">{{ payment.title }}</p>
           </div>
-          <button @click="downloadCurrentFile"
+          <button @click="downloadCurrentFile" v-if="!previewVoucher"
             class="hidden md:flex items-center gap-2 py-2 w-auto border-gray-200 border border-solid rounded-lg px-4 bg-white text-sm"
             label="Cancel">
             <Icon class="cursor-pointer" icon="material-symbols-light:download" width="20" />
@@ -68,6 +68,10 @@
                   </div>
                 </template>
               </div>
+              <div v-if="previewVoucher">
+                <iframe :src="base+'/'+selectedVoucher.path"
+                    class="w-full h-[600px] rounded-md" frameborder="0"></iframe>
+              </div>
               <!-- <iframe src="/src/templates/voucherTemplate.html" class="w-full h-full"></iframe> -->
             </div>
           </div>
@@ -85,15 +89,15 @@
         <div v-if="!sidemenu">
           <section>
             <!-- ACCESS LEVELS: ADVANCE SECTION -->
-            <div v-if="roles.includes('advanced section(HOS)') || roles.includes('advanced section')">
+            <div class="px-2 pt-2">
               <!-- VIEW LEDGER ENTRY STARTS -->
-              <div v-if="data.ledgerCreated" class="px-2 pt-2 cursor-pointer" @click="viewLedgerEntryModal = true">
+              <div  v-if="(roles.includes('advance section(HOS)') || roles.includes('advanced section')) && payment.ledger_count > 0" @click="viewLedgerEntryModal = true">
                 <div class="flex justify-between bg-[#F3F5F7] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-gray-800 font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
                     <p class="">View Ledger Entry</p>
                   </div>
-                  <div class="flex items-center gap-x-1 text-gray-400 hover:underline">
+                  <div class="flex items-center gap-x-1 text-gray-400 hover:underline cursor-pointer">
                     <p>Go</p>
                     <Icon icon="tdesign:chevron-right" width="20" class="mt-[2px]" />
                   </div>
@@ -102,13 +106,13 @@
               <!-- VIEW LEDGER ENTRY ENDS -->
 
               <!-- CREATE LEDGER ENTRY STARTS -->
-              <div  class="px-2 pt-2 cursor-pointer" @click="router.push('/ledger/entry')">
+              <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advanced section')) && payment.ledger_count == 0"  class="px-2 pt-2 cursor-pointer">
                 <div class="flex justify-between bg-[#FFF9F5] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-[#DC6803] font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
                     <p class="">Create Ledger Entry</p>
                   </div>
-                  <div class="flex items-center gap-x-1 text-gray-400 hover:underline">
+                  <div @click="CreateNewLedgerEntry" class="flex items-center gap-x-1 text-gray-400 hover:underline cursor-pointer">
                     <p>Go</p>
                     <Icon icon="tdesign:chevron-right" width="20" class="mt-[2px]" />
                   </div>
@@ -249,7 +253,7 @@
                 <!-- GENERATE VOUCHER AND APPENDED VOUCHER BLOCK START -->
                 <section>
                   <!-- Append Voucher Block -->
-                  <div v-if="roles.includes('advance section') && !data.voucherAppended" class="mt-6">
+                  <div v-if="roles.includes('advance section') || roles.includes('advance section(HOS)') && !payment?.voucher && payment.ledger_count > 0" class="mt-6">
                     <div @click="
                       () => {
                         if (data.ledgerCreated) createVoucherModal = true;
@@ -275,41 +279,37 @@
                     </div>
                   </div>
                   <!-- View Appended Voucher Block -->
-                  <div v-else-if="data.voucherAppended" class="mt-6">
+                  <div v-if="payment?.voucher" class="mt-6">
                     <div class="flex justify-between mb-5">
                       <div class="flex items-center gap-3 text-gray-500">
                         <Icon icon="ri:coupon-2-line" width="17" />
-                        <p class="font-light text-sm">Appended Vouchers</p>
+                        <p class="font-light text-sm">Appended Voucher(s)</p>
                       </div>
-                      <!-- <div
-                        @click=""
-                        class="flex items-center gap-2 text-[#0B5C16] cursor-pointer"
-                      >
-                        <p class="text-sm">Edit Voucher info</p>
+                      <div v-if="roles.includes('advance section(HOS)') || roles.includes('advanced section')" class="flex items-center gap-2 text-[#0B5C16] cursor-pointer">
+                        <p class="text-sm" @click="editVoucher">Edit Voucher info</p>
                         <Icon
                           icon="tdesign:chevron-right"
                           width="18"
                           class="mt-[2px]"
                         />
-                      </div> -->
+                      </div>
                     </div>
-                    <div v-for="(document, index) in data.appendedVouchers" :key="index"
-                      class="border-2 border-transparent hover:border-primary rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
+                    <div v-for="vou in vouchers" :class="previewVoucher? 'border-primary': 'border-transparent'" class="border-2 hover:border-primary rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
                       <div class="flex items-center gap-3">
                         <div class="bg-white w-fit p-2 rounded-full">
-                          <Icon :icon="document.icon" width="25" />
+                          <Icon :icon="getFileIcon(vou.path)" width="25" />
                         </div>
                         <div>
-                          <h1>{{ document.name }}</h1>
+                          <h1>{{ vou.path }}</h1>
                           <p class="text-sm text-gray-400">
-                            {{ document.size }}
+                            {{ vou.size }}
                           </p>
                         </div>
                       </div>
 
                       <div class="flex items-center gap-3">
-                        <Icon class="cursor-pointer" icon="material-symbols-light:download" width="25" />
-                        <Icon class="cursor-pointer" icon="ph:eye-light" width="22" />
+                        <Icon class="cursor-pointer" @click="downloadVoucherPdf(vou)" icon="material-symbols-light:download" width="25" />
+                        <Icon class="cursor-pointer" @click="viewVoucher(vou)" icon="ph:eye-light" width="22" />
                       </div>
                     </div>
                   </div>
@@ -457,16 +457,18 @@
   <AcceptPayment v-if="acceptPaymentModal" :paymentId="payment.id" @cancelled="closeModal('acceptPayment')" />
   <RejectPayment v-if="rejectPaymentModal" :paymentId="payment.id" @cancelled="closeModal('rejectPayment')" />
   <FinalisePayment v-if="finalisePaymentModal" @cancelled="closeModal('finalisePayment')" />
-  <ViewLedgerEntry v-if="viewLedgerEntryModal" @cancelled="closeModal('viewLedger')" />
-  <CreateVoucher v-if="createVoucherModal" @cancelled="closeModal('createVoucher')" />
+  <ViewLedgerEntry :paymentId="payment.id" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal('viewLedger')" />
+  <CreateVoucher v-if="createVoucherModal" :payment="payment" @refreshPayment="refreshPayment" :paymentId="payment.id" @cancelled="closeModal('createVoucher')" />
   <ChargeAccount v-if="chargeAccountModal" @cancelled="closeModal('chargeAccount')" />
   <PaymentReceipt v-if="paymentReceiptModal" @cancelled="closeModal('paymentReceipt')" />
+  <NewLedgerEntry v-if="isCreateNewLedgerEntry" :ledger="ledger" @confirmed="confirmNewLedgerEntry" @cancelled="closeModal()"/>
+
 </template>
 
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useToast } from "primevue/usetoast";
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link, usePage, router } from "@inertiajs/vue3";
 
 import AcceptPayment from "../../components/Modals/Payment/AcceptPayment.vue";
 import RejectPayment from "../../components/Modals/Payment/RejectPayment.vue";
@@ -478,9 +480,13 @@ import PaymentReceipt from "../../components/Modals/VoteBook/PaymentReceipt.vue"
 import VoteBookImg from "../../assets/images/votebook.svg";
 import jenna from "../../assets/images/jenna.svg";
 import user from "../../assets/images/user.svg";
+//import Voucher from "../../components/Voucher.vue";
+import Voucher from "../../components/Voucher.vue";
+import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
+
 const page = usePage();
 const roles = computed(() => page.props.roles);
-
+const base = computed(()=> page.props.base)
 const sidemenu = ref(false);
 const props = defineProps(["payment"]);
 
@@ -493,12 +499,17 @@ const viewLedgerEntryModal = ref(false);
 const createVoucherModal = ref(false);
 const chargeAccountModal = ref(false);
 const paymentReceiptModal = ref(false);
-const router = null;
-const route = null;
+const isCreateNewLedgerEntry = ref(false);
 const toast = useToast();
 const currentIndex = ref(0);
 const currentDocument = ref(props.payment.files[0]);
 const currentRole = ref("Advance section");
+const voucher_name = ref('')
+const voucher_size = ref('')
+const previewVoucher = ref(false)
+const ledger = ref(null);
+const vouchers = ref(null)
+const selectedVoucher = ref(null)
 // DIFFERENT ROLES
 // Finance and Accounting
 // Deputy Director
@@ -511,9 +522,56 @@ const currentRole = ref("Advance section");
 // CPO Cashbook
 // Final Account
 
+const editLedgerEntry = (val) => {
+  console.log("Edit Ledger Entry", val);
+  // Function to handle editing of ledger entry
+  if(val){
+    ledger.value = val;
+    isCreateNewLedgerEntry.value = true;
+    viewLedgerEntryModal.value = false;
+  }
+//viewLedgerEntryModal.value = false;
+};
 
+const editVoucher = (voucher)=>{
+  createVoucherModal.value = true
+}
+
+async function getPdfSize(val) {
+   if(val){
+    let url = base.value+'/'+val
+    console.log('this is base', url)
+     let response = await fetch(url, { method: 'HEAD' });
+      let size = response.headers.get('content-length');
+      if (size) {
+          let sizeInMB = (size / (1024)).toFixed(2);
+          voucher_size.value = sizeInMB+" KB"
+          voucher_name.value = props.payment.voucher.path
+        return sizeInMB+" KB"
+      } else {
+          return ""
+      }
+   }
+}
+
+async function loadVoucherSizes() {
+  if(props.payment && vouchers.value){
+    for (let v of props.payment.voucher) {
+      v.size = await getPdfSize(v.path) // 👈 attach size directly to object
+    }
+  }
+}
+
+const refreshPayment = ()=>{
+  router.reload({only:['payment']})
+}
 // Appending query to the route
 const routeEditedQuery = computed(() => route.query.isFileEdited);
+
+const CreateNewLedgerEntry = () => {
+  // Function to create a new ledger entry
+  isCreateNewLedgerEntry.value = true;
+};
 
 const getAssignedTo = () => {
    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0) {
@@ -633,6 +691,7 @@ const setCurrentFile = (document, index) => {
   // Function to set the current index of the file being viewed
   currentIndex.value = index;
   currentDocument.value = document;
+  previewVoucher.value = false
 };
 
 const getFileName = (document) => {
@@ -642,11 +701,18 @@ const getFileName = (document) => {
     const parts = document.file_name.split('/');
     const lastPart = parts[parts.length - 1];
     const nameWithoutExt = lastPart.substring(0, lastPart.lastIndexOf('.')) || lastPart;
-    console.log(nameWithoutExt);
+   
     return nameWithoutExt;
 
   }
 };
+
+//view voucher
+const viewVoucher = (voucher)=>{
+  selectedVoucher.value = voucher
+  currentDocument.value = [];
+  previewVoucher.value = true
+}
 
 // Comments
 const comments = ref([
@@ -699,7 +765,13 @@ const resubmitTask = () => {
   });
 };
 
+const confirmNewLedgerEntry = () => {
+  // Logic to confirm new ledger entry creation
+  isCreateNewLedgerEntry.value = false;
+};
+
 const closeModal = (modal) => {
+  isCreateNewLedgerEntry.value = false;
   if (modal == "acceptPayment") {
     acceptPaymentModal.value = !acceptPaymentModal.value;
   } else if (modal == "rejectPayment") {
@@ -772,6 +844,26 @@ const getFileIcon = (fileName) => {
   }
 };
 
+const downloadVoucherPdf = (voucher) => {
+  selectedVoucher.value = voucher
+  if (!selectedVoucher.value.path) return;
+  const url = base.value + '/' + selectedVoucher.value.path;
+  console.log('url',url)
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = voucher_name.value || 'voucher.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+watch(()=>props.payment, (newVal)=>{
+  if(newVal && newVal.voucher){
+    vouchers.value = newVal.voucher
+    loadVoucherSizes()
+    //getPdfSize(newVal.voucher.path)
+  }
+}, {immediate: true})
 
 </script>
 

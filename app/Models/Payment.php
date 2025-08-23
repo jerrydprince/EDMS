@@ -49,4 +49,24 @@ class Payment extends Model
         return $this->hasOne(PaymentAssignment::class, 'payment_id');
     }
 
+    /**
+     * Get the ledger associated with the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function ledger()
+    {
+        return $this->hasOne(Ledger::class, 'payment_id');
+    }
+
+    /**
+     * Get the voucher associated with the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function voucher()
+    {
+        return $this->hasMany(Voucher::class, 'payment_id');
+    }
+
 }
