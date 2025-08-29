@@ -232,6 +232,7 @@ const pageStart = ref(1);
 const pageEnd = ref(1);
 
 const filePreview = (file) => {
+  console.log(file)
   selectedFile.value = file?.path
   togglePreview.value = true;
 }

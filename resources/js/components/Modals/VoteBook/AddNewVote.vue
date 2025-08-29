@@ -131,14 +131,15 @@
 </template>
 
 <script setup>
-import { defineEmits, ref, computed } from "vue";
+import { defineEmits, ref, computed, defineProps, } from "vue";
 import { useToast } from "primevue/usetoast";
 import DropdownComp from "../../DropdownComp.vue";
 import { useForm } from "@inertiajs/vue3";
 
 const toast = useToast();
-const emit = defineEmits(["confirmed", "cancelled"]);
+const emit = defineEmits(["confirmed", "cancelled", "refreshVoteBook"]);
 const visible = ref(true);
+const props = defineProps(['selectedVoteBook'])
 const addNewVote = () => {
   form.post('/finance-and-accounts/create-vote-book', {onSuccess:()=>{
     toast.add({
@@ -148,6 +149,7 @@ const addNewVote = () => {
       life: 3000,
     });
   emit("cancelled");
+  emit('refreshVoteBook')
   },
   onError: ()=>{
     toast.add({
@@ -160,14 +162,6 @@ const addNewVote = () => {
 })
 };
 
-// const form = ref({
-//   voteName: "",
-//   accountNumber: "",
-//   GIFMISCode: "",
-//   dateCreated: "",
-//   balance: "",
-// });
-
 const form = useForm({
   name: "",
   account_number: "",
@@ -178,7 +172,7 @@ const form = useForm({
 })
 
 const accountType = ref([
-
+  {name: 'Select Account'},
   { name: "Standard Account" },
   { name: "Special Account" },
 ]);
@@ -190,6 +184,7 @@ const isFormValid = computed(() => {
     form.gifmis_code.trim() !== "" &&
     form.account_number.trim() !== "" &&
     form.account_type !== "" &&
+    form.account_type !== "Select Account" &&
     form.balance.trim() !== ""
   );
 });

@@ -8,7 +8,7 @@ export function formatAmount(amount) {
   } else if (amount >= 1_000) {
     return (amount / 1_000).toFixed(2).replace(/\.00$/, "") + "K";
   } else {
-    return amount.toString();
+    return amount;
   }
 }
 

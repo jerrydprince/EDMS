@@ -13,22 +13,57 @@
           <p>Re-submit</p>
       </a>
       </div>
-      <div v-if="!roles.includes('directors') && payment.assigned_to.length == 0" class="flex justify-end pb-5 gap-3">
+      <div class="flex justify-end pb-5 gap-3">
         <button @click="rejectPaymentModal = true"
+         v-if="!roles.includes('directors') && !roles.includes('advance section') && !roles.includes('other charges')  && payment.assigned_by && payment.assigned_by.status =='pending' &&
+          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconoir:cancel" width="25" />
           <p>Reject</p>
         </button>
-        <button v-if="currentRole !== 'Final Account'" @click="acceptPaymentModal = true"
+        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('advance section(HOS)')" @click="setAssignTaskModal"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="iconamoon:check" width="20" />
+          <p>Assign</p>
+        </button>
+        <button v-if="!roles.includes('directors') && !roles.includes('other charges') &&  !roles.includes('advance section') && !roles.includes('advance section(HOS)')
+            && !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
-        <button v-if="currentRole === 'Final Account'" @click="finalisePaymentModal = true"
+        <!-- the second accept is for HOS advance section -->
+        <button v-if="!roles.includes('directors') && isAssignedToOtherCharges == false && roles.includes('advance section(HOS)')" @click="acceptTask"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="iconamoon:check" width="20" />
+          <p>Accept</p>
+        </button>
+
+        <!-- the second accept is for HOS other charges -->
+        <button v-if="!roles.includes('directors') && isAssignedToCheckings == false && roles.includes('other charges(HOS)')" @click="acceptTask"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="iconamoon:check" width="20" />
+          <p>Accept</p>
+        </button>
+        <!-- the assign button is for HOS other charges -->
+        <button 
+          v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('other charges(HOS)') |roles.includes('checking(HOS)')|| roles.includes('CPO(HOS)')||
+            roles.includes('internal audit(HOS)')|| roles.includes('final account(HOS)')" @click="setAssignTaskModal"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="iconamoon:check" width="20" />
+          <p>Assign</p>
+        </button>
+        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && currentRole === 'Final Account'" @click="finalisePaymentModal = true"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Finalise</p>
         </button>
+        <Link href="/finance-and-accounts/other-charges-task-submit" method="post" :data="{id: payment.assigned_by?.id, payment_id: payment.id}" 
+          v-if="(roles.includes('other charges') || roles.includes('advance charges') || roles.includes('checking') || roles.includes('CPO')|| roles.includes('internal audit') || roles.includes('final account')) && payment.assigned_by.status == 'pending'"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="iconamoon:check" width="20" />
+          <p>Submit</p>
+      </Link>
       </div>
     </section>
     <section class="flex lg:flex-row flex-col-reverse items-start gap-10 w-full">
@@ -58,13 +93,17 @@
               <!-- <img src="../../assets/images/payment_document.svg" alt="" class="overflow-hidden rounded-md w-full" /> -->
               <div v-if="currentDocument">
                 <template v-if="currentDocument.file_name">
-                  <img v-if="/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(currentDocument.file_name)"
-                    :src="currentDocument.file_name" alt="Current Document"
-                    class="rounded-md w-full max-h-[600px] object-contain" />
-                  <iframe v-else-if="/\.pdf$/i.test(currentDocument.file_name)" :src="currentDocument.file_name"
-                    class="w-full h-[600px] rounded-md" frameborder="0"></iframe>
-                  <div v-else class="text-gray-500 text-center py-10">
-                    File preview not available.
+                  <div v-if="currentDocument.path && currentDocument.path.length > 0">
+                    <template v-for="(doc, index) in currentDocument.path" :key="index">
+                      <img v-if="/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(doc.path)"
+                        :src="doc.path" alt="Current Document"
+                        class="rounded-md w-full max-h-[600px] object-contain my-4 border-t border-white" />
+                      <iframe v-else-if="/\.pdf$/i.test(doc.path)" :src="doc.path"
+                        class="w-full h-[600px] rounded-md my-4" frameborder="0"></iframe>
+                      <div v-else class="text-gray-500 text-center py-10">
+                        File preview not available.
+                      </div>
+                  </template>
                   </div>
                 </template>
               </div>
@@ -91,7 +130,7 @@
             <!-- ACCESS LEVELS: ADVANCE SECTION -->
             <div class="px-2 pt-2">
               <!-- VIEW LEDGER ENTRY STARTS -->
-              <div  v-if="(roles.includes('advance section(HOS)') || roles.includes('advanced section')) && payment.ledger_count > 0" @click="viewLedgerEntryModal = true">
+              <div  v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section')) && payment.ledger_count > 0" @click="viewLedgerEntryModal = true">
                 <div class="flex justify-between bg-[#F3F5F7] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-gray-800 font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
@@ -106,7 +145,7 @@
               <!-- VIEW LEDGER ENTRY ENDS -->
 
               <!-- CREATE LEDGER ENTRY STARTS -->
-              <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advanced section')) && payment.ledger_count == 0"  class="px-2 pt-2 cursor-pointer">
+              <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section')) && payment.ledger_count == 0 && (!roles.includes('other charges(HOS)') || !roles.includes('other charges'))"  class="px-2 pt-2 cursor-pointer">
                 <div class="flex justify-between bg-[#FFF9F5] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-[#DC6803] font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
@@ -122,9 +161,9 @@
             </div>
 
             <!-- ACCESS LEVELS: OTHER CHARGES -->
-            <div v-if="currentRole == 'Other charges'">
+            <div v-if="roles.includes('other charges(HOS)') || roles.includes('other charges')">
               <!-- CREATE LEDGER ENTRY STARTS -->
-              <div class="px-2 pt-2 cursor-pointer" @click="chargeAccountModal = true">
+              <div v-if="payment.vat_voucher.length == 0" class="px-2 pt-2 cursor-pointer" @click="chargeAccountModal = true">
                 <div class="flex justify-between bg-[#FFF9F5] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-[#DC6803] font-medium">
                     <Icon icon="ri:coupon-2-line" width="20" />
@@ -143,7 +182,7 @@
           <div class="flex flex-col items-start gap-y-3 p-7">
             <p class="text-sm text-gray-500">Task Title</p>
             <p class="text-gray-800 text-xl md:text-2xl">{{ payment.title }}</p>
-            <div class="bg-gray-100 rounded-2xl py-1 px-4 text-center text-sm">
+            <div class="bg-gray-100 rounded-2xl py-1 px-4 text-center text-sm" v-if="roles.includes('directors')">
               <!-- STATUS VARIATIONS -->
               <p class="font-medium" :style="{
                 color:
@@ -156,6 +195,23 @@
                         : 'black',
               }">
                 <span class="font-black">•</span> {{ payment.status }}
+              </p>
+            </div>
+            <div v-else class="bg-gray-100 rounded-2xl py-1 px-4 text-center text-sm">
+              <!-- STATUS VARIATIONS -->
+              <p class="font-medium" :style="{
+                color:
+                  payment?.assigned_by?.status === 'due'
+                    ? '#0D6E1A'
+                    :payment?.assigned_by?.status === 'done'
+                    ? '#0D6E1A'
+                    : payment?.assigned_by?.status === 'overdue'
+                      ? '#F04438'
+                      : payment?.assigned_by?.status === 'pending'
+                        ? '#101828'
+                        : 'black',
+              }">
+                <span class="font-black">•</span> {{ payment?.assigned_by?.status }}
               </p>
             </div>
           </div>
@@ -177,7 +233,7 @@
 
           <section class="h-[665px] overflow-y-scroll hide_scroll pb-20" v-if="!progressMonitor">
             <section class="p-2 text-gray-600">
-              <div v-if="currentRole == 'CPO'" @click="paymentReceiptModal = true"
+              <div v-if="roles.includes('CPO') || roles.includes('CPO(HOS)')" @click="paymentReceiptModal = true"
                 class="bg-gray-100 rounded-xl mb-3 py-2 px-3 cursor-pointer">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-x-2">
@@ -223,7 +279,7 @@
                       <p class="font-light text-sm">Attached Document</p>
                     </div>
                     <!-- <div @click="router.push(`/payment/edit-selection/${data.id}`)"
-                     
+
                     </div> -->
                     <a :href="`/finance-and-accounts?id=${payment.id}`" v-if="roles.includes('directors')"
                       class="flex items-center gap-3 text-gray-700 cursor-pointer">
@@ -279,7 +335,7 @@
                     </div>
                   </div>
                   <!-- View Appended Voucher Block -->
-                  <div v-if="payment.voucher.length > 0" class="mt-6">
+                  <div v-if="payment.voucher.length > 0 || payment.vat_voucher.length > 0" class="mt-6">
                     <div class="flex justify-between mb-5">
                       <div class="flex items-center gap-3 text-gray-500">
                         <Icon icon="ri:coupon-2-line" width="17" />
@@ -303,6 +359,24 @@
                           <h1>{{ vou.path }}</h1>
                           <p class="text-sm text-gray-400">
                             {{ vou.size }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-3">
+                        <Icon class="cursor-pointer" @click="downloadVoucherPdf(vou)" icon="material-symbols-light:download" width="25" />
+                        <Icon class="cursor-pointer" @click="viewVoucher(vou)" icon="ph:eye-light" width="22" />
+                      </div>
+                    </div>
+                    <div v-for="(vou, index) in payment.vat_voucher" :key="index" :class="previewVoucher? 'border-primary': 'border-transparent'" class="border-2 hover:border-primary rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
+                      <div class="flex items-center gap-3">
+                        <div class="bg-white w-fit p-2 rounded-full">
+                          <Icon :icon="'material-icon-theme:pdf'" width="25" />
+                        </div>
+                        <div>
+                          <h1 v-if="vou.path">{{ vou.path.split('/').pop() }}</h1>
+                          <p class="text-sm text-gray-400">
+                            {{ file_sizes[index] }}
                           </p>
                         </div>
                       </div>
@@ -454,13 +528,13 @@
       </div>
     </section>
   </main>
-  <AcceptPayment v-if="acceptPaymentModal" :paymentId="payment.id" @cancelled="closeModal('acceptPayment')" />
+  <AcceptPayment v-if="acceptPaymentModal" :assignTask="assignTask" :payment="payment" :paymentId="payment.id" @cancelled="closeModal('acceptPayment')" />
   <RejectPayment v-if="rejectPaymentModal" :paymentId="payment.id" @cancelled="closeModal('rejectPayment')" />
   <FinalisePayment v-if="finalisePaymentModal" @cancelled="closeModal('finalisePayment')" />
   <ViewLedgerEntry :paymentId="payment.id" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal('viewLedger')" />
   <CreateVoucher v-if="createVoucherModal" :payment="payment" @refreshPayment="refreshPayment" :paymentId="payment.id" @cancelled="closeModal('createVoucher')" />
-  <ChargeAccount v-if="chargeAccountModal" @cancelled="closeModal('chargeAccount')" />
-  <PaymentReceipt v-if="paymentReceiptModal" @cancelled="closeModal('paymentReceipt')" />
+  <ChargeAccount v-if="chargeAccountModal" @refreshPayment="refreshPayment" :payment="payment" @cancelled="closeModal('chargeAccount')" />
+  <PaymentReceipt v-if="paymentReceiptModal" :payment="payment" @cancelled="closeModal('paymentReceipt')" />
   <NewLedgerEntry v-if="isCreateNewLedgerEntry" :ledger="ledger" @confirmed="confirmNewLedgerEntry" @cancelled="closeModal()"/>
 
 </template>
@@ -489,7 +563,7 @@ const roles = computed(() => page.props.roles);
 const base = computed(()=> page.props.base)
 const sidemenu = ref(false);
 const props = defineProps(["payment"]);
-
+const assignTask = ref(false)
 const comment = ref(false);
 const progressMonitor = ref(false);
 const acceptPaymentModal = ref(false);
@@ -509,6 +583,7 @@ const voucher_size = ref('')
 const previewVoucher = ref(false)
 const ledger = ref(null);
 const vouchers = ref(null)
+const file_sizes = ref([])
 const selectedVoucher = ref(null)
 // DIFFERENT ROLES
 // Finance and Accounting
@@ -537,6 +612,35 @@ const editVoucher = (voucher)=>{
   createVoucherModal.value = true
 }
 
+const setAssignTaskModal = ()=>{
+  acceptPaymentModal.value = true;
+  assignTask.value = true;
+}
+
+const acceptTask = ()=>{
+  acceptPaymentModal.value = true
+  assignTask.value = false
+}
+
+const isAssignedToOtherCharges = computed(()=>{
+  let filtered = props.payment.assigned_to.filter((item)=>item.role =='other charges(HOS)');
+  if(filtered && filtered.length > 0){
+    return true
+  }else{
+    return false
+  }
+})
+
+const isAssignedToCheckings = computed(()=>{
+  let filtered = props.payment.assigned_to.filter((item)=>item.role =='other charges(HOS)');
+  if(filtered && filtered.length > 0){
+    return true
+  }else{
+    return false
+  }
+})
+
+
 async function getPdfSize(val) {
    if(val){
     let url = base.value+'/'+val
@@ -560,6 +664,20 @@ async function loadVoucherSizes() {
       v.size = await getPdfSize(v.path) // 👈 attach size directly to object
     }
   }
+}
+
+async function getVatPdfSize(val) {
+   if(val){
+    if(props.payment.vat_voucher.length > 0){
+      //iterate over the vat_voucher array to get the size of each pdf
+      for(let i = 0; i < props.payment.vat_voucher.length; i++){
+        const response = await fetch(base.value + '/' + props.payment.vat_voucher[i].path);
+        const blob = await response.blob();
+        const sizeInKB = (blob.size / 1024).toFixed(2) + ' KB';
+        file_sizes.value.push(sizeInKB)
+    }
+   }
+}
 }
 
 const refreshPayment = ()=>{
@@ -695,13 +813,13 @@ const setCurrentFile = (document, index) => {
 };
 
 const getFileName = (document) => {
+  console.log('document', document)
   // Function to extract file name from the file path
   if (document.file_name) {
-    let length = document.file_name.split(".").length;
     const parts = document.file_name.split('/');
     const lastPart = parts[parts.length - 1];
     const nameWithoutExt = lastPart.substring(0, lastPart.lastIndexOf('.')) || lastPart;
-   
+
     return nameWithoutExt;
 
   }
@@ -813,34 +931,41 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const getExtension = (file_name) => {
-  if (!file_name) return "";
-  let file_arr = file_name.split(".");
-  return file_arr.pop();
+const getExtension = (file) => {
+  console.log(file)
+  if (!file) return "";
+  if(file && file.length > 0){
+    let file_name = file[0]
+    let file_arr = file_name.split(".");
+    return file_arr.pop();
+  }
 }
 
-const getFileIcon = (fileName) => {
-  const extension = getExtension(fileName)?.toLowerCase();
+const getFileIcon = (file) => {
+  if(file && file.length > 0){
+    let fileName = file[0]
+      const extension = getExtension(fileName)?.toLowerCase();
 
-  switch (extension) {
-    case "pdf":
-      return "vscode-icons:file-type-pdf2";
-    case "docx":
-    case "doc":
-      return "vscode-icons:file-type-word";
-    case "xlsx":
-    case "xls":
-      return "vscode-icons:file-type-excel";
-    case "ppt":
-    case "pptx":
-      return "vscode-icons:file-type-powerpoint";
-    case "jpg":
-    case "jpeg":
-      return "vscode-icons:file-type-image";
-    case "png":
-      return "vscode-icons:file-type-image";
-    default:
-      return "material-icon-theme:pdf";
+    switch (extension) {
+      case "pdf":
+        return "vscode-icons:file-type-pdf2";
+      case "docx":
+      case "doc":
+        return "vscode-icons:file-type-word";
+      case "xlsx":
+      case "xls":
+        return "vscode-icons:file-type-excel";
+      case "ppt":
+      case "pptx":
+        return "vscode-icons:file-type-powerpoint";
+      case "jpg":
+      case "jpeg":
+        return "vscode-icons:file-type-image";
+      case "png":
+        return "vscode-icons:file-type-image";
+      default:
+        return "material-icon-theme:pdf";
+    }
   }
 };
 
@@ -862,6 +987,9 @@ watch(()=>props.payment, (newVal)=>{
     vouchers.value = newVal.voucher
     loadVoucherSizes()
     //getPdfSize(newVal.voucher.path)
+  }
+  if(newVal.vat_voucher.length > 0){
+    getVatPdfSize(newVal.vat_voucher)
   }
 }, {immediate: true})
 

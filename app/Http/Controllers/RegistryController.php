@@ -991,93 +991,102 @@ class RegistryController extends Controller
 
     public function setFandARegistryFiles(Request $request){
     
-        if($request->file('files')){
-            $files = [];
-            $file_name = '';
-            $size = 0;
-            $paths = [];
-            foreach($request->file('files') as $file){
+        try {
+            DB::beginTransaction();
 
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $file_name = $fileName;
-                $original_name = $file->getClientOriginalName();
-                $path =  "/finance/".date('Y') . '/' . date('m');
-                //$size = $this->formatSize(filesize($file));
-                $size += filesize($file);
-                $fullPath = public_path($path);
+            if($request->file('files')){
+                $files = [];
+                $file_name = '';
+                $size = 0;
+                $paths = [];
+                foreach($request->file('files') as $file){
 
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0777, true);
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $file_name = $fileName;
+                    $original_name = $file->getClientOriginalName();
+                    $path =  "/finance/".date('Y') . '/' . date('m');
+                    //$size = $this->formatSize(filesize($file));
+                    $size += filesize($file);
+                    $fullPath = public_path($path);
+
+                    if (!file_exists($fullPath)) {
+                        mkdir($fullPath, 0777, true);
+                    }
+                    $file->move(public_path($path),$fileName);
+                    $paths[] = $path.'/'.$fileName;
+                    // $arr = [
+                    //     'file_name' => $path.'/'.$fileName,
+                        
+                    //     // 'name' => $original_name,
+                    //      'size'=>$size,
+                    //      'uploaded_by' => auth()->user()->id,
+                    //      'uploaded_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
+                    //      'created_at' =>now(),
+                    //      'updated_at' => now()
+                    // ];
+
+                    //array_push($files, $arr);
+
+                    $name = $original_name? $original_name: 'Unknown';
+
+                    $newFile = new File();
+                    $newFile->name = $name;
+                    $newFile->file_type = 'File';
+                    $newFile->doc_no = null;
+                // $newFile->description = $request->description;
+                    $newFile->created_by = auth()->user()->id;
+                
+                    if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                        $newFile->is_agf = true;
+                    }
+                    $newFile->save();
                 }
-                $file->move(public_path($path),$fileName);
-                $paths[] = $path.'/'.$fileName;
-                // $arr = [
-                //     'file_name' => $path.'/'.$fileName,
-                    
-                //     // 'name' => $original_name,
-                //      'size'=>$size,
-                //      'uploaded_by' => auth()->user()->id,
-                //      'uploaded_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
-                //      'created_at' =>now(),
-                //      'updated_at' => now()
-                // ];
 
-                //array_push($files, $arr);
+                //DB::table('finance_files')->insert($files);
+                $ff = new FinanceFiles();
+                $ff->file_name = $file_name;
+                $ff->size = $this->formatSize($size);
+                $ff->uploaded_by = auth()->user()->id;
+                $ff->uploaded_by_name = auth()->user()->last_name." ".auth()->user()->first_name;
+                $ff->save();
 
-                $name = $original_name? $original_name: 'Unknown';
+                //save in finance files path
+                $data = [];
+                foreach($paths as $path){
+                    $data[] = [
+                        'path' => $path,
+                        'finance_files_id' => $ff->id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }
+                FinanceFilePaths::insert($data);
 
-                $newFile = new File();
-                $newFile->name = $name;
-                $newFile->file_type = 'File';
-                $newFile->doc_no = null;
-               // $newFile->description = $request->description;
-                $newFile->created_by = auth()->user()->id;
+                $superUsers = User::role('super users')->first();
+                if($superUsers){
+                    $fm = new FileMovement();
+                    $fm->sent_from = auth()->user()->id;
+                    //edit this section
+                    $fm->sent_to = $superUsers->id;
+                    $fm->file_id = $newFile->id;
+                    $fm->status = "pending";
+                    $fm->file_movement_id = $this->getFileMovementUniqueId();
+                    $fm->sent_to_branch = 'finance';
+                }
             
                 if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-                    $newFile->is_agf = true;
+                    $fm->sent_to_agf = true;
                 }
-                $newFile->save();
+
+        
+                $fm->save();
+                DB::commit();
+                return to_route('registry');
             }
-
-            //DB::table('finance_files')->insert($files);
-             $ff = new FinanceFiles();
-             $ff->file_name = $file_name;
-             $ff->size = $this->formatSize($size);
-             $ff->uploaded_by = auth()->user()->id;
-             $ff->uploaded_by_name = auth()->user()->last_name." ".auth()->user()->first_name;
-             $ff->save();
-
-             //save in finance files path
-             $data = [];
-             foreach($paths as $path){
-                $data[] = [
-                    'path' => $path,
-                    'finance_files_id' => $ff->id,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-             }
-             FinanceFilePaths::insert($data);
-
-            $superUsers = User::role('super users')->first();
-            if($superUsers){
-                $fm = new FileMovement();
-                $fm->sent_from = auth()->user()->id;
-                //edit this section
-                $fm->sent_to = $superUsers->id;
-                $fm->file_id = $newFile->id;
-                $fm->status = "pending";
-                $fm->file_movement_id = $this->getFileMovementUniqueId();
-                $fm->sent_to_branch = 'finance';
-            }
-           
-            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-                $fm->sent_to_agf = true;
-            }
-
-    
-            $fm->save();
-
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return to_route('registry')->withErrors('Error', 'An error occured');
         }
+        
     }
 }

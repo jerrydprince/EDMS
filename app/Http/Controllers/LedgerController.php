@@ -62,7 +62,7 @@ class LedgerController extends Controller
 
         // Create a new ledger entry
         $ledger = $request->id? Ledger::find($request->id): new Ledger();
-        $ledger->ref_no = $this->generateRef();
+        $ledger->ref_no = $request->id? $ledger->ref_no: $this->generateRef();
         $ledger->due_date = $request->due_date;
         $ledger->narration = $request->narration;
         $ledger->debit = $request->debit;

@@ -288,7 +288,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
               //REGISTRY
                 Route::get('/admin-registry', [RegistryController::class, 'adminRegistry'])->middleware('permission:registry view');
                 // Route::get('/registry/entry/login', [RegistryController::class, 'login'])->middleware('permission:registry view');
-                Route::get('/registry', [RegistryController::class, 'registry'])->middleware('permission:registry view');
+                Route::get('/registry', [RegistryController::class, 'registry'])->middleware('permission:registry view')->name('registry');
                 Route::get('/registry/dept', [RegistryController::class, 'getDepartment']);
                 // Route::get('/registry/deptFiles/{deptId}', [RegistryController::class, 'getFilesByDept']);
                 Route::get('/registry/branchFiles', [RegistryController::class, 'getBranchFiles'])->middleware('permission:registry view');
@@ -446,11 +446,22 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/assign-to-advance-section', [FandAController::class, 'assignToAdvanceSection']);
         Route::get('/get-advance-section-users', [FandAController::class, 'getAdvanceSectionUsers']);
         Route::get('/get-checking-users', [FandAController::class, 'getCheckingUsers']);
+        Route::get('/get-other-charges-users', [FandAController::class, 'getOtherChargesUsers']);
         Route::post('/assign-to-checking', [FandAController::class, 'assignToChecking']);
+        Route::post('/advance-task-submit', [FandAController::class, 'advanceTaskSubmit']);
+        Route::post('/other-charges-task-submit', [FandAController::class, 'otherChargesTaskSubmit']);
+        Route::get('/get-other-charges-hos', [FandAController::class, 'getOtherChargesHOS']);
+        Route::post('/assign-to-other-charges-by-hos', [FandAController::class, 'assignToOtherChargesByHOS']);
+        //streamlined urls
+        Route::post('/assign-to-section-users',[FandAController::class, 'assignToSectionUsers']);
+        Route::post('/submitTask', [FandAController::class, 'submitTask']);
+        Route::get('/get-section-users', [FandAController::class, 'getSectionUsers']);
 
         //votebook
         Route::get('/vote-book', [VoteBookController::class, 'index'])->name('vote-book');
         Route::post('/create-vote-book', [VoteBookController::class, 'createVoteBook']);
+        Route::post('/votebook-topup', [VoteBookController::class, 'voteBookTopUp']);
+        Route::get('/get-votebooks', [VoteBookController::class, 'getVoteBooks']);
 
         //ledger
         Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
@@ -460,6 +471,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
         //voucher
         Route::post('/create-voucher', [VoucherController::class, 'createVoucher']);
+        Route::post('/generate-vat-voucher', [VoucherController::class, 'generateVATVoucher']);
      });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');

@@ -19,6 +19,7 @@ class Payment extends Model
         return $this->belongsToMany(FinanceFiles::class, 'finance_files_payments', 'payment_id', 'finance_file_id');
     }
 
+
     /**
      * Get the recipient that owns the Payment
      *
@@ -67,6 +68,16 @@ class Payment extends Model
     public function voucher()
     {
         return $this->hasMany(Voucher::class, 'payment_id');
+    }
+
+    /**
+     * Get all of the vatVoucher for the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function vatVoucher()
+    {
+        return $this->hasMany(VATVoucher::class, 'payment_id');
     }
 
 }

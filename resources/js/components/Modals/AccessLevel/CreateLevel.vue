@@ -85,6 +85,8 @@ const submit = () => {
   router.post('/dashboard/create-role', {name: name.value, description: description.value}, {onSuccess: ()=>{
     emit("update:modelValue", false);
     emit("refresh");
+    name.value = ""
+    description.value = ""
     toast.add({
       severity: "success",
       summary: 'Access Level Created',

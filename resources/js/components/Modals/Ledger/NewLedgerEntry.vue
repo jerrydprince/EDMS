@@ -180,9 +180,19 @@ watch(() => props.ledger, (newLedger) => {
   }
 }, { immediate: true });
 
+// const isFormValid = computed(() => {
+//   return Object.values(form.data()).every(val => typeof val === "string" ? val.trim() !== "" : val !== null && val !== undefined && val !== "");
+// });
 const isFormValid = computed(() => {
-  return Object.values(form.data()).every(val => typeof val === "string" ? val.trim() !== "" : val !== null && val !== undefined && val !== "");
-});
+  return (
+    form.due_date.trim() !== "" &&
+    form.narration.trim() !== "" &&
+    form.debit !== "" &&
+    form.credit !== "" &&
+    form.balance !== "" &&
+    form.workflow !== ""
+  )
+})
 
 const getWorkflow = async () => {
   try {

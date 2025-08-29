@@ -231,7 +231,7 @@ const submit = () => {
       });
     }})
   }else if(medium.value == 'finance'){
-    router.post('/finance-and-accounting/set-registry-files',{files: files.value, medium: medium.value}, {onSuccess:page=>{
+    router.post('/finance-and-accounts/set-registry-files',{files: files.value, medium: medium.value}, {onSuccess:page=>{
       emit("update:modelValue", false);
       emit('update')
       files.value = null

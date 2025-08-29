@@ -24,7 +24,7 @@ class FandAController extends Controller
     }
 
     public function getRegistryFiles(){
-        $registryfiles = FinanceFiles::with('path')->paginate(10);
+        $registryfiles = FinanceFiles::with('path')->latest()->paginate(10);
         return response()->json($registryfiles);
     }
   
@@ -41,9 +41,6 @@ class FandAController extends Controller
            $data['dueDate'] = date('Y-m-d H:i:s', strtotime($data['dueDate']));
             $pay = $request->payment_id? Payment::findOrFail($request->payment_id):new Payment();
             $pay->title = $data['title'];
-            //$pay->due_date = $data['dueDate'];
-            //$pay->recipient_id = $data['recipient'][0];
-            //$pay->comments = $request->input('comments', '');
             $pay->save();
 
              // Attach the files to the payment
@@ -53,7 +50,7 @@ class FandAController extends Controller
                $recipient = User::findOrFail($data['recipient'][0]);
                $recipient_role = $recipient->roles->first()->name;
                $recipient_role_id = $recipient->roles->first()->id;
-    
+   
                $assignmentData = [
                     'due_date' => $data['dueDate'],
                     'recipient_id' => $recipient->id,
@@ -70,7 +67,7 @@ class FandAController extends Controller
             if($request->payment_id){
                 DB::table('payment_assignment')
                     ->where('recipient_id', $recipient->id)
-                    ->where('recipient_role_id', $recipient_role_id)
+                    ->where('role_id', $recipient_role_id)
                     ->update($assignmentData);
                 $pay->files()->sync($ids);
             } else {
@@ -83,8 +80,8 @@ class FandAController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
              //dd($e->getMessage());
-             return redirect()->back()->withErrors(['error' => 'Failed to initiate payment ']);
-            return redirect()->back()->with('error', 'Failed to initiate payment: ' . $e->getMessage());
+             return redirect()->back()->withErrors(['error' => 'Failed to initiate payment '.$e->getMessage()]);
+            //return redirect()->back()->with('error', 'Failed to initiate payment: ' . $e->getMessage());
         }
        
         //return response()->json(['message' => 'Payment initiated successfully.']);
@@ -123,7 +120,9 @@ class FandAController extends Controller
     public function getActivePayments()
     {
         if(auth()->user()->hasRole('directors')){
-           $payments = Payment::with(['files', 'recipient', 'assignedTo' => function($query) {
+           $payments = Payment::with(['files'=>function($query){
+            $query->with('path');
+           }, 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id);
             }])
             ->where(function ($query) {
@@ -135,7 +134,7 @@ class FandAController extends Controller
             ->paginate(10);
         } else {
             $id = auth()->user()->id;
-             $payments = Payment::with(['files','assignedBy'=>function($query){
+             $payments = Payment::with(['files', 'assignedBy'=>function($query){
                 $query->with(['user'])->where('recipient_id', auth()->user()->id);
              }, 'assignedTo'=> function($query) {
                     $query->with('user')->where('assigned_by', auth()->user()->id);
@@ -165,14 +164,18 @@ class FandAController extends Controller
     public function viewPayment($id)
     {
         if(auth()->user()->hasRole('directors')){
-            $payment = Payment::with(['files', 'voucher', 'recipient', 'assignedTo' => function($query) {
+            $payment = Payment::with(['vatVoucher','files'=>function($query){
+                $query->with('path');
+            }, 'voucher', 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id);
             }])
             ->withCount('ledger')
             ->findOrFail($id);
             
         } else {
-            $payment = Payment::with(['files', 'voucher', 'recipient', 'assignedTo' => function($query) {
+            $payment = Payment::with(['vatVoucher','files'=>function($query){
+                $query->with('path');
+            }, 'voucher', 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id );
             }, 'assignedBy'=>function($query){
                 $query->with(['user'])->where('recipient_id', auth()->user()->id);
@@ -304,9 +307,19 @@ class FandAController extends Controller
         return response()->json($users);
     }
 
+    public function getOtherChargesUsers(){
+        $users = User::role('other charges')->select('id','first_name', 'last_name')->get();
+        return response()->json($users);
+    }
+
     public function getCheckingUsers(){
         $users = User::role('checking')->select('id','first_name', 'last_name')->get();
         return response()->json($users);
+    }
+
+    public function getOtherChargesHOS(){
+        $user = User::role('other charges(HOS)')->select('id','first_name', 'last_name')->first();
+        return response()->json($user);
     }
 
      public function assignToAdvanceSection(Request $request)
@@ -337,8 +350,20 @@ class FandAController extends Controller
                 'updated_at' => now(),
             ]);
 
+
         return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
     }
+
+    public function advanceTaskSubmit(Request $request){
+        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
+        return to_route('view-payment', $request->payment_id);
+    }
+
+    public function otherChargesTaskSubmit(Request $request){
+        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
+        return to_route('view-payment', $request->payment_id);
+    }
+    
 
      public function assignToChecking(Request $request)
     {
@@ -369,6 +394,88 @@ class FandAController extends Controller
             ]);
 
         return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+    }
+
+    public function assignToOtherChargesByHOS(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'dueDate' => 'required|date',
+            'recipient' => 'required',
+            'generalComment' => 'nullable|string',
+        ]);
+
+            //$user = User::with('roles')->findOrFail($data['recipient']);
+            $recipient = User::findOrFail($data['recipient'][0]);
+               $recipient_role = $recipient->roles->first()->name;
+               $recipient_role_id = $recipient->roles->first()->id;
+
+        DB::table('payment_assignment')
+           ->insert([
+                'due_date' => $data['dueDate'],
+                'status' => 'pending',
+                'comments' => $data['generalComment'] ?? '',
+                'role'=> $recipient_role,
+                'role_id' => $recipient_role_id,
+                'recipient_id' => $recipient->id,
+                'payment_id' => $data['payment_id'],
+                'assigned_by' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+    }
+
+    /**
+     * Streamlined functions below
+     * These function was used for checkings down to final accounts
+     * assistant directors to other charges to be reviewed
+     */
+     public function assignToSectionUsers(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'dueDate' => 'required|date',
+            'recipient' => 'required',
+            'generalComment' => 'nullable|string',
+        ]);
+
+            //$user = User::with('roles')->findOrFail($data['recipient']);
+            $recipient = User::findOrFail($data['recipient'][0]);
+               $recipient_role = $recipient->roles->first()->name;
+               $recipient_role_id = $recipient->roles->first()->id;
+
+        DB::table('payment_assignment')
+           ->insert([
+                'due_date' => $data['dueDate'],
+                'status' => 'pending',
+                'comments' => $data['generalComment'] ?? '',
+                'role'=> $recipient_role,
+                'role_id' => $recipient_role_id,
+                'recipient_id' => $recipient->id,
+                'payment_id' => $data['payment_id'],
+                'assigned_by' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+    }
+
+    public function submitTask(Request $request){
+        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
+        return to_route('view-payment', $request->payment_id);
+    }
+
+    public function getSectionUsers(Request $request){
+        if(strpos($request->role, '(HOS)') !== false){
+            $user = User::role($request->role)->select('id','first_name', 'last_name')->first();
+        } else {
+            $user = User::role($request->role)->select('id','first_name', 'last_name')->get();
+        }
+        
+        return response()->json($user);
     }
 
         
