@@ -27,6 +27,7 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TwoFactorChallengeController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\CashBookController;
 use App\Http\Controllers\RecycleBinController;
 use App\Http\Controllers\FandAController;
 use App\Http\Controllers\VoteBookController;
@@ -452,6 +453,8 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/other-charges-task-submit', [FandAController::class, 'otherChargesTaskSubmit']);
         Route::get('/get-other-charges-hos', [FandAController::class, 'getOtherChargesHOS']);
         Route::post('/assign-to-other-charges-by-hos', [FandAController::class, 'assignToOtherChargesByHOS']);
+        Route::get('/get-payment-assignments', [FandAController::class, 'getPaymentAssignments']);
+
         //streamlined urls
         Route::post('/assign-to-section-users',[FandAController::class, 'assignToSectionUsers']);
         Route::post('/submitTask', [FandAController::class, 'submitTask']);
@@ -468,10 +471,17 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/create-ledger-entry', [LedgerController::class, 'createLedgerEntry'])->name('create-ledger-entry');
         Route::get('/get-workflow', [LedgerController::class, 'getWorkflow'])->name('get-workflow');
         Route::get('/get-ledger/{id}', [LedgerController::class, 'getLedger'])->name('get-ledger');
+        Route::get('/get-ledgers', [LedgerController::class, 'getLedgers']);
 
         //voucher
         Route::post('/create-voucher', [VoucherController::class, 'createVoucher']);
         Route::post('/generate-vat-voucher', [VoucherController::class, 'generateVATVoucher']);
+
+        //comment
+        Route::post('/make-comment', [FandAController::class, 'makeComment']);
+
+        //Cashbook
+        Route::get('/cashbook', [CashBookController::class, 'index']);
      });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');

@@ -98,7 +98,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="(item, index) in paginatedFiles"
+              v-for="(item, index) in registryFiles"
               :key="item.id || index"
               class="hover:bg-gray-50 cursor-pointer border-b border-gray-200 h-20 text-sm"
             >
@@ -142,7 +142,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="paginatedFiles.length === 0 && !loading" class="text-center py-20">
+      <div v-if="registryFiles.length === 0 && !loading" class="text-center py-20">
         <p class="text-gray-600 text-lg mb-2">No files found</p>
         <p class="text-gray-400">
           {{ searchValue ? 'Try adjusting your search terms' : 'Upload some files to get started' }}
@@ -172,8 +172,8 @@
       </div>
     </div>
     
-    <div class="mt-5">
-      <!-- Pagination -->
+    <!-- <div class="mt-5">
+      
       <div class="flex justify-center items-center gap-4">
         <button 
           @click="currentPage > 1 && (currentPage--)"
@@ -195,7 +195,13 @@
           Next
         </button>
       </div>
-    </div>
+    </div> -->
+    <pagination class="my-4"
+        :totalItems="totalItems"
+        :itemsPerPage="itemsPerPage"
+        v-model="currentPage"
+        @setPage="(page) => currentPage = page"
+      />
   </section>
   <InitiatePayment v-model="InitiatePaymentModal" :payment="payment" @removeF="removeF" @removeAllFiles="removeAllFiles" :selectedFiles="getSelectedFiles" />
   <PreviewFinanceFile v-if="togglePreview" :togglePreviewFunction="togglePreviewState" :file="selectedFile" />
@@ -207,10 +213,11 @@ import InitiatePayment from "../../components/Modals/Payment/InitiatePayment.vue
 import { router } from "@inertiajs/vue3";
 import { registry } from "chart.js";
 import PreviewFinanceFile from "../../components/Modals/branches/PreviewFinanceFile.vue";
+import pagination from "../../reusables/pagination.vue";
 
 const searchValue = ref("");
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = ref(10);
 const InitiatePaymentModal = ref(false);
 const registryFiles = ref([])
 const togglePreview = ref(false);
@@ -221,6 +228,8 @@ const sortOrder = ref("desc");
 const fileTypeFilter = ref("all");
 const showTypeDropdown = ref(false);
 const props = defineProps(["payment"]);
+const totalItems = ref(0);
+
 
 const fileTypes = ["pdf", "docx", "ppt", "xlsx", "jpg", "jpeg", "png"];
 
@@ -295,7 +304,7 @@ const totalPages = computed(() => {
   return Math.ceil(filteredFiles.value.length / itemsPerPage);
 });
 
-const totalItems = computed(() => filteredFiles.value.length);
+//const totalItems = computed(() => filteredFiles.value.length);
 
 const checkedItems = ref([]);
 const selectAll = ref(false);
@@ -337,12 +346,16 @@ const handleSearch = () => {
 };
 
 const getRegistryFiles = async () => {
-  loading.value = true;
+  loading.value = false;
   error.value = "";
   
   try {
-    const response = await axios.get('/finance-and-accounts/get-registry-files');
+    const response = await axios.get('/finance-and-accounts/get-registry-files?page=' + currentPage.value+"&search="+searchValue.value);
     registryFiles.value = response.data.data || [];
+    currentPage.value = response.data.current_page
+    itemsPerPage.value = response.data.per_page
+    totalItems.value = response.data.total
+   
     // Initialize checked items array
     checkedItems.value = new Array(registryFiles.value.length).fill(false);
   } catch (err) {
@@ -461,16 +474,26 @@ const getSelectedFiles = computed(()=>{
 
 onMounted(() => {
   getRegistryFiles()
+  loading.value = true;
   document.addEventListener('click', handleClickOutside);
 })
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
 
 // Watch for changes that should reset pagination
 watch([searchValue, fileTypeFilter], () => {
-  currentPage.value = 1;
+  if (searchValue.value.trim()) {
+    clearTimeout(window.__searchDebounce__);
+    window.__searchDebounce__ = setTimeout(() => {
+      getRegistryFiles();
+    }, 400);
+  } else {
+    getRegistryFiles();
+  }
+  
+});
+
+watch(currentPage, (newPage) => {
+  getRegistryFiles();
 });
 
 // Update checked items array when files change

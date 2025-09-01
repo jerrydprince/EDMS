@@ -16,7 +16,7 @@
       <div class="flex justify-end pb-5 gap-3">
         <button @click="rejectPaymentModal = true"
          v-if="!roles.includes('directors') && !roles.includes('advance section') && !roles.includes('other charges')  && payment.assigned_by && payment.assigned_by.status =='pending' &&
-          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')"
+          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive()"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconoir:cancel" width="25" />
           <p>Reject</p>
@@ -26,40 +26,43 @@
           <Icon icon="iconamoon:check" width="20" />
           <p>Assign</p>
         </button>
-        <button v-if="!roles.includes('directors') && !roles.includes('other charges') &&  !roles.includes('advance section') && !roles.includes('advance section(HOS)')
-            && !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')" @click="acceptTask"
+        <button v-if="!roles.includes('directors') && !roles.includes('other charges') && !roles.includes('other charges(HOS)') &&  !roles.includes('advance section') && !roles.includes('advance section(HOS)')
+            && !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive()" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
         <!-- the second accept is for HOS advance section -->
-        <button v-if="!roles.includes('directors') && isAssignedToOtherCharges == false && roles.includes('advance section(HOS)')" @click="acceptTask"
+        <button v-if="roles.includes('advance section(HOS)') &&  !isAcceptActive()" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
 
         <!-- the second accept is for HOS other charges -->
-        <button v-if="!roles.includes('directors') && isAssignedToCheckings == false && roles.includes('other charges(HOS)')" @click="acceptTask"
+        <button v-if="!roles.includes('directors') && isAssignedToCheckings == false && roles.includes('other charges(HOS)') && !isAcceptActive()" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
         <!-- the assign button is for HOS other charges -->
-        <button 
-          v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('other charges(HOS)') |roles.includes('checking(HOS)')|| roles.includes('CPO(HOS)')||
-            roles.includes('internal audit(HOS)')|| roles.includes('final account(HOS)')" @click="setAssignTaskModal"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Assign</p>
-        </button>
+         <div v-if="payment.assigned_to.length === 0">
+          <button 
+            v-if="(!roles.includes('directors') && !roles.includes('CPO')) || roles.includes('other charges(HOS)') ||roles.includes('checking(HOS)')|| roles.includes('CPO(HOS)')||
+              roles.includes('internal audit(HOS)')|| roles.includes('final account(HOS)')" @click="setAssignTaskModal"
+            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+            <Icon icon="iconamoon:check" width="20" />
+            <p>Assign</p>
+          </button>
+         </div>
+        
         <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && currentRole === 'Final Account'" @click="finalisePaymentModal = true"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Finalise</p>
         </button>
         <Link href="/finance-and-accounts/other-charges-task-submit" method="post" :data="{id: payment.assigned_by?.id, payment_id: payment.id}" 
-          v-if="(roles.includes('other charges') || roles.includes('advance charges') || roles.includes('checking') || roles.includes('CPO')|| roles.includes('internal audit') || roles.includes('final account')) && payment.assigned_by.status == 'pending'"
+          v-if="(roles.includes('other charges') || roles.includes('advance section') || roles.includes('checking') || roles.includes('CPO')|| roles.includes('internal audit') || roles.includes('final account')) && payment.assigned_by.status == 'pending'"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Submit</p>
@@ -125,7 +128,7 @@
           </div>
           <p class="text-base md:text-2xl text-gray-900">Vendor Contracts</p>
         </div>
-        <div v-if="!sidemenu">
+        <div v-if="!sidemenu && !sidemenu1">
           <section>
             <!-- ACCESS LEVELS: ADVANCE SECTION -->
             <div class="px-2 pt-2">
@@ -436,14 +439,28 @@
             </section>
             <Divider class="mt-10" />
 
-            <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+            <div v-if="payment.assigned_to && payment.assigned_to.length > 0" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
               @click="toggleSidemenu('comment')">
               <div class="flex items-center gap-5 text-gray-700">
                 <Icon icon="lucide:message-square" width="25" />
                 <p class="text-xl">Comments</p>
                 <p
                   class="w-7 h-7 rounded-md text-[#0E7A1D] font-semibold bg-[#F8FBF9] flex items-center justify-center flex-col p-3">
-                  3
+                  {{ payment.top_to_down_comment.length }}
+                </p>
+              </div>
+              <Icon icon="flowbite:angle-right-outline" class="text-gray-500" width="25" />
+            </div>
+            <Divider class="mt-0" />
+
+            <div v-if="payment.assigned_by" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+              @click="toggleSidemenu('comment1')">
+              <div class="flex items-center gap-5 text-gray-700">
+                <Icon icon="lucide:message-square" width="25" />
+                <p class="text-xl">Comments</p>
+                <p
+                  class="w-7 h-7 rounded-md text-[#0E7A1D] font-semibold bg-[#F8FBF9] flex items-center justify-center flex-col p-3">
+                  {{ payment.down_to_top_comment.length }}
                 </p>
               </div>
               <Icon icon="flowbite:angle-right-outline" class="text-gray-500" width="25" />
@@ -453,13 +470,13 @@
           <!-- PROGRESS MONITOR STARTS -->
           <div v-if="progressMonitor" class="h-[665px] overflow-y-auto hide_scroll pb-14">
             <div class="px-6 py-5 flex flex-col gap-y-8">
-              <div v-for="(activity, index) in data.payment_timeline" :key="index" class="flex items-start gap-x-4">
+              <div v-for="(activity, index) in payment_histories" :key="index" class="flex items-start gap-x-4">
                 <div class="flex flex-col items-center">
                   <p :class="activity.status === 'completed'
                     ? 'bg-primary'
                     : 'bg-gray-300'
                     " class="h-6 w-[5px] rounded-full"></p>
-                  <span v-if="index + 1 !== data.payment_timeline.length" v-for="(item, count) in 4" :key="count"
+                  <span v-if="index + 1 !== payment_histories.length" v-for="(item, count) in 4" :key="count"
                     :class="activity.status === 'completed'
                       ? 'text-primary'
                       : 'text-gray-300'
@@ -481,7 +498,7 @@
         </div>
 
         <!-- COMMENTS -->
-        <div v-if="comment && sidemenu">
+        <div v-if=" sidemenu">
           <div class="p-8">
             <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
               @click="toggleSidemenu('back')">
@@ -494,27 +511,74 @@
             <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
 
             <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
-              <textarea name="" id="" cols="30" placeholder="Enter Message" rows="5"
+              <textarea name="" id="" cols="30" placeholder="Enter Message" v-model="message" rows="5"
                 class="bg-slate-50 outline-none resize-none"></textarea>
               <div class="w-full flex items-center justify-end">
-                <button class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
+                <button @click="sendComment" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
                   Send
                 </button>
               </div>
             </div>
             <div class="mt-5 px-5">
-              <div v-for="(item, index) in comments" :key="index">
+              <div v-for="(item, index) in payment.top_to_down_comment" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
                     <div class="w-14 h-14 rounded-full overflow-hidden">
-                      <img :src="item.img" alt="" class="w-full h-full" />
+                      <img v-if="item.sender && item.sender.profile_image" :src="base+'/'+item.sender?.profile_image" alt="" class="w-full h-full" />
+                      <img v-else :src="user_img" alt="" class="w-full h-full" />
                     </div>
                   </div>
                   <div class="w-[80%]">
                     <div class="flex items-center gap-2">
-                      <h1 class="text-gray-800 text-xl">{{ item.name }}</h1>
-                      <small class="text-gray-500">• {{ item.time }}</small>
+                      <h1 class="text-gray-800 text-xl">{{user.id == item.sender?.id? "You": item.sender?.last_name+" "+item.sender?.first_name }}</h1>
+                      <small class="text-gray-500">• {{ formatRelativeTime(item.created_at) }}</small>
+                    </div>
+                    <p class="text-base text-gray-500 my-4">
+                      {{ item.comment }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if=" sidemenu1">
+          <div class="p-8">
+            <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+              @click="toggleSidemenu('back1')">
+              <Icon icon="flowbite:angle-left-outline" />
+              <p>Back</p>
+            </div>
+          </div>
+          <Divider class="mt-0" />
+          <div class="">
+            <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
+
+            <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
+              <textarea name="" id="" cols="30" placeholder="Enter Message" v-model="message" rows="5"
+                class="bg-slate-50 outline-none resize-none"></textarea>
+              <div class="w-full flex items-center justify-end">
+                <button @click="sendComment" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
+                  Send
+                </button>
+              </div>
+            </div>
+            <div class="mt-5 px-5">
+              <div v-for="(item, index) in payment.down_to_top_comment" :key="index">
+                <Divider class="mt-0" />
+                <div class="flex items-start w-full">
+                  <div class="w-[15%]">
+                    <div class="w-14 h-14 rounded-full overflow-hidden">
+                      <img v-if="item.sender && item.sender.profile_image" :src="base+'/'+item.sender?.profile_image" alt="" class="w-full h-full" />
+                      <img v-else :src="user_img" alt="" class="w-full h-full" />
+                    </div>
+                  </div>
+                  <div class="w-[80%]">
+                    <div class="flex items-center gap-2">
+                      <h1 class="text-gray-800 text-xl">{{user.id == item.sender?.id? "You": item.sender?.last_name+" "+item.sender?.first_name }}</h1>
+                      <small class="text-gray-500">• {{ formatRelativeTime(item.created_at) }}</small>
                     </div>
                     <p class="text-base text-gray-500 my-4">
                       {{ item.comment }}
@@ -540,7 +604,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import { Link, usePage, router } from "@inertiajs/vue3";
 
@@ -553,7 +617,7 @@ import ChargeAccount from "../../components/Modals/Payment/ChargeAccount.vue";
 import PaymentReceipt from "../../components/Modals/VoteBook/PaymentReceipt.vue";
 import VoteBookImg from "../../assets/images/votebook.svg";
 import jenna from "../../assets/images/jenna.svg";
-import user from "../../assets/images/user.svg";
+import user_img from "../../assets/images/user.svg";
 //import Voucher from "../../components/Voucher.vue";
 import Voucher from "../../components/Voucher.vue";
 import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
@@ -561,6 +625,7 @@ import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
 const page = usePage();
 const roles = computed(() => page.props.roles);
 const base = computed(()=> page.props.base)
+const user = computed(()=> page.props.user)
 const sidemenu = ref(false);
 const props = defineProps(["payment"]);
 const assignTask = ref(false)
@@ -585,6 +650,12 @@ const ledger = ref(null);
 const vouchers = ref(null)
 const file_sizes = ref([])
 const selectedVoucher = ref(null)
+const message = ref('')
+const payment_assignments = ref([])
+const payment_histories = ref([])
+const comment1 = ref(false)
+const sidemenu1 = ref(false)
+const comment_recipient = ref(null)
 // DIFFERENT ROLES
 // Finance and Accounting
 // Deputy Director
@@ -596,6 +667,17 @@ const selectedVoucher = ref(null)
 // CPO
 // CPO Cashbook
 // Final Account
+
+const user_roles = {
+  //"directors": "Director of Finance",
+  "division heads": "Deputy Director Payment",
+  "unit heads": "Assistant Director Payment",
+  "advance section(HOS)": "Advance section",
+  "other charges(HOS)": "Other charges",
+  "checking(HOS)": "Checkings",
+  "internal audit(HOS)": "Internal Audit",
+  "CPO(HOS)": "CPO",
+  "final account": "Final Account"};
 
 const editLedgerEntry = (val) => {
   console.log("Edit Ledger Entry", val);
@@ -610,6 +692,60 @@ const editLedgerEntry = (val) => {
 
 const editVoucher = (voucher)=>{
   createVoucherModal.value = true
+}
+
+function formatRelativeTime(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString.replace(" ", "T"));
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return diffMin === 1 ? "A minute ago" : `${diffMin} mins ago`;
+  if (diffHour < 24) return diffHour === 1 ? "An hour ago" : `${diffHour} hours ago`;
+  if (diffDay < 7) return diffDay === 1 ? "Yesterday" : `${diffDay} days ago`;
+  return date.toLocaleDateString();
+}
+
+
+
+const getCommentRecipient = ()=>{
+  /*if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0 && props.payment.assigned_to[0].id !== user.value.id){
+      return props.payment.assigned_to[0].id
+  }
+  return props.payment.assigned_by.id
+  */
+  // if(props.payment && props.assigned_by && props.assigned_by.recipient_id == user.value.id){
+  //   return props.payment.assigned_by.recipient_id;
+  // }else{
+  //   return props.payment.assigned_by.assigned_by;
+  // }
+  if(props.payment && props.payment.assigned_by && props.payment.assigned_by.recipient_id == user.value.id){
+    return props.payment.assigned_by.assigned_by;
+  }else{
+    return props.payment.assigned_by.recipient_id;
+  }
+}
+
+const sendComment = ()=>{
+  if(message.value && message.value.length > 0){
+    router.post('/finance-and-accounts/make-comment', {payment_id: props.payment.id, comment: message.value, recipient: comment_recipient.value}, {
+      onSuccess: (response)=>{
+        toast.add({severity:'success', summary: 'Success', detail: 'Comment added successfully', life: 3000});
+        message.value = ''
+        router.reload({only:['payment']})
+      },
+      onError: (error)=>{
+        toast.add({severity:'error', summary: 'Error', detail: 'Failed to add comment', life: 3000});
+      }
+    })
+  }else{
+    toast.add({severity:'warn', summary: 'Warning', detail: 'Comment cannot be empty', life: 3000});
+  }
 }
 
 const setAssignTaskModal = ()=>{
@@ -747,63 +883,65 @@ const data = ref({
       icon: "vscode-icons:file-type-pdf2",
     },
   ],
-  payment_timeline: [
-    {
-      title: "Payment Timeline",
-      status: "completed",
-      office: "Director of Finance",
-      date_completed: "6 Jun 2025 9:24 PM",
-    },
-    {
-      title: "Payment Timeline",
-      status: "completed",
-      office: "Deputy Director Payment",
-      date_completed: "7 Jun 2025 9:24 PM",
-    },
-    {
-      title: "Payment Timeline",
-      status: "completed",
-      office: "Assistant Director Payment",
-      date_completed: "8 Jun 2025 9:24 PM",
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "Advance Section",
-      date_completed: null,
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "Other Charges",
-      date_completed: null,
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "Checkings",
-      date_completed: null,
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "Internal Audit",
-      date_completed: null,
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "CPO",
-      date_completed: null,
-    },
-    {
-      title: "Payment Timeline",
-      status: "pending",
-      office: "Final Account",
-      date_completed: null,
-    },
-  ],
+
+  // payment_timeline: [
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "completed",
+  //     office: "Director of Finance",
+  //     date_completed: "6 Jun 2025 9:24 PM",
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "completed",
+  //     office: "Deputy Director Payment",
+  //     date_completed: "7 Jun 2025 9:24 PM",
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "completed",
+  //     office: "Assistant Director Payment",
+  //     date_completed: "8 Jun 2025 9:24 PM",
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "Advance Section",
+  //     date_completed: null,
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "Other Charges",
+  //     date_completed: null,
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "Checkings",
+  //     date_completed: null,
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "Internal Audit",
+  //     date_completed: null,
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "CPO",
+  //     date_completed: null,
+  //   },
+  //   {
+  //     title: "Payment Timeline",
+  //     status: "pending",
+  //     office: "Final Account",
+  //     date_completed: null,
+  //   },
+  // ],
 });
+
 
 const setCurrentFile = (document, index) => {
   // Function to set the current index of the file being viewed
@@ -853,6 +991,13 @@ const toggleSidemenu = (action) => {
   if (action === "comment") {
     comment.value = !comment.value;
     sidemenu.value = !sidemenu.value;
+    comment_recipient.value = props.payment?.assigned_to[0]?.recipient_id
+  }
+
+  if (action === "comment1") {
+    comment1.value = !comment1.value;
+    sidemenu1.value = !sidemenu1.value;
+    comment_recipient.value = props.payment.assigned_by.assigned_by
   }
 
   if (action === "progressMonitor") {
@@ -864,7 +1009,71 @@ const toggleSidemenu = (action) => {
     sidemenu.value = false;
     progressMonitor.value = false;
   }
+
+  if (action === "back1") {
+    comment1.value = false;
+    sidemenu1.value = false;
+    progressMonitor.value = false;
+  }
 };
+
+const isAcceptActive = ()=>{
+  if(roles.value.includes('division heads')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'unit heads')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else if(roles.value.includes('unit heads')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'advance section(HOS)' || item.role == 'other charges(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else if(roles.value.includes('advance section(HOS)')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'other charges(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else  if(roles.value.includes('other charges(HOS)')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'checking(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else if(roles.value.includes('checking(HOS)')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'internal audit(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else if(roles.value.includes('internal audit(HOS)')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'CPO(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }
+}
 
 const resubmitTask = () => {
   // Task resubmission logics here
@@ -908,6 +1117,30 @@ const closeModal = (modal) => {
     return;
   }
 };
+
+const payment_history = ()=>{
+    const history = Object.keys(user_roles).map(role => {
+    const found = payment_assignments.value.find(a => a.role.toLowerCase() === role.toLocaleLowerCase());
+    return {
+      title: "Payment Timeline",
+      status: found? "completed": "pending",
+      office: user_roles[role],
+      date_completed: found ? found.due_date || null : null,
+    };
+  })
+  payment_histories.value = history;
+}
+
+const getPaymentAssignments = async ()=>{
+  await axios.get('/finance-and-accounts/get-payment-assignments?payment_id='+props.payment.id).then((response)=>{
+    if(response && response.data){
+      payment_assignments.value = response.data
+      payment_history()
+    }
+  }).catch((error)=>{
+    console.log('Error fetching payment assignments', error)
+  })
+}
 
 const downloadCurrentFile = () => {
   if (!currentDocument.value || !currentDocument.value.file_name) return;
@@ -993,6 +1226,11 @@ watch(()=>props.payment, (newVal)=>{
   }
 }, {immediate: true})
 
+onMounted(()=>{
+  if(roles.value.includes('directors')){
+    getPaymentAssignments()
+  }
+})
 </script>
 
 <style></style>

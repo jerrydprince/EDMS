@@ -14,6 +14,24 @@ class LedgerController extends Controller
         return inertia('Ledger/LedgerEntry');
     }
 
+    public function getLedgers(Request $request){
+        $ledgers = Ledger::query();
+        if($request->search){
+            $search = $request->search;
+            $ledgers->where(function($query) use($search){
+                $query->where('ref_no', 'LIKE', '%'.$search.'%')
+                    ->orWhere('due_date', 'LIKE', '%'.$search.'%')
+                    ->orWhere('narration', 'LIKE', '%'.$search.'%')
+                    ->orWhere('debit', 'LIKE', '%'.$search.'%')
+                    ->orWhere('credit', 'LIKE', '%'.$search.'%')
+                    ->orWhere('balance', 'LIKE', '%'.$search.'%')
+                    ->orWhere('status','LIKE', '%'.$search.'%');
+            });
+        }
+        $ledgers = $ledgers->latest()->paginate(10);
+        return response()->json($ledgers);
+    }
+
     // public function saveLedger(Request $request)
     // {
     //     // Validate the request data

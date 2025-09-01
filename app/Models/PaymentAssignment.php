@@ -20,4 +20,9 @@ class PaymentAssignment extends Model
     {
         return $this->hasOne(User::class, 'id', 'recipient_id');
     }
+
+//     public function comments()
+// {
+//     return $this->hasMany(PaymentComment::class, 'assignment_id');
+// }
 }

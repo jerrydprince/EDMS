@@ -310,6 +310,7 @@ class VoucherController extends Controller
 
         } catch (\Exception $e) {
             // Log the error
+            
             \Log::error('Error generating VAT vouchers: ' . $e->getMessage(), ['exception' => $e]);
             DB::rollBack();
            

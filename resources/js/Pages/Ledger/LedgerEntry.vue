@@ -1,9 +1,7 @@
 <template>
   <section>
     <!-- HEADER STARTS -->
-    <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between pr-9 pt-4"
-    >
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between pr-9 pt-4">
       <div class="flex items-center h-auto">
         <img :src="LedgerImg" alt="ledger icon" />
         <div class="-mt-5">
@@ -15,10 +13,8 @@
       </div>
       <div class="flex items-center gap-x-3 -mt-4 ml-6 md:ml-0">
         <GenerateReportButton @select="generateReportFunction" />
-        <button
-          @click="newLedgerEntryModal = true"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3 md:px-4 text-sm md:text-base"
-        >
+        <button @click="newLedgerEntryModal = true"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3 md:px-4 text-sm md:text-base">
           <Icon icon="ic:outline-plus" width="20" />
           <p>Create Entry</p>
         </button>
@@ -31,31 +27,19 @@
     <!-- BODY STARTS -->
     <section class="px-9 pb-10">
       <section class="lg:flex items-center justify-end pt-6">
-        <div
-          class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0 shadow-sm"
-        >
+        <div class="flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0 shadow-sm">
           <i class="pi pi-search text-gray-300" style="font-size: 1rem"></i>
-          <input
-            type="text"
-            v-model="searchValue"
-            placeholder="Search Ledger"
-            class="w-96 h-7 border-0 outline-none text-[#98A2B3]"
-          />
+          <input type="text" v-model="searchValue" placeholder="Search Ledger"
+            class="w-96 h-7 border-0 outline-none text-[#98A2B3]" />
         </div>
       </section>
       <div class="mt-7 rounded-xl">
         <div class="overflow-x-scroll lg:overflow-hidden">
-          <table
-            class="rounded-lg min-w-max w-full border border-gray-200 text-gray-500 text-sm"
-          >
+          <table class="rounded-lg min-w-max w-full border border-gray-200 text-gray-500 text-sm">
             <thead class="bg-gray-50">
               <tr class="text-left">
                 <th class="py-3 pl-5">
-                  <Checkbox
-                    v-model="selectAll"
-                    @update:modelValue="toggleAll"
-                    class="h-5 w-5"
-                  />
+                  <Checkbox v-model="selectAll" @update:modelValue="toggleAll" class="h-5 w-5" />
                 </th>
                 <th class="font-medium">Date</th>
                 <th class="font-medium">Reference</th>
@@ -68,11 +52,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="(item, index) in displayedItems"
-                :key="index"
-                class="hover:bg-gray-50 cursor-pointer border-b border-gray-200 h-20 text-sm"
-              >
+              <tr v-for="(item, index) in ledgers" :key="index"
+                class="hover:bg-gray-50 cursor-pointer border-b border-gray-200 h-20 text-sm">
                 <td class="align-middle pl-5">
                   <div class="flex items-center gap-2">
                     <Checkbox v-model="checkedItems[index]" class="h-5 w-5" />
@@ -81,12 +62,12 @@
 
                 <td class="align-middle">
                   <p class="text-gray-900">
-                    {{ item.date }}
+                    {{ item.due_date }}
                   </p>
                 </td>
 
                 <td class="align-middle">
-                  <p>{{ item.reference }}</p>
+                  <p>{{ item.ref_no }}</p>
                 </td>
                 <td class="align-middle">
                   <p>{{ item.narration }}</p>
@@ -101,36 +82,30 @@
                   <p>{{ item.balance }}</p>
                 </td>
                 <td class="align-middle">
-                  <p
-                    class="bg-gray-500 p-2 text-center rounded-full w-28"
-                    :style="{
-                      color:
-                        item.status == 'Retired'
-                          ? '#0B5C16'
-                          : item.status == 'Processing'
+                  <p class="bg-gray-500 p-2 text-center rounded-full w-28" :style="{
+                    color:
+                      item.status == 'retired'
+                        ? '#0B5C16'
+                        : item.status == 'processing'
                           ? '#F67E5A'
-                          : item.status == 'Not Retired'
-                          ? '#1D2939'
-                          : 'black',
-                      backgroundColor:
-                        item.status == 'Retired'
-                          ? '#EFF6F0'
-                          : item.status == 'Processing'
+                          : item.status == 'not retired'
+                            ? '#1D2939'
+                            : 'black',
+                    backgroundColor:
+                      item.status == 'retired'
+                        ? '#EFF6F0'
+                        : item.status == 'processing'
                           ? '#FEF0EC'
-                          : item.status == 'Not Retired'
-                          ? '#F2F4F7'
-                          : '#F2F4F7',
-                    }"
-                  >
+                          : item.status == 'not retired'
+                            ? '#F2F4F7'
+                            : '#F2F4F7',
+                  }">
                     {{ item.status }}
                   </p>
                 </td>
                 <td class="align-middle">
                   <div class="flex">
-                    <div
-                      @click="viewLedgerEntryModal = true"
-                      class="border border-gray-300 rounded-lg p-2"
-                    >
+                    <div @click="viewLedger(item)" class="border border-gray-300 rounded-lg p-2">
                       <Icon icon="ph:eye" width="20" />
                     </div>
                   </div>
@@ -139,20 +114,15 @@
             </tbody>
           </table>
         </div>
-        <div
-          class="absolute bottom-[5%] p-2 rounded-xl flex items-center left-[45%] bg-[#052B0A] justify-between"
-          v-if="checkedCount"
-        >
+        <div class="absolute bottom-[5%] p-2 rounded-xl flex items-center left-[45%] bg-[#052B0A] justify-between"
+          v-if="checkedCount">
           <div class="flex items-center gap-2 text-white text-sm ml-3">
             <p class=" ">
               {{ checkedCount }}
               selected
             </p>
           </div>
-          <button
-            @click=""
-            class="ml-16 bg-white text-[#052B0A] text-xs px-4 py-3 rounded-md flex items-center gap-2"
-          >
+          <button @click="" class="ml-16 bg-white text-[#052B0A] text-xs px-4 py-3 rounded-md flex items-center gap-2">
             <p>Generate Report</p>
             <Icon icon="mdi:file-text-outline" width="18" />
           </button>
@@ -169,109 +139,56 @@
         /> -->
       </div>
     </section>
-    <NewLedgerEntry v-if="newLedgerEntryModal" @cancelled="closeModal()" />
-    <ViewLedgerEntry v-if="viewLedgerEntryModal" @cancelled="closeModal()" />
+    <NewLedgerEntry v-if="newLedgerEntryModal" @cancelled="closeModal()" @confirmed="ConfirmedEdit" />
+    <GeneralViewLedger :ledger="selectedLedger" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal()" />
+    <EditLedger v-if="is_edit_ledger" @confirmed="ConfirmedEdit" @cancelled="is_edit_ledger = false" :ledger="editLedgerValues"/>
     <!-- BODY ENDS -->
   </section>
+  
 </template>
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 
 import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
-import ViewLedgerEntry from "../../components/Modals/Ledger/ViewLedgerEntry.vue";
+//import ViewLedgerEntry from "../../components/Modals/Ledger/ViewLedgerEntry.vue";
+import GeneralViewLedger from "../../components/Modals/Ledger/GeneralViewLedger.vue";
 //import paginator from "../../reusables/paginations.vue";
 import GenerateReportButton from "../../components/GenerateReport.vue";
 import LedgerImg from "../../assets/images/ledger.svg";
+import EditLedger from "../../components/Modals/Ledger/EditLedger.vue";
 
 const searchValue = ref("");
 const currentPage = ref(1);
 const newLedgerEntryModal = ref(false);
 const viewLedgerEntryModal = ref(false);
 const itemsPerPage = 10;
+const ledgers = ref([])
+const selectedLedger = ref(null)
+const is_edit_ledger = ref(false)
+const editLedgerValues = ref(null)
 
-const items = ref([
-  {
-    date: "15-01-2025, 09:00 AM",
-    reference: "REF001",
-    narration: "Payment for office",
-    debit: 50000,
-    credit: null,
-    balance: 300000,
-    status: "Retired",
-  },
-  {
-    date: "12-01-2025, 09:00 AM",
-    reference: "REF002",
-    narration: "Service fees for ...",
-    debit: 25000,
-    credit: 120000,
-    balance: 67000,
-    status: "Not Retired",
-  },
-  {
-    date: "13-01-2025, 09:00 AM",
-    reference: "REF004",
-    narration: "Client payment...",
-    debit: 300000,
-    credit: null,
-    balance: 50000,
-    status: "Not Retired",
-  },
-  {
-    date: "12-01-2025, 08:00 PM",
-    reference: "REF003",
-    narration: "Refund for cancellation",
-    debit: 25000,
-    credit: 25000,
-    balance: 300000,
-    status: "Processing",
-  },
-  {
-    date: "12-01-2025, 08:00 PM",
-    reference: "REF007",
-    narration: "Client payment...",
-    debit: 300000,
-    credit: null,
-    balance: 50000,
-    status: "Retired",
-  },
-  {
-    date: "13-01-2025, 09:00 AM",
-    reference: "REF006",
-    narration: "Refund for cancellation",
-    debit: 50000,
-    credit: 50000,
-    balance: 25000,
-    status: "Not Retired",
-  },
-  {
-    date: "12-01-2025, 08:00 PM",
-    reference: "REF004",
-    narration: "Client payment...",
-    debit: 25000,
-    credit: null,
-    balance: 25000,
-    status: "Processing",
-  },
-  {
-    date: "13-01-2025, 09:00 AM",
-    reference: "REF001",
-    narration: "Client payment...",
-    debit: 67000,
-    credit: 67000,
-    balance: 25000,
-    status: "Processing",
-  },
-  {
-    date: "12-01-2025, 08:00 PM",
-    reference: "REF001",
-    narration: "Monthly subscription",
-    debit: 50000,
-    credit: null,
-    balance: 50000,
-    status: "Retired",
-  },
-]);
+const getLedgers = async()=>{
+  await axios.get('/finance-and-accounts/get-ledgers',{params:{search: searchValue.value}}).then((response)=>{
+    ledgers.value = response.data.data
+  })
+}
+
+const ConfirmedEdit = ()=>{
+  is_edit_ledger.value = false
+  newLedgerEntryModal.value = false
+  getLedgers()
+}
+
+const editLedgerEntry = (ledger)=>{
+  editLedgerValues.value = ledger;
+  is_edit_ledger.value = true;
+  closeModal()
+}
+
+const viewLedger =(ledger)=>{
+  viewLedgerEntryModal.value = true
+  selectedLedger.value = ledger
+}
 
 const pageStart = ref(1);
 const pageEnd = ref(1);
@@ -282,7 +199,7 @@ const displayedItems = computed(() => {
   pageStart.value = startIndex;
   pageEnd.value = endIndex;
 
-  return items.value.slice(startIndex, endIndex);
+  return ledgers.value.slice(startIndex, endIndex);
 });
 const totalItems = computed(() => items.value.length);
 
@@ -313,4 +230,12 @@ const closeModal = () => {
   newLedgerEntryModal.value = false;
   viewLedgerEntryModal.value = false;
 };
+
+watch(searchValue, ()=>{
+  getLedgers()
+})
+
+onMounted(()=>{
+  getLedgers()
+})
 </script>

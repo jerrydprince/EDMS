@@ -105,7 +105,7 @@
                   class="outline-primary/60 border border-solid border-gray-300 rounded-md w-full px-3 py-2 text-xs"
                   placeholder="Search Staff List" />
                 <!-- Staff List -->
-                 <div v-if="filteredAdvanceSection.length" class="w-full">{{ filteredAdvanceSection }}
+                 <div v-if="filteredAdvanceSection.length" class="w-full">
                     <div v-for="(staff, index) in filteredAdvanceSection" :key="index" 
                     class="w-full">
                     <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
@@ -151,6 +151,26 @@
             </div>
           </div>
 
+          <!-- Advance to other charges -->
+          <div v-if="roles.includes('advance section(HOS)') && !assignTask" class="self-start mt-5">
+             <p class="text-gray-700 text-sm">Select Recipient</p>
+            <div class="bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]">
+              <div
+                class="flex flex-col justify-between items-start gap-y-2 max-h-full h-auto overflow-y-scroll hide_scroll rounded-2xl py-2">
+                <div class="w-full">
+                  <div class="w-full" v-if="hos_other_charges">
+                    <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
+                      <Checkbox :value="hos_other_charges.id" v-model="form.recipient" class="" />
+                      <div>
+                        <p class="text-xs text-gray-600">{{ hos_other_charges.last_name+" "+hos_other_charges.first_name }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- other charges, checking, cpo, internal audit and final account hos task forwarding to other hos -->
           <div v-if="(roles.includes('other charges(HOS)') || roles.includes('checking(HOS)') || roles.includes('CPO(HOS)') || roles.includes('internal audit(HOS)') || roles.includes('final account(HOS)') ) && !assignTask" class="self-start mt-5">
             <!-- <div v-show="false" class="text-gray-700 flex gap-1 items-center font-normal mb-4 ml-1 text-sm">
@@ -189,7 +209,7 @@
           </div>
 
           <!-- cpo Section Authorization  -->
-          <div v-if="(roles.includes('other charges(HOS)') || roles.includes('checking(HOS)') || roles.includes('CPO(HOS)') || roles.includes('internal audit(HOS)') || roles.includes('final account(HOS)') ) && assignTask" class="w-full mt-4">
+          <div v-if="( roles.includes('checking(HOS)') || roles.includes('CPO(HOS)') || roles.includes('internal audit(HOS)') || roles.includes('final account(HOS)') ) && assignTask" class="w-full mt-4">
             <p class="text-gray-700 text-sm">Select Staff</p>
             <div class="bg-white px-3 mt-2 rounded-2xl py-3 min-h-[150px]">
               <div
@@ -202,7 +222,7 @@
                 <div v-for="(staff, index) in filterSectionUsers" :key="index" v-if="filterSectionUsers.length"
                   class="w-full">
                   <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-x-6">
-                    <Checkbox :value="staff.id" v-model="form4.recipient" class="" />
+                    <Checkbox :value="staff.id" v-model="form.recipient" class="" />
                     <div>
                       <p class="text-xs text-gray-600">{{ staff.last_name+" "+staff.first_name }}</p>
                     </div>
@@ -864,10 +884,12 @@ const cancelModal = () => {
 
 watch(()=>form.dueDate, ()=>{
   //watch dueDate and set recipient only when the advance section hos wants to submit
-  form5.recipient = hos_other_charges.value?.id
-  form.recipient = hos_other_charges.value?.id
-  form5.generalComment = form.generalComment
-  form5.dueDate = form.dueDate
+  if(roles.value.includes('advance section(HOS)')){
+    //form5.recipient = hos_other_charges.value?.id
+    //form.recipient.push(hos_other_charges.value?.id)
+    form5.generalComment = form.generalComment
+    form5.dueDate = form.dueDate
+  }
 }, {immediate: true})
 
 onMounted(() => {

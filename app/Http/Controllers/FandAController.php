@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Division;
 use App\Models\Ledger;
 use Spatie\Permission\Models\Role;
+use App\Models\PaymentComment;
 
 class FandAController extends Controller
 {
@@ -24,8 +25,46 @@ class FandAController extends Controller
     }
 
     public function getRegistryFiles(){
+        if(request('search')){
+            $registryfiles = FinanceFiles::with('path')
+            ->where('file_name', 'like', '%'.request('search').'%')
+            ->latest()
+            ->paginate(10)
+            ->appends(['search' => request('search')]);
+            return response()->json($registryfiles);
+        }
         $registryfiles = FinanceFiles::with('path')->latest()->paginate(10);
         return response()->json($registryfiles);
+    }
+
+    public function paymentComment($request, $payment_id){
+        $recipient = null;
+        if(is_array($request->recipient)){
+           $recipient = $request->recipient[0];
+        } else {
+            $recipient = $request->recipient;
+        }
+        if($request->comment){
+            $request->merge(['comments' => $request->comment]);
+        }
+      //  dd($request->all());
+        $comment = new PaymentComment();
+        $comment->comment = $request->comments;
+        $comment->payment_id = $payment_id;
+        $comment->recipient_id = $recipient;
+        $comment->sender_id = auth()->user()->id;
+        $comment->save();
+    }
+
+    public function makeComment(Request $request){
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'comment' => 'required|string',
+        ]);
+        
+        $this->paymentComment($request, $data['payment_id']);
+
+        return to_route('view-payment', $data['payment_id'])->with('message', 'Comment added successfully.');
     }
   
     public function initiatePayment(Request $request){ 
@@ -75,6 +114,9 @@ class FandAController extends Controller
                 $pay->files()->attach($ids);
             }
 
+            //insert the comment
+            $this->paymentComment($request, $pay->id);
+
             DB::commit();
             return to_route('f-and-a');
         } catch (\Exception $e) {
@@ -107,7 +149,7 @@ class FandAController extends Controller
         $division = Division::where('title', 'Finance and Accounts')->first();
    
         if (!$division) {
-            return redirect()->back()->with('message', 'Department not found');
+            return redirect()->back()->with('message', 'Division not found');
         }
         $assistantDirector = User::with('division')->role('unit heads') // Spatie method
         ->where('division_id', $division->id)
@@ -163,11 +205,26 @@ class FandAController extends Controller
 
     public function viewPayment($id)
     {
+        $comment = PaymentComment::where(function($q)use($id){
+            $q->where('payment_id',  $id)
+            ->orWhere('sender_id', auth()->user()->id)
+              ->orWhere('recipient_id', auth()->user()->id);
+             })
+            ->latest()
+            ->first();
+       // dd($comment);
         if(auth()->user()->hasRole('directors')){
             $payment = Payment::with(['vatVoucher','files'=>function($query){
                 $query->with('path');
             }, 'voucher', 'recipient', 'assignedTo' => function($query) {
                 $query->with('user')->where('assigned_by', auth()->user()->id);
+            } ,'comments'=>function($query){
+                $query->with('sender','receiver')
+                ->where('sender_id', 'assigned_by.id')
+                ->orWhere('recipient_id', auth()->user()->id)
+                ->latest();
+            }, 'TopToDownComment'=>function($q){
+                $q->with('sender')->latest();
             }])
             ->withCount('ledger')
             ->findOrFail($id);
@@ -179,12 +236,27 @@ class FandAController extends Controller
                 $query->with('user')->where('assigned_by', auth()->user()->id );
             }, 'assignedBy'=>function($query){
                 $query->with(['user'])->where('recipient_id', auth()->user()->id);
-             }])
+             },'comments'=>function($query){
+                $query->with('sender','receiver')
+               ->where(function($q){
+                    $q->where('sender_id', 'assignedBy.id')
+                    ->orWhere('recipient_id', auth()->user()->id)
+                   // ->orWhere('sender_id', auth()->user()->id)
+                    ;
+                })
+                ->latest();
+            }, 'TopToDownComment'=>function($q){
+               // $q->with('sender')->where('sender_id', DB::raw('select * from payment_comments WHERE recipient_id = '.auth()->user()->id))->latest();
+                $q->with('sender')->where('sender_id', auth()->user()->id)->latest();
+            }, 'DownToTopComment'=>function($q){
+                $q->with('sender')->where('sender_id', 'assignedBy.id')->orWhere('recipient_id', 'assignedBy.id')->latest();
+            }])
              ->withCount('ledger')
             ->whereHas('assignedTo', function ($q) {
                 $q->where('recipient_id', auth()->user()->id);
             })
             ->findOrFail($id);
+
         }
 
         return inertia('Payment/ViewPayment', [
@@ -476,6 +548,13 @@ class FandAController extends Controller
         }
         
         return response()->json($user);
+    }
+
+    public function getPaymentAssignments(Request $request){
+        $assignments = DB::table('payment_assignment')
+            ->where('payment_id', $request->payment_id)
+            ->get();
+        return response()->json($assignments);
     }
 
         

@@ -80,4 +80,34 @@ class Payment extends Model
         return $this->hasMany(VATVoucher::class, 'payment_id');
     }
 
+    /**
+     * Get all of the comments for the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_id');
+    }
+
+    /**
+     * Get all of the comments for the Payment from top to down
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function TopToDownComment()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_id');
+    }
+
+     /**
+     * Get all of the comments for the Payment from down to top
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function DownToTopComment()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_id');
+    }
+
 }

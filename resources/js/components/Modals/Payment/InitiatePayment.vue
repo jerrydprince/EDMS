@@ -29,7 +29,7 @@
           <div class="w-full mt-4">
             <label for="Date" class="text-gray-700 text-sm">Set Due Date <span class="text-red-500">*</span></label>
             <br />
-            <input type="datetime-local" v-model="form.dueDate"
+            <input type="datetime-local" :min="minDateTime" v-model="form.dueDate"
               class="outline-none border border-solid border-gray-300 rounded-md w-full p-3 mt-2" />
               <span class=" text-sm text-red-400" v-if="form.errors.dueDate">{{ form.errors.dueDate }}</span>
           </div>
@@ -208,6 +208,12 @@ const getFileIcon = (fileName) => {
 const removeFile = (file) => {
   emit("removeF", file);
 };
+
+const minDateTime = computed(() => {
+  const now = new Date();
+  now.setSeconds(0, 0); // remove seconds and milliseconds
+  return now.toISOString().slice(0,16); 
+});
 
 const getDivisionHeads = async () => {
   try {
