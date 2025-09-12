@@ -45,7 +45,7 @@
                   {{ getAssignedTo(item) }}
                 </p>
               </td>
-              <td class="align-middle w-auto">
+              <td class="align-middle w-auto" v-if="!roles.includes('directors')">
                 <div class="flex">
                   <div class="bg-gray-100 rounded-2xl py-2 px-4 text-center">
                     <p class="font-medium" :style="{
@@ -54,7 +54,25 @@
                           ? '#0D6E1A'
                           : item.status == 'overdue'
                             ? '#F04438'
-                            : item.status == 'reverted'
+                            : item.status == 'rejected'
+                              ? '#7A5AF8'
+                              : 'black',
+                    }">
+                      <span class="font-black">•</span> {{ item?.assigned_by?.status =='rejected'? 'Reverted': item?.assigned_by?.status }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="align-middle w-auto" v-else>
+                <div class="flex">
+                  <div class="bg-gray-100 rounded-2xl py-2 px-4 text-center">
+                    <p class="font-medium" :style="{
+                      color:
+                        item.assigned_by?.status == 'due'
+                          ? '#0D6E1A'
+                          : item.assigned_by?.status == 'overdue'
+                            ? '#F04438'
+                            : item.assigned_by?.status == 'reverted'
                               ? '#7A5AF8'
                               : 'black',
                     }">
@@ -81,11 +99,12 @@
       </div>
     </div>
     <div class="mt-5">
-      <!-- <paginator
+     <pagination class="my-4"
         :totalItems="totalItems"
         :itemsPerPage="itemsPerPage"
         v-model="currentPage"
-      /> -->
+        @setPage="(page) => currentPage = page"
+      />
     </div>
   </section>
 </template>
@@ -93,13 +112,14 @@
 <script setup>
 import { ref, watch, computed, onMounted } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
+import pagination from "../../reusables/pagination.vue";
 //import paginator from "@/reusables/paginations.vue";
 
 const page = usePage();
 const roles = computed(() => page.props.roles || []);
 const searchValue = ref("");
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = ref(10);
 const items = ref([
   {
     id: 1,
@@ -177,13 +197,16 @@ const displayedItems = computed(() => {
 
   return items.value.slice(startIndex, endIndex);
 });
-const totalItems = computed(() => items.value.length);
+const totalItems = ref(0);
 
 const getActivePayments = async () => {
   await axios
-    .get("/finance-and-accounts/get-active-payments")
+    .get("/finance-and-accounts/get-active-payments?page=" + currentPage.value+"&search="+searchValue.value)
     .then((response) => {
       activePayments.value = response.data.data;
+      currentPage.value = response.data.current_page
+      itemsPerPage.value = response.data.per_page
+      totalItems.value = response.data.total
     })
     .catch((error) => {
       console.error("Error fetching active payments:", error);
@@ -196,12 +219,13 @@ const formatDate = (dateString) => {
 };
 
 const filteredPayments = computed(() => {
-  if (!searchValue.value) {
-    return activePayments.value;
-  }
-  return activePayments.value.filter((item) =>
-    item.title.toLowerCase().includes(searchValue.value.toLowerCase())
-  );
+  // if (!searchValue.value) {
+  //   return activePayments.value;
+  // }
+  // return activePayments.value.filter((item) =>
+  //   item.title.toLowerCase().includes(searchValue.value.toLowerCase())
+  // );
+  return activePayments.value
 });
 
 const getAssignedTo = (payment) => {
@@ -212,6 +236,23 @@ const getAssignedTo = (payment) => {
       return payment.assigned_to.map(assignment => assignment.user.first_name + " " + assignment.user.last_name).join(", ");
     }
 };
+
+// Watch for changes that should reset pagination
+watch(searchValue, () => {
+  if (searchValue.value.trim()) {
+    clearTimeout(window.__searchDebounce__);
+    window.__searchDebounce__ = setTimeout(() => {
+      getActivePayments();
+    }, 400);
+  } else {
+    getActivePayments();
+  }
+  
+});
+
+watch(currentPage, (newPage) => {
+  getActivePayments();
+});
 
 onMounted(() => {
   getActivePayments();

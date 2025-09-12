@@ -61,12 +61,14 @@ const page = usePage();
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);
 const visible = ref(true);
-const props = defineProps(['paymentId']);
+const props = defineProps(['paymentId', 'assigned_by', 'recipient_id']);
 
 const form = useForm({
   reasonForRejection: "",
   from: "Division",
   payment_id: props.paymentId,
+  recipient_id: props.recipient_id,
+  assigned_by: props.assigned_by
 });
 
 
@@ -87,7 +89,7 @@ const revertTask = () => {
         toast.add({
           severity: "error",
           summary: "Error",
-          detail: error.response.data.message || "An error occurred while rejecting the task.",
+          detail:  "An error occurred while rejecting the task.",
           life: 3000,
         });
       },

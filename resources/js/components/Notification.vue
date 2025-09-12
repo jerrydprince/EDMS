@@ -94,7 +94,7 @@
           </div>
 
           <div v-if="clickedButton == 'Task'">
-            <div v-for="(task_notifications, ind) in getNotificationType('task')">
+            <div v-for="(task_notifications, ind) in getNotificationType('task')" :key="ind">
               <h3 class="text-[10px] py-3">{{ ind }}</h3>
               <div v-for="notification in task_notifications">
                 <Link @click="closeNotification" v-if="notification.type == 'App\\Notifications\\TaskNotification'"
@@ -111,7 +111,6 @@
                       {{ notification?.data?.user?.first_name + ' ' + notification?.data?.user?.last_name }}
                       <span class="font-normal text-gray-500">assigned a task to you</span>
                     </div>
-
 
                     <p class="text-[10px] font-normal leading-[13px] text-gray-500">
                       {{ formatRelativeTime(notification.created_at) }}
@@ -143,6 +142,40 @@
                         {{ attached.name }}
                       </p>
                     </div>
+                  </div>
+                </div>
+                <div v-if="notification.read_at">
+                  <Icon icon="icon-park-outline:dot" class="text-green-500" />
+                </div>
+                </Link>
+
+                <!-- this is for finance and accounts -->
+                <Link @click="closeNotification" v-if="notification.type == 'App\\Notifications\\PaymentAssignedNotification'"
+                  :href="'/finance-and-accounts/view-payment/'+notification.data.comment[0].payment_id" method="get"
+                  :data="{notification: notification.id}"
+                  class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+                <div class="flex items-start gap-4">
+                  <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
+                    :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
+                  <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
+                  <div>
+                    <div class="font-semibold text-[12px]"
+                      v-if="notification.data && notification.data.comment && notification.data.comment.length > 0">
+                      <span class="font-normal text-gray-500">{{notification.data?.message}}</span>
+                    </div>
+
+                    <p class="text-[10px] font-normal leading-[13px] text-gray-500">
+                      {{ formatRelativeTime(notification.created_at) }}
+                    </p>
+
+                    
+                    <!-- <div class="bg-gray-50 mb-2 rounded-2xl px-4 py-1 w-fit flex items-center gap-3"
+                      v-for="(attached, index) in notification.attachments" :key="index">
+                      <Icon :icon="attached.icon" />
+                      <p class="text-[10px] font-normal text-gray-500">
+                        {{ attached.name }}
+                      </p>
+                    </div> -->
                   </div>
                 </div>
                 <div v-if="notification.read_at">
@@ -193,29 +226,29 @@
             <div v-for="(comments, ind) in getNotificationType('comments')">
               <h3 class="text-[10px] py-3">{{ ind }}</h3>
               <div
-              class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
-              v-for="notification in comments"
-              >
+                class="items-start flex justify-between mt-3 gap-3 w-full p-2 rounded-lg hover:bg-slate-50 cursor-pointer"
+                v-for="notification in comments">
 
-              <div class="flex items-start gap-4">
-                <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
+                <div class="flex items-start gap-4">
+                  <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
                     :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
                   <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
-                <div>
-                  <p class="font-semibold text-[12px]">
-                    {{ notification.data.comment.user?.first_name+" "+notification.data.comment.user?.last_name}}
-                    <span class="font-normal text-gray-500">mentioned you in
-                      <!-- <span v-if="notification.message === 'comment'"> a </span> -->
-                      <span>a</span>
-                      <span class="text-gray-800 text-[12px] font-semibold"> comment</span></span><span></span>
-                  </p>
-                  <p class="text-[10px] font-normal leading-[13px] text-gray-500">
-                    {{ formatRelativeTime(notification.created_at) }}
-                  </p>
-                  <p class="text-[10px] font-normal leading-[16px] bg-white border border-gray-100 rounded-lg p-4 mt-2">
-                      {{textTruncate(notification.data?.comment?.comment)}}
+                  <div>
+                    <p class="font-semibold text-[12px]">
+                      {{ notification.data.comment.user?.first_name + " " + notification.data.comment.user?.last_name }}
+                      <span class="font-normal text-gray-500">mentioned you in
+                        <!-- <span v-if="notification.message === 'comment'"> a </span> -->
+                        <span>a</span>
+                        <span class="text-gray-800 text-[12px] font-semibold"> comment</span></span><span></span>
                     </p>
-                  <!-- <div
+                    <p class="text-[10px] font-normal leading-[13px] text-gray-500">
+                      {{ formatRelativeTime(notification.created_at) }}
+                    </p>
+                    <p
+                      class="text-[10px] font-normal leading-[16px] bg-white border border-gray-100 rounded-lg p-4 mt-2">
+                      {{ textTruncate(notification.data?.comment?.comment) }}
+                    </p>
+                    <!-- <div
                     class="bg-gray-50 mb-2 rounded-2xl px-4 py-1 w-fit flex items-center gap-3"
                     v-for="(attached, index) in notification.attachments"
                     :key="index"
@@ -225,12 +258,12 @@
                       {{ attached.name }}
                     </p>
                   </div> -->
+                  </div>
+                </div>
+                <div v-if="comments.read_at">
+                  <Icon icon="icon-park-outline:dot" class="text-green-500" />
                 </div>
               </div>
-              <div v-if="comments.read_at">
-                <Icon icon="icon-park-outline:dot" class="text-green-500" />
-              </div>
-            </div>
             </div>
           </div>
 
@@ -347,8 +380,12 @@ function classifyDate(dateString) {
   }
 }
 
-function textTruncate(text){
-  return text.length > 50? text.slice(0, 50)+"...": text
+function textTruncate(text) {
+  if(text){
+    return text.length > 50 ? text.slice(0, 50) + "..." : text
+  }else{
+    return ""
+  }
 }
 
 // Main function to sort chats by date
@@ -445,6 +482,11 @@ const getNotification = (type) => {
       if ('App\\Notifications\\TaskNotification' in firstNotification) {
         taskNotification.value = firstNotification['App\\Notifications\\TaskNotification']
         return firstNotification['App\\Notifications\\TaskNotification'];
+      }
+
+      if ('App\\Notifications\\PaymentAssignedNotification' in firstNotification) {
+        taskNotification.value = firstNotification['App\\Notifications\\PaymentAssignedNotification']
+        return firstNotification['App\\Notifications\\PaymentAssignedNotification'];
       }
     }
 

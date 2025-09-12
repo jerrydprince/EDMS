@@ -21,6 +21,10 @@ class AdminController extends Controller
     public function index(){
         $user = auth()->user();
 
+        if(auth()->user()->department && auth()->user()->department->title == 'Finance and Accounts'){
+            return redirect()->route('f-and-a');
+        }
+
         if($user->hasRole('super admin') || $user->hasRole('admin')){
              $departments = Department::with(['division'=>function($query){
                 $query->with('unit');

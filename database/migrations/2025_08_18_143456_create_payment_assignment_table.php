@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->dateTime('due_date');
             $table->integer('recipient_id')->unsigned();
-            $table->enum('status', ['pending', 'done', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'done', 'rejected', 'due', 'overdue'])->default('pending');
             $table->text('comments')->nullable();
             $table->foreign('recipient_id')->references('id')->on('users');
             $table->string('role');

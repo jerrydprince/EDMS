@@ -110,4 +110,60 @@ class Payment extends Model
         return $this->hasMany(PaymentComment::class, 'payment_id');
     }
 
+    /**
+     * Get all of the Receipt for the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function Receipt()
+    {
+        return $this->hasMany(PaymentReceipt::class, 'payment_id');
+    }
+
+    /**
+     * Get all of the parentComments for the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function parentComments()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_id');
+    }
+
+    /**
+     * Get all of the myComment for the Payment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function myComments()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_id');
+    }
+
+
+    public function getTopToDownCommentsAttribute()
+{
+    return $this->hasMany(PaymentComment::class)
+        ->with('sender')
+        ->whereExists(function($query) {
+            $query->select(DB::raw(1))
+                ->from('payment_comments as pc')
+                ->where('pc.recipient_id', $this->assigned_by)
+                ->whereColumn('pc.sender_id', 'payment_comments.sender_id');
+        })
+        ->latest()
+        ->get();
+}
+
+public function getDownToTopCommentsAttribute()
+{
+    return $this->hasMany(PaymentComment::class)
+        ->with('sender')
+        ->where(function($q) {
+            $q->where('sender_id', $this->assigned_by)
+              ->orWhere('recipient_id', $this->assigned_by);
+        })
+        ->latest()
+        ->get();
+}
 }

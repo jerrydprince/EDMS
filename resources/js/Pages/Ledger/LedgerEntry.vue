@@ -132,19 +132,22 @@
         </div>
       </div>
       <div class="mt-5">
-        <!-- <paginator
-          :totalItems="totalItems"
-          :itemsPerPage="itemsPerPage"
-          v-model="currentPage"
-        /> -->
+         <pagination class="my-4"
+        :totalItems="totalItems"
+        :itemsPerPage="itemsPerPage"
+        v-model="currentPage"
+        @setPage="(page) => currentPage = page"
+      />
       </div>
     </section>
     <NewLedgerEntry v-if="newLedgerEntryModal" @cancelled="closeModal()" @confirmed="ConfirmedEdit" />
-    <GeneralViewLedger :ledger="selectedLedger" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal()" />
-    <EditLedger v-if="is_edit_ledger" @confirmed="ConfirmedEdit" @cancelled="is_edit_ledger = false" :ledger="editLedgerValues"/>
+    <GeneralViewLedger :ledger="selectedLedger" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal"
+      @cancelled="closeModal()" />
+    <EditLedger v-if="is_edit_ledger" @confirmed="ConfirmedEdit" @cancelled="is_edit_ledger = false"
+      :ledger="editLedgerValues" />
     <!-- BODY ENDS -->
   </section>
-  
+
 </template>
 <script setup>
 import { ref, watch, computed, onMounted } from "vue";
@@ -156,36 +159,40 @@ import GeneralViewLedger from "../../components/Modals/Ledger/GeneralViewLedger.
 import GenerateReportButton from "../../components/GenerateReport.vue";
 import LedgerImg from "../../assets/images/ledger.svg";
 import EditLedger from "../../components/Modals/Ledger/EditLedger.vue";
+import pagination from "../../reusables/pagination.vue";
 
 const searchValue = ref("");
 const currentPage = ref(1);
 const newLedgerEntryModal = ref(false);
 const viewLedgerEntryModal = ref(false);
-const itemsPerPage = 10;
+const itemsPerPage = ref(10);
 const ledgers = ref([])
 const selectedLedger = ref(null)
 const is_edit_ledger = ref(false)
 const editLedgerValues = ref(null)
 
-const getLedgers = async()=>{
-  await axios.get('/finance-and-accounts/get-ledgers',{params:{search: searchValue.value}}).then((response)=>{
+const getLedgers = async () => {
+  await axios.get('/finance-and-accounts/get-ledgers', { params: { search: searchValue.value, page: currentPage.value } }).then((response) => {
     ledgers.value = response.data.data
+    currentPage.value = response.data.current_page
+        itemsPerPage.value = response.data.per_page
+        totalItems.value = response.data.total
   })
 }
 
-const ConfirmedEdit = ()=>{
+const ConfirmedEdit = () => {
   is_edit_ledger.value = false
   newLedgerEntryModal.value = false
   getLedgers()
 }
 
-const editLedgerEntry = (ledger)=>{
+const editLedgerEntry = (ledger) => {
   editLedgerValues.value = ledger;
   is_edit_ledger.value = true;
   closeModal()
 }
 
-const viewLedger =(ledger)=>{
+const viewLedger = (ledger) => {
   viewLedgerEntryModal.value = true
   selectedLedger.value = ledger
 }
@@ -201,7 +208,7 @@ const displayedItems = computed(() => {
 
   return ledgers.value.slice(startIndex, endIndex);
 });
-const totalItems = computed(() => items.value.length);
+const totalItems = ref(0);
 
 const checkedItems = ref(new Array(displayedItems.value.length).fill(false));
 
@@ -231,11 +238,15 @@ const closeModal = () => {
   viewLedgerEntryModal.value = false;
 };
 
-watch(searchValue, ()=>{
+watch(currentPage, () => {
   getLedgers()
 })
 
-onMounted(()=>{
+watch(searchValue, () => {
+  getLedgers()
+})
+
+onMounted(() => {
   getLedgers()
 })
 </script>

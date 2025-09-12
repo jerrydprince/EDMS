@@ -132,6 +132,32 @@ const comment = ref()
             getUserNotifications()
             store.dispatch("fetchNotifications")
         });
+
+        Echo.private('App.Models.User.' + user.value.id)
+        .notification((nots) => {
+            comment.value = nots
+            console.log('this is comment', comment.value)
+            getUserNotifications()
+            store.dispatch("fetchNotifications")
+        });
+
+        
+    //  Echo.private(`App.Models.User.${user.value.id}`)
+    //   .notification((notification) => {
+    //       console.log("New notification:", notification.message);
+    //       getUserNotifications()
+    //       alert('yes')
+    //       // you can show toast, badge counter, etc.
+    //  });
+
+     Echo.private(`App.Models.User.${user.value.id}`)
+      .listen('UserNotificationEvent', (e) => {
+          console.log("New notification:", e);
+          getUserNotifications()
+          store.dispatch("fetchNotifications")
+          // you can show toast, badge counter, etc.
+     });
+
   
     // Echo.private(`chat.${user.value.id}`)
     // .listen('ChatEvent', (e) => {

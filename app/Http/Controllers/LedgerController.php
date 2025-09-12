@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Ledger;
 use App\Models\Payment;
+use App\Exports\LedgerExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LedgerController extends Controller
 {
@@ -30,6 +32,36 @@ class LedgerController extends Controller
         }
         $ledgers = $ledgers->latest()->paginate(10);
         return response()->json($ledgers);
+    }
+
+    public function downloadReport(Request $request){
+        // if($request->report == 'today'){
+        //     $ledgers = Ledger::whereDate('created_at', now()->toDateString())->get();
+        // }elseif($request->report == 'last7'){
+        //      $ledgers = Ledger::whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])->get();
+        // }elseif($request->report == 'thisMonth'){
+        //     $ledgers = Ledger::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->get();
+        // }elseif($request->report == 'lastMonth'){
+        //     $startOfLastMonth = now()->subMonth()->startOfMonth();
+        //     $endOfLastMonth = now()->subMonth()->endOfMonth();
+        //     $ledgers = Ledger::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->get();
+        // }elseif($request->report == 'custom'){
+        //     $start = $request->start;
+        //     $end = $request->end;
+        //     $ledgers = Ledger::whereBetween('created_at', [$start, $end])->get();
+        // }else{
+        //     $ledgers = Ledger::all();
+        // }
+      
+      
+        $filters = [
+            'report' => $request->report,
+            'start' => $request->start,
+            'end' => $request->end,
+        ];
+        
+        return Excel::download(new LedgerExport($filters), 'ledger_report.xlsx');
+
     }
 
     // public function saveLedger(Request $request)

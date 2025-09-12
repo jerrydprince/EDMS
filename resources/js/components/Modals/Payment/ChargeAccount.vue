@@ -298,7 +298,9 @@ const page = usePage();
 const base = computed(() => page.props.base);
 const file_sizes = ref([])
 const selectAccount = (account) => {
+  console.log('this is the account, ', account)
   selectedAccount.value = account;
+  form.vote_book_id = account.id
 };
 const props = defineProps(['payment'])
 

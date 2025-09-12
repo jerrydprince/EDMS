@@ -454,6 +454,11 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::get('/get-other-charges-hos', [FandAController::class, 'getOtherChargesHOS']);
         Route::post('/assign-to-other-charges-by-hos', [FandAController::class, 'assignToOtherChargesByHOS']);
         Route::get('/get-payment-assignments', [FandAController::class, 'getPaymentAssignments']);
+        Route::post('/payment-receipt-upload', [FandAController::class, 'paymentReceiptUpload']);
+        Route::get('/remove-payment-receipt', [FandAController::class, 'removeUploadedReceipt']);
+        Route::post('/finalise-payment', [FandAController::class, 'finalisePayment']);
+        Route::get('/get-resolved-payments', [FandAController::class, 'getResolvedPayments']);
+        Route::post('/re-submit-payment', [FandAController::class, 'reSubmitPayment']);
 
         //streamlined urls
         Route::post('/assign-to-section-users',[FandAController::class, 'assignToSectionUsers']);
@@ -472,6 +477,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::get('/get-workflow', [LedgerController::class, 'getWorkflow'])->name('get-workflow');
         Route::get('/get-ledger/{id}', [LedgerController::class, 'getLedger'])->name('get-ledger');
         Route::get('/get-ledgers', [LedgerController::class, 'getLedgers']);
+        Route::get('/download-report', [LedgerController::class, 'downloadReport']);
 
         //voucher
         Route::post('/create-voucher', [VoucherController::class, 'createVoucher']);
@@ -482,6 +488,9 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
         //Cashbook
         Route::get('/cashbook', [CashBookController::class, 'index']);
+        Route::post('/create-cashbook', [CashBookController::class, 'createCashBook']);
+        Route::get('/get-cashbooks', [CashBookController::class, 'getCashbooks']);
+        route::get('/download-cashbook-report', [CashBookController::class, 'downloadReport']);
      });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');

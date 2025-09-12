@@ -16,7 +16,7 @@
       <ul class="space-y-2 px-1 pb-2">
         <li v-for="option in options" :key="option.value" @click="selectOption(option)"
           class="flex cursor-pointer items-center gap-3 rounded-md px-3 py-3 hover:bg-gray-100">
-          <Checkbox  v-model="selectedDate" :value="option.value" :modelValue="isSelected(option)" />
+          <Checkbox  v-model="selectedDate"  :value="option.value" />
           <!-- <input
             type="checkbox"
             :checked="selectedOption.value === option.value"
@@ -53,6 +53,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { defineEmits } from "vue";
+import { router } from "@inertiajs/vue3";
 
 const emit = defineEmits(["select"]);
 
@@ -66,6 +67,12 @@ const props = defineProps({
     validator: (value) => ["sm", "md", "lg"].includes(value),
   },
 });
+
+const form = {
+  report: "",
+  start: "",
+  end: "",
+};
 
 const customSelectionForm = ref({
   startDate: "",
@@ -104,13 +111,26 @@ function toggleDropdown() {
 }
 
 function emitSelected() {
-  if (selectedOption.value?.value === "custom") {
-    emit("select", customSelectionForm.value);
-  } else {
-    emit("select", selectedOption.value);
-  }
+  form.report = selectedDate.value? selectedDate.value.pop():"";
+  form.start = customSelectionForm.value.startDate;
+  form.end = customSelectionForm.value.endDate;
+  // if (selectedOption.value?.value === "custom") {
+  //   emit("select", customSelectionForm.value);
+  // } else {
+  //   emit("select", selectedOption.value);
+  // }
   isOpen.value = false;
+  if(form.report !="" || form.report != null || form.start != null || form.end != null  ){
+      const query = new URLSearchParams(form).toString() ? '?' + new URLSearchParams(form).toString() : ''; 
+      window.location.href = '/finance-and-accounts/download-report'+query
+  }
+
 }
+// function toggle(index) {
+//   options.value.forEach((c, i) => {
+//     c.checked = i === index;
+//   });
+// }
 
 function handleClickOutside(event) {
   if (!event.target.closest(".relative")) {
@@ -119,7 +139,7 @@ function handleClickOutside(event) {
 }
 
 watch(selectedDate, (newVal)=>{
-  selectedDate.value = null
+  selectedDate.value = []
   selectedDate.value = newVal
 })
 

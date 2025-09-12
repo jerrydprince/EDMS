@@ -46,6 +46,7 @@ const active = ref(0);
 const props = defineProps(["payment"])
 const page = usePage();
 const roles = computed(() => page.props.roles || []);
+const user = page.props.user;
 
 const items = ref([
   {
@@ -70,11 +71,13 @@ const getActiveIndex = () => {
   }
 };
 
+
 const filteredItems = computed(() =>
   items.value.filter(item => !(item.label === 'Files from Registry' && !roles.value.includes('directors')))
 )
 
 onMounted(() => {
+  
   // if(roles.value.length > 0 && roles.value.includes('director')) {
   //   active.value = 0; // Default to Registry Files if user is a director
   // } else {

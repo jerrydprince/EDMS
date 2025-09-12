@@ -6,57 +6,67 @@
     ></iframe> -->
     <!-- Call to action based on the current role -->
     <section>
-      <div class="flex justify-end pb-5" v-if="roles.includes('directors')">
+      <div class="flex justify-end pb-5" v-if="roles.includes('directors') && payment.status != 'paid'">
         <a :href="`/finance-and-accounts?id=${payment.id}`"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-md">
           <Icon icon="tabler:refresh" width="20" />
           <p>Re-submit</p>
       </a>
       </div>
+      
       <div class="flex justify-end pb-5 gap-3">
+        <button @click="ReSubmitRejectedPayment"
+         v-if="!roles.includes('directors') && payment.status =='due' && payment.assigned_by?.is_rejected && !roles.includes('advance section') && !roles.includes('other charges') && !roles.includes('checking')
+        && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+          <Icon icon="tabler:refresh" width="20" />
+          <p>Re-submit</p>
+      </button>
+
         <button @click="rejectPaymentModal = true"
-         v-if="!roles.includes('directors') && !roles.includes('advance section') && !roles.includes('other charges')  && payment.assigned_by && payment.assigned_by.status =='pending' &&
-          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive()"
+         v-if="(!roles.includes('directors') && !roles.includes('advance section') && !roles.includes('other charges')  && payment.assigned_by && payment.assigned_by.status =='pending' &&
+          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive() && payment.status !=='paid' && payment.status !=='reverted') && (payment.assigned_by  && payment.assigned_by.is_rejected == 0)"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconoir:cancel" width="25" />
           <p>Reject</p>
         </button>
-        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('advance section(HOS)')" @click="setAssignTaskModal"
+        <!-- <button v-if="!roles.includes('directors')&& !roles.includes('advance section(HOS)') && !roles.includes('division heads') && !roles.includes('unit heads') && payment.assigned_to.length == 0 && roles.includes('advance section(HOS)')" @click="setAssignTaskModal"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Assign</p>
-        </button>
+        </button> -->
         <button v-if="!roles.includes('directors') && !roles.includes('other charges') && !roles.includes('other charges(HOS)') &&  !roles.includes('advance section') && !roles.includes('advance section(HOS)')
-            && !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive()" @click="acceptTask"
+            && !roles.includes('checking') && !roles.includes('final account(HOS)') && !roles.includes('final account') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive() && payment.assigned_by.status =='pending'" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
         <!-- the second accept is for HOS advance section -->
-        <button v-if="roles.includes('advance section(HOS)') &&  !isAcceptActive()" @click="acceptTask"
+        <button v-if="roles.includes('advance section(HOS)') && payment.assigned_by.status=='pending' && !roles.includes('final account(HOS)') && !roles.includes('final account') &&  !isAcceptActive() && payment.assigned_by.status =='pending'" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
 
         <!-- the second accept is for HOS other charges -->
-        <button v-if="!roles.includes('directors') && isAssignedToCheckings == false && roles.includes('other charges(HOS)') && !isAcceptActive()" @click="acceptTask"
+        <button v-if="!roles.includes('directors') && payment.assigned_by.status=='pending' && !roles.includes('final account(HOS)') && !roles.includes('final account') && isAssignedToCheckings == false && roles.includes('other charges(HOS)') && !isAcceptActive()" @click="acceptTask"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Accept</p>
         </button>
         <!-- the assign button is for HOS other charges -->
-         <div v-if="payment.assigned_to.length === 0">
+        <div v-if="payment.assigned_to.length === 0 && payment.status === 'due'">
           <button 
-            v-if="(!roles.includes('directors') && !roles.includes('CPO')) || roles.includes('other charges(HOS)') ||roles.includes('checking(HOS)')|| roles.includes('CPO(HOS)')||
-              roles.includes('internal audit(HOS)')|| roles.includes('final account(HOS)')" @click="setAssignTaskModal"
-            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
+            v-if="(!roles.includes('directors') && payment.assigned_by.status == 'pending' && (payment.assigned_by  && payment.assigned_by.is_rejected == 0) && !roles.includes('division heads') && !roles.includes('unit heads') && !roles.includes('advance section') && !roles.includes('other charges') && !roles.includes('CPO')) && (roles.includes('other charges(HOS)') || roles.includes('checking(HOS)') || roles.includes('CPO(HOS)') || roles.includes('internal audit(HOS)') || roles.includes('final account(HOS)'))" 
+            @click="setAssignTaskModal"
+            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium"
+          >
             <Icon icon="iconamoon:check" width="20" />
             <p>Assign</p>
           </button>
-         </div>
+        </div>
         
-        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && currentRole === 'Final Account'" @click="finalisePaymentModal = true"
+        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('final account(HOS)') && payment.status !=='paid' && payment.assigned_by.status =='pending'" @click="finalisePaymentModal = true"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
           <Icon icon="iconamoon:check" width="20" />
           <p>Finalise</p>
@@ -109,6 +119,21 @@
                   </template>
                   </div>
                 </template>
+
+                <template v-else>
+                  <div v-if="currentDocument.path">
+                    
+                      <img v-if="/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(currentDocument.path)"
+                        :src="base+'/storage/'+currentDocument.path" alt="Current Document"
+                        class="rounded-md w-full max-h-[600px] object-contain my-4 border-t border-white" />
+                      <iframe v-else-if="/\.pdf$/i.test(currentDocument.path)" :src="base+'/storage/'+currentDocument.path"
+                        class="w-full h-[600px] rounded-md my-4" frameborder="0"></iframe>
+                      <div v-else class="text-gray-500 text-center py-10">
+                        File preview not available.
+                      </div>
+                 =
+                  </div>
+                </template>
               </div>
               <div v-if="previewVoucher">
                 <iframe :src="base+'/'+selectedVoucher.path"
@@ -128,7 +153,7 @@
           </div>
           <p class="text-base md:text-2xl text-gray-900">Vendor Contracts</p>
         </div>
-        <div v-if="!sidemenu && !sidemenu1">
+        <div v-if="!sidemenu && !getActiveCustomSideMenu">
           <section>
             <!-- ACCESS LEVELS: ADVANCE SECTION -->
             <div class="px-2 pt-2">
@@ -236,9 +261,9 @@
 
           <section class="h-[665px] overflow-y-scroll hide_scroll pb-20" v-if="!progressMonitor">
             <section class="p-2 text-gray-600">
-              <div v-if="roles.includes('CPO') || roles.includes('CPO(HOS)')" @click="paymentReceiptModal = true"
+              <div v-if="roles.includes('CPO') || roles.includes('CPO(HOS)')|| roles.includes('final account(HOS)') || roles.includes('final account')" 
                 class="bg-gray-100 rounded-xl mb-3 py-2 px-3 cursor-pointer">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between" @click="paymentReceiptModal = true">
                   <div class="flex items-center gap-x-2">
                     <img :src="VoteBookImg" alt="votebook icon" width="80" height="80"
                       class="-ml-4 -mr-3 -mb-3 drop-shadow-md" />
@@ -255,22 +280,24 @@
                   <Icon icon="mdi:chevron-right" width="25" class="text-gray-400" />
                 </div>
                 <!-- APPENDED PAYMENT RECEIPTS HERE -->
-                <div v-for="(document, index) in data.appendedPaymentReceipt" :key="index"
-                  class="rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
-                  <div class="flex items-center gap-3">
-                    <div class="bg-white w-fit p-2 rounded-full">
-                      <Icon :icon="document.icon" width="25" />
+                <div v-if="payment.receipt.length > 0">
+                  <div v-for="(document, index) in payment.receipt" :key="index"
+                    class="rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
+                    <div class="flex items-center gap-3" @click="setCurrentFile(document, index)">
+                      <div class="bg-white w-fit p-2 rounded-full">
+                        <Icon :icon="getIcon(document)" width="25" />
+                      </div>
+                      <div>
+                        <h1>{{ document.path.split('/').pop() }}</h1>
+                        <p class="text-sm text-gray-400">
+                          {{ document.size }}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h1>{{ document.name }}</h1>
-                      <p class="text-sm text-gray-400">
-                        {{ document.size }}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div class="bg-white rounded-full p-1 drop-shadow-md text-gray-400 cursor-pointer">
-                    <Icon class="cursor-pointer" icon="uil:times" width="16" />
+                    <div class="bg-white rounded-full p-1 drop-shadow-md text-gray-400 cursor-pointer">
+                      <Icon class="cursor-pointer" icon="uil:times" width="16" @click="removeReceipt(document)" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -437,33 +464,35 @@
                 </div>
               </section>
             </section>
-            <Divider class="mt-10" />
+            <Divider class="mt-10" v-if="payment.assigned_by && payment.assigned_by.comments && payment.assigned_by.comments.length > 0" />
 
-            <div v-if="payment.assigned_to && payment.assigned_to.length > 0" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-              @click="toggleSidemenu('comment')">
+            <div v-if="payment.assigned_by && payment.assigned_by.comments && payment.assigned_by.comments.length > 0" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+              @click="toggleCommentSidemenu(payment.assigned_by.recipient_id)">
               <div class="flex items-center gap-5 text-gray-700">
                 <Icon icon="lucide:message-square" width="25" />
-                <p class="text-xl">Comments</p>
+                <p class="text-xl">Task Assigned To Me Comments</p>
                 <p
                   class="w-7 h-7 rounded-md text-[#0E7A1D] font-semibold bg-[#F8FBF9] flex items-center justify-center flex-col p-3">
-                  {{ payment.top_to_down_comment.length }}
+                  {{ payment.assigned_by.comments.length }}
                 </p>
               </div>
               <Icon icon="flowbite:angle-right-outline" class="text-gray-500" width="25" />
             </div>
             <Divider class="mt-0" />
 
-            <div v-if="payment.assigned_by" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-              @click="toggleSidemenu('comment1')">
-              <div class="flex items-center gap-5 text-gray-700">
-                <Icon icon="lucide:message-square" width="25" />
-                <p class="text-xl">Comments</p>
-                <p
-                  class="w-7 h-7 rounded-md text-[#0E7A1D] font-semibold bg-[#F8FBF9] flex items-center justify-center flex-col p-3">
-                  {{ payment.down_to_top_comment.length }}
-                </p>
+            <div v-if="payment.assigned_to && payment.assigned_to.length > 0">
+              <div v-for="(assigned_to, index) in payment.assigned_to" :key="index" class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
+                @click="toggleCustomSidemenu(index, assigned_to.assigned_by)">
+                <div class="flex items-center gap-5 text-gray-700">
+                  <Icon icon="lucide:message-square" width="25" />
+                  <p class="text-xl">Assigned By Me Comments</p>
+                  <p
+                    class="w-7 h-7 rounded-md text-[#0E7A1D] font-semibold bg-[#F8FBF9] flex items-center justify-center flex-col p-3">
+                    {{ assigned_to.comments.length }}
+                  </p>
+                </div>
+                <Icon icon="flowbite:angle-right-outline" class="text-gray-500" width="25" />
               </div>
-              <Icon icon="flowbite:angle-right-outline" class="text-gray-500" width="25" />
             </div>
             <Divider class="mt-0" />
           </section>
@@ -514,13 +543,13 @@
               <textarea name="" id="" cols="30" placeholder="Enter Message" v-model="message" rows="5"
                 class="bg-slate-50 outline-none resize-none"></textarea>
               <div class="w-full flex items-center justify-end">
-                <button @click="sendComment" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
+                <button @click="sendComment(payment.assigned_by.assigned_by, '' , payment.assigned_by.id)" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
                   Send
                 </button>
               </div>
             </div>
-            <div class="mt-5 px-5">
-              <div v-for="(item, index) in payment.top_to_down_comment" :key="index">
+            <div class="mt-5 px-5 overflow-y-scroll max-h-[500px]">
+              <div v-for="(item, index) in payment.assigned_by.comments" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
@@ -544,45 +573,47 @@
           </div>
         </div>
 
-        <div v-if=" sidemenu1">
-          <div class="p-8">
-            <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
-              @click="toggleSidemenu('back1')">
-              <Icon icon="flowbite:angle-left-outline" />
-              <p>Back</p>
-            </div>
-          </div>
-          <Divider class="mt-0" />
-          <div class="">
-            <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
-
-            <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
-              <textarea name="" id="" cols="30" placeholder="Enter Message" v-model="message" rows="5"
-                class="bg-slate-50 outline-none resize-none"></textarea>
-              <div class="w-full flex items-center justify-end">
-                <button @click="sendComment" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
-                  Send
-                </button>
+        <div v-for="(pay, index) in payment.assigned_to" :key="index">
+          <div v-if="customSideMenu[index]">
+            <div class="p-8">
+              <div class="flex items-center p-2 rounded-md cursor-pointer w-fit bg-slate-50 gap-2"
+                @click="toggleSidemenu('back')">
+                <Icon icon="flowbite:angle-left-outline" />
+                <p>Back</p>
               </div>
             </div>
-            <div class="mt-5 px-5">
-              <div v-for="(item, index) in payment.down_to_top_comment" :key="index">
-                <Divider class="mt-0" />
-                <div class="flex items-start w-full">
-                  <div class="w-[15%]">
-                    <div class="w-14 h-14 rounded-full overflow-hidden">
-                      <img v-if="item.sender && item.sender.profile_image" :src="base+'/'+item.sender?.profile_image" alt="" class="w-full h-full" />
-                      <img v-else :src="user_img" alt="" class="w-full h-full" />
+            <Divider class="mt-0" />
+            <div class="">
+              <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments</h1>
+
+              <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
+                <textarea name="" id="" cols="30" placeholder="Enter Message" v-model="message" rows="5"
+                  class="bg-slate-50 outline-none resize-none"></textarea>
+                <div class="w-full flex items-center justify-end">
+                  <button @click="sendComment(pay?.recipient_id, '', pay?.id)" class="bg-white px-3 py-1.5 border border-gray-300 rounded-md">
+                    Send
+                  </button>
+                </div>
+              </div>
+              <div class="mt-5 px-5 overflow-y-scroll max-h-[500px]">
+                <div v-for="(item, index) in pay.comments" :key="index">
+                  <Divider class="mt-0" />
+                  <div class="flex items-start w-full">
+                    <div class="w-[15%]">
+                      <div class="w-14 h-14 rounded-full overflow-hidden">
+                        <img v-if="item.sender && item.sender.profile_image" :src="base+'/'+item.sender?.profile_image" alt="" class="w-full h-full" />
+                        <img v-else :src="user_img" alt="" class="w-full h-full" />
+                      </div>
                     </div>
-                  </div>
-                  <div class="w-[80%]">
-                    <div class="flex items-center gap-2">
-                      <h1 class="text-gray-800 text-xl">{{user.id == item.sender?.id? "You": item.sender?.last_name+" "+item.sender?.first_name }}</h1>
-                      <small class="text-gray-500">• {{ formatRelativeTime(item.created_at) }}</small>
+                    <div class="w-[80%]">
+                      <div class="flex items-center gap-2">
+                        <h1 class="text-gray-800 text-xl">{{user.id == item.sender?.id? "You": item.sender?.last_name+" "+item.sender?.first_name }}</h1>
+                        <small class="text-gray-500">• {{ formatRelativeTime(item.created_at) }}</small>
+                      </div>
+                      <p class="text-base text-gray-500 my-4">
+                        {{ item.comment }}
+                      </p>
                     </div>
-                    <p class="text-base text-gray-500 my-4">
-                      {{ item.comment }}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -593,12 +624,12 @@
     </section>
   </main>
   <AcceptPayment v-if="acceptPaymentModal" :assignTask="assignTask" :payment="payment" :paymentId="payment.id" @cancelled="closeModal('acceptPayment')" />
-  <RejectPayment v-if="rejectPaymentModal" :paymentId="payment.id" @cancelled="closeModal('rejectPayment')" />
-  <FinalisePayment v-if="finalisePaymentModal" @cancelled="closeModal('finalisePayment')" />
+  <RejectPayment v-if="rejectPaymentModal" :assigned_by="payment?.assigned_by?.assigned_by" :recipient_id="payment?.assigned_by?.recipient_id" :paymentId="payment.id" @cancelled="closeModal('rejectPayment')" />
+  <FinalisePayment v-if="finalisePaymentModal" :payment="payment" @confirmed="confirmed" @cancelled="closeModal('finalisePayment')" />
   <ViewLedgerEntry :paymentId="payment.id" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal('viewLedger')" />
   <CreateVoucher v-if="createVoucherModal" :payment="payment" @refreshPayment="refreshPayment" :paymentId="payment.id" @cancelled="closeModal('createVoucher')" />
   <ChargeAccount v-if="chargeAccountModal" @refreshPayment="refreshPayment" :payment="payment" @cancelled="closeModal('chargeAccount')" />
-  <PaymentReceipt v-if="paymentReceiptModal" :payment="payment" @cancelled="closeModal('paymentReceipt')" />
+  <PaymentReceipt v-if="paymentReceiptModal" :payment="payment" @confirmed="confirmPaymentReceipt" @cancelled="closeModal('paymentReceipt')" />
   <NewLedgerEntry v-if="isCreateNewLedgerEntry" :ledger="ledger" @confirmed="confirmNewLedgerEntry" @cancelled="closeModal()"/>
 
 </template>
@@ -621,6 +652,7 @@ import user_img from "../../assets/images/user.svg";
 //import Voucher from "../../components/Voucher.vue";
 import Voucher from "../../components/Voucher.vue";
 import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
+import axios from "axios";
 
 const page = usePage();
 const roles = computed(() => page.props.roles);
@@ -656,6 +688,8 @@ const payment_histories = ref([])
 const comment1 = ref(false)
 const sidemenu1 = ref(false)
 const comment_recipient = ref(null)
+const customComment = ref([])
+const customSideMenu = ref([])
 // DIFFERENT ROLES
 // Finance and Accounting
 // Deputy Director
@@ -690,6 +724,10 @@ const editLedgerEntry = (val) => {
 //viewLedgerEntryModal.value = false;
 };
 
+const confirmPaymentReceipt = ()=>{
+  router.reload({only: ['payment']})
+}
+
 const editVoucher = (voucher)=>{
   createVoucherModal.value = true
 }
@@ -711,6 +749,15 @@ function formatRelativeTime(dateString) {
   return date.toLocaleDateString();
 }
 
+const removeReceipt = async(receipt)=>{
+  
+  axios.get('/finance-and-accounts/remove-payment-receipt/', {params: {payment_id: props.payment.id, id: receipt.id}}).then((response)=>{
+    toast.add({severity:'success', summary: 'Success', detail: 'Receipt removed successfully', life: 3000});
+    router.reload({only: ['payment']})
+  }).catch((error)=>{
+    toast.add({severity:'error', summary: 'Error', detail: 'Failed to remove receipt', life: 3000});
+  })
+}
 
 
 const getCommentRecipient = ()=>{
@@ -731,9 +778,10 @@ const getCommentRecipient = ()=>{
   }
 }
 
-const sendComment = ()=>{
+const sendComment = (id, unique_id, payment_assignment_id)=>{
   if(message.value && message.value.length > 0){
-    router.post('/finance-and-accounts/make-comment', {payment_id: props.payment.id, comment: message.value, recipient: comment_recipient.value}, {
+    router.post('/finance-and-accounts/make-comment', 
+    {payment_id: props.payment.id, comment: message.value, recipient: id, unique_id: unique_id, payment_assignment_id: payment_assignment_id}, {
       onSuccess: (response)=>{
         toast.add({severity:'success', summary: 'Success', detail: 'Comment added successfully', life: 3000});
         message.value = ''
@@ -776,6 +824,32 @@ const isAssignedToCheckings = computed(()=>{
   }
 })
 
+const getReSubmitUser = ()=>{
+  let found = []
+  if( props.payment.assigned_to && props.payment.assigned_to.length == 1){
+    found  = props.payment.assigned_to.find((item)=>item.assigned_by == user.value.id);
+  }else if(props.payment.assigned_to && props.payment.assigned_to.length > 1){
+    found  = props.payment.assigned_to.find((item)=>{
+      return item.assigned_by == user.value.id && item.role.includes('(HOS)')
+    });
+  }
+
+  if(found){
+    return found
+  }else{
+    return found
+  }
+}
+
+const ReSubmitRejectedPayment = ()=>{
+  const user = getReSubmitUser()
+  if(user){
+    router.post('/finance-and-accounts/re-submit-payment',
+    {recipient: user.recipient_id, assigned_by: user.assigned_by, parent_assigned_by: props.payment.assigned_by.assigned_by}, {onSuccess:()=>{
+      toast.add({severity:'success', summary: 'Success', detail: 'Payment resubmitted successfully', life: 3000});
+    }})
+  }
+}
 
 async function getPdfSize(val) {
    if(val){
@@ -987,18 +1061,24 @@ const comments = ref([
   },
 ]);
 
-const toggleSidemenu = (action) => {
-  if (action === "comment") {
-    comment.value = !comment.value;
-    sidemenu.value = !sidemenu.value;
-    comment_recipient.value = props.payment?.assigned_to[0]?.recipient_id
-  }
+const toggleCommentSidemenu = (recipient) => {
+  comment_recipient.value = recipient
+  comment.value = !comment.value;
+  sidemenu.value = !sidemenu.value;
+}
 
-  if (action === "comment1") {
-    comment1.value = !comment1.value;
-    sidemenu1.value = !sidemenu1.value;
-    comment_recipient.value = props.payment.assigned_by.assigned_by
-  }
+const toggleSidemenu = (action) => {
+  // if (action === "comment") {
+  //   comment.value = !comment.value;
+  //   sidemenu.value = !sidemenu.value;
+  //   comment_recipient.value = props.payment?.assigned_by?.recipient_id
+  // }
+
+  // if (action === "comment1") {
+  //   comment1.value = !comment1.value;
+  //   sidemenu1.value = !sidemenu1.value;
+  //   comment_recipient.value = props.payment.assigned_by.assigned_by
+  // }
 
   if (action === "progressMonitor") {
     progressMonitor.value = !progressMonitor.value;
@@ -1008,14 +1088,34 @@ const toggleSidemenu = (action) => {
     comment.value = false;
     sidemenu.value = false;
     progressMonitor.value = false;
+     let total = props.payment.assigned_to.length;
+    if(total > 0){
+      customComment.value = Array.from({length: total},()=>false)
+      customSideMenu.value = Array.from({length: total}, ()=>false)
+    }
   }
 
-  if (action === "back1") {
-    comment1.value = false;
-    sidemenu1.value = false;
-    progressMonitor.value = false;
-  }
+  // if (action === "back1") {
+  //   comment1.value = false;
+  //   sidemenu1.value = false;
+  //   progressMonitor.value = false;
+  // }
 };
+
+const getActiveCustomSideMenu = computed(()=>{
+  let filtered = customSideMenu.value.filter((item)=>item == true);
+  if(filtered && filtered.length > 0){
+    return true;
+  }else{
+    return false
+  }
+})
+
+const toggleCustomSidemenu = (index, recipient)=>{
+    customComment.value[index] = true;
+    customSideMenu.value[index] = true;
+    comment_recipient.value = recipient
+}
 
 const isAcceptActive = ()=>{
   if(roles.value.includes('division heads')){
@@ -1066,6 +1166,15 @@ const isAcceptActive = ()=>{
   }else if(roles.value.includes('internal audit(HOS)')){
     if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
       let found = props.payment.assigned_to.find((item)=>item.role == 'CPO(HOS)')
+      if(found){
+        return true
+      }else{
+        return false
+      }
+    }
+  }else if(roles.value.includes('CPO(HOS)')){
+    if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
+      let found = props.payment.assigned_to.find((item)=>item.role == 'final account(HOS)')
       if(found){
         return true
       }else{
@@ -1144,12 +1253,35 @@ const getPaymentAssignments = async ()=>{
 
 const downloadCurrentFile = () => {
   if (!currentDocument.value || !currentDocument.value.file_name) return;
-  const link = document.createElement('a');
-  link.href = currentDocument.value.file_name;
-  link.download = getFileName(currentDocument.value);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  if (Array.isArray(currentDocument.value.path)) {
+    // Download all files in the array
+    currentDocument.value.path.forEach(doc => {
+      const url = doc.path.startsWith('http') ? doc.path : base.value + doc.path;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.path.split('/').pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+    return;
+  } else if (currentDocument.value.path) {
+    // Download single file (when path is a string)
+    const url = currentDocument.value.path.startsWith('http') ? currentDocument.value.path : base.value + '/storage/' + currentDocument.value.path;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = currentDocument.value.path.split('/').pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+  // const link = document.createElement('a');
+  // link.href = base.value+"/"+currentDocument.value.file_name;
+  // link.download = getFileName(currentDocument.value);
+  // document.body.appendChild(link);
+  // link.click();
+  // document.body.removeChild(link);
 };
 
 //format date to 2023-05-15
@@ -1165,7 +1297,7 @@ const formatDate = (date) => {
 };
 
 const getExtension = (file) => {
-  console.log(file)
+  console.log('this is the file', file)
   if (!file) return "";
   if(file && file.length > 0){
     let file_name = file[0]
@@ -1178,6 +1310,34 @@ const getFileIcon = (file) => {
   if(file && file.length > 0){
     let fileName = file[0]
       const extension = getExtension(fileName)?.toLowerCase();
+
+    switch (extension) {
+      case "pdf":
+        return "vscode-icons:file-type-pdf2";
+      case "docx":
+      case "doc":
+        return "vscode-icons:file-type-word";
+      case "xlsx":
+      case "xls":
+        return "vscode-icons:file-type-excel";
+      case "ppt":
+      case "pptx":
+        return "vscode-icons:file-type-powerpoint";
+      case "jpg":
+      case "jpeg":
+        return "vscode-icons:file-type-image";
+      case "png":
+        return "vscode-icons:file-type-image";
+      default:
+        return "material-icon-theme:pdf";
+    }
+  }
+};
+
+const getIcon = (file) => {
+  if(file && file.path){
+    let fileName = file.path
+      const extension = fileName.split('.').pop().toLowerCase();
 
     switch (extension) {
       case "pdf":
@@ -1224,6 +1384,12 @@ watch(()=>props.payment, (newVal)=>{
   if(newVal.vat_voucher.length > 0){
     getVatPdfSize(newVal.vat_voucher)
   }
+
+    let total = newVal.assigned_to.length;
+    if(total > 0){
+      customComment.value = Array.from({length: total},()=>false)
+      customSideMenu.value = Array.from({length: total}, ()=>false)
+    }
 }, {immediate: true})
 
 onMounted(()=>{

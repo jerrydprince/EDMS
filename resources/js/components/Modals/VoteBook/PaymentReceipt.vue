@@ -31,49 +31,53 @@
           </div>
         </section>
         <!-- THE ACCOUNT DETAILS HERE -->
-        <section class="w-[94%] m-auto py-5">
-          <div class="flex gap-3 items-center justify-end px-4 text-sm text-primary cursor-pointer">
+        <section class="w-[94%] m-auto py-5" v-if="payment.voucher && payment.voucher.length  > 0">
+          <!-- <div class="flex gap-3 items-center justify-end px-4 text-sm text-primary cursor-pointer">
             <p>Copy details</p>
             <Icon icon="si:copy-line" width="20" />
-          </div>
-          <div class="bg-white border border-solid flex flex-col gap-y-7 rounded-2xl px-5 py-4 mt-4">
+          </div> -->
+            <div class="flex gap-3 items-center justify-end px-4 text-sm text-primary cursor-pointer" @click="copyAccountDetails">
+            <p>Copy details</p>
+            <Icon icon="si:copy-line" width="20" />
+            </div>
+            <div ref="accountDetailsRef" class="bg-white border border-solid flex flex-col gap-y-7 rounded-2xl px-5 py-4 mt-4">
             <div class="flex items-center justify-between">
-              <p class="font-[450] text-sm">Account Name</p>
+              <p class="font-[450] text-sm">Voucher number</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.accountName }}
+              {{ payment.voucher.length > 0 ? payment.voucher[0].voucher_number : 'N/A' }}
               </p>
             </div>
             <div class="flex items-center justify-between">
-              <p class="font-[450] text-sm">Account Number</p>
+              <p class="font-[450] text-sm">Deptal No.</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.accountNumber }}
+              {{ payment.voucher.length > 0 ? payment.voucher[0].deptal_no : 'N/A' }}
               </p>
             </div>
             <div class="flex items-center justify-between">
-              <p class="font-[450] text-sm">Bank Name</p>
+              <p class="font-[450] text-sm">Amount</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.bankName }}
+              ₦{{ payment.voucher.length > 0 ? formatWithCommas(payment.voucher[0].amount) : 'N/A' }}
               </p>
             </div>
             <div class="flex items-center justify-between">
-              <p class="font-[450] text-sm">Payment Reference Number</p>
+              <p class="font-[450] text-sm">Classification Code</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.refNumber }}
+              {{ payment.voucher.length > 0 ? payment.voucher[0].classification_code : 'N/A' }}
               </p>
             </div>
-            <div class="flex items-center justify-between">
+            <!-- <div class="flex items-center justify-between">
               <p class="font-[450] text-sm">Total Amount Due</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.amountDue }}
+              {{ paymentAccountDetails.amountDue }}
               </p>
             </div>
             <div class="flex items-center justify-between">
               <p class="font-[450] text-sm">Payment Due Date</p>
               <p class="text-sm text-gray-600 font-[350]">
-                {{ paymentAccountDetails.dueDate }}
+              {{ paymentAccountDetails.dueDate }}
               </p>
+            </div> -->
             </div>
-          </div>
         </section>
         <!-- The CTA Button -->
         <div class="self-end flex items-center justify-end gap-3 mt-1 pb-2 pr-5">
@@ -173,6 +177,9 @@
 <script setup>
 import { defineEmits, ref, computed, defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
+import { formatWithCommas } from "../../../utils/formatAmount";
+import { useForm } from "@inertiajs/vue3";
+
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);
 const visible = ref(true);
@@ -189,6 +196,11 @@ const paymentAccountDetails = ref({
   dueDate: "15th March 2025",
 });
 
+const form = useForm({
+  payment_id: props.payment.id,
+  receipt: null,
+});
+
 const receiptFile = ref(null);
 const receiptFileUrl = ref(null);
 const triggerFileSelect = () => fileInput.value?.click();
@@ -198,12 +210,41 @@ const handleFileUpload = (e) => {
 
   // Set file
   receiptFile.value = file;
+  form.receipt = file;
   // URL for file preview
   receiptFileUrl.value = URL.createObjectURL(file);
 };
 
 const appendReceipt = async () => {
-  emit("cancelled");
+  form.post('/finance-and-accounts/payment-receipt-upload', {onSuccess: () => {
+    toast.add({ severity: 'success', summary: 'Receipt uploaded successfully', life: 2000 });
+    emit("confirmed");
+    emit("cancelled");
+  }, onError: () => {
+    toast.add({ severity: 'error', summary: 'Failed to upload receipt', life: 2000 });
+  }});
+};
+const accountDetailsRef = ref(null);
+
+const copyAccountDetails = () => {
+  const voucher = props.payment.voucher?.[0];
+  if (!voucher) {
+    toast.add({ severity: 'warn', summary: 'No details to copy', life: 2000 });
+    return;
+  }
+  const details = `
+Voucher number: ${voucher.voucher_number}
+Deptal No.: ${voucher.deptal_no}
+Amount: ₦${formatWithCommas(voucher.amount)}
+Classification Code: ${voucher.classification_code}
+  `.trim();
+  navigator.clipboard.writeText(details)
+    .then(() => {
+      toast.add({ severity: 'success', summary: 'Copied to clipboard', life: 2000 });
+    })
+    .catch(() => {
+      toast.add({ severity: 'error', summary: 'Failed to copy', life: 2000 });
+    });
 };
 
 const cancelModal = () => {

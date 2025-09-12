@@ -15,7 +15,7 @@
   >
     <section class="flex flex-col items-start">
       <div class="items-start justify-center flex -ml-3 -mt-2">
-        <img src="/assets/images/accepttask.svg" alt="reject task" />
+        <img src="../../../assets/images/accepttask.svg" alt="reject task" />
       </div>
       <div class="border-b border-solid border-[#E6E6E6] pb-4">
         <p class="text-2xl mt-3 mb-3 font-semibold text-gray-800">
@@ -55,20 +55,36 @@
 </template>
 
 <script setup>
-import { defineEmits, ref, computed } from "vue";
+import { defineEmits, ref, computed, defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
+import { router } from "@inertiajs/vue3";
+
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);
 const visible = ref(true);
+const props = defineProps(['payment'])
 const finalisePayment = () => {
-  // emit("Accepted");
-  toast.add({
-    severity: "success",
-    summary: "Payment Process Completed",
-    detail: "The task has been accepted and finalized.",
-    life: 3000,
-  });
-  emit("cancelled");
+   router.post('/finance-and-accounts/finalise-payment', { payment_id: props.payment.id }, {
+    onSuccess: () => {
+      toast.add({
+        severity: "success",
+        summary: "Payment Finalised",
+        detail: "The payment has been successfully finalised.",
+        life: 3000,
+      });
+      emit("confirmed");
+      emit('cancelled')
+    },
+    onError: (errors) => {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: errors.message || "An error occurred while finalising the payment.",
+        life: 3000,
+      });
+    },
+   });
+  
 };
 
 const cancelModal = () => {

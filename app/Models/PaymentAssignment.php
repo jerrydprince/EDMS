@@ -25,4 +25,14 @@ class PaymentAssignment extends Model
 // {
 //     return $this->hasMany(PaymentComment::class, 'assignment_id');
 // }
+
+    /**
+     * Get all of the comments for the PaymentAssignment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(PaymentComment::class, 'payment_assignment_id');
+    }
 }

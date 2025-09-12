@@ -55,9 +55,9 @@
                   <div>
                     <p class="text-sm">
                       Assistant Director of
-                      <span class="capitalize">{{ assistant?.division.title }}[{{ assistant?.email }}]</span>
+                      <span class="capitalize">{{ assistant?.unit?.title }} [{{ assistant?.email }}]</span>
                     </p>
-                    <p class="text-xs text-gray-600">{{ assistant.name }}</p>
+                    <p class="text-xs text-gray-600">{{ assistant?.name }}</p>
                   </div>
                 </div>
               </div>

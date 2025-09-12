@@ -230,8 +230,9 @@ const submit = () => {
     id: file.id,
   }));
   form.title = form.title.trim();
-  form.dueDate = form.dueDate ? new Date(form.dueDate).toISOString() : null;
+  //form.dueDate = form.dueDate ? new Date(form.dueDate).toISOString() : null;
   form.comments = form.comments.trim();
+  form.payment_id = props.payment?.id || null;
  
   if (props.selectedFiles.length === 0) {
     toast.add({
