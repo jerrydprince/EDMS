@@ -55,7 +55,7 @@ const notifications = computed(()=> store.getters.getNotifications)
 const total_task_notifications = computed(()=>store.getters.getTotalTaskNotifications)
 const store = useStore()
 const current_page = computed(()=> page.url)
-const comment = ref()
+const comment = ref([])
 
 
   const toggleSearchState = () => {
@@ -94,8 +94,8 @@ const comment = ref()
 
   const getUserNotifications = ()=>{
     axios.get('/user-notifications').then((response)=>{
-      notifications.value = response.data.notifications
-      total_task_notifications.value = response.data.count
+      //notifications.value = response.data.notifications
+     // total_task_notifications.value = response.data.count
       store.commit('setNotifications', response.data)
     })
   }
@@ -122,24 +122,25 @@ const comment = ref()
 
       Echo.private('task.' + user.value.id)
       .notification((notification) => {
-          getUserNotifications()
+          store.dispatch("fetchNotifications")
       });
 
-       Echo.private('comment.' + user.value.id)
-        .notification((nots) => {
-            comment.value = nots
-            console.log(comment.value)
-            getUserNotifications()
-            store.dispatch("fetchNotifications")
-        });
+      //  Echo.private('comment.' + user.value.id)
+      //   .notification((nots) => {
+      //       comment.value = nots
+      //       console.log("this is comment ", comment.value)
+      //       //getUserNotifications()
+      //       store.dispatch("fetchNotifications")
+      //   });
 
-        Echo.private('App.Models.User.' + user.value.id)
-        .notification((nots) => {
-            comment.value = nots
-            console.log('this is comment', comment.value)
-            getUserNotifications()
-            store.dispatch("fetchNotifications")
-        });
+        // Echo.private('App.Models.User.' + user.value.id)
+        // .notification((nots) => {
+        //     comment.value = nots
+        //     alert('yes for me')
+        //     store.dispatch("fetchNotifications")
+        //     // store.commit('addNotification', nots) // just push into Vuex
+        //     // store.commit('setTotalTaskNotifications', nots);
+        // });
 
         
     //  Echo.private(`App.Models.User.${user.value.id}`)
@@ -150,13 +151,13 @@ const comment = ref()
     //       // you can show toast, badge counter, etc.
     //  });
 
-     Echo.private(`App.Models.User.${user.value.id}`)
-      .listen('UserNotificationEvent', (e) => {
-          console.log("New notification:", e);
-          getUserNotifications()
-          store.dispatch("fetchNotifications")
-          // you can show toast, badge counter, etc.
-     });
+    //  Echo.private(`App.Models.User.${user.value.id}`)
+    //   .listen('UserNotificationEvent', (e) => {
+    //       console.log("New notification:", e);
+    //       getUserNotifications()
+    //       store.dispatch("fetchNotifications")
+    //       // you can show toast, badge counter, etc.
+    //  });
 
   
     // Echo.private(`chat.${user.value.id}`)

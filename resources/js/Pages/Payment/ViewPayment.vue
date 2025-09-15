@@ -635,9 +635,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, inject } from "vue";
 import { useToast } from "primevue/usetoast";
 import { Link, usePage, router } from "@inertiajs/vue3";
+import {useStore} from "vuex";
 
 import AcceptPayment from "../../components/Modals/Payment/AcceptPayment.vue";
 import RejectPayment from "../../components/Modals/Payment/RejectPayment.vue";
@@ -690,6 +691,8 @@ const sidemenu1 = ref(false)
 const comment_recipient = ref(null)
 const customComment = ref([])
 const customSideMenu = ref([])
+const store = useStore()
+const new_comment =  computed(()=> store.getters.getNotifications)
 // DIFFERENT ROLES
 // Finance and Accounting
 // Deputy Director
@@ -785,7 +788,7 @@ const sendComment = (id, unique_id, payment_assignment_id)=>{
       onSuccess: (response)=>{
         toast.add({severity:'success', summary: 'Success', detail: 'Comment added successfully', life: 3000});
         message.value = ''
-        router.reload({only:['payment']})
+        //router.reload({only:['payment']})
       },
       onError: (error)=>{
         toast.add({severity:'error', summary: 'Error', detail: 'Failed to add comment', life: 3000});
@@ -1388,9 +1391,23 @@ watch(()=>props.payment, (newVal)=>{
     let total = newVal.assigned_to.length;
     if(total > 0){
       customComment.value = Array.from({length: total},()=>false)
-      customSideMenu.value = Array.from({length: total}, ()=>false)
+      //customSideMenu.value = Array.from({length: total}, ()=>false)
     }
 }, {immediate: true})
+
+let isFirstRun = true;
+
+watch(new_comment, ()=>{
+ if(!isFirstRun){
+   router.reload({
+    only: ['payment'],
+    preserveScroll: true,     // 🚫 prevent scrolling to top
+    preserveState: true, 
+  })
+ }else{
+  isFirstRun = false;
+ }
+}, {immediate: false})
 
 onMounted(()=>{
   if(roles.value.includes('directors')){

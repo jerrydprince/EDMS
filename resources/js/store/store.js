@@ -34,7 +34,8 @@
 
         // // //state.notifications.push({task: nots})
 
-        state.notifications.splice(0,1, nots)
+       // state.notifications.splice(0,1, nots)
+       state.notifications = Array.isArray(nots) ? nots : [nots]
 
         // if (Array.isArray(nots)) {
         //   state.notifications = nots; // Replace the notifications array with the new one
@@ -42,6 +43,12 @@
         //   state.notifications.push(nots); // Add a single notification if `nots` is not an array
         // }
       },
+
+      addNotification(state, not) {
+      // Insert new notification at the top
+      state.notifications.unshift(not)
+    },
+
 
       setTotalTaskNotifications(state, counter){
         state.total_task_notifications = counter
@@ -55,10 +62,12 @@
     actions: {
       async fetchNotifications({commit}){
         await axios.get('/user-notifications').then((response)=>{
+          console.log('this is from the store ', response)
           // notifications.value = response.data.notifications
           // total_task_notifications.value = response.data.count
           //if(response.data.notifications && response.data.notifications.length > 0){
             commit('setNotifications', response.data.notifications)
+           // commit('addNotification', response.data.notifications)
           //}
           
           commit("setTotalTaskNotifications", response.data.count)
