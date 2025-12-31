@@ -3,7 +3,7 @@
 
 		<div class=" flex justify-between items-center">
 			<div class=" flex justify-between gap-3 items-center">
-				<img src="/assets/images/detail.svg" alt="">
+				<img :src="'/assets/images/detail.svg'" alt="">
 				<h1 class=" text-[#1D2939] font-semibold text-xl">Details</h1>
 			</div>
 			<button class="" @click=" visible = false">
@@ -299,12 +299,12 @@ const getFileExtension = (file)=>{
       }
 
       if(extension == 'doc' || extension == 'doctx'){
-		fileType = 'Word'
+		fileType.value = 'Word'
           return page.props.base+'/images/word.svg'
       }
 
       if(extension == 'xlx' || extension == 'xlsx'){
-		fileType = 'Excel'
+		fileType.value = 'Excel'
           return page.props.base+'/images/excel.svg'
       }
     }

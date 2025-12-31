@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use PhpParser\Node\Expr\FuncCall;
 use App\Models\FinanceFiles;
+use App\Models\RegistryFile;
+use Illuminate\Support\Str;
+use App\Http\Controllers\Controller\CorrespondenceController;
 
 class RegistryController extends Controller
 {
@@ -249,6 +252,7 @@ class RegistryController extends Controller
 
     public function createFile(Request $request)
     {
+
         if($request->file_type){
             $request->merge(['file_type'=>$request->file_type['name']]);
         }
@@ -276,6 +280,26 @@ class RegistryController extends Controller
         }elseif(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
             $branch_id = $user->id;
         }
+
+        $uploaded_paths = [];
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                $path = '/registry/' . date('Y') . '/' . date('m');
+                $fullPath = public_path($path);
+
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+
+                $file->move($fullPath, $fileName);
+                $uploaded_paths[] = $path . '/' . $fileName;
+            }
+        }
+
+        // make uploaded paths available inside the transaction closure
+        //$request->merge(['uploaded_paths' => $uploaded_paths]);
 
         DB::transaction(function () use($request, $branch_id, $user) {
             $logedInUserBranch = $this->getLogedInUserBranch();
@@ -339,38 +363,20 @@ class RegistryController extends Controller
                 }
             }
 
+            if (!empty($uploaded_paths)) {
+                foreach ($uploaded_paths as $path) {
+                    $registryFile = new RegistryFile();
+                    $registryFile->file_id = $newFile->id;
+                    $registryFile->file_path = $path;
+                    //$registryFile->uploaded_by = auth()->id();
+                    $registryFile->save();
+                }
+            }
+
     
             $fm->save();
 
         });
-
-        //notification
-        // if($request->branch_type == 'unit'){
-        //    $users = User::where('unit_id', $request->branch)->get();
-        //    $branch = Unit::find($request->branch);
-        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-        //    Notification::sendNow($users, new RegistryNotification($data));
-        // }
-        // if($request->branch_type == 'division'){
-        //     $users = User::where('unit_id', $request->branch)->get();
-        //    $branch = Division::find($request->branch);
-        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-        //    Notification::sendNow($users, new RegistryNotification($data));
-            
-        // }
-        // if($request->branch_type == 'department'){
-        //     $users = User::where('unit_id', $request->branch)->get();
-        //    $branch = Department::find($request->branch);
-        //    $data = ['branch_type'=>$request->branch_type, 'branch'=>$branch];
-        //    Notification::sendNow($users, new RegistryNotification($data));
-        // }
-
-        // if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-        //     $data = ['branch_type' => 'AGF', 'branch'=>'NIL'];
-        //     Notification::sendNow($users, new RegistryNotification($data));
-        // }
-
-       // broadcast(new RegistryEvent($request->branch, $request->branch_type));
 
         return redirect()->back();
     }
@@ -384,50 +390,10 @@ class RegistryController extends Controller
         $file = FileMovement::findOrFail($fileId);
         $file->status = $request->status;
         $file->save();
-        // return  response()->json([
-        //     'message' => 'File updated Successfully',
-        //     'data' => $file
-        // ]);
+     
         return redirect()->back();
     }
-    // public function createDivision(Request $request, $deptId)
-    // {
-    //     $validated = $request->validate([
-    //         'title' => 'required|string',
-    //         'description' => 'required|string',
-    //     ]);
-
-    //     $department = Department::findOrFail($deptId);
-    //     $division = new Division([
-    //         'title' => $request->title,
-    //         'description' => $request->description,
-    //         'department_id' => $department->id,
-    //     ]);
-    //     $division->save();
-    //     return response()->json([
-    //         'message' => 'Division created successfully',
-    //         'division' => $division,
-    //     ]);
-    // }
-    // public function createUnit(Request $request, $divisionId)
-    // {
-    //     $validated = $request->validate([
-    //         'title' => 'required|string',
-    //         'description' => 'required|string',
-    //     ]);
-
-    //     $division = Division::findOrFail($divisionId);
-
-    //     $unit = new Unit([
-    //         'title' => $request->title,
-    //         'description' => $request->description,
-    //         'division_id' => $division->id,
-    //     ]);
-
-    //     $unit->save();
-
-    //     return response()->json(['message' => 'Unit created successfully', 'unit' => $unit]);
-    // }
+    
     public function getDivisionsInDepartment($departmentId)
     {
         $department = Department::findOrFail($departmentId);
@@ -621,41 +587,23 @@ class RegistryController extends Controller
 
     public function getDepartmentFile($id){
          $user = auth()->user();
-        // $branch = File::whereHas('fileMovement', function($query) use ($user, $id) {
-        //     $query->where(function($query) use ($user, $id) {
-        //         $query->where('department_id', $id);
-        //              // ->where('sent_to_branch', 'unit');
-        //     })->orWhere(function($query) use ($user, $id) {
-        //         $query->where('sent_to_department', $id);
-        //     });
-        // })
-        // ->with(['fileMovement' => function($query) use ($user, $id) {
-        //     $query->where(function($query) use ($user, $id) {
-        //         $query->where('department_id', $id);
-        //               //->where('sent_to_branch', 'unit');
-        //     })->orWhere(function($query) use ($user, $id) {
-        //         $query->where('sent_to_department', $id);
-        //     });
-        // }])
-        // ->latest()
-        // ->paginate(20);
-
+    
         // Outgoing Files
         $outgoing = File::whereHas('fileMovement', function ($query) use ($user, $id) {
-            $query->where('department_id', $id)->where('sent_from_department', $user->department_id);
+            $query->where('sent_from_department', $user->department_id);
         })
         ->with(['fileMovement' => function ($query) use ($user, $id) {
-            $query->where('department_id', $id)->where('sent_from_department', $user->department_id);
+            $query->where('sent_from_department', $user->department_id);
         }])
         ->latest()
         ->paginate(20);
 
         // Incoming Files
         $incoming = File::whereHas('fileMovement', function ($query) use ($user, $id) {
-            $query->where('department_id', $id)->where('sent_to_department', $user->department_id);
+            $query->where('sent_to_department', $user->department_id);
         })
         ->with(['fileMovement' => function ($query) use ($user, $id) {
-            $query->where('department_id', $id)->where('sent_to_department', $user->department_id);
+            $query->where('sent_to_department', $user->department_id);
         }])
         ->latest()
         ->paginate(20);
@@ -859,14 +807,7 @@ class RegistryController extends Controller
 
     public function TrackFile(Request $request){
         $branch_type = $this->getBranchType();
-        // if($branch_type == 'unit'){
-        //     $file = File::with(['fileMovement'=>function($query){
-        //         $query->orderBy('updated_at');
-        //     }])
-        //         ->where('name', 'LIKE', '%'.$request->search.'%')
-        //         ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
-        //         ->get();
-        // }
+     
         $user = auth()->user();
 
         if($branch_type == 'unit'){
@@ -951,6 +892,14 @@ class RegistryController extends Controller
     
                 return response()->json($branch);
             }
+        }else{
+             $branch = File::with('fileMovement')->where('name', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+                ->latest()
+                ->get()
+                ->take(10);
+    
+                return response()->json($branch);
         }
     }
 
@@ -1014,18 +963,6 @@ class RegistryController extends Controller
                     }
                     $file->move(public_path($path),$fileName);
                     $paths[] = $path.'/'.$fileName;
-                    // $arr = [
-                    //     'file_name' => $path.'/'.$fileName,
-                        
-                    //     // 'name' => $original_name,
-                    //      'size'=>$size,
-                    //      'uploaded_by' => auth()->user()->id,
-                    //      'uploaded_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
-                    //      'created_at' =>now(),
-                    //      'updated_at' => now()
-                    // ];
-
-                    //array_push($files, $arr);
 
                     $name = $original_name? $original_name: 'Unknown';
 

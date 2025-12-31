@@ -1,110 +1,440 @@
 <template>
-  <!-- <section class="hidden lg:block w-1/5 border-r border-solid border-gray-200 sticky top-0  px-5 py-5"> -->
+  <!-- <main class="h-screen flex w-full max-w-[1680px] fixed top-0"> -->
   <section
     class="hide_scroll hidden 2xl:block w-1/5 border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-scroll"
     :class="{ 'w-[7%]': shouldShow }">
-    <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 ">
-      <!-- <logo /> -->
-      <img src="../../../public/images/default-logo.png" alt="">
-      <!-- <p>IFEIS</p> -->
+    <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 px-3"
+      :class="{ 'px-0': shouldShow }">
+      <img src="../../../public/images/default-logo.png" alt="" v-if="!shouldShow">
+      <div v-else>
+        <logo />
+      </div>
+
     </div>
     <div class="border-b border-dashed pb-4">
-      <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
+      <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ 'text-center': shouldShow }">
+        Main
+      </p>
+       
       <section>
         <div v-for="(item, index) in main" :key="index" class="mb-1">
-          <!-- {{ permissions.includes(item.permission) }} -->
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <!-- <Icon :icon="item.icon" width="25" /> -->
-          <span v-html="item.icon"></span>
-          <p class="text-lg">{{ item.name }}</p>
-          </Link>
-
+          <div v-if="checkPermission(item)">
+            <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="($page.url === item.path
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+              "
+              class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+            <!-- <Icon :icon="item.icon" width="25" /> -->
+            <span v-html="item.icon"></span>
+            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
+            </Link>
+          </div>
         </div>
       </section>
+
+      <!-- F and A section -->
+      <section  v-if="userDepartment && userDepartment.title && userDepartment.title === 'Finance and Accounts' || (role.includes('super admin') || role.includes('admin'))">
+        <div class="mb-1">
+          <Link href="/finance-and-accounts" :class="(page.url === '/finance-and-accounts'
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <Icon icon="ri:exchange-funds-fill" width="25" />
+          <p class="text-lg" v-if="!shouldShow">Payment</p>
+          </Link>
+        </div>
+
+        <div class="mb-1">
+          <Link href="/finance-and-accounts/ledger" :class="(page.url.startsWith('/finance-and-accounts/ledger')
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <Icon icon="icon-park-outline:bookshelf" width="25" />
+          <p class="text-lg" v-if="!shouldShow">Ledger</p>
+          </Link>
+        </div>
+
+        <div class="mb-1" v-if="role.includes('other charges(HOS)') || role.includes('other charges')">
+          <Link href="/finance-and-accounts/vote-book" :class="(page.url.startsWith('/finance-and-accounts/vote-book')
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <Icon icon="ri:coupon-2-line" width="25" />
+          <p class="text-lg" v-if="!shouldShow">Vote</p>
+          </Link>
+        </div>
+
+        <div class="mb-1">
+          <Link href="/finance-and-accounts/cashbook" :class="(page.url.startsWith('/finance-and-accounts/cashbook')
+              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : 'px-3') + (shouldShow ? ' w-fit' : '')
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <Icon icon="ri:wallet-line" width="25" />
+          <p class="text-lg" v-if="!shouldShow">CashBook</p>
+          </Link>
+        </div>
+      </section>
+      <!-- End F and A section -->
     </div>
-    <div class="border-b border-dashed pb-4" v-if="userHasPermission('super admin')|| userHasPermission('admin')">
-      <p class="text-gray-500 pl-4 mt-4 mb-2" >Admin</p>
+    <div
+      v-if="(!userBranch.department || (userBranch.department && userBranch.department.title && userBranch.department.title !== 'Finance and Accounts')) && (role.includes('super admin') || role.includes('admin'))"
+      class="border-b border-dashed pb-4" :class="{ '-ml-4': shouldShow }">
+      <p class="text-gray-500 mt-4 mb-2 px-3" :class="{ ' ml-3': shouldShow }">
+        Admin
+      </p>
       <section>
         <div v-for="(item, index) in admin" :key="index" class="mb-1">
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <!-- <Icon :icon="item.icon" width="25" /> -->
-          <span v-html="item.icon"></span>
-          <p class="text-lg">{{ item.name }}</p>
+          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
+            ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : 'hover:border-0 px-3'
+            "
+            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <!-- <Icon :icon="item.icon" width="25" :class="{ 'ml-5': shouldShow }" /> -->
+          <span v-html="item.icon" :class="{ 'ml-5': shouldShow }"></span>
+          <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
           </Link>
         </div>
       </section>
     </div>
-    <div class="pb-4 mb-12">
-      <div class="text-gray-500 pl-4 mt-4 mb-2 flex items-center justify-between">
+
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('data entry')">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3" :class="{ ' -ml-3': shouldShow }">
         <div class="flex items-center gap-2">
-          <Icon icon="ic:round-greater-than" width="20" />
-          <p>Branches</p>
+          <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
+          <p>Branches </p>
         </div>
-        <Icon icon="line-md:grid-3-filled" width="20" />
+        <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" />
       </div>
       <section>
         <div v-for="(item, index) in branches" :key="index" class="mb-1">
-          <Link :href="item.path" v-if="userHasPermission(item.permission)"
-            class="pl-4 pr-1 py-3 flex items-center justify-between text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <div class="flex items-center gap-3">
-            <!-- <Icon :icon="item.icon" width="15" /> -->
-            <span v-html="item.icon"></span>
-            <p class="text-lg">{{ item.name }}</p>
+          <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
+            ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : ' px-3  '
+            "
+            class="py-3 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
+            <div class="h-4 w-4 rounded-full border border-gray-300" :class="{ 'bg-primary': $page.url === item.path }"
+              v-tooltip.right="{
+                value: item.name,
+                pt: {
+                  arrow: {
+                    style: {
+                      borderRightColor: '',
+                    },
+                  },
+                  text: 'bg-[#1D2939] text-xs text-white font-medium px-2 py-1 rounded',
+                },
+              }"></div>
+            <p class="text-lg" v-if="!shouldShow">{{ item.name }}</p>
           </div>
-          <Icon icon="ic:round-greater-than" width="20" />
+
+          <span v-html="item.icon" v-if="!shouldShow"></span>
           </Link>
         </div>
-        <!-- <div class="mb-1">
-          <div
-            class="pl-4 pr-1 py-3 flex items-center justify-between text-gray-700 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-            <div class="flex items-center gap-3">
-              <Icon icon="mdi:company" width="20" />
-              <p class="text-lg">Add Department</p>
-            </div>
-            <Icon icon="material-symbols:add-box-outline" width="25" />
-          </div>
-        </div> -->
+
       </section>
     </div>
+
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('super users')">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between" :class="{ ' -ml-3': shouldShow }">
+        <div class="flex items-center gap-2">
+          <!-- <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" /> -->
+
+          <Link :href="'/dashboard/correspondence'" :class="$page.url === '/dashboard/correspondence'
+            ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+            : ' px-3  '
+            "
+            class="py-3 w-full flex justify-between items-center text-gray-700  rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+          <svg v-if="!shouldShow" data-v-7c742e76="" xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="30" height="30"
+            viewBox="0 0 24 24" class="iconify iconify--lucide">
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+              <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+              <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+            </g>
+          </svg>
+          <svg v-else data-v-7c742e76="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            aria-hidden="true" role="img" width="30" height="30" viewBox="0 0 24 24" class="iconify iconify--lucide">
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+              <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+              <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+            </g>
+          </svg>
+          <span class="pl-3">Correspondence</span>
+          <!-- <span v-html="item.icon" v-if="!shouldShow"></span> -->
+
+          </Link>
+        </div>
+        <!-- <Icon icon="line-md:grid-3-filled" width="20" v-if="!shouldShow" /> -->
+      </div>
+    </div>
+
+    <div class="pb-4 mb-10">
+      <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3 cursor-pointer group"
+        @click="branchesOpen = !branchesOpen" :class="{ ' -ml-3': shouldShow }">
+        <div class="flex items-center gap-3">
+          <Icon icon="octicon:git-branch-24" width="25" v-if="!shouldShow" />
+          <p>Branches</p>
+        </div>
+        <Icon :class="!branchesOpen ? '-rotate-90' : ''" icon="ep:arrow-down" width="19" v-if="!shouldShow" />
+      </div>
+      <section v-if="branchesOpen" class="border-gray-200 border-solid border-l-[1px] ml-4">
+        <Link :href="isDepartmentRole(item)" v-for="(item, index) in roleBranches" :key="index"
+          class="mb-1 ml-2 cursor-pointer">
+        <div @mouseover="handleDivisionMouseOver(index, $event)"
+          class="py-2 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+          <div class="flex items-center gap-3" :class="{ ' ml-2': shouldShow }">
+            <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+              {{ item.title }}
+            </p>
+
+            <!-- Divisions modal -->
+            <Teleport to="body">
+              <section v-if="openDivision === index" @mouseleave="handleDivisionMouseLeave"
+                @mouseenter="cancelDivisionClose" :style="{
+                  top: `${divisionsPosition.top}px`,
+                  left: `${divisionsPosition.left}px`,
+                  zIndex: 9999,
+                }" class="w-[20rem] absolute drop-shadow-xl left-[17%]">
+                <div class="bg-white rounded-lg py-4 px-4 drop-shadow-sm">
+                  <p class="float-right text-gray-400 text-[14px]">
+                    Divisions
+                  </p>
+                  <br />
+                  <div>
+                    <section class="">
+                      <Link :href="isDivisionRole(division, item)" v-for="(division, divisionIndex) in item.division"
+                        @mouseover="
+                          handleUnitMouseOver(divisionIndex, $event)
+                          " :key="divisionIndex" class="mb-1 cursor-pointer">
+                      <div
+                        class="py-4 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+                        <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+                          {{ division.title }}
+                        </p>
+
+                        <!-- For Units -->
+                        <Teleport to="body">
+                          <section @mouseleave="handleUnitMouseLeave" @mouseenter="cancelDivisionClose"
+                            v-if="openUnit === divisionIndex" :style="{
+                              top: `${unitsPosition.top}px`,
+                              left: `${unitsPosition.left}px`,
+                              zIndex: 9999,
+                            }" class="w-[20rem] absolute drop-shadow-xl">
+                            <div class="bg-white rounded-lg py-4 px-4">
+                              <p class="float-right text-gray-400 text-[14px]">
+                                Units
+                              </p>
+                              <br />
+                              <section>
+                                <Link :href="isUnitRole(unit, item)" v-for="(
+unit, unitIndex
+                                        ) in division.unit" :key="unitIndex" @click="redirectBranch('Unit', unit)"
+                                  class="mb-1">
+                                <div
+                                  class="py-4 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-[#F9FAFB] hover:text-primary font-normal transition-all px-3 hover:border">
+                                  <p class="text-[15px] text-gray-700" v-if="!shouldShow">
+                                    {{ unit.title }}
+                                  </p>
+                                </div>
+                                </Link>
+                              </section>
+                            </div>
+                          </section>
+                        </Teleport>
+                      </div>
+                      </Link>
+                    </section>
+                  </div>
+                </div>
+              </section>
+            </Teleport>
+          </div>
+          <Icon class="border-[1px] border-solid border-gray-200 rounded-md p-2 pr-3"
+            icon="fluent:ios-arrow-right-24-regular" width="35" v-if="!shouldShow" />
+        </div>
+        </Link>
+      </section>
+
+
+      <!-- More branches -->
+      <div class="cursor-pointer ml-4 bg-gray-100 text-gray-600 rounded-xl w-[30px]">
+        <Icon class="m-auto w-full" icon="solar:menu-dots-bold" width="17" />
+      </div>
+      <Link href="/dashboard/shared-files" :class="($page.url === '/dashboard/shared-files'
+        ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+        : 'px-3') + (shouldShow ? ' w-fit' : '')
+        "
+        class="py-3 mt-4 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+
+      <span><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+          width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+            d="M7.926 10.898 15 7.727m-7.074 5.39L15 16.29M8 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm12 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0-11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+        </svg>
+      </span>
+      <p class="text-lg" v-if="!shouldShow">Shared Files</p>
+      </Link>
+    </div>
+
     <div class="border-t border-dashed pt-2 pb-4">
       <section>
         <div class="mb-1">
-          <Link href="/"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <Icon icon="system-uicons:support" width="30" />
-          <p class="text-lg">Support</p>
+          <Link :href="'/dashboard/support'"
+            class="px-3 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+            :class="$page.url === '/support'
+              ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : ' px-3  '
+              ">
+          <Icon icon="system-uicons:support" width="30" :class="{ ' ml-1': shouldShow }" />
+          <p class="text-lg" v-if="!shouldShow">Support</p>
           </Link>
         </div>
         <div class="mb-1">
-          <Link href="/"
-            class="px-4 py-3 flex gap-3 items-center text-gray-700 border-0 hover:border border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <Icon icon="uiw:setting-o" width="25" />
-          <p class="text-lg">Settings</p>
+          <Link :href="'/settings'"
+            class="px-3 py-3 flex gap-3 items-center text-[#344054] rounded-xl  hover:text-primary font-normal transition-all"
+            :class="$page.url === '/settings'
+              ? ' px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
+              : ' px-3  '
+              ">
+          <Icon icon="uiw:setting-o" width="25" :class="{ 'ml-1.5': shouldShow }" />
+          <p class="text-lg" v-if="!shouldShow">Settings</p>
           </Link>
         </div>
       </section>
     </div>
   </section>
+
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
+import searchResult from "../components/Modals/SearchResult.vue";
 import logo from "../assets/logo.vue";
-import { Link } from '@inertiajs/vue3'
-import { usePage } from '@inertiajs/vue3'
+import TopBar from "./TopBar.vue";
+import { usePage, Link } from '@inertiajs/vue3'
 
 const page = usePage()
 const departments = computed(() => page.props.shared_departments)
 const permissions = computed(() => page.props.permissions)
 const role = computed(() => page.props.user_roles)
 const branches = ref([]);
-const userBranchName = computed(()=> page.props.branchName)
-const userBranch = computed(()=> page.props.userBranch)
+const roleBranches = ref([])
+const userBranchName = computed(() => page.props.branchName)
+const userBranch = computed(() => page.props.userBranch)
+const current_page = computed(() => page.url)
+const isBranches = ref(false)
+const userDepartment = computed(() => {
+  return page.props.userDepartment;
+});
+
+const toggleSearch = ref(false);
+
+const toggleSearchState = () => {
+  toggleSearch.value = !toggleSearch.value;
+};
+
+
+const openDivision = ref(null); // Track the currently open division index
+const openUnit = ref(null); // Track the currently open unit index
+
+const branchesOpen = ref(false);
+const divisionsPosition = ref({ top: 0, left: 0 });
+const unitsPosition = ref({ top: 0, left: 0 });
+let divisionTimeout = null;
+
+// Branches mouse hover function
+const handleDivisionMouseOver = (index, event) => {
+  const parent = event.currentTarget;
+  const rect = parent.getBoundingClientRect();
+  divisionsPosition.value = {
+    top: rect.top + window.scrollY,
+    left: rect.right + 10, // Adjust to position next to the parent
+  };
+  openDivision.value = index;
+};
+
+// Division mouse hover function
+const handleUnitMouseOver = (divisionIndex, event) => {
+  const parent = event.currentTarget;
+  const rect = parent.getBoundingClientRect();
+  unitsPosition.value = {
+    top: rect.top + window.scrollY,
+    left: rect.right + 20, // Adjust to position next to the division
+  };
+  openUnit.value = divisionIndex;
+};
+
+// Close the division modal with a slight delay to allow for movement between modals
+const handleDivisionMouseLeave = () => {
+  divisionTimeout = setTimeout(() => {
+    openDivision.value = null;
+    openUnit.value = null;
+  }, 500);
+};
+
+// Close the unit modal immediately
+const handleUnitMouseLeave = () => {
+  openUnit.value = null;
+  handleDivisionMouseLeave();
+};
+
+const isDepartmentRole = (item) => {
+  if (role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')) {
+    return `/dashboard/branches/department/${item.id}/0/0`
+  } else {
+    return '#'
+  }
+}
+
+const isDivisionRole = (item, department) => {
+  if (role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')
+    || role.value.includes('division heads')) {
+      let department_id = department.id
+      //let unit = item.unit && item.unit.length > 0? item.unit[0].id: 0
+    return `/dashboard/branches/division/${department_id}/${item.id}/0`
+  } else {
+    return '#'
+  }
+}
+
+const isUnitRole = (item, department) => {
+  if (role.value.includes('super admin') || role.value.includes('admin')
+    || role.value.includes('super users') || role.value.includes('directors')
+    || role.value.includes('division heads') || role.value.includes('unit heads')) {
+      let department_id = department.id
+      let division = department.division && department.division.length > 0?
+          department.division[0].id: 0;
+    return `/dashboard/branches/unit/${department_id}/${division}/${item.id}`
+  } else {
+    return '#'
+  }
+}
+
+const checkPermission = (item) => {
+  if (role.value.includes('record manager')) {
+    if (item.name == 'Dashboard') {
+      return false
+    } else {
+      return true;
+    }
+  } else {
+    return true;
+  }
+}
+
+const shouldShow = ref(false);
 
 const setDepartments = () => {
-  if(role.value.includes('super users')){
+  if (role.value.includes('super users')) {
     for (let dept of departments.value) {
       let data = {
         name: dept.title,
@@ -117,12 +447,12 @@ const setDepartments = () => {
       }
       branches.value.push(data)
     }
-  }else{
-   
-    const branchType = userBranchName.value; 
-    const branchData = userBranch.value[branchType]; 
+  } else {
 
-    if (branchData) {
+    const branchType = userBranchName.value;
+    const branchData = userBranch.value[branchType];
+
+    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads') || role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -137,14 +467,20 @@ const setDepartments = () => {
 }
 
 const userHasPermission = (permit) => {
-  if(permit ==''){
+  if (permit == '') {
     return true;
   }
   if (role.value.includes('super admin')) {
     return true;
   } else {
-    let perm = permissions.value.filter(permission => permission.name == permit);
-    if (perm && perm.length > 0) {
+    // let perm = permissions.value.filter(permission => permission.name == permit);
+    // if (perm && perm.length > 0) {
+    //   return true
+    // } else {
+    //   return false
+    // }
+    let index = permissions.value.findIndex(permission => permission.name == permit);
+    if (index != -1) {
       return true
     } else {
       return false
@@ -165,7 +501,7 @@ const main = ref([
   },
   {
     name: "Analytics",
-    path: "/analytics",
+    path: "/dashboard/analytics",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66667 1.66669V15.8334C1.66667 17.2167 1.61709 18.3334 3.00043 18.3334H18.3333" stroke="#344054" stroke-width="1.25" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M16.8341 6.66669L11.234 12.2667L9.10068 9.06669L4.83398 13.3334" stroke="#344054" stroke-width="1.38462" stroke-linecap="round" stroke-linejoin="round"/>
@@ -191,8 +527,9 @@ const main = ref([
 <path d="M18.3334 10.0007H13.3334L11.6667 12.5007H8.33335L6.66669 10.0007H1.66669M18.3334 10.0007V15.0007C18.3334 15.4427 18.1578 15.8666 17.8452 16.1792C17.5326 16.4917 17.1087 16.6673 16.6667 16.6673H3.33335C2.89133 16.6673 2.4674 16.4917 2.15484 16.1792C1.84228 15.8666 1.66669 15.4427 1.66669 15.0007V10.0007M18.3334 10.0007L15.4584 4.25898C15.3204 3.98131 15.1077 3.74763 14.8441 3.58422C14.5806 3.42081 14.2768 3.33415 13.9667 3.33398H6.03335C5.72328 3.33415 5.41941 3.42081 5.15589 3.58422C4.89237 3.74763 4.67967 3.98131 4.54169 4.25898L1.66669 10.0007" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `,
-    permission: 'mail view'
+    permission: 'mails view'
   },
+
   {
     name: 'Registry',
     path: '/dashboard/registry',
@@ -233,26 +570,51 @@ const main = ref([
     name: "PMS",
     path: "/dashboard/pms",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_7456_17054)">
-<mask id="mask0_7456_17054" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="2" width="21" height="17">
-<path d="M16.8422 17.7117C20.147 14.4069 20.147 9.04891 16.8422 5.74414C13.5375 2.4394 8.17943 2.4394 4.87469 5.74414C1.56992 9.04891 1.56995 14.4069 4.87469 17.7117" stroke="white" stroke-width="1.41039" stroke-linecap="round"/>
-<path d="M13.7114 9.51888C15.5582 11.0872 15.7841 13.8557 14.2158 15.7026C12.6475 17.5494 9.879 17.7752 8.03215 16.207C6.1853 14.6387 0.839623 4.34406 0.839623 4.34406C0.839623 4.34406 11.8645 7.95062 13.7114 9.51888Z" fill="black"/>
-<path d="M12.5756 10.8565C13.6836 11.7974 13.8192 13.4586 12.8782 14.5667C11.9372 15.6749 10.2761 15.8103 9.168 14.8694C8.05985 13.9284 3.51487 6.61576 3.51487 6.61576C3.51487 6.61576 11.4674 9.91551 12.5756 10.8565Z" fill="white"/>
-</mask>
-<g mask="url(#mask0_7456_17054)">
-<path d="M22.1416 -0.495483H-0.424622V22.0707H22.1416V-0.495483Z" fill="#344054"/>
-</g>
-</g>
-<defs>
-<clipPath id="clip0_7456_17054">
-<rect width="20" height="20" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+      <g clip-path="url(#clip0_7456_17054)">
+      <mask id="mask0_7456_17054" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="2" width="21" height="17">
+      <path d="M16.8422 17.7117C20.147 14.4069 20.147 9.04891 16.8422 5.74414C13.5375 2.4394 8.17943 2.4394 4.87469 5.74414C1.56992 9.04891 1.56995 14.4069 4.87469 17.7117" stroke="white" stroke-width="1.41039" stroke-linecap="round"/>
+      <path d="M13.7114 9.51888C15.5582 11.0872 15.7841 13.8557 14.2158 15.7026C12.6475 17.5494 9.879 17.7752 8.03215 16.207C6.1853 14.6387 0.839623 4.34406 0.839623 4.34406C0.839623 4.34406 11.8645 7.95062 13.7114 9.51888Z" fill="black"/>
+      <path d="M12.5756 10.8565C13.6836 11.7974 13.8192 13.4586 12.8782 14.5667C11.9372 15.6749 10.2761 15.8103 9.168 14.8694C8.05985 13.9284 3.51487 6.61576 3.51487 6.61576C3.51487 6.61576 11.4674 9.91551 12.5756 10.8565Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask0_7456_17054)">
+      <path d="M22.1416 -0.495483H-0.424622V22.0707H22.1416V-0.495483Z" fill="#344054"/>
+      </g>
+      </g>
+      <defs>
+      <clipPath id="clip0_7456_17054">
+      <rect width="20" height="20" fill="white"/>
+      </clipPath>
+      </defs>
+      </svg>
 
 `,
-    permission: 'workflow view'
+    permission: 'pms view'
   },
+
+  // {
+  //   name: "Payment",
+  //   path: "/finance-and-accounts/",
+  //   icon: "ri:exchange-funds-fill",
+  //   permission: 'payment view'
+  // },
+  // {
+  //   name: "Ledger",
+  //   path: "/finance-and-accounts/ledger",
+  //   icon: "icon-park-outline:bookshelf",
+  //   permission: 'payment view'
+  // },
+  // {
+  //   name: "Vote",
+  //   path: "/finance-and-accounts/vote-book",
+  //   icon: "ri:coupon-2-line",
+  //   permission: 'payment view'
+  // },
+  // {
+  //   name: "CashBook",
+  //   path: "/finance-and-accounts/cashbook",
+  //   icon: "ri:wallet-line",
+  //   permission: 'payment view'
+  // },
 ]);
 
 const admin = ref([
@@ -263,7 +625,7 @@ const admin = ref([
 <path d="M14.1666 17.5V15.8333C14.1666 14.9493 13.8155 14.1014 13.1903 13.4763C12.5652 12.8512 11.7174 12.5 10.8333 12.5H4.16665C3.28259 12.5 2.43474 12.8512 1.80962 13.4763C1.1845 14.1014 0.833313 14.9493 0.833313 15.8333V17.5M19.1666 17.5V15.8333C19.1661 15.0948 18.9203 14.3773 18.4678 13.7936C18.0153 13.2099 17.3818 12.793 16.6666 12.6083M13.3333 2.60833C14.0503 2.79192 14.6858 3.20892 15.1397 3.79359C15.5935 4.37827 15.8398 5.09736 15.8398 5.8375C15.8398 6.57764 15.5935 7.29673 15.1397 7.88141C14.6858 8.46608 14.0503 8.88308 13.3333 9.06667M10.8333 5.83333C10.8333 7.67428 9.34093 9.16667 7.49998 9.16667C5.65903 9.16667 4.16665 7.67428 4.16665 5.83333C4.16665 3.99238 5.65903 2.5 7.49998 2.5C9.34093 2.5 10.8333 3.99238 10.8333 5.83333Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `,
-    permission: 'manage user view'
+    permission: 'manage users view'
   },
   {
     name: "Branch Setup",
@@ -311,7 +673,7 @@ const admin = ref([
   },
   {
     name: "Audit Log",
-    path: "/audit-log",
+    path: "/dashboard/audit-log",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66669 12.0833L10 16.25L18.3334 12.0833M10 3.75L1.66669 7.91667L10 12.0833L18.3334 7.91667L10 3.75Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -320,7 +682,7 @@ const admin = ref([
   },
   {
     name: "Recycle Bin",
-    path: "/recycle-bin",
+    path: "/dashboard/recycle-bin",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2.5 5.00008H4.16667M4.16667 5.00008H17.5M4.16667 5.00008V16.6667C4.16667 17.1088 4.34226 17.5327 4.65482 17.8453C4.96738 18.1578 5.39131 18.3334 5.83333 18.3334H14.1667C14.6087 18.3334 15.0326 18.1578 15.3452 17.8453C15.6577 17.5327 15.8333 17.1088 15.8333 16.6667V5.00008H4.16667ZM6.66667 5.00008V3.33341C6.66667 2.89139 6.84226 2.46746 7.15482 2.1549C7.46738 1.84234 7.89131 1.66675 8.33333 1.66675H11.6667C12.1087 1.66675 12.5326 1.84234 12.8452 2.1549C13.1577 2.46746 13.3333 2.89139 13.3333 3.33341V5.00008M8.33333 9.16675V14.1667M11.6667 9.16675V14.1667" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -329,7 +691,71 @@ const admin = ref([
   },
 ]);
 
+
+
+// const branches = ref([
+//     {
+//         name: "Communication",
+//         path: "/branches/communication",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Tech Titans",
+//         path: "/branches/tech-titans",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Information",
+//         path: "/branches/information",
+//         icon: "clarity:circle-line",
+//     },
+//     {
+//         name: "Management",
+//         path: "/branches/management",
+//         icon: "clarity:circle-line",
+//     },
+// ]);
+
+
+
+const getBranchesByRole = () => {
+  axios.get('/dashboard/get-branches-by-role').then((response) => {
+    roleBranches.value = response.data
+  })
+}
+
+watch(current_page,
+  // (newPath) => {
+  //   shouldShow.value =
+  //     newPath.startsWith("/settings") || newPath.startsWith("/dashboard/chat") || newPath.startsWith("/dashboard/workflow");
+  // }
+);
+
 onMounted(() => {
   setDepartments()
-})
+  // shouldShow.value =
+  //   current_page.value.startsWith("/settings") || current_page.value.startsWith("/dashboard/chat") || current_page.value.startsWith("/dashboard/workflow");
+
+  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users')
+    || role.value.includes('directors') || role.value.includes('division heads') ||
+    role.value.includes('unit heads')) {
+    getBranchesByRole()
+    isBranches.value = true;
+  }
+});
 </script>
+
+<style>
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide_scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide_scroll {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+</style>

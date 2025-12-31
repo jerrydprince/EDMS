@@ -13,9 +13,10 @@ import ToastService from 'primevue/toastservice';
 import "primeicons/primeicons.css";
 import "./assets/Fonts/Satoshi_Complete/Fonts/WEB/css/satoshi.css"
 import { registerGlobalComponents } from "./reusables/primeVue";
-//import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/vue3'
+import "../css/app.css"
 
 
 
@@ -43,19 +44,24 @@ import { router } from '@inertiajs/vue3'
     //     import.meta.glob("./Pages/**/*.vue")
     //     );
    
-    resolve: name =>{
-      const page = require(`./Pages/${name}.vue`).default;
+    resolve: async (name) => {
+      const page = await resolvePageComponent(
+        `./Pages/${name}.vue`,
+        import.meta.glob("./Pages/**/*.vue")
+      );
+      
+      // Assign layout based on route
       if(window.location.pathname.startsWith('/register')){
-       page.layout = page.layout || Layout2;
+        page.default.layout = page.default.layout || Layout2;
       }else if(window.location.pathname.startsWith('/edms')){
-        page.layout = page.layout || Layout3;
+        page.default.layout = page.default.layout || Layout3;
       }else if(window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/settings') || window.location.pathname.startsWith('/finance-and-accounts')){
-         page.layout =page.layout || Layout;
+        page.default.layout = page.default.layout || Layout;
       }else if(window.location.pathname.startsWith('/password')){
-        page.layout = page.layout || Layout4;
+        page.default.layout = page.default.layout || Layout4;
       }
 
-      return page
+      return page;
     },
     
 

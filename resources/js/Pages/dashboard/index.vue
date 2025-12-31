@@ -88,7 +88,7 @@
 
     <div class="  flex items-center pl-5 pt-5 relative justify-between border overflow-hidden rounded-xl   my-10">
       <div class=" flex items-center gap-10">
-        <img src="/assets/images/tutorial.svg" alt="" class=" pb-5 w-80">
+        <img :src="'/assets/images/tutorial.svg'" alt="" class=" pb-5 w-80">
         <div>
           <h1 class=" text-3xl">Archiving Tutorial</h1>
           <p class=" text-[#667085] opacity-50">Watch a quick video guide to streamline your archiving process.</p>
@@ -217,7 +217,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, computed, reactive } from "vue";
+import { ref, defineProps, computed, reactive, onMounted } from "vue";
 import EmptyState from "../../components/EmptyState.vue";
 import ResolveTask from "../../components/Modals/ResolveTask.vue";
 import BranchDetails from "../../components/Modals/branches/BranchDetails.vue";
@@ -625,6 +625,8 @@ const getFileExtension = (file)=>{
    
 
 }
+
+
 </script>
 
 <style scoped>

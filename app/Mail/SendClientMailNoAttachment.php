@@ -13,14 +13,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class SendClientMailNoAttachment extends Mailable
 {
     public array $data;
+    public $email;
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($data)
+    public function __construct($data, $email)
     {
         $this->data = $data;
+        $this->email = $email;
     }
 
     /**
@@ -31,6 +33,7 @@ class SendClientMailNoAttachment extends Mailable
         $envelope = new Envelope(
             subject: $this->data['subject'],
             to: $this->data['recipient'],
+            from: $this->email ?? config('mail.from.address'),
         );
         if (isset($this->data['cc'])) {
             $envelope->cc($this->data['cc']);

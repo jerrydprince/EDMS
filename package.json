@@ -1,36 +1,29 @@
 {
     "private": true,
     "scripts": {
-        "dev": "npm run development",
-        "development": "mix",
-        "watch": "mix watch",
-        "watch-poll": "mix watch -- --watch-options-poll=1000",
-        "hot": "mix watch --hot",
-        "prod": "npm run production",
-        "production": "mix --production"
+        "dev": "vite",
+        "build": "vite build"
     },
     "devDependencies": {
         "@iconify/vue": "^4.1.1",
-        "autoprefixer": "^10.4.19",
+        "@vitejs/plugin-vue": "^6.0.2",
+        "autoprefixer": "^10.4.22",
         "axios": "^1.6.1",
         "laravel-echo": "^1.16.1",
-        "laravel-mix": "^6.0.49",
+        "laravel-vite-plugin": "^2.0.1",
         "mix-tailwindcss": "^1.3.0",
-        "postcss": "^8.4.38",
-        "postcss-loader": "^8.1.1",
+        "postcss": "^8.5.6",
         "pusher-js": "^8.4.0-rc2",
         "sass": "^1.69.7",
-        "tailwindcss": "^3.4.3",
-        "vue-loader": "^16.2.0",
-        "webpack": "^5.91.0",
-        "webpack-cli": "^5.1.4"
+        "tailwindcss": "^3.4.18",
+        "vue-loader": "^16.2.0"
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.16",
         "@heroicons/vue": "^2.1.1",
         "@inertiajs/vue3": "^1.0.14",
         "@popperjs/core": "^2.11.8",
-        "@vitejs/plugin-vue": "^5.0.0",
+        "@tailwindcss/vite": "^4.1.17",
         "@vueuse/core": "^10.11.1",
         "alpinejs": "^3.13.4",
         "apexcharts": "^3.52.0",

@@ -6,11 +6,11 @@
           <Icon icon="lucide:workflow" width="30" />
         </div>
         <div>
-          <h1 class="text-4xl">Workflow Dashboard</h1>
+          <h1 class="text-xl md:text-4xl">Workflow Dashboard</h1>
           <div class="text-sm flex items-center gap-5 mt-4">
             <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
               <Icon icon="mynaui:key" />
-              <p v-if="roles && roles.length > 0" class="capitalize">{{roles[0]}}</p>
+              <p v-if="roles && roles.length > 0" class="capitalize text-sm md:text-base">{{roles[0]}}</p>
             </div>
           </div>
         </div>
@@ -28,44 +28,44 @@
         </div>
       </div>
     </div>
-    <div class="flex items-center justify-end px-7 mt-5">
+    <div class="flex items-center justify-end md:px-7 mt-5">
       <div class="flex items-center gap-2 text-white bg-primary px-3 py-2 rounded-md" v-if="assignmentButton == 2"
         @click="AssignModal = true">
         <Icon icon="ion:add-outline" width="25" />
         <button>Assign Task</button>
       </div>
     </div>
-    <div class="bg-white mt-10 border border-gray-200 rounded-xl p-7 w-full">
+    <div class="bg-white mt-10 border border-gray-200 rounded-xl p-4 md:p-7 w-full">
       <div class="lg:flex items-center justify-between">
         <div class="flex gap-3 items-center justify-between text-sm">
-          <div class="bg-gray-100 flex items-center rounded-md p-1">
-            <button class="rounded-lg py-1 px-4" @click="activeButton('')"
+          <div class="bg-gray-100 flex flex-wrap gap-y-3 items-center rounded-md p-1">
+            <button class="rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base" @click="activeButton('')"
               :class="{ activeButton: buttonSwitch === 1 }">
               <p>All Tasks</p>
             </button>
             <div>
-              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
+              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base"
                 @click="activeButton('Pending')" :class="{ activeButton: buttonSwitch === 2 }">
                 <p>Pending</p>
               </button>
             </div>
 
             <div>
-              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
+              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base"
                 @click="activeButton('In Progress')" :class="{ activeButton: buttonSwitch === 3 }">
                 <p>In Progress</p>
               </button>
             </div>
 
-            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base"
               @click="activeButton('Under Review')" :class="{ activeButton: buttonSwitch === 4 }">
               <p>Under Review</p>
             </button>
-            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base"
               @click="activeButton('Completed')" :class="{ activeButton: buttonSwitch === 5 }">
               <p>Completed</p>
             </button>
-            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
+            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-2 md:px-4 text-xs md:text-sm lg:text-base"
               @click="activeButton('Uncompleted')" :class="{ activeButton: buttonSwitch === 6 }">
               <p>Uncompleted</p>
             </button>
@@ -81,16 +81,16 @@
 
       <!-- Assigned by me table -->
       <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2 && !roles.includes('regular users') || roles.includes('super users')">
-        <table class="min-w-max w-full border">
+        <table class="min-w-max w-full">
           <thead class="bg-gray-100">
-            <tr class="text-left">
-              <th class="pl-5 py-5">Task Title</th>
-              <th>Date Assigned</th>
-              <th>Deadline</th>
-              <th>Assigned By</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Actions</th>
+            <tr class="text-left ">
+              <th class="pl-5 py-3 font-medium w-28 md:w-auto text-sm">Task Title</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Date Assigned</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Deadline</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Assigned By</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Priority</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Status</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -209,16 +209,16 @@
 
       <!-- Assigned to me table  -->
       <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1 && !roles.includes('super users') || roles.includes('regular users')">
-        <table class="min-w-max w-full border">
+        <table class="min-w-max w-full">
           <thead class="bg-gray-100">
             <tr class="text-left">
-              <th class="pl-5 py-5">Task Title</th>
-              <th>Date Assigned</th>
-              <th>Deadline</th>
-              <th>Assigned By</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th class="pl-5 py-3 font-medium w-28 md:w-auto text-sm">Task Title</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Date Assigned</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Deadline</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Assigned By</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Priority</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Status</th>
+              <th class="font-medium w-28 md:w-auto text-sm">Actions</th>
             </tr>
           </thead>
           <tbody>

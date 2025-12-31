@@ -34,7 +34,7 @@
             <div class=" h-[60vh] flex flex-col justify-center items-center" v-if="!packages">
                 <section class="flex flex-col items-center justify-center">
                     <div class="flex flex-col items-center justify-center px-4 mb-5">
-                        <img src="/images/registry.svg" alt="" class="w-20" />
+                        <img :src="'/assets/images/registry.svg'" alt="" class="w-20" />
                         <div class="text-center px-7 mt-1">
                             <h1 class="font-semibold text-lg">Registry Search</h1>
                             <p class="opacity-80 text-base">

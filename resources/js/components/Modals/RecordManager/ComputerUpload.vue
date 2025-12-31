@@ -31,7 +31,7 @@
             <div class="text-center">
               <h1 class="font-semibold">Choose a file or drag & drop it here</h1>
               <p class="text-sm leading-7 mb-7 text-[#475467]">
-                supports PDF & Word docs
+                supports PDF, Images & Word docs
               </p>
             </div>
 
@@ -49,7 +49,7 @@
           class=" bg-gray-50 border border-gray-300 rounded-xl p-2 my-2 outline-none  mt-2 mb-8 w-full ">
           <option value="correspondence">Correspondence</option>
           <option value="via_mail">Send correspondence and mail file</option>
-          <option value="finance">F & A</option>
+          <option value="finance">F & A Registry</option>
       </select>
       </div>
 
@@ -149,12 +149,13 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import {useForm, router} from '@inertiajs/vue3'
+import {useForm, router,usePage} from '@inertiajs/vue3'
 
 const props = defineProps(["modelValue"]);
 const emit = defineEmits(["update:modelValue",'update']);
 const loading = ref(true)
 const files = ref()
+const page = usePage()
 const medium = ref("correspondence")
 const visible = computed({
   get() {
@@ -230,22 +231,22 @@ const submit = () => {
         life: 3000,
       });
     }})
-  }else if(medium.value == 'finance'){
-    router.post('/finance-and-accounts/set-registry-files',{files: files.value, medium: medium.value}, {onSuccess:page=>{
-      emit("update:modelValue", false);
-      emit('update')
-      files.value = null
-      medium.value =''
-      loading.value = false
-      toast.add({
-        severity: "success",
-        summary: '',
-        detail: "",
-        life: 3000,
-      });
-    }})
-  }
   
+  }else if(medium.value == 'finance'){
+    // router.post('/finance-and-accounts/set-registry-files',{files: files.value, medium: medium.value}, {onSuccess:page=>{
+    //   emit("update:modelValue", false);
+    //   emit('update')
+    //   files.value = null
+    //   medium.value =''
+    //   loading.value = false
+    //   toast.add({
+    //     severity: "success",
+    //     summary: '',
+    //     detail: "",
+    //     life: 3000,
+    //   });
+    // }})
+  }
 };
 </script>
 <style scoped>

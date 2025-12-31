@@ -18,7 +18,7 @@
         class="items-start justify-start flex flex-col border-b-2 border-solid border-[#E6E6E6] w-full pb-4"
       >
         <img
-          src="../../../assets/images/votebook.svg"
+          :src="'../../../assets/images/votebook.svg'"
           alt="reject task"
           class="-ml-2 drop-shadow-lg"
         />

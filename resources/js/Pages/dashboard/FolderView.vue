@@ -711,7 +711,7 @@ const files = computed(() => {
         //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
         path: (file.file_path && file.file_path.length > 0) ? file?.file_path[0]?.path : '',
         files: file?.file_path,
-        id: file.id,
+        id: file?.id,
         amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
         title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file?.file_path[0]?.file_name,
         description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',

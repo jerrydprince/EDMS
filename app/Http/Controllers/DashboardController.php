@@ -18,13 +18,8 @@ class DashboardController extends Controller
        if(auth()->user()->task()->exists()){
         $task = auth()->user()->task;
        }
-     
+    
         if(auth()->user()->unit_id){
-            // $branch = auth()->user()->unit()->with(['archive'=>function($query){
-            //     $query->with(['filePath', 'archiveDocs'])->paginate(10);
-            // }])->first();
-       
-
             $unit = Unit::find(auth()->user()->unit_id);
             
             if($unit->archive()->exists()){
@@ -43,9 +38,6 @@ class DashboardController extends Controller
         }
 
         if(auth()->user()->division_id){
-            // $branch = auth()->user()->division()->with(['archive'=>function($query){
-            //             $query->with(['filePath', 'archiveDocs']);
-            //         }])->first();
 
             $division = Division::find(auth()->user()->division_id);
             if($division->archive()->exists()){
@@ -54,10 +46,6 @@ class DashboardController extends Controller
 
              return inertia('dashboard/index', compact('branch', 'task'));
         }
-        
-        // $branch = auth()->user()->department()->with(['archive'=>function($query){
-        //     $query->with(['filePath', 'archiveDocs']);
-        // }])->first();
 
        if(auth()->user()->department_id){
         $department = Department::find(auth()->user()->department_id);
@@ -67,7 +55,7 @@ class DashboardController extends Controller
            
         return inertia('dashboard/index', compact('branch', 'task'));
        }
-       // }
+    
        
     }
 

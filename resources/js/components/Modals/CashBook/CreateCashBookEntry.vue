@@ -8,7 +8,7 @@
     class=".custom-dialog">
     <section class="max-h-[80vh] overflow-y-scroll hide_scroll flex flex-col items-center pt-3">
       <div class="items-center justify-start flex border-b border-solid border-[#E6E6E6] w-full">
-        <img src="../../../assets/images/cashbook.svg" alt="reject task" class="" />
+        <img :src="'../../../assets/images/cashbook.svg'" alt="reject task" class="" />
         <div class="-mt-2">
           <p class="text-xl font-medium text-primary">Create Cash Book Entry</p>
         </div>

@@ -94,13 +94,13 @@
     >
       <div class="flex justify-between">
         <div class="flex items-center gap-1 justify-center">
-          <img src="/assets/images/file.svg" alt="" class="w-7" />
+          <img :src="'/assets/images/file.svg'" alt="" class="w-7" />
           <div class="">
             <h1 class="text-[#1D2939]">Dmiye.pdf</h1>
             <div class="flex items-center gap-5">
               <p class="text-xs leading-7 text-[#667085]">60 KB of 120 KB.</p>
               <span class="flex items-center text-xs gap-1">
-                <img src="/assets/images/loading.svg" alt="" /> Uploading...
+                <img :src="'/assets/images/loading.svg'" alt="" /> Uploading...
               </span>
             </div>
           </div>
@@ -123,7 +123,7 @@
       <div class="flex items-center gap-5">
         <div class="  ">
           <img
-            src="/assets/images/pen.svg"
+            :src="'/assets/images/pen.svg'"
             alt=""
             class="p-3 border rounded-full border-gray-300"
           />
@@ -247,7 +247,7 @@
       <div class="flex items-center gap-5">
         <div class="  ">
           <img
-            src="/assets/images/edit.svg"
+            :src="'/assets/images/edit.svg'"
             alt=""
             class="p-3 border rounded-full border-gray-300"
           />
@@ -400,7 +400,7 @@
             <Checkbox v-model="checked" :value="i" />
           </div>
           <div class="border rounded-md p-2 bg-gray-100">
-            <img src="/assets/images/folder.svg" alt="" />
+            <img :src="'/assets/images/folder.svg'" alt="" />
           </div>
           <div>
             <h1 class="text-lg font-medium">Architecture Plan</h1>

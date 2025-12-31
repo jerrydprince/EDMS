@@ -13,12 +13,11 @@
 	
 		<section class="  flex flex-col items-center ">
 			<div class=" relative items-center justify-center  flex -mt-5">
-				  <img src="assets/images/grid.png" alt="" class=" -mt-10 ">
+				  <img :src="'/assets/images/grid.png'" alt="" class=" -mt-10 ">
 				
-				  <img src="/assets/images/caution.png" alt="" class=" absolute " v-if=" action === 'close'">
+				  <img :src="'/assets/images/caution.png'" alt="" class=" absolute " v-if=" action === 'close'">
 				
-			
-				  <img src="/assets/images/open.png" alt="" class=" absolute " v-else>
+				  <img :src="'/assets/images/open.png'" alt="" class=" absolute " v-else>
 				
 
 

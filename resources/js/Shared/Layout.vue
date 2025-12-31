@@ -47,6 +47,7 @@ import searchResult from "../components/Modals/SearchResult.vue";
 import { usePage } from "@inertiajs/vue3";
 import { useStore } from 'vuex';
 
+
 const toggleSearch = ref(false);
 const page = usePage()
 const user = computed(()=>page.props.user);
@@ -56,6 +57,7 @@ const total_task_notifications = computed(()=>store.getters.getTotalTaskNotifica
 const store = useStore()
 const current_page = computed(()=> page.url)
 const comment = ref([])
+
 
 
   const toggleSearchState = () => {
@@ -103,6 +105,7 @@ const comment = ref([])
   provide('comments', comment)
   onMounted(()=>{
     
+
     //getUserNotifications()
      store.dispatch("fetchNotifications")
     // notifications.value = store.state.notifications

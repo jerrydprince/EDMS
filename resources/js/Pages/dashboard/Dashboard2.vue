@@ -211,7 +211,7 @@
   </template>
   
   <script setup>
-  import { ref } from "vue";
+  import { ref, onMounted } from "vue";
   import Actions from "../../assets/Dashboard/Actions.vue";
   import QuickActions1 from "../../assets/Dashboard/QuickActions1.vue";
   import QuickActions1_1 from "../../assets/Dashboard/QuickActions1_1.vue";
@@ -448,5 +448,6 @@
   const toggle = (event) => {
     menu.value.toggle(event);
   };
+
   </script>
   

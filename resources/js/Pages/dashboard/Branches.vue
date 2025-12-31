@@ -87,8 +87,10 @@
                     </div>
                     <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
                   </div>
-                  <Link :href="'/edms/delete-folder/' + folder.id" class="px-3 text-red-500"
-                    v-if="admin && admin.length > 0">delete</Link>
+                  <!-- <Link :href="'/edms/delete-folder/' + folder.id" class="px-3 text-red-500"
+                    v-if="admin && admin.length > 0">delete</Link> -->
+                    <div class="px-3 text-red-500 cursor-pointer" @click="deleteArchive(folder.id)"
+                    v-if="admin && admin.length > 0">delete</div>
                 </div>
 
               </td>
@@ -104,7 +106,7 @@
 
     </section>
 
-    <CreateFolderDialog v-model="createFolderModal" :url="'/edms/create-folder?unitId='+props.unitId+'&divId='+props.divId+'&deptId='+props.deptId" :folderId="''"/>
+    <CreateFolderDialog v-model="createFolderModal" :deptId="props.deptId" :divId="props.divId" :unitId="props.unitId" :url="'/edms/create-folder?unitId='+props.unitId+'&divId='+props.divId+'&deptId='+props.deptId" :folderId="''"/>
     <BranchDetails v-model="branchDetailsModal" :file="selectedArchive" />
     <LockDocument v-model="LockDocumentModal" />
     <UnlockDocument v-model="UnlockDocumentModal" />
@@ -112,10 +114,11 @@
     <ChangeFormat v-model="ChangeFormatModal" :archive="selectedArchive" />
     <PreviewFile v-if="togglePreview" :togglePreviewFunction="togglePreviewState" :file="selectedArchive" />
     <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive" />
+    <DeleteArchive v-model="isdelte_archive" :data="selectedArchiveId" :url="deleteUrl" />
   </main>
 </template>
 <script setup>
-import { ref, defineProps, computed, watch, watchEffect } from 'vue';
+import { ref, defineProps, computed, watch, watchEffect, onMounted } from 'vue';
 
 import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
 import BranchDetails from "../../components/Modals/branches/BranchDetails.vue";
@@ -130,6 +133,7 @@ import ListVue from '../dashboard/partials/ListVue.vue';
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
 import pagination from './partials/pagination.vue';
 import  debounce  from 'lodash.debounce';
+import DeleteArchive from "../../components/DeleteArchive.vue";
 
 const folderGrid = ref(false)
 const selectedDocumentId = ref(null);
@@ -145,6 +149,8 @@ const isSecondPosition = ref(false);
 const selectedFolderId = ref(null);
 const togglePreview = ref(false);
 const FileRenameModal = ref(false);
+const deleteUrl = ref(null)
+const isdelte_archive = ref(false)
 
 const folderMenu = ref(false);
 
@@ -166,6 +172,11 @@ const pageFolders = ref([]);
 
 const userFolders = [];
 const search = ref('')
+
+const deleteArchive = (id) => {
+  deleteUrl.value = '/edms/delete-folder/' + id;
+  isdelte_archive.value = true;
+}
 
 
 const menu = ref();
@@ -195,6 +206,8 @@ const items = ref([
 const toggle = (event, key) => {
   console.log(menu.value)
   console.log(key)
+  console.log(event)
+  console.log(menu.value[key])
   menu.value[key].toggle(event);
 };
 
@@ -639,9 +652,16 @@ const getArchiveDocsVale = (data, search) => {
 
 const fetchFolders = async () => {
       try {
+        let url = '/edms/branches'
         //const response = await axios.get('/edms/branches', { params: { search: search.value } });
+        if(page.props.roles.includes('data entry')){
+           url = '/edms/branches'
+        }else{
+           url = `/dashboard/branches/${props.branch_name}/${props.deptId}/${props.divId}/${props.unitId}`
+        }
+         
         let response = []
-          await router.get('/edms/branches', { search: search.value },{
+          await router.get(url, { search: search.value },{
             onSuccess: page =>{
               response = page
               
@@ -697,6 +717,7 @@ const fetchFolders = async () => {
       }
     });
 
+   
 
 </script>
 

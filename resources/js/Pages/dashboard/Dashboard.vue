@@ -189,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps,computed } from "vue";
+import { ref, defineProps,computed, onMounted } from "vue";
 import Actions from "../../assets/Dashboard/Actions.vue";
 import QuickActions1 from "../../assets/Dashboard/workflow.vue";
 import QuickActions1_1 from "../../assets/Dashboard/QuickActions1_1.vue";
@@ -326,4 +326,5 @@ const updateModalStep = (value) => {
 const toggle = (event) => {
   menu.value.toggle(event);
 };
+
 </script>

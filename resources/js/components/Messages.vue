@@ -51,7 +51,7 @@
                         <div v-else>
                             <img v-if="selectedUser.profile_image" width="30"
                                 :src="page.props.base + '/' + selectedUser.profile_image" alt="">
-                            <img v-else src="../assets/images/display_picture.svg" alt="" />
+                            <img v-else :src="'../assets/images/display_picture.svg'" alt="" />
                         </div>
                     </div>
                     <div>
@@ -92,7 +92,7 @@
 
                                 <h4 v-if="message.sender_id == page.props.user.id" class="mr-4"> You</h4>
                                 <div v-else class="py-2 flex items-center gap-2">
-                                    <img src="../assets/images/display_picture.svg" alt="" />
+                                    <img :src="'../assets/images/display_picture.svg'" alt="" />
                                     <div v-if="message.sender_id !== page.props.user.id">
                                         <h4 class="font-semibold mr-4" v-if="message.sender_id !== page.props.user.id">
                                             {{ message.sender_name }}
@@ -123,7 +123,7 @@
                                 <div v-else class="py-2 flex items-center gap-2">
                                     <img v-if="message.profile_image"
                                         :src="page.props.base + message.sender + '/' + message.profile_image" alt="">
-                                    <img v-else src="../assets/images/display_picture.svg" alt="" />
+                                    <img v-else :src="'../assets/images/display_picture.svg'" alt="" />
                                     <div v-if="message.sender_id !== page.props.user.id">
                                         <h4 class="font-semibold mr-4" v-if="message.sender_id !== page.props.user.id">
                                             {{ message?.sender?.first_name + " " + message?.sender?.last_name }}
@@ -151,47 +151,51 @@
             </div>
 
             <!-- =============== send message  ================= -->
-            <div class="absolute w-full bottom-5">
-                <div class="mx-7 border border-gray-300 bg-white rounded-md py-3 overflow-hidden">
-                    <!-- <div class="flex items-center justify-between border-b border-gray-300 px-2 pb-2">
-                        <div class="flex gap-3 items-center">
-                            <h1 class="text-[#98A2B3]">To:</h1>
-                            <p v-if="selectedMessage.users" class="bg-[#EAECF0] text-base px-4 py-1 rounded-2xl">
-                                {{ selectedMessage.name }}
-                            </p>
-                            <p v-else class="bg-[#EAECF0] text-base px-4 py-1 rounded-2xl">
-                                {{ selectedMessage.user.first_name }}
-                            </p>
-                        </div>
-                        <div>
-                            <Icon icon="tabler:arrows-diagonal" />
-                        </div>
-                    </div> -->
-                    <div>
-                        <div v-if="isTyping">
-                            {{ typingUser.name }} is typing...
-                        </div>
-                        <Textarea v-model="formData.message" @input="handleTyping" @keyup.enter="sendMessage" autoResize
-                            rows="1" cols="30" placeholder="Start a new message" class="p-inputtextarea" required />
-                        <input type="file" multiple style="display: none;" ref="fileInput" @change="handleFileChange" />
-                        <!-- {{ clickedIndex }} -->
-                        <!-- {{selectedMessage}} -->
-                    </div>
-
-                    <div class="flex items-center justify-between px-2 text-[#98A2B3]">
-                        <div class="flex items-center gap-5">
-                            <Icon icon="akar-icons:attach" width="25" class="cursor-pointer"
-                                @click="triggerFileInput" />
-                            <Icon icon="ic:round-link" width="25" class="cursor-pointer" @click="addLinkModal = true" />
-                        </div>
-                        <button @click="sendMessage()"
-                            class="flex items-center gap-2 bg-primary text-white px-5 rounded-md py-2">
-                            <p>Send</p>
-                            <Icon icon="tabler:send" />
-                        </button>
-                    </div>
-                </div>
+            <div class="absolute w-full bottom-0 left-0 px-7 pb-5">
+    <div class="border border-gray-300 bg-white rounded-md py-3 overflow-hidden">
+        <div>
+            <div v-if="isTyping" class="px-2 pb-2 text-sm text-gray-500">
+                {{ typingUser.name }} is typing...
             </div>
+            <Textarea 
+                v-model="formData.message" 
+                @input="handleTyping" 
+                @keyup.enter="sendMessage" 
+                autoResize
+                rows="1" 
+                cols="30" 
+                placeholder="Start a new message" 
+                class="p-inputtextarea" 
+                required 
+            />
+            <input type="file" multiple style="display: none;" ref="fileInput" @change="handleFileChange" />
+        </div>
+
+        <div class="flex items-center justify-between px-2 pt-2 text-[#98A2B3]">
+            <div class="flex items-center gap-5">
+                <Icon 
+                    icon="akar-icons:attach" 
+                    width="25" 
+                    class="cursor-pointer hover:text-primary transition-colors"
+                    @click="triggerFileInput" 
+                />
+                <Icon 
+                    icon="ic:round-link" 
+                    width="25" 
+                    class="cursor-pointer hover:text-primary transition-colors" 
+                    @click="addLinkModal = true" 
+                />
+            </div>
+            <button 
+                @click="sendMessage()"
+                class="flex items-center gap-2 bg-primary text-white px-5 rounded-md py-2 hover:bg-primary/90 transition-colors flex-shrink-0"
+            >
+                <p>Send</p>
+                <Icon icon="tabler:send" />
+            </button>
+        </div>
+    </div>
+</div>
         </div>
         <!-- ===================   sidebar ================= -->
 
@@ -207,7 +211,7 @@
                 <div class="border border-solid bg-white overflow-scroll h-[90vh] pb-32 hide_scroll">
                     <div class="w-full flex flex-col items-center justify-center mt-10">
                         <div class="relative w-36 h-36">
-                            <img src="../assets/images/display_picture.svg" alt="" class="w-36" />
+                            <img :src="'../assets/images/display_picture.svg'" alt="" class="w-36" />
                             <div
                                 class="h-6 w-6 bg-[#12B76A] rounded-full absolute bottom-0 right-5 border-[3px] border-white">
                             </div>
@@ -243,13 +247,13 @@
                             <h1 class="">Notification</h1>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" v-model="toggle" />
+                            <input type="checkbox" :v-model="false" />
                             <span class="slider round"></span>
                         </label>
                     </div>
                     <Divider />
                     <div class="flex items-center gap-3 py-3 px-7 cursor-pointer" @click="reportModal = true">
-                        <img src="../assets/images/report.svg" alt="" class="w-7" />
+                        <img :src="'../assets/images/report.svg'" alt="" class="w-7" />
                         <p class="text-[#F04438] font-semibold text-base">Report Contact</p>
                     </div>
                 </div>
@@ -310,7 +314,7 @@
                     </div>
 
                     <div v-else class="flex flex-col items-center justify-center">
-                        <img src="../assets/images/no_file.svg" alt="" class="w-40 my-5" />
+                        <img :src="'../assets/images/no_file.svg'" alt="" class="w-40 my-5" />
                         <h1 class="font-semibold text-2xl">No Files Found</h1>
                     </div>
                 </div>
@@ -370,7 +374,7 @@
                             <div>
                                 <div v-for="(item, index) in members" :key="index">
                                     <div class="flex items-center gap-5 font-semibold mb-3">
-                                        <img src="../assets/images/display_picture.svg" alt="" class="w-9" />
+                                        <img :src="'../assets/images/display_picture.svg'" alt="" class="w-9" />
 
                                         <h1 class="cursor-pointer" @click="toggle" aria-haspopup="true"
                                             aria-controls="overlay_menu">
@@ -470,7 +474,7 @@
                     </div>
 
                     <div v-else class="flex flex-col items-center justify-center">
-                        <img src="../assets/images/no_file.svg" alt="" class="w-40 my-5" />
+                        <img :src="'../assets/images/no_file.svg'" alt="" class="w-40 my-5" />
                         <h1 class="font-semibold text-2xl">No Files Found</h1>
                     </div>
                 </div>

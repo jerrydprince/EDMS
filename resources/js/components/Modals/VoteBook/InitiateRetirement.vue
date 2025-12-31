@@ -15,7 +15,7 @@
   >
     <section class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-start">
       <div class="items-center justify-center flex -ml-6 -mb-6 -mt-6">
-        <img src="/assets/images/votebook.svg" alt="reject task" class="drop-shadow-lg" />
+        <img :src="'/assets/images/votebook.svg'" alt="reject task" class="drop-shadow-lg" />
       </div>
       <div class="pl-2 text-left">
         <p class="text-2xl mb-4 mt-2 font-semibold text-gray-800">

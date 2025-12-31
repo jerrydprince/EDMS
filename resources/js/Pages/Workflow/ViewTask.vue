@@ -9,7 +9,7 @@
       </Link>
       <div class="flex items-center gap-10 font-semibold text-gray-600">
         <button class="bg-white border rounded-md px-4 py-2" @click="Re_Assign_Modal = true"
-        v-if="props.is_assigned == 1">
+        v-if="props.is_assigned == 1 && props.task.status != 'completed'">
           Reassign Task
         </button>
 
@@ -37,7 +37,7 @@
 
 
         <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2" @click="reOpenModal = true"
-          v-if="props.task.status === 'completed'">
+          v-if="props.task.status === 'completed' && props.task.created_by == current_user.id">
           <Icon icon="teenyicons:unlock-outline" width="25" />
           <p>Reopen Task</p>
         </button>
@@ -426,7 +426,7 @@
                   </p>
                 </div>
 
-                <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end" v-if="is_assigned == 2">
+                <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end" v-if="props.task.created_by == current_user.id">
                   <button v-if="props.task.status != 'completed'" class="text-red-600" @click="RequestRevisionModal = true">
                     Request Revision
                   </button>
@@ -434,6 +434,10 @@
                   <Link v-if="props.task.status != 'completed'" href="/dashboard/mark-as-completed" method="post" :data="{id: props.task.id}" class="font-semibold text-gray-800 px-3 py-2 border rounded-md">
                     Mark as complete
                   </Link>
+
+                  <button v-if="(props.branchType == 'department' || props.branchType == 'division' || props.branchType == 'unit') && props.task.status == 'completed'"  class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="ForwardTask">
+                    Forward Task
+                  </button>
                 </div>
               </div>
             </div>
@@ -765,7 +769,6 @@ const props = defineProps(['task', 'is_assigned', 'branchType'])
 const page = usePage()
 const user_comment = ref('')
 const activities = ref(false)
-
 const comment = ref(false);
 const RequestRevisionModal = ref(false);
 const completeModal = ref(false);
@@ -830,6 +833,14 @@ const data = ref({
 
 const setFilePath = (path) => {
   file_path.value = path;
+}
+
+const ForwardTask = () => {
+  router.post('/dashboard/forward-task', { task: props.task, branchType: props.branchType }, {
+    onSuccess: () => {
+      router.reload({ only: ['task'] })
+    }
+  })
 }
 
 

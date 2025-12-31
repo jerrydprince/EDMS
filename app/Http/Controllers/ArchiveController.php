@@ -781,7 +781,7 @@ class ArchiveController extends Controller
     public function isUserPermittedToViewDivision($branch_id){
         //check if the data entry user have access
         $user = auth()->user();
-        if(auth()->user()->hasRole('data entry')){
+        if(auth()->user()->hasRole('data entry') || $user->hasRole('division heads')){
             if($user->division_id && $user->division_id == $branch_id){
                 return true;
             }else{
@@ -803,7 +803,7 @@ class ArchiveController extends Controller
         if($user->hasRole('directors')){
             $department_id = $user->department_id;
             $exists = Department::where('id', $department_id)
-                        ->whereHas('division.unit', function($query) use($branch_id){
+                        ->whereHas('division', function($query) use($branch_id){
                             $query->where('id', $branch_id);
                         })->exists();
             if($exists){
@@ -814,20 +814,20 @@ class ArchiveController extends Controller
         }
 
         //check if divisional head can access this
-        if($user->hasRole('division heads')){
-            $division_id = $user->division_id;
+        // if($user->hasRole('division heads')){
+        //     $division_id = $user->division_id;
 
-            $exists = Division::where('id', $division_id)
-                ->whereHas('unit', function($query) use($branch_id){
-                    $query->where('id', $branch_id);
-                })->exists();
+        //     $exists = Division::where('id', $division_id)
+        //         ->whereHas('unit', function($query) use($branch_id){
+        //             $query->where('id', $branch_id);
+        //         })->exists();
             
-            if($exists){
-                return true;
-            }else{
-                return false;
-            }
-        }
+        //     if($exists){
+        //         return true;
+        //     }else{
+        //         return false;
+        //     }
+        // }
     }
 
     public function isUserPermittedToViewUnit($branch_id){
@@ -920,34 +920,13 @@ class ArchiveController extends Controller
      
         $search = request()->search;
 
-            // if(request()->search){
-            //     $search = request()->search;
-       
-            //     // Build the query
-            //     $folder = Folder::with(['fileType', 'subfolder'])
-            //         ->where(function($query) use ($search) {
-            //             $query->where('name', 'like', '%' . $search . '%')
-            //                 ->orWhere('number', 'like', '%' . $search . '%')
-            //                 ->orWhereHas('fileType', function($query) use($search) {
-            //                     $query->where('name', 'like', '%' . $search . '%');
-            //                 });
-            //         })
-            //         ->latest()
-            //         ->paginate(20)
-            //         ->withQueryString();
-            
-            //             //return redirect()->back()->with('folder',$folder);
-            //            // return inertia('dashboard/Branches', compact('folder'));
-            //            return $folder;
-            // }
-
-           
+          
             
             if(request()->branch){
                
                // $branch_id = request()->id;
                 $branch_name = ucfirst(request()->branch);
-        
+       
                 if($branch_name == 'Unit'){
                     $branch_id =  $request->unitId;
                 }else if($branch_name == 'Division'){
@@ -961,6 +940,7 @@ class ArchiveController extends Controller
                 }
         
             }else{ 
+                
                 if(auth()->user()->unit_id){
                     $branch_id = auth()->user()->unit_id;
                     $branch_name = 'Unit';
@@ -974,9 +954,9 @@ class ArchiveController extends Controller
                     $branch_name = "Department";
                 }
             }
-            $unitId = filled($request->unitId)? $request->unitId: auth()->user()->unit_id;
-            $divId = filled($request->divId)? $request->divId: auth()->user()->division_id;
-            $deptId = filled($request->deptId)? $request->deptId: auth()->user()->department_id;
+            $unitId = filled(request()->unitId)? request()->unitId: auth()->user()->unit_id;
+            $divId = filled(request()->divId)? request()->divId: auth()->user()->division_id;
+            $deptId = filled(request()->deptId)? request()->deptId: auth()->user()->department_id;
 
             $folder = Folder::with(['fileType', 'subfolder']);
             $user = auth()->user();
@@ -1026,8 +1006,9 @@ class ArchiveController extends Controller
 
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder', 'unitId', 'divId', 'deptId'));
           }
-          
-          $department = request()->id? request()->id: auth()->user()->department_id;
+
+          $department = request()->deptId? request()->deptId: auth()->user()->department_id;
+
            if($department && $this->isUserPermittedToViewDepartment($branch_id)){
              $branch = Department::with(['folder'=>function($query){
                 $query->with(['fileType','subfolder']);
@@ -1049,6 +1030,7 @@ class ArchiveController extends Controller
                 return redirect()->to('/dashboard');
             }
             $folder = $folder->latest()->paginate(20)->withQueryString();
+           
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder' , 'unitId', 'divId', 'deptId'));
     
      }
@@ -1163,20 +1145,23 @@ class ArchiveController extends Controller
     }
 
     public function getBranchFileType(){
-        if(auth()->user()->unit_id){
-            $unit = Unit::with('fileType')->find(auth()->user()->unit_id);
+       $deptId = request()->deptId? request()->deptId: auth()->user()->department_id;
+       $divId = request()->divId? request()->divId: auth()->user()->div_id;
+       $unitId = request()->unitId? request()->unitId: auth()->user()->unit_id;
+        if($unitId){
+            $unit = Unit::with('fileType')->find($unitId);
             $fileType= $unit->fileType;
             return response()->json($fileType);
         }
 
-        if(auth()->user()->division_id){
-            $division = Division::with('fileType')->find(auth()->user()->division_id);
+        if($divId){
+            $division = Division::with('fileType')->find($divId);
             $fileType= $division->fileType;
             return response()->json($fileType);
         }
 
-        if(auth()->user()->department_id){
-            $department = Department::with('fileType')->find(auth()->user()->department_id);
+        if($deptId){
+            $department = Department::with('fileType')->find($deptId);
             $fileType= $department->fileType;
             return response()->json($fileType);
         }

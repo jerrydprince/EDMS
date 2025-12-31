@@ -13,9 +13,9 @@
 	
 		<section class="  flex flex-col items-center ">
 			<div class=" relative items-center justify-center  flex -mt-5">
-				  <img src="/assets/images/grid.png" alt="" class=" -mt-10 ">
+				  <img :src="'/assets/images/grid.png'" alt="" class=" -mt-10 ">
 				
-				  <img src="/assets/images/caution.svg" alt="" class=" absolute " >
+				  <img :src="'/assets/images/caution.svg'" alt="" class=" absolute " >
 				
 
 

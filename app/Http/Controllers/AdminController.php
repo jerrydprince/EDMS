@@ -25,7 +25,28 @@ class AdminController extends Controller
             return redirect()->route('f-and-a');
         }
 
-        if($user->hasRole('super admin') || $user->hasRole('admin')){
+       $role_type_registry = $user->roles->where('role_type', 'registry')->first();
+       $role_type_edms = $user->roles->where('role_type', 'data entry')->first();
+
+    //if user has only registry role redirect to registry
+    
+        if ($user && $user->hasRole('registry') && $user->roles->count() === 1) {
+            return redirect()->route('registry'); 
+        }
+
+        if ($user && $user->hasRole('edms') && $user->roles->count() === 1) {
+            return redirect()->route('edms'); 
+        }
+
+       if($role_type_registry){
+           return redirect()->to('/dashboard/registry');
+       }
+
+       if($role_type_edms){
+           return redirect()->route('edms');
+       }
+       
+       if($user->hasRole('super admin') || $user->hasRole('admin')){
              $departments = Department::with(['division'=>function($query){
                 $query->with('unit');
             }])->get()->take(4);

@@ -15,15 +15,17 @@ class SendClientMail extends Mailable
 {
     public array $data;
     public $emailattachment;
+    public $email;
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($data, $emailattachment)
+    public function __construct($data, $emailattachment, $email)
     {
         $this->data = $data;
         $this->emailattachment = $emailattachment;
+        $this->email = $email;
     }
 
     /**
@@ -34,6 +36,7 @@ class SendClientMail extends Mailable
         $envelope = new Envelope(
             subject: $this->data['subject'],
             to: $this->data['recipient'],
+            from: $this->email ?? config('mail.from.address'),
         );
         if (isset($this->data['cc'])) {
             $envelope->cc($this->data['cc']);
@@ -41,12 +44,6 @@ class SendClientMail extends Mailable
         if (isset($this->data['bcc'])) {
             $envelope->cc($this->data['bcc']);
         }
-        // if(array_key_exists('cc', $this->data)){
-        //    $envelope->cc($this->data['cc']);
-        // }
-        // if(array_key_exists('bcc', $this->data)){
-        //     $envelope->bcc($this->data['bcc']);
-        //  }
         return $envelope;
     }
 

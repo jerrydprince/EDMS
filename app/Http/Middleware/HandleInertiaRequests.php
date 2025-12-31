@@ -64,7 +64,18 @@ class HandleInertiaRequests extends Middleware
                 'department')) :
                 [],
             'roles'=>Auth::check()? Auth::user()->getRoleNames() :[],
-            'user_roles'=> Auth::check()? auth()->user()->getRoleNames(): [],
+            'userDepartment' => fn () => Auth::check()? auth()->user()->department : null,
+            'user_roles' => Auth::check() ? auth()->user()->getRoleNames() : [],
+            'flash' => fn () => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
+                'info' => $request->session()->get('info'),
+                'message' => $request->session()->get('message'),
+            ],
+            'errors' => fn () => $request->session()->get('errors')
+                ? $request->session()->get('errors')->getBag('default')->getMessages()
+                : (object)[],
             'permissions'=>Auth::check()? Auth::user()->getAllPermissions() :[]
         ]);
     }

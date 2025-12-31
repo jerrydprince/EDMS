@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payment_comments', function (Blueprint $table) {
-            $table->string('unique_id')->nullable();
+           // $table->string('unique_id')->nullable();
         });
     }
 

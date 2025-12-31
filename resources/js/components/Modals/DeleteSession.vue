@@ -5,7 +5,7 @@
     class=".custom-dialog">
     <section class="-mb-6 flex flex-col items-center">
       <div class="bg-white p-7 -mt-12 relative">
-        <img src="../../assets/images/grid.svg" alt="" />
+        <img :src="'../../assets/images/grid.svg'" alt="" />
       </div>
       <div class="border rounded-full p-3 absolute bg-[#F9FAFB] top-20">
         <Icon icon="mi:delete" width="50" class="text-[#F04438]" />

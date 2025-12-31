@@ -1,6 +1,6 @@
 <template>
 
-    <div class=" block md:flex items-center justify-between px-7">
+    <div class=" block md:flex items-center justify-between px-7 py-8">
         <div>
             <h1 class="text-3xl text-[#1D2939] font-semibold">File Registry</h1>
             <h2>{{ department?.title }}</h2>
@@ -8,11 +8,11 @@
         </div>
 
         <div class="flex items-center gap-4 mt-5 md:mt-0">
-            <button v-if="isPermissions('agf registry view') || user_roles.includes('super admin')" @click="openScan = true"
+            <!-- <button v-if="isPermissions('agf registry view') || user_roles.includes('super admin')" @click="openScan = true"
                 class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
                 <Icon icon="tabler:line-scan" />
                 <p>Scan Files</p>
-            </button>
+            </button> -->
             <button @click="TrackPackageModel = true"
                 class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
                 <p>Track File</p>
@@ -402,7 +402,7 @@ const updateData = ()=>{
             life: 3000,
         });
     getBranchFiles()
-    getBranchFiles()
+    //getBranchFiles()
     getUserBranches()
 }
 

@@ -113,7 +113,7 @@
 
           <Link href="/branches-folder">
             <div class=" border rounded-md  p-2 bg-gray-100 cursor-pointer  ">
-              <img src="/assets/images/folder.svg" alt="">
+              <img :src="'/assets/images/folder.svg'" alt="">
             </div>
           </Link>
           <div>

@@ -104,7 +104,7 @@
                 <div class="flex items-start gap-4">
                   <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
                     :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
-                  <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
+                  <img :src="'../assets/images/profile.svg'" class="h-[40px]" v-else alt="">
                   <div>
                     <div class="font-semibold text-[12px]"
                       v-if="notification.data && notification.data.task && notification.data.task.status == 'pending'">
@@ -157,7 +157,7 @@
                 <div class="flex items-start gap-4">
                   <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
                     :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
-                  <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
+                  <img :src="'../assets/images/profile.svg'" class="h-[40px]" v-else alt="">
                   <div>
                     <div class="font-semibold text-[12px]"
                       v-if="notification.data && notification.data.comment && notification.data.comment.length > 0">
@@ -232,7 +232,7 @@
                 <div class="flex items-start gap-4">
                   <img v-if="notification.data && notification.data.user && notification.data.user.profile_image"
                     :src="base + notification.data.user.profile_image" class="h-7 mt-1" alt="" />
-                  <img src="../assets/images/profile.svg" class="h-[40px]" v-else alt="">
+                  <img :src="'../assets/images/profile.svg'" class="h-[40px]" v-else alt="">
                   <div>
                     <p class="font-semibold text-[12px]">
                       {{ notification.data.comment.user?.first_name + " " + notification.data.comment.user?.last_name }}
@@ -316,7 +316,7 @@
 import { ref, computed, defineProps, defineEmits } from "vue";
 import { usePage, Link } from "@inertiajs/vue3"
 import profile from "../../../public/images/profile.svg";
-import profile_1 from "../../../public/images/profile_1.svg";
+import profile_1 from "../../../public/images/Profile_1.svg";
 import profile_2 from "../../../public/images/linda.svg";
 import { useStore } from 'vuex';
 import moment from "moment"

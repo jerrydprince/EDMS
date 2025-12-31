@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payment_comments', function (Blueprint $table) {
-            $table->unsignedInteger('payment_assignment_id');
-            $table->foreign('payment_assignment_id')->references('id')->on('payment_assignment');
+            // $table->unsignedInteger('payment_assignment_id');
+            // $table->foreign('payment_assignment_id')->references('id')->on('payment_assignment');
         });
     }
 

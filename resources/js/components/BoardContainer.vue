@@ -60,7 +60,7 @@
               </p>
             </div>
             <div class="p-2 flex items-center justify-between">
-              <img src="../assets/images/members/1.svg" />
+              <img :src="'../assets/images/members/1.svg'" />
               <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-1">
                   <Icon icon="iconamoon:comment" width="13" />

@@ -9,8 +9,8 @@
         </div>
       </div>
       <div class="flex items-center gap-x-3 -mt-4">
-        <GenerateCashbookReport :vote_book_id="selectedAccount.id" @select="generateReportFunction" />
-        <button @click="newCashbookEntryModal = true"
+        <GenerateCashbookReport :vote_book_id="selectedAccount?.id" @select="generateReportFunction" />
+        <button v-if="selectedAccount" @click="newCashbookEntryModal = true"
           class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3 md:px-4 text-sm md:text-base">
           <Icon icon="ic:outline-plus" width="20" />
           <p>Add Entry</p>

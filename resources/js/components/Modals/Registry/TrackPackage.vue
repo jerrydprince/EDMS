@@ -43,7 +43,7 @@
                         </div>
                     </div>
                     <div v-else class=" flex flex-col items-center my-5">
-                        <img src="/images/search.svg" alt="">
+                        <img :src="'/assets/images/search.svg'" alt="">
                         <h1 class=" font-medium mt-3 text-lg">No Result Found</h1>
                         <p class=" opacity-70 text-center">Try entering a different term or contact <br> support for
                             assistance

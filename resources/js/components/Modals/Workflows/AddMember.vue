@@ -60,7 +60,7 @@
             v-for="(item, index) in selectedMembers"
             :key="index"
           >
-            <img src="/assets/images/members/1.svg" alt="" class="w-5" />
+            <img :src="'/assets/images/members/1.svg'" alt="" class="w-5" />
             <p class="text-xs w-fit">{{ item.name }}</p>
             <Icon icon="clarity:times-line" class="cursor-pointer" />
           </div>
@@ -119,7 +119,7 @@
             >
               <div class="flex items-center gap-3">
                 <input type="checkbox" />
-                <img src="/assets/images/members/1.svg" alt="" />
+                <img :src="'/assets/images/members/1.svg'" alt="" />
                 <div>
                   <h1 class="font-semibold">{{ member.name }}</h1>
                   <p class="text-sm text-[#667085]">{{ member.branch }}</p>

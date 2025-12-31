@@ -2,11 +2,11 @@
     <main class="p-7">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div @click="goBack"
+                <Link href="/dashboard/mails"
                     class="cursor-pointer flex gap-3 items-center text-gray-500 border-r border-gray-300 pr-3">
                     <i class="pi pi-arrow-left border px-3 py-2 rounded-md text-xs text-[#344054]"></i>
                     <h1>Back</h1>
-                </div>
+                </Link>
                 <Icon icon="bi:archive" width="25" class="ml-4" />
                 <Icon icon="material-symbols:delete-outline" width="25" class=" cursor-pointer"
                     @click="DeleteMessage = true" />
@@ -256,7 +256,7 @@
 import { ref, onMounted, defineProps } from "vue";
 //import DeleteMailMessage from '../../components/modals/Mail/DeleteMailMessage.vue';
 import image from '../../assets/images/members/1.svg'
-import { usePage } from "@inertiajs/vue3";
+import { usePage, Link } from "@inertiajs/vue3";
 
 const props = defineProps(['id']);
 console.log(props);

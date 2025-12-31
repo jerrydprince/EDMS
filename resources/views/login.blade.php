@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{asset('images/favicon.png')}}" />
     <title>Login</title>
-   <link rel="stylesheet" href="{{mix('css/app.css')}}">
+   {{-- <link rel="stylesheet" href="{{mix('css/app.css')}}"> --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div>
@@ -34,9 +36,9 @@
                             </defs>
                             </svg>
                             
-                        <h1 class=" text-white text-5xl font-semibold mt-4 leading-[70px]">Unlock Seamless Document Management</h1>
+                        <h1 class=" text-white text-5xl font-semibold mt-4 leading-[70px]">Transform Documents into Digital Intelligence</h1>
                         <p class=" mt-8 text-white pb-10 pr-4">
-                            Empower your organization with our intuitive EDMS platform effortless collaboration, smart workflows, and enhanced security.
+                            A secure, centralized Enterprise Content Management System that digitizes, organizes, automates, and governs documents, records, and workflows—ensuring compliance, efficiency, and transparency across your organization.
                         </p>
                     </div>
                     <div class="flex-1 min-h-[60vh] bg-slate-300">
@@ -192,5 +194,5 @@
         </div>
     </div>
 </body>
-<script src="{{mix('js/app.js')}}"></script>
+{{-- <script src="{{mix('js/app.js')}}"></script> --}}
 </html>

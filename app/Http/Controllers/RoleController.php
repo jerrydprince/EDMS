@@ -82,6 +82,7 @@ class RoleController extends Controller
         Role::create([
             'name' => $request->name, 
                 'guard_name' => 'web',
+                'role_type' => $request->type,
                 'description' => $request->description,
                 'created_at'=>\Carbon\Carbon::now(), 
                 'updated_at'=>\Carbon\Carbon::now(),

@@ -28,7 +28,7 @@
 
 </style>
 <template>
-    <main class="p-4 lg:p-7">
+    <main class="p-4 lg:p-7 mt-6 lg:mt-5">
         <section class="flex flex-col lg:flex-row items-start lg:items-center justify-between cursor-pointer">
             <p class="text-2xl lg:text-3xl text-gray-800 font-semibold">
                 Welcome Back, {{ user.first_name }} ! 👋🏼
@@ -117,7 +117,7 @@
                     
                 <!-- </div> -->
                 <div class=" grid grid-cols-12 gap-4">
-                    <div v-for="(dept, index) in props.departments" :key="index" class=" border border-gray-300 rounded-lg mt-5 xl:col-span-3 lg:col-span-6 md:col-span-6 sm:col-span-12 divide-y divide-slate-300">
+                    <div v-for="(dept, index) in props.departments" :key="index" class=" border border-gray-300 rounded-lg mt-5 xl:col-span-3 lg:col-span-6 md:col-span-6 col-span-12 divide-y divide-slate-300">
                             <!-- Head section -->
                         <div class="flex items-center align-middle justify-between m-3">
                             <div class="p-3 bg-gray-50 rounded-lg">
@@ -188,7 +188,7 @@
 </template>
   
 <script setup>
-import { ref, defineProps, computed } from "vue";
+import { ref, defineProps, computed, onMounted } from "vue";
 import Actions from "../../assets/Dashboard/Actions.vue"
 import QuickActions1 from "../../assets/Dashboard/QuickActions1.vue";
 import QuickActions1_1 from "../../assets/Dashboard/QuickActions1_1.vue";
@@ -198,6 +198,7 @@ import QuickActions4 from "../../assets/Dashboard/QuickActions4.vue";
 import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDialog.vue";
 import EmptyState from "../../components/EmptyState.vue";
 import { Link, usePage } from "@inertiajs/vue3";
+import { useToast } from "primevue/usetoast";
 
 const props = defineProps(['departments']);
 const page = usePage()
@@ -205,6 +206,7 @@ const user = computed(()=>page.props.user)
 const menu = ref();
 const departmentalModal = ref(false);
 const step = ref(1);
+const toast = useToast()
 const items = ref([
     { label: "Edit", icon: "pi pi-pencil" },
     { label: "Delete", icon: "pi pi-trash" },
@@ -448,6 +450,15 @@ const updateModalStep = (value) => {
     step.value = value;
 };
 
+
+onMounted(() => {
+    if(page.props.flash.success){
+        toast.add({severity:'success', summary: 'Success', detail: page.props.flash.success, life: 3000});
+    }
+    if(page.props.flash.error){
+        toast.add({severity:'error', summary: 'Error', detail: page.props.flash.error, life: 3000});
+    }
+});
 // const toggle = (event) => {
 //     menu.value.toggle(event);
 // };

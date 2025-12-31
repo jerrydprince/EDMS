@@ -80,12 +80,15 @@ class TaskController extends Controller
             if(auth()->user()->hasRole('unit heads')){
                 $task->assigned_by = auth()->user()->id;
                 $task->assigned_by_unit = auth()->user()->unit_id;
+                $task->created_by_branch = auth()->user()->unit_id;
             }
             if(auth()->user()->hasRole('division heads')){
                 $task->assigned_by_division = auth()->user()->division_id;
+                $task->created_by_branch = auth()->user()->division_id;
             }
             if(auth()->user()->hasRole('directors')){
                 $task->assigned_by_department = auth()->user()->department_id;
+                $task->created_by_branch = auth()->user()->department_id;
             }
             if(!$request->id){
                 $task->status = 'pending';
@@ -93,7 +96,7 @@ class TaskController extends Controller
             if(auth()->user()->hasRole('super users')){
                 $task->assigned_by_super_user = auth()->user()->id;
             }
-            
+            $task->created_by = auth()->user()->id;
             $task->save();
     
             $docs = [];
@@ -555,6 +558,7 @@ class TaskController extends Controller
                     $task->description = $request->description;
                 }
                 $task2->status = "pending";
+                $task2->task_from_id = $task->id;
                 $task2->save();
                 $task2->user()->sync($user_ids);
 
@@ -570,6 +574,7 @@ class TaskController extends Controller
                 if($request->description){
                     $task->description = $request->description;
                 }
+                $task2->task_from_id = $task->id;
                 $task2->status = "pending";
                 $task2->save();
 
@@ -587,6 +592,7 @@ class TaskController extends Controller
                 if($request->description){
                     $task->description = $request->description;
                 }
+                $task2->task_from_id = $task->id;
                 $task2->status = "pending";
                 $task2->save();
                 $branch_ids = $this->getBranchIds($request->users);
@@ -746,5 +752,13 @@ class TaskController extends Controller
             $kpi = $kra->kpi->chunk(2);
             return response()->json($kpi);
         }
+    }
+
+    public function forwardTask(Request $request){
+      if($request->branchType == 'unit'){
+        $task = Task::with('unitTask')->find($request->task['assigned_by_division']);
+        $branch_ids = $task->unitTask->pluck('id')->toArray();
+        $task->divisionTask()->sync($branch_ids);
+      }
     }
 }

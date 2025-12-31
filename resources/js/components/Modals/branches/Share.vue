@@ -57,7 +57,7 @@
       </div>
 
       <div v-if="users.length === 0" class=" w-full h-[35vh] flex items-center flex-col justify-center">
-        <img src="/images/search.svg" alt="" class=" w-16">
+        <img :src="'/assets/images/search.svg'" alt="" class=" w-16">
         <h1 class=" text-gray-800 text-lg font-semibold mt-3">No Result Found</h1>
         <div class=" flex items-start gap-2 p-3 rounded-lg bg-yellow-50 mt-5 text-[#DC6803] ">
           <Icon icon="mdi:warning-circle" class=" rotate-180" width="25" />

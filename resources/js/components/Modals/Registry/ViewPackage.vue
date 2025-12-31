@@ -37,6 +37,7 @@
                <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branchType(branch) == 'unit'">
                <img :src="page.props.base+'/images/division.svg'" alt="" width="25" v-if="branchType(branch) == 'division'">
                <img :src="page.props.base+'/images/department.svg'" alt="" width="25" v-if="branchType(branch) == 'department'">
+               <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branch.sent_to_branch.toLowerCase() == 'agf registry'">
             </div>
             <div class="w-[1px] h-11 bg-slate-300"></div>
           </div>
@@ -59,12 +60,14 @@
                 <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branchType2(branch) == 'unit'">
                <img :src="page.props.base+'/images/division.svg'" alt="" width="25" v-if="branchType2(branch) == 'division'">
                <img :src="page.props.base+'/images/department.svg'" alt="" width="25" v-if="branchType2(branch) == 'department'">
+               <img v-if="file.is_agf" :src="page.props.base+'/images/department.svg'" alt="" width="25">
               </div>
               <div class="w-[1px] h-11 bg-slate-300" v-if="props.fileMovement.length - 1 !== index"></div>
             </div>
             <div class=" flex items-start gap-2">
               <div>
-                <p class=" font-semibold">{{ getBranchDestinationName(branch, index) }} </p>
+                <p class=" font-semibold" v-if="file.is_agf">AGF OFFICE</p>
+                <p class=" font-semibold" v-else>{{ getBranchDestinationName(branch, index) }} </p>
                 <p class=" text-gray-400 mt-1">{{ formatDate(branch.created_at) }}</p>
               </div>
               <span v-if="branch.moves" class=" text-gray-400">({{ branch.moves }})</span>

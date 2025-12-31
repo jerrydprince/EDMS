@@ -306,7 +306,7 @@ const togglePreviewState = () => {
 
 const getLandingPage = ()=>{
   if(page.props.roles.includes('data entry')){
-    return 'data-entry';
+    return 'edms';
   }else{
     return 'dashboard';
   }

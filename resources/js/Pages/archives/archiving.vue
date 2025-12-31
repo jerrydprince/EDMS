@@ -278,7 +278,7 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                         </svg>
                         <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG, GIF, DOC, XLX</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG, GIF, DOC, XLX, PDF</p>
                     </div>
                     <input id="dropzone-file" @input="form.files = $event.target.files" :disabled="selectedFolder.length == 0" type="file" class="hidden" multiple @change="handleFileUpload" />
                 </label>
@@ -566,52 +566,7 @@ const formatSize = (size) => {
 
 
     const submitForm = ()=>{
-        // let description = document.getElementById('description')
-        // let text = document.getElementById('text')
-        // let date = document.getElementById('date')
-        // let number = document.getElementById('numbers')
-        // let file_name = document.getElementById('file_name');
-        // let file_number = document.getElementById('file_number');
-        // if(file_name != null){
-        //     if(file_name.value ==''){
-        //         file_name.focus();
-        //         return false
-        //     }
-        // }
-        // if(file_number != null){
-        //     if(file_number.value ==''){
-        //         file_number.focus();
-        //         return false;
-        //     }
-        // }
-        // if(description != null){
-        //     if(description.value ==''){
-        //         description.focus();
-        //         return false
-        //     }
-        //     form.description = description.value
-        // }
-        // if(text != null){
-        //     if(text.value ==''){
-        //         text.focus();
-        //         return false
-        //     }
-        //     form.text = text.value
-        // }
-        // if(date != null){
-        //     if(date.value ==''){
-        //         date.focus();
-        //         return false
-        //     }
-        //     form.date = date.value
-        // }
-        // if(number != null){
-        //     if(number.value ==''){
-        //         number.focus();
-        //         return false
-        //     }
-        //     form.number = number.value
-        // }
+      
 
         let allInputs = document.getElementsByClassName('metadata-inputs');
         let input_obj = []

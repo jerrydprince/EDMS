@@ -107,6 +107,9 @@
               <option value="13">Grade Level 13</option>
               <option value="14">Grade Level 14</option>
               <option value="15">Grade Level 15</option>
+              <option value="16">Grade Level 16</option>
+              <option value="17">Grade Level 17</option>
+              <option value="18">Grade Level 18</option>
             </select>
           </div>
           <span class="text-red-400 text-sm my-2" v-if="form.errors.grade_level">{{ form.errors.grade_level }}</span>

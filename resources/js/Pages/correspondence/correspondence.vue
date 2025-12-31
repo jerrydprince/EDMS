@@ -24,6 +24,8 @@
                         <tr class="text-left">
                             <th class="px-5">#</th>
                             <th>Date</th>
+                            <th>File Name</th>
+                            <th>Document Number</th>
                             <th class="pl-5 py-5">Description</th>
                             <th>Sent By</th>
                             <th>Actions</th>
@@ -39,6 +41,8 @@
                                     <p>{{ formatDate(item.created_at) }}</p>
                                 </div>
                             </td>
+                             <td class="align-middle">{{ item.file_name }}</td>
+                             <td class="align-middle">{{ item.document_number }}</td>
                             <td class="align-middle pl-5">
                                 <div class="flex items-center gap-2">
                                     <p> {{
@@ -48,7 +52,7 @@
                                         }}</p>
                                 </div>
                             </td>
-                            <td>{{ item.sent_by.first_name+" "+item.sent_by.last_name }}</td>
+                            <td>{{ item.sent_by?.first_name+" "+item.sent_by?.last_name }}</td>
 
                             <td class="align-top py-3">
                                 <div class="flex items-center gap-2">

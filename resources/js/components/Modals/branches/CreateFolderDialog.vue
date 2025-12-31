@@ -99,7 +99,7 @@ import { useForm, usePage } from '@inertiajs/vue3'
 import axios from "axios";
 
 const toast = useToast();
-const props = defineProps(["modelValue", "url", "department", 'fileType', 'folderId']);
+const props = defineProps(["modelValue", "url", "department", 'fileType', 'folderId', 'deptId', 'divId','unitId']);
 const emit = defineEmits(["update:modelValue"]);
 const page = usePage();
 const division = ref([])
@@ -196,7 +196,7 @@ const submitForm = () => {
 }
 
 const getFileType = ()=>{
-	axios.get('/edms/get-branch-file-type').then((response)=>{
+	axios.get(`/edms/get-branch-file-type?deptId=${props.deptId}&divId=${props.divId}&unitId=${props.unitId}`).then((response)=>{
 		fileType.value = response.data
 	})
 }
@@ -215,7 +215,7 @@ watch(()=>form.division,()=>{
 onMounted(()=>{
 	if(page.props.roles !='data entry' && props.department){
 
-		axios.get('/dashboard/get-division-with-unit',{params:{id: props.department.id}}).then((response)=>{
+		axios.get(`/dashboard/get-division-with-unit`,{params:{id: props.department.id}}).then((response)=>{
 			division.value = response.data;
 		})
 

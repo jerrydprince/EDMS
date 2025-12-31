@@ -307,7 +307,7 @@ class ChatController extends Controller
         return response()->json(['message' => 'Message sent to group successfully!', 'sentMessage' => $MessageArray], 200);
     }
     public function sendMessageToUser(Request $request)
-    {dd($request->all());
+    {
         $request->validate([
             'recipient_id' => 'required|exists:users,id',
             'message' => 'required|string|max:1000',
@@ -372,7 +372,7 @@ class ChatController extends Controller
 
 
         // Get all users except the logged-in user
-        //$users = User::where('id', '!=', $loggedInUserId)->get();
+        $users = User::where('id', '!=', $loggedInUserId)->get();
 
         // Prepare the response data
         // $usersWithConversations = $users->map(function ($user) use ($loggedInUserId) {

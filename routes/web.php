@@ -91,7 +91,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
         Route::prefix('edms')->group(function(){
             Route::middleware('permission:edms view')->group(function () {
-                Route::get('/', [DashboardController::class, 'index']);
+                Route::get('/', [DashboardController::class, 'index'])->name('edms');
                 Route::get('/branch-overview', [DashboardController::class, 'BranchesOverview']);
     
                 //archiving
@@ -137,7 +137,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
              * pasted old admin route here
              */
             //Route::middleware()->group(function () {
-                Route::get('/',[AdminController::class, 'index']);
+                Route::get('/',[AdminController::class, 'index'])->name('admin.dashboard');
                 Route::get('/branch-setup',[AdminController::class, 'BranchSetup'])->middleware('permission:branch setup create');
                 Route::get('/metadata-setup', [AdminController::class, 'MetaDataSetup'])->middleware('permission:metadata setup create');
             
@@ -226,6 +226,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::post('/mails/drafts', [MailController::class, 'isDraft'])->middleware('permission:mails create');
                 Route::get('/mails/drafts', [MailController::class, 'getDrafts'])->middleware('permission:mails create');
                 Route::get('/mails/delete/{id}', [MailController::class, 'deleteMail'])->middleware('permission:mails delete');
+                Route::get('/get-all-mails-folder/{folder}', [MailController::class, 'getAllMailsFolders']);
 
                 //workflow
                 Route::get('/workflow', [WorkFlowController::class, 'index'])->middleware('permission:workflow view');
@@ -245,6 +246,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::post('/request-revision', [TaskController::class, 'requestRevision']);
                 Route::post('/re-open-task', [TaskController::class, 'reopenTask']);
                 Route::get('/get-department-kra', [TaskController::class, 'getDepartmentKRA']);
+                Route::post('/forward-task', [TaskController::class, 'forwardTask']);
 
                 //Ratings
                 Route::post('/rate-user', [RatingsController::class, 'rateUser']);
@@ -491,6 +493,10 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
         Route::post('/create-cashbook', [CashBookController::class, 'createCashBook']);
         Route::get('/get-cashbooks', [CashBookController::class, 'getCashbooks']);
         route::get('/download-cashbook-report', [CashBookController::class, 'downloadReport']);
+
+        Route::get('/get-all-mails', function($query){
+            
+        });
      });
 });
 //Route::get('2fa-challenge', [TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');

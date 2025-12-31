@@ -27,7 +27,7 @@
             </div>
             <div v-for="(item, index) in faqs" :key="index">
                 <div class=" flex items-center  gap-3 ml-7">
-                    <img src="../../assets/images/dot.svg" alt="">
+                    <img :src="'../../assets/images/dot.svg'" alt="">
                     <div>
                         <h1 class=" font-medium">Question {{ index + 1 }}</h1>
                     </div>

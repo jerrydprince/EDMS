@@ -105,6 +105,20 @@ class UserController extends Controller
 
         return inertia('users/ManageUsers', compact('notifications','roles'));
     }
+    // public function manageUsers()
+    // {
+    //     $notifications = DB::table('notifications')
+    //         ->where('type', Registration::class)
+    //         ->whereNull('read_at')
+    //         ->get();
+
+    //     $roles = Role::where('guard_name', 'web')
+    //         ->with(['users' => fn ($q) => $q->take(4)])
+    //         ->get();
+
+    //     return inertia('users/ManageUsers', compact('notifications', 'roles'));
+    // }
+
 
     public function addUser(Request $request){
         $roles = Role::get();

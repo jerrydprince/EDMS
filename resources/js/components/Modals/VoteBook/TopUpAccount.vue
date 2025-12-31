@@ -15,7 +15,7 @@
         <div class="bg-white rounded-2xl p-4">
           <p class="font-medium text-sm mb-3">Add Amount To</p>
           <div class="flex items-center -mt-3 -mb-8">
-            <img src="../../../assets/images/votebook.svg" alt="votebook" class="-ml-7 w-24" />
+            <img :src="'../../../assets/images/votebook.svg'" alt="votebook" class="-ml-7 w-24" />
             <div class="-mt-4 -ml-4">
               <p class="font-medium mb-1">{{ accountSelected.name }}</p>
               <p class="text-sm text-gray-600">

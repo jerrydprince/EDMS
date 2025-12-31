@@ -24,6 +24,13 @@ use App\Events\PaymentCommentEvent;
 class FandAController extends Controller
 {
     public function payments(Request $request){
+    //    $department = Department::where('title', 'Finance and Accounts')->first();
+    //     if (!$department) {
+    //         return redirect()->back()->with('message', 'Department not found');
+    //     }
+    //     if(auth()->user()->department_id != $department->id){
+    //         return redirect()->back()->with('message', 'You are not authorized to access this section');
+    //     }
         $payment = null;
         if($request->id){
             $payment = Payment::with(['files', 'recipient'])
@@ -318,7 +325,7 @@ class FandAController extends Controller
             }, 'voucher', 'recipient', 
                 'assignedTo' => function($query) {
                 $query->with(['user', 'comments'=>function($q){
-                    $q->with(['sender', 'reciever'])->latest();
+                    $q->with(['sender', 'receiver'])->latest();
                 }])->where('assigned_by', auth()->user()->id );
             }, 'assignedBy'=>function($query){
                 $query->with(['user', 'comments'=>function($q){

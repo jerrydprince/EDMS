@@ -29,6 +29,8 @@ class CorrespondenceController extends Controller
     public function createCorrespondence(Request $request){
         $corr = new Correspondence();
         $corr->description = $request->description;
+        $corr->file_name = $request->name;
+        $corr->document_number = $request->document_number;
         $corr->created_by = auth()->user()->id;
         $corr->save();
 
@@ -56,13 +58,16 @@ class CorrespondenceController extends Controller
 
                 array_push($files, $arr);
             }
+
             $name = $original_name? $original_name: 'Unknown';
 
             DB::table('correspondence_file')->insert($files);
 
+        }
+
             $newFile = new File();
-            $newFile->name = $name;
-            $newFile->file_type = 'File';
+            $newFile->name = $request->name;
+            $newFile->file_type = isset($request->file_type['name']) ? $request->file_type['name'] : null ;
             $newFile->doc_no = null;
             $newFile->description = $request->description;
             $newFile->created_by = auth()->user()->id;
@@ -89,8 +94,6 @@ class CorrespondenceController extends Controller
 
     
             $fm->save();
-
-        }
     }
 
     public function getFileMovementUniqueId(){

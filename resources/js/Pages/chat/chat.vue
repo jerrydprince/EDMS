@@ -1,5 +1,5 @@
 <template>
-    <main class="flex border h-[91vh] fixed 2xl:w-[93.3%] w-[100%] overflow-hidden">
+    <main class="flex border h-[91vh] overflow-hidden">
         <section class="w-[25%] border-r border-solid border-gray-200 top-0 h-[100%] py-3" v-if="activeButton === 0">
             <div class="px-3">
                 <div class="flex items-center justify-between text-[#1D2939] text-3xl font-semibold">
@@ -71,7 +71,7 @@
                             :class="{ ' bg-[#F5F9FF]':  clickedIndex === suggestion.id }">
                             <div class="flex items-center gap-3 w-full">
                                 <!-- <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt=""> -->
-                                <img src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <img :src="'/assets/images/display_picture.svg'" alt="" class="flex-none" />
                                 <div class="flex items-center justify-between w-full">
                                     <div>
                                         <h1 class="font-semibold text-base">{{ suggestion.name }}</h1>
@@ -95,7 +95,7 @@
                             <div class="flex items-center gap-3 w-full">
                                 <img v-if="message.profile_image"
                                     :src="page.props.base + message.sender + '/' + message.profile_image" alt="">
-                                <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                <img v-else :src="'/assets/images/display_picture.svg'" alt="" class="flex-none" />
                                 <!-- <img src="/images/display_picture.svg" alt=""  /> -->
                                 <div class="flex items-center justify-between w-full">
                                     <div>
@@ -173,7 +173,7 @@
                                 :class="{ ' bg-[#F5F9FF]': open && clickedIndex === user.id }">
                                 <div class="flex items-center gap-3 w-full">
                                     <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" width="30" alt="">
-                                    <img v-else src="/images/display_picture.svg" alt="" class="flex-none" />
+                                    <img v-else :src="'/assets/images/display_picture.svg'" alt="" class="flex-none" />
                                     <div class="flex items-center justify-between w-full">
                                         <div>
                                             <h1 class="font-semibold text-base">{{ user.first_name+ " "+user.last_name }}</h1>

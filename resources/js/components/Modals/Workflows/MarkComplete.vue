@@ -78,7 +78,7 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import {useForm, router } from "@inertiajs/vue3";
+import {useForm, router, usePage } from "@inertiajs/vue3";
 
 // import Progress from "../../../components/Modals/Workflows/progress.vue";
 
@@ -94,6 +94,7 @@ const form = useForm({
   is_revision:0,
   files:null
 })
+const page = usePage()
 
 const visible = computed({
   get() {

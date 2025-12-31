@@ -48,14 +48,18 @@
 
             <div class="flex items-center gap-5" v-if="arrayMails.length !== 0">
                 <div class="flex items-center gap-2">
-                    <p>{{ pageStart + 1 }} - {{ pageEnd }}</p>
-                    <p>of {{ totalPages }}</p>
+                    <p>{{ mails.from }} - {{ mails.to }}</p>
+                    <p>of {{ mails.total }}</p>
                 </div>
                 <div class="flex items-center gap-5">
-                    <Icon icon="flowbite:angle-right-outline" class="rotate-180 cursor-pointer" @click="previousPage"
+                    <Link v-if="mails.links[0].url" :href="mails.links[0].url">
+                    <Icon icon="flowbite:angle-right-outline" class="rotate-180 cursor-pointer"
                         :disabled="currentPage === 1" />
-                    <Icon icon="flowbite:angle-right-outline" class="cursor-pointer" @click="nextPage"
+                    </Link>
+                    <Link v-if="mails.links[mails.links.length - 1].url" :href="mails.links[mails.links.length - 1].url">
+                    <Icon icon="flowbite:angle-right-outline" class="cursor-pointer"
                         :disabled="currentPage === totalPages" />
+                    </Link>
                 </div>
             </div>
         </section>
@@ -63,99 +67,7 @@
         <div v-if="arrayMails.length !== 0">
             <section class=" mt-7 relative px-7">
                 <div>
-                    <!-- <DataTable
-            v-model:selection="selectedDocument"
-            :value="displayedItems"
-            dataKey="id"
-            :pt="{
-              table: {
-                class:
-                  'w-full border border-border_primary border-solid mb-6 mt-2',
-              },
-            }"
-            tableStyle="min-width: 60rem; border-radius: 30px;"
-          >
-            <Column
-              selectionMode="multiple"
-              headerStyle="width: 2rem; color: #667085;"
-            ></Column>
-            <Column field="" header="">
-              <template #body="slotProps">
-                <div class="flex items-center gap-3">
-                  <button @click="addToFavorite(slotProps.data.id)">
-                    <Icon
-                      icon="emojione:star"
-                      width="25 "
-                      class="cursor-pointer"
-                      v-if="isFavorite(slotProps.data.id)"
-                    />
-                    <Icon
-                      icon="la:star"
-                      width="25"
-                      class="cursor-pointer"
-                      v-else
-                    />
-                  </button>
-                  <p class="text-[#F04438]" v-if="clickedButton === 'Drafts'">
-                    Drafts
-                  </p>
-                </div>
-              </template>
-</Column>
-<Column field="sender" header="From" v-if="clickedButton !== 'Drafts'">
-    <template #body="slotProps">
-                <div
-                  class="flex items-center gap-2"
-                  @click="gotoRoute(slotProps.data.id)"
-                >
-                  <img src="@/assets/images/linda.svg" alt="" class="w-10" />
-                  <div>
-                    <p class="text-base">{{ slotProps.data.sender }}</p>
-                    <p class="text-sm">{{ slotProps.data.email }}</p>
-                  </div>
-                </div>
-              </template>
-</Column>
-<Column field="subject" header="Subject" @click="gotoRoute(slotProps.data.id)"></Column>
-<Column field="" header="Message">
-    <template #body="slotProps">
-                <div class="" @click="gotoRoute(slotProps.data.id)">
-                  <p v-html="renderMessage(slotProps.data.message)"></p>
-                </div>
-              </template>
-</Column>
-
-<Column field="date" header="Date">
-    <template #body="slotProps">
-                <div class="flex items-center gap-2">
-                  <p>{{ slotProps.data.date }}</p>
-                  <div>
-                    <div>
-                      <button
-                        @click="toggle"
-                        aria-haspopup="true"
-                        aria-controls="overlay_menu"
-                      >
-                        <Icon
-                          class="cursor-pointer"
-                          icon="mi:options-vertical"
-                          width="25"
-                        />
-                      </button>
-                      <Menu
-                        ref="menu"
-                        id="overlay_menu"
-                        :model="menuItems"
-                        :popup="true"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </template>
-</Column>
-</DataTable>
--->
-
+                  
                     <table class="w-full mb-7">
                         <thead class=" bg-gray-100 rounded-md overflow-hidden ">
                             <tr class="text-left">
@@ -295,27 +207,30 @@
             </section>
             <section class="flex flex-col items-center justify-center mb-10">
                 <!-- <Divider /> -->
-                <div class="w-full flex justify-between px-20">
-                    <button class="text-[#667085] flex gap-3 items-center" @click="previousPage"
-                        :disabled="currentPage === 1">
+                <div class="w-full flex items-center px-20" v-if="mails.links && mails.links.length > 0">
+                    <Link v-show="mails.links[0].url" class="text-[#667085] flex gap-3 items-center" @click="previousPage"
+                       :href="mails.links[0].url">
                         <i class="pi pi-arrow-left"></i>Previous
-                    </button>
-                    <span>
-                        <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
-                            :class="{ active: currentPage === page }">
-                            {{ page }}
-                        </button>
+                    </Link>
+                    
+                    <span class="flex items-center justify-center flex-1">
+                        <Link v-for="page in filteredLinks" @click="setCurrentPage(page)" :key="page" :href="page.url" class="mx-1 px-2 py-1 cursor-pointer"
+                            :class="currentPage == page.label?'bg-gray-200 rounded-md':''">
+                           <template v-if="page.label !='&laquo; Previous' && page.label !='Next &raquo;'">
+                             <span  v-html="page.label"></span>
+                           </template>
+                        </Link>
                     </span>
-                    <button class="text-[#667085] flex gap-3 items-center" @click="nextPage"
-                        :disabled="currentPage === totalPages">
+                    <Link v-show="mails.links[mails.links.length-1].url" class="text-[#667085] flex gap-3 items-center" @click="nextPage"
+                        :href="mails.links[mails.links.length-1].url">
                         Next <i class="pi pi-arrow-right"></i>
-                    </button>
+                    </Link>
                 </div>
             </section>
         </div>
 
         <div v-else class="flex items-center h-[60vh] justify-center flex-col">
-            <img src="/images/illustration.svg" alt="" />
+            <img :src="'/assets/images/illustration.svg'" alt="" />
             <h1 class="font-semibold text-lg">No Mail Yet</h1>
             <p>All Received mail would appear here.</p>
             <div class="text-[#052B0A] font-semibold border-gray-300 border-[1px] px-2 py-3 mt-3 rounded-md relative cursor-pointer flex justify-center items-center gap-2"
@@ -326,7 +241,7 @@
         </div>
         <div class="fixed right-10 bottom-20 cursor-pointer" @click="newMessage = true">
             <div class="flex flex-col items-center justify-center">
-                <img src="/images/Bubble.svg" alt="" />
+                <img :src="'/assets/images/Bubble.svg'" alt="" />
             </div>
         </div>
     </main>
@@ -362,6 +277,7 @@ const clickedButton = ref("All");
 const currentPage = ref(1);
 const itemsPerPage = 10;
 const toModal = ref('');
+const mail_folder = ref('INBOX')
 
 const menu = ref();
 // console.log("computed", newSelectedValue);
@@ -396,6 +312,14 @@ const openDraftModal = (item) => {
 
 onMounted(() => {
     fetchdraftsMails()
+
+    getAllMailsFolder()
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    if (pageParam) {
+        currentPage.value = parseInt(pageParam);
+    }
 });
 
 
@@ -548,15 +472,22 @@ const renderMessage = (message) => {
     }
 };
 
+const setCurrentPage = (page) => {
+    if (page.label === '...') {
+        return;
+    }
+    currentPage.value = parseInt(page.label);
+};
+
 const allChecked = ref(false);
 const checkedItems = ref([]);
 const totalItems = computed(() => items.value.length);
 
 const displayedItems = computed(() => {
-    const startIndex = (currentPage.value - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    pageStart.value = startIndex;
-    pageEnd.value = endIndex;
+    // const startIndex = (currentPage.value - 1) * itemsPerPage;
+    // const endIndex = startIndex + itemsPerPage;
+    // pageStart.value = startIndex;
+    // pageEnd.value = endIndex;
 
     const filteredItems = items.value.filter((item) => {
         return item.status
@@ -571,6 +502,20 @@ const toggleAll = () => {
         allChecked.value
     );
 };
+
+const getAllMailsFolder = ()=>{
+    // router.get('/dashboard/get-all-mails-folder', {folder: 'INBOX'}, {
+    //     onSuccess: (page) => {
+    //         console.log('Folders fetched successfully:', page);
+    //     },
+    //     onError: (error) => {
+    //         console.error('Error fetching folders:', error);
+    //     },
+    // });
+    axios.get(`/dashboard/get-all-mails-folder/${mail_folder.value}`).then((response)=>{
+        console.log('Folders fetched successfully:', response);
+    })
+}
 
 
 // Watch for changes in allChecked to update checkedItems accordingly
@@ -603,16 +548,23 @@ const visiblePages = computed(() => {
     }
 });
 
-function nextPage() {
-    if (currentPage.value < totalPages.value) {
-        currentPage.value++;
+const filteredLinks = computed(() => {
+    if (!props.mails.links || props.mails.links.length <= 2) {
+        return [];
     }
+    return props.mails.links.slice(1, -1);
+});
+
+function nextPage() {
+    // if (currentPage.value < totalPages.value) {
+    //     currentPage.value++;
+    // }
 }
 
 function previousPage() {
-    if (currentPage.value > 1) {
-        currentPage.value--;
-    }
+    // if (currentPage.value > 1) {
+    //     currentPage.value--;
+    // }
 }
 
 function goToPage(page) {
@@ -620,13 +572,19 @@ function goToPage(page) {
 }
 
 const filteredMails = computed(() => {
-    let data = props.mails
+    // Check if mails has data property (paginated) or is an array
+    const mailsArray = props.mails?.data || props.mails || [];
+    
+    if (!Array.isArray(mailsArray)) {
+        return [];
+    }
+    
     if (buttonToggle.value == 2) {
-        return data = props.mails.filter((val) => val.is_archived == 1)
+        return mailsArray.filter((val) => val.is_archived == 1);
     } else if (buttonToggle.value == 4) {
-        return data = props.mails.filter((val) => val.is_starred == 1)
+        return mailsArray.filter((val) => val.is_starred == 1);
     } else {
-        return data = props.mails.filter((val)=> val.is_archived == 0);
+        return mailsArray.filter((val) => val.is_archived == 0);
     }
 })
 </script>

@@ -28,7 +28,7 @@
             <div class="p-4 border rounded-md">
               <Icon icon="lucide:file-text" width="25" />
             </div>
-            <!-- <p class="text-2xl">{{file_path}}</p> -->
+            <p class="text-2xl">{{ props.correspondence.file_name }}</p>
           </div>
   
           <div class="h-[1000px] overflow-y-auto hide_scroll">
@@ -88,7 +88,7 @@
                         <img :src="getFileExtension(document)" alt="" width="20">
                       </div>
                       <div>
-                        <h1>{{ document.file_name }}</h1>
+                        <h1>{{ props.correspondence.file_name }}</h1>
                         <p class="text-sm text-gray-400">{{ document.size }}</p>
                       </div>
                     </div>
@@ -357,26 +357,30 @@
   ])
   
   const fileType = (file) => {
-    const f_path = file.path
-    const parts = f_path.split('.');
-  
-    const extension = parts.pop();
-  
-    if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
-      return 'image'
-    }
-  
-    if (extension == 'pdf') {
-      return 'pdf'
-    }
-  
-    if (extension == 'doc' || extension == 'doctx') {
-      return 'word'
-    }
-  
-    if (extension == 'xlx' || extension == 'xlsx') {
-      return 'excel'
-    }
+   if(file && file.path != undefined){
+     const f_path = file.path
+      const parts = f_path.split('.');
+    
+      const extension = parts.pop();
+    
+      if (extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png') {
+        return 'image'
+      }
+    
+      if (extension == 'pdf') {
+        return 'pdf'
+      }
+    
+      if (extension == 'doc' || extension == 'doctx') {
+        return 'word'
+      }
+    
+      if (extension == 'xlx' || extension == 'xlsx') {
+        return 'excel'
+      }
+   }else{
+    return ''
+   }
   }
   
   watch(notifications,(newVal)=>{

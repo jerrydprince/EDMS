@@ -142,21 +142,32 @@
                 <!-- <textarea  v-model="formData.body" name="" id="" cols="30" rows="10"></textarea> -->
                 <Editor v-model="form.body" editorStyle="height: 40vh" class=" border-0 mt-10"
                     placeholder="Type Message here..." required />
-                <input type="file" style="display: none;" ref="fileInput" @change="handleFileChange" />
+                <input type="file" style="display: none;" ref="fileInput" multiple @change="handleFileChange" />
             </div>
         </section>
         <Divider />
         <template #footer>
             <div class=" flex items-center w-full justify-between">
-                <Icon icon="material-symbols:delete-outline" width="25" class=" text-[#F97066] cursor-pointer"
-                    @click="closeModal" />
+                <!-- <Icon icon="material-symbols:delete-outline" width="25" class=" text-[#F97066] cursor-pointer"
+                    @click="closeModal" /> -->
+                    <div width="25" class=" text-[#F97066] cursor-pointer">
+                        <!-- i would love to display the files from form.file here -->
+                        <div v-if="form.file && form.file.length > 0" class="flex flex-wrap gap-2">
+                            <div v-for="(file, index) in form.file" :key="index" class="flex items-center gap-2 text-sm bg-gray-100 px-3 py-1 rounded-md">
+                                <Icon icon="mdi:file-outline" width="20" />
+                                <span>{{ file.name }}</span>
+                                <Icon icon="mdi:close" width="16" class="cursor-pointer" @click="removeFile(index)" />
+                            </div>
+                        </div>
+                        
+                    </div>
                 <div class=" flex items-center gap-2">
 
                     <Icon @click="triggerFileInput" icon="akar-icons:attach" width="25"
                         class="cursor-pointer text-gray-400" />
 
-                    <Icon icon="ic:round-link" width="25" class="cursor-pointer text-gray-400"
-                        @click="addLinkModal = true" />
+                    <!-- <Icon icon="ic:round-link" width="25" class="cursor-pointer text-gray-400"
+                        @click="addLinkModal = true" /> -->
                     <button class="flex items-center gap-2 bg-primary text-white px-5 rounded-md py-2 text-sm"
                         @click="submitForm">
                         <p>Send Message</p>
@@ -204,7 +215,8 @@ const form = useForm({
     subject: '',
     body: '',
     bcc: '',
-    cc: ''
+    cc: '',
+    file:[]
 })
 
 
@@ -235,6 +247,9 @@ const Tags = ref([]);
 const BlindCarbonCopy = ref([]);
 const CarbonCopy = ref([]);
 
+const removeFile = (index) => {
+    form.file.splice(index, 1);
+};
 
 watch(props, () => {
    
@@ -259,12 +274,23 @@ const triggerFileInput = () => {
 };
 
 const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    console.log(file)
-    if (file) {
-        formData.value.body += file.name;
-        form.append("doc", file)
-    }
+    const files = event.target.files;
+        
+        if (files && files.length > 0) {
+           
+            let fileNames = '';
+            for (let i = 0; i < files.length; i++) {
+                fileNames += files[i].name + (i < files.length - 1 ? ', ' : '');
+                form.file.push(files[i]);
+            }
+            formData.value.body += fileNames;
+        }
+    // const file = event.target.files[0];
+    
+    // if (file) {
+    //     formData.value.body += file.name;
+    //     form.file = file
+    // }
 };
 const fromLinkModel = (linkData) => {
     const anchorElement = document.createElement('a');

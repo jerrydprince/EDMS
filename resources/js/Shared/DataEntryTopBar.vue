@@ -111,7 +111,7 @@
       <section class="hide_scroll sticky top-0 h-screen pr-5 overflow-y-scroll">
         <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3">
           <logo />
-          <p>Ansel LTD</p>
+          <p>Ansel l LTD</p>
         </div>
         <div class="border-b border-dashed pb-4">
           <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>

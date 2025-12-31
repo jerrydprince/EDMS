@@ -308,7 +308,7 @@
           </div>
 
           <div class="mt-2">
-            <img class="w-full rounded-md" src="/assets/images/document.svg" alt="Document image" />
+            <img class="w-full rounded-md" :src="'/assets/images/document.svg'" alt="Document image" />
           </div>
         </div>
       </div>
@@ -362,7 +362,7 @@
           </div>
 
           <div class="mt-2">
-            <img class="w-full rounded-md" src="/assets/images/document.svg" alt="Document image" />
+            <img class="w-full rounded-md" :src="'/assets/images/document.svg'" alt="Document image" />
           </div>
         </div>
       </div>

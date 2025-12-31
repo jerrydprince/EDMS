@@ -205,7 +205,7 @@ const outputHexPrimary = (event)=>{
 }
 
 watch(()=>props.organisation, (newVal)=>{
-  form = newVal
+  //form = newVal
 })
 
 const outputHexSecondary = (event)=>{

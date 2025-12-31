@@ -155,7 +155,7 @@
                 <Icon icon="lucide:plus" />
               </div>
               <div class="absolute top-0 opacity-0">
-                <Calendar v-model="form.due_date" />
+                <Calendar v-model="form.due_date" :minDate="minDate" dateFormat="yy-mm-dd" showIcon />
               </div>
             </div>
 
@@ -241,13 +241,13 @@
               <!-- <div class="border  p-3 rounded-md">
               <div class="flex justify-between">
                 <div class="flex items-center gap-1 justify-center">
-                  <img src="../../../assets/images/file.svg" alt="" class="w-7" />
+                  <img :src="'../../../assets/images/file.svg'" alt="" class="w-7" />
                   <div class="">
                     <h1 class="text-[#1D2939]">Dmiye.pdf</h1>
                     <div class="flex items-center gap-5">
                       <p class="text-xs leading-7 text-[#667085]">60 KB of 120 KB.</p>
                       <span class="flex items-center text-xs gap-1">
-                        <img src="../../../assets/images/loading.svg" alt="" /> Uploading...
+                        <img :src="'../../../assets/images/loading.svg'" alt="" /> Uploading...
                       </span>
                     </div>
                   </div>
@@ -369,7 +369,7 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps, computed, ref } from "vue";
+import { defineEmits, defineProps, computed, ref, watch } from "vue";
 import image from "../../../assets/images/members/1.svg";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -380,6 +380,8 @@ const selectedType = ref(null);
 const select_Priority = ref(false);
 const toggleRecipient = ref(false);
 const date = ref();
+// minimum selectable date for Calendar (today)
+const minDate = ref(new Date());
 const uses = ref([])
 const files = ref([])
 const page = usePage()
@@ -530,16 +532,26 @@ const removeUser = (user) => {
   }
 }
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  form.due_date = `${year}-${month}-${day}`
+const formatDate = (value) => {
+  // Accept either a Date object or a date-string
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
 const formattedDate = computed(() => formatDate(form.due_date));
+
+// Keep form.due_date as an ISO date string (yyyy-MM-dd) for backend compatibility
+// when user selects a Date from Calendar, convert it to the yyyy-MM-dd string.
+watch(() => form.due_date, (val) => {
+  if (val instanceof Date) {
+    form.due_date = formatDate(val);
+  }
+});
 const priority = ref("");
 const Priorities = ref(["Low", "Medium", "High"]);
 

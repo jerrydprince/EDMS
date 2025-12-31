@@ -379,7 +379,7 @@
             <div class="mt-2">
               <img
                 class="w-full rounded-md"
-                src="/assets/images/document.png"
+                :src="'/assets/images/document.png'"
                 alt="Document image"
               />
             </div>
@@ -411,7 +411,7 @@
             <div class="mt-2">
               <img
                 class="w-full rounded-md"
-                src="/assets/images/document.png"
+                :src="'/assets/images/document.png'"
                 alt="Document image"
               />
             </div>

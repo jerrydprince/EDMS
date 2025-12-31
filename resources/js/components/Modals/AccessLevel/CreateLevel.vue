@@ -28,6 +28,20 @@
         <input type="text" v-model="name" id="level-name" placeholder="Enter Name" class=" w-full mt-2 p-2 border rounded-md">
       </div>
 
+      <div class=" mt-3">
+        <div class="flex items-start gap-1">
+          <label class="text-[#344054] font-semibold">Access Level Type</label>
+          <span class="text-red-500">*</span>
+        </div>
+        <select v-model="type" id="role_type" class=" w-full mt-2 p-2 border rounded-md">
+          <option value="" disabled selected>Select Type</option>
+          <option value="admin">Admin</option>
+          <option value="heads">Heads</option>
+          <option value="registry">Registry</option>
+          <option value="data entry">Data entry</option>
+        </select>
+      </div>
+
       <div class="my-5">
         <label class="text-[#344054] font-semibold">Description <small class=" text-gray-500">(Optional)</small></label>
         <textarea name="" id="" cols="30" rows="3" v-model="description" placeholder="Add reason"
@@ -62,6 +76,7 @@ const props = defineProps(["modelValue"]);
 const toast = useToast()
 const emit = defineEmits(["update:modelValue"]);
 const name = ref('');
+const type = ref('');
 const description = ref('')
 const visible = computed({
   get() {
@@ -82,7 +97,11 @@ const submit = () => {
     document.getElementById('level-name').focus();
     return false;
   }
-  router.post('/dashboard/create-role', {name: name.value, description: description.value}, {onSuccess: ()=>{
+  if(type.value ==''){
+    document.getElementById('role_type').focus();
+    return false;
+  }
+  router.post('/dashboard/create-role', {name: name.value, type: type.value, description: description.value}, {onSuccess: ()=>{
     emit("update:modelValue", false);
     emit("refresh");
     name.value = ""
