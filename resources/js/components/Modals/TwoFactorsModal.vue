@@ -6,7 +6,7 @@
 
     <section class="-mb-6  flex flex-col items-center ">
       <div class=" bg-white p-7 -mt-12  relative">
-        <img :src="'../../assets/images/grid.svg'" alt="">
+        <img :src="grid" alt="">
       </div>
       <div class=" border rounded-full p-3 absolute bg-[#F9FAFB] top-20">
         <Icon icon="lucide:lock" width="50" />
@@ -187,6 +187,7 @@ import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
 import { router } from "@inertiajs/vue3";
 import axios from "axios";
+import grid from '../../assets/images/grid.svg'
 
 
 const active = ref(1)

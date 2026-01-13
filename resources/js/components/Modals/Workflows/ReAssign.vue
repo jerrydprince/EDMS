@@ -13,7 +13,7 @@
             <Icon icon="flowbite:refresh-outline" width="30" />
           </div>
           <div>
-            <h1 class="text-2xl font-medium">Re-assign Task</h1>
+            <h1 class="text-2xl font-medium">Assign Task</h1>
           </div>
         </div>
       </div>
@@ -26,7 +26,7 @@
             <div
               class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
               v-for="(user, index) in selectedUsers" :key="index">
-              <img v-if="branchType" :src="page.props.base+'/'+user.profile_image" alt="" class="w-5" />
+              <img v-if="branchType" :src="getImageForGroup(user)" alt="" class="w-5" />
               <p v-if="!branchType" class="text-xs w-fit">{{ user.first_name+" "+user.last_name }}</p>
               <p v-else class="text-xs w-fit">{{ user.title }}</p>
               <div class=" bg-white border rounded-full p-0.5 text-sm">
@@ -34,22 +34,43 @@
               </div>
             </div>
           </div>
-          <div class="relative">
-            <input type="text" v-model="search" @input="filterRecipients" class="outline-none" />
-            <div ref="pop_up" class="border border-solid py-3 bg-white rounded-md absolute z-50"
-              v-if="!branchType && users && users.length > 0 && !clickOutside">
-              <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
-                v-for="(user, index) in users" :key="index" @click="updateUsers(user)">
-                <img :src="page.props.base+'/'+user.profile_image" alt="" class="w-8" />
+          <div class="relative w-full">
+            <input 
+              type="text" 
+              v-model="search" 
+              @input="filterRecipients" 
+              @focus="onSearchFocus" 
+              class="outline-none w-full" 
+              placeholder="Search users..." 
+            />
+            <div 
+              ref="pop_up" 
+              class="border border-solid py-3 bg-white rounded-md absolute z-50 w-full max-h-60 overflow-y-auto shadow-lg"
+              v-if="!branchType && users && users.length > 0 && search.length > 0 && !clickOutside"
+            >
+              <div 
+                class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9] cursor-pointer"
+                v-for="(user, index) in users" 
+                :key="index" 
+                @click="updateUsers(user)"
+              >
+                <img :src="getImageForGroup(user)" alt="" class="w-8" />
                 <p class="text-sm w-fit">{{ user.first_name + " " + user.last_name }}</p>
               </div>
             </div>
 
-            <div ref="pop_up2" class="border border-solid py-3 bg-white rounded-md absolute z-50"
-              v-if="branchType && branch && branch.length > 0 && !clickOutside2">
-              <div class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9]"
-                v-for="(user, index) in branch" :key="index" @click="updateUsers(user)">
-                <!-- <img :src="page.props.base+'/'+user.profile_image" alt="" class="w-8" /> -->
+            <div 
+              ref="pop_up2" 
+              class="border border-solid py-3 bg-white rounded-md absolute z-50 w-full max-h-60 overflow-y-auto shadow-lg"
+              v-if="branchType && branch && branch.length > 0 && search.length > 0 && !clickOutside2"
+            >
+              <div 
+                class="flex items-center p-2 px-3 gap-2 hover:bg-[#f8f8f9] cursor-pointer"
+                v-for="(user, index) in branch" 
+                :key="index" 
+                @click="updateUsers(user)"
+              >
+                <img :src="getImageForGroup(user)" alt="" class="w-8" />
                 <p class="text-sm w-fit">{{ user.title }}</p>
               </div>
             </div>
@@ -71,7 +92,7 @@
       class: 'py-2 px-8 border-gray-200 border border-solid rounded-lg',
     },
   }" @click="closeModal" label="Cancel" severity="secondary" outlined />
-        <Button label="Re-assign" class="" :pt="{
+        <Button label="Assign" class="" :pt="{
     root: {
       class:
         'py-2 bg-primary px-10 border-0 text-white font-light hover:bg-primary/90 rounded-lg',
@@ -100,6 +121,7 @@ const pop_up = ref(null)
 const pop_up2 = ref(null)
 const clickOutside = ref(false)
 const clickOutside2 = ref(false)
+
 const visible = computed({
   get() {
     return props.modelValue;
@@ -116,7 +138,6 @@ onClickOutside(pop_up, () => {
 onClickOutside(pop_up2, () => {
   clickOutside2.value = true;
 })
-
 
 const searchInput = ref("");
 const BlindInput = ref("");
@@ -146,69 +167,179 @@ const Tags = ref([]);
 const branch = ref([])
 const branchType = ref('')
 
+function getImageForGroup(user) {
+    if(branchType.value == 'unit'){
+      return page.props.base + "/images/unit_active.svg";
+    }else if(branchType.value == 'division'){
+      return page.props.base + "/images/division_active.svg";
+    }else if(branchType.value == 'department'){
+       return page.props.base + "/images/department_active.svg";
+    }else{
+       if(user.profile_image){
+        return page.props.base + "/" + user.profile_image;
+       }else{
+        return page.props.base + "/images/user.svg";
+       }
+    }
+}
+
+const onSearchFocus = () => {
+  clickOutside.value = false;
+  clickOutside2.value = false;
+}
 
 const filterRecipients = () => {
-  // const searchTerm = searchInput.value.toLowerCase();
-  // Suggestions.value = recipients.value.filter((recipient) =>
-  //   recipient.name.toLowerCase().includes(searchTerm)
-  // );
-  searchUsers()
+  // Reset click outside when typing
+  clickOutside.value = false;
+  clickOutside2.value = false;
+  
+  // Only search if there's text
+  if(search.value.trim().length > 0) {
+    searchUsers();
+  } else {
+    users.value = [];
+    branch.value = [];
+    branchType.value = '';
+  }
 };
-const updateUsers = (suggestion) => {
-  searchInput.value = "";
-  Suggestions.value = [];
-  selectedUsers.value.push(suggestion)
 
-  let index = users.value.findIndex((item)=>item.id == suggestion.id)
-  users.value.splice(index,1);
+const updateUsers = (suggestion) => {
+  // Check if user is already selected
+  const alreadySelected = selectedUsers.value.some(user => user.id === suggestion.id);
+  
+  if (!alreadySelected) {
+    selectedUsers.value.push(suggestion);
+    
+    // Remove from users list
+    if(branchType.value) {
+      let index = branch.value.findIndex((item) => item.id == suggestion.id);
+      if(index !== -1) {
+        branch.value.splice(index, 1);
+      }
+    } else {
+      let index = users.value.findIndex((item) => item.id == suggestion.id);
+      if(index !== -1) {
+        users.value.splice(index, 1);
+      }
+    }
+  }
+  
+  // Clear search
+  search.value = "";
+  users.value = [];
+  branch.value = [];
 };
 
 const removeUser = (user) => {
-  console.log(user)
-  users.value.push(user)
-  let index = selectedUsers.value.findIndex((item)=>item.id == user.id)
-  selectedUsers.value.splice(index,1)
+  // Add back to appropriate list
+  if(user.title) {
+    branch.value.push(user);
+  } else {
+    users.value.push(user);
+  }
+  
+  // Remove from selected
+  let index = selectedUsers.value.findIndex((item) => item.id == user.id);
+  if(index !== -1) {
+    selectedUsers.value.splice(index, 1);
+  }
 };
-const closeModal = () => {
-  emit("update:modelValue", false);
 
+const closeModal = () => {
+  // Reset state
+  search.value = '';
+  description.value = '';
+  users.value = [];
+  branch.value = [];
+  branchType.value = '';
+  clickOutside.value = false;
+  clickOutside2.value = false;
+  
+  emit("update:modelValue", false);
 };
 
 const searchUsers = debounce(() => {
-  branchType.value = ''
- 
+  if(search.value.trim().length === 0) {
+    users.value = [];
+    branch.value = [];
+    branchType.value = '';
+    return;
+  }
+  
+  branchType.value = '';
+  users.value = [];
+  branch.value = [];
+  
   axios.get('/dashboard/search-users', { 
-    params: { search: search.value } }).then((response) => {
-      if(response.data.type != 'unit'){
-        branch.value = response.data.data
-        branchType.value = response.data.type
-        clickOutside.value = false
-      }else{
-        users.value = response.data.data
-        clickOutside.value = false
-      }
+    params: { search: search.value } 
+  }).then((response) => {
+    console.log(response);
     
-  })
-}, 500)
+    if(response.data.type == 'unit' || response.data.type == 'division' || response.data.type == 'department'){
+      branch.value = response.data.data.filter(item => 
+        !selectedUsers.value.some(selected => selected.id === item.id)
+      );
+      branchType.value = response.data.type;
+      clickOutside2.value = false;
+    } else {
+      users.value = response.data.data.filter(item => 
+        !selectedUsers.value.some(selected => selected.id === item.id)
+      );
+      clickOutside.value = false;
+    }
+  }).catch(error => {
+    console.error('Search error:', error);
+    users.value = [];
+    branch.value = [];
+  });
+}, 500);
 
 const submit = () => {
-  router.post('/dashboard/reassign-task',{users: selectedUsers.value 
-    , description: description.value, task_id: props.task_id}, {onSuccess: page=>{
-    emit("update:modelValue", false);
-    emit('refresh')
-  toast.add({
-    severity: "success",
-    summary: 'Task Submitted',
-    detail: "Your task has been re-assigned",
-    life: 3000,
+  if(selectedUsers.value.length === 0) {
+    toast.add({
+      severity: "warn",
+      summary: 'No Users Selected',
+      detail: "Please select at least one user to assign the task",
+      life: 3000,
+    });
+    return;
+  }
+  
+  router.post('/dashboard/assign-task', {
+    users: selectedUsers.value, 
+    description: description.value, 
+    task_id: props.task_id
+  }, {
+    onSuccess: page => {
+      emit("update:modelValue", false);
+      emit('refresh');
+      toast.add({
+        severity: "success",
+        summary: 'Task Submitted',
+        detail: "Your task has been assigned",
+        life: 3000,
+      });
+    }
   });
-  }})
 };
 
-watch(()=>props.users, ()=>{
-  selectedUsers.value = props.users
-}, {immediate: true})
+watch(() => props.users, (newUsers) => {
+  selectedUsers.value = newUsers ? [...newUsers] : [];
+}, { immediate: true });
+
+watch(() => props.modelValue, (newVal) => {
+  if(!newVal) {
+    // Reset when modal closes
+    search.value = '';
+    users.value = [];
+    branch.value = [];
+    branchType.value = '';
+    clickOutside.value = false;
+    clickOutside2.value = false;
+  }
+});
 </script>
+
 <style scoped>
 .custom-dialog .p-dialog-header {
   display: none;

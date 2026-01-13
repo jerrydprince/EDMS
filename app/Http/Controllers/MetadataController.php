@@ -65,6 +65,7 @@ class MetadataController extends Controller
     }
    
    public function getBranchMetadata(Request $request){
+    $metadata = [];
     if(auth()->user()->unit_id){
         $unit = Unit::with(['documentType'=>function($query){
             $query->with('metadata');

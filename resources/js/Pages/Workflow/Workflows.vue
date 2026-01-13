@@ -19,11 +19,11 @@
         <div class="bg-gray-100 flex items-center rounded-md p-1">
           <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignedByMeButton"
             :class="{ activeButton: assignmentButton == 1 }">
-            <p>Assigned to Me</p>
+            <p>Assigned to me</p>
           </button>
           <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignedToMeButton"
             :class="{ activeButton: assignmentButton == 2  }">
-            <p>Assigned by Me</p>
+            <p>Created by me</p>
           </button>
         </div>
       </div>
@@ -32,7 +32,7 @@
       <div class="flex items-center gap-2 text-white bg-primary px-3 py-2 rounded-md" v-if="assignmentButton == 2"
         @click="AssignModal = true">
         <Icon icon="ion:add-outline" width="25" />
-        <button>Assign Task</button>
+        <button>Create Task</button>
       </div>
     </div>
     <div class="bg-white mt-10 border border-gray-200 rounded-xl p-4 md:p-7 w-full">
@@ -87,7 +87,7 @@
               <th class="pl-5 py-3 font-medium w-28 md:w-auto text-sm">Task Title</th>
               <th class="font-medium w-28 md:w-auto text-sm">Date Assigned</th>
               <th class="font-medium w-28 md:w-auto text-sm">Deadline</th>
-              <th class="font-medium w-28 md:w-auto text-sm">Assigned By</th>
+              <th class="font-medium w-28 md:w-auto text-sm" v-if="!roles.includes('super users')">Assigned By</th>
               <th class="font-medium w-28 md:w-auto text-sm">Priority</th>
               <th class="font-medium w-28 md:w-auto text-sm">Status</th>
               <th class="font-medium w-28 md:w-auto text-sm">Actions</th>
@@ -119,7 +119,7 @@
                   <p>{{ formatDate(item.due_date) }}</p>
                 </div>
               </td>
-              <td class="align-middle">
+              <td class="align-middle" v-if="!roles.includes('super users')">
                 <div class="flex items-center gap-2" v-if="item.assigned_by">
                   <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
                 </div>
@@ -134,15 +134,15 @@
                 <div class="flex items-center gap-2">
                   <p class="bg-[#FEFBF6] px-5 py-1 rounded-3xl" :style="{
               color:
-                item.priority === '1'
+                item.priority === 'low'
                   ? '#FFBC53'
-                  : item.priority === '2'
+                  : item.priority === 'medium'
                     ? '#FF3737'
-                    : item.priority === '3'
+                    : item.priority === 'high'
                       ? '#F67E5A'
                       : 'black',
             }">
-                    {{ item.priority == 1? "Low": (item.priority == 2? 'Medium' : 'High') }}
+                    {{ item.priority == 'low'? "Low": (item.priority == 'medium'? 'Medium' : 'High') }}
                   </p>
                 </div>
               </td>

@@ -178,4 +178,34 @@ class Task extends Model
    {
        return $this->hasOne(User::class, 'id', 'deleted_by');
    }
+
+   /**
+    * Get all of the assignments for the Task
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+   public function assignments()
+   {
+       return $this->hasMany(TaskAssignment::class, 'task_id', 'id');
+   }
+
+   /**
+    * Get all of the assignments for the Task
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+   public function assignedToMe()
+   {
+       return $this->hasMany(TaskAssignment::class, 'task_id', 'id')->where('assigned_to', auth()->user()->id);
+   }
+
+   /**
+    * Get all of the taskSubmissionFiles for the Task
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    */
+   public function taskSubmissionFiles()
+   {
+       return $this->hasManyThrough(TaskSubmissionFiles::class, TaskAssignment::class);
+   }
 }

@@ -58,13 +58,13 @@
 
       <div class=" flex items-center justify-between">
         <div class=" w-[45%] mt-5">
-          <label for="First Name" class=" font-medium">First Name</label>
+          <label for="First Name" class=" font-medium">First Name <span class="text-red-500">*</span></label>
           <input type="text" v-model="form.first_name" placeholder="John" required
             class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
           <span class="text-red-400 text-sm my-2" v-if="form.errors.first_name">{{ form.errors.first_name }}</span>
         </div>
         <div class=" w-[45%] mt-5">
-          <label for="Last Name" class=" font-medium">Last Name</label>
+          <label for="Last Name" class=" font-medium">Last Name <span class="text-red-500">*</span></label>
           <input type="text" v-model="form.last_name" placeholder="Doe" required
             class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
           <span class="text-red-400 text-sm my-2" v-if="form.errors.last_name">{{ form.errors.last_name }}</span>
@@ -74,7 +74,7 @@
       <div class="flex items-center justify-between">
         <div class=" w-[45%] mt-5">
           <div>
-            <label for="gender" class="font-medium">Gender</label>
+            <label for="gender" class="font-medium">Gender <span class="text-red-500">*</span></label>
             <select name="gender" v-model="form.gender" id="gender"
               class=" border border-gray-200 rounded-lg py-2 px-4 w-full focus:border-blue-500 focus:ring-blue-500">
               <option value="" class=" text-gray-400">Select from dropdown</option>
@@ -87,7 +87,7 @@
         </div>
         <div class=" w-[45%] mt-5">
           <div>
-            <label for="grade_level" class="font-medium">Grade Level</label>
+            <label for="grade_level" class="font-medium">Grade Level <span class="text-red-500">*</span></label>
             <select name="grade_level" v-model="form.grade_level" id="grade_level"
               class=" border border-gray-200 rounded-lg py-2 px-4 w-full focus:border-blue-500 focus:ring-blue-500">
               <option value="">Select from dropdown</option>
@@ -118,7 +118,7 @@
 
       <div class=" flex items-center justify-between">
         <div class=" w-[45%] mt-5">
-          <label for="Email" class=" font-medium">Email</label>
+          <label for="Email" class=" font-medium">Email <span class="text-red-500">*</span></label>
           <input type="email" ref="email" @blur="checkMailExist" v-model="form.email" placeholder="John@mail.com" required
             class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
           <span class="text-red-400 text-sm my-2" v-if="email_msg">{{ email_msg }}</span>
@@ -377,7 +377,7 @@ const isFormReady = computed(() => {
          isFieldFilled(form.grade_level) &&
          isFieldFilled(form.phone) &&
          isFieldFilled(form.gender) &&
-         isFieldFilled(form.role);
+         form.role.length > 0;
 });
 
 

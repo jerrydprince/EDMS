@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendClientMail extends Mailable
+class SendClientMail extends Mailable implements ShouldQueue
 {
     public array $data;
     public $emailattachment;
@@ -42,7 +42,7 @@ class SendClientMail extends Mailable
             $envelope->cc($this->data['cc']);
         }
         if (isset($this->data['bcc'])) {
-            $envelope->cc($this->data['bcc']);
+            $envelope->bcc($this->data['bcc']);
         }
         return $envelope;
     }
@@ -71,8 +71,12 @@ class SendClientMail extends Mailable
      */
     public function attachments(): array
     {
-        return [
-            Attachment::fromPath($this->emailattachment)
-        ];
+        if ($this->emailattachment && file_exists($this->emailattachment)) {
+            return [
+                Attachment::fromPath($this->emailattachment)
+            ];
+        }
+        
+        return [];
     }
 }

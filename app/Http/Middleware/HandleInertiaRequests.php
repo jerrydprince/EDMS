@@ -76,7 +76,7 @@ class HandleInertiaRequests extends Middleware
             'errors' => fn () => $request->session()->get('errors')
                 ? $request->session()->get('errors')->getBag('default')->getMessages()
                 : (object)[],
-            'permissions'=>Auth::check()? Auth::user()->getAllPermissions() :[]
+            'permissions'=>Auth::check()? Auth::user()->getPermissionsViaRoles() :[]
         ]);
     }
 }

@@ -19,15 +19,106 @@ use Ddeboer\Imap\Server;
 use Ddeboer\Imap\Search\Date\Since;
 use DateTime;
 use DateInterval;
+use App\Mail\ReplyEmail;
 
 class MailController extends Controller
 {
-    public function mail()
+    public function mail(Request $request)
     {
-        //$mails = MailsModel::orderBy('created_at', 'desc')->get();
-        $mails = auth()->user()->mails()->orderBy('created_at', 'desc')->paginate(20);
+       if($request->is_archive == 'true'){
+        return $this->getArchivedMails();
+       }else
+       if($request->is_read == 'false'){
+        return $this->getUnreadMails();
+       }else if($request->is_starred == 'true'){
+        return $this->getStarredMails();
+       }else if($request->is_draft == 'true'){
+        return $this->getDraftEmails();
+       }else if($request->is_sent == 'true'){
+        return $this->getSentMails();
+        }else{
+             // $mails = auth()->user()->mails()->where('is_sent', false)->orderBy('created_at', 'desc')->paginate(20);
+            //  $mails = auth()->user()
+            //     ->mails()
+            //     ->where('is_sent', false)
+            //     ->whereIn('id', function ($query) {
+            //         $query->selectRaw('MAX(id)')
+            //             ->from('mails')
+            //             ->groupBy('thread_id');
+            //     })
+            //     ->orderBy('created_at', 'desc')
+            //     ->paginate(20);
+
+                $mails = MailsModel::with('attachments')->where('user_id', auth()->user()->id)
+                ->where('is_sent', false)
+                ->whereIn('id', function ($query) {
+                    $query->selectRaw('MAX(id)')
+                        ->from('mails')
+                        ->groupBy('thread_id');
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+            return inertia('Mail/Mails', [
+                'mails' =>  $mails,
+                'buttonToggle' => 1
+            ]);
+        }
+    }
+
+    public function getSentMails()
+    {
+        $sentmails = auth()->user()->mails()->where('is_sent', 1)->orderBy('created_at', 'desc')->paginate(20);
+        //  $sentmails = MailsModel::with('attachments')->where('user_id', auth()->user()->id)
+        //         ->where('is_sent', true)
+        //         // ->whereIn('id', function ($query) {
+        //         //     $query->selectRaw('MAX(id)')
+        //         //         ->from('mails')
+        //         //         ->groupBy('thread_id');
+        //         // })
+        //         ->orderBy('created_at', 'desc')
+        //         ->paginate(20);
+            return inertia('Mail/Mails', [
+                'mails' =>  $sentmails,
+                'buttonToggle' => 6
+            ]);
+    }
+
+    public function getDraftEmails()
+    {
+        //$draftmails = auth()->user()->drafts()->orderBy('created_at', 'desc')->paginate(20);
+        $draftmails = DraftModel::with('attachments')->where('user_id', auth()->user()->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+            return inertia('Mail/Mails', [
+                'mails' =>  $draftmails,
+                'buttonToggle' => 5
+            ]);
+    }
+
+    public function getStarredMails()
+    {
+        $mails = auth()->user()->mails()->with('attachments')->where('is_starred', true)->where('is_sent', false)->orderBy('created_at', 'desc')->paginate(20);
+            return inertia('Mail/Mails', [
+                'mails' =>  $mails,
+                'buttonToggle' => 4
+            ]);
+    }
+
+    public function getUnreadMails()
+    {
+         $mails = auth()->user()->mails()->with('attachments')->where('is_read', false)->where('is_sent', false)->orderBy('created_at', 'desc')->paginate(20);
+            return inertia('Mail/Mails', [
+                'mails' =>  $mails,
+                'buttonToggle' => 3
+            ]);
+    }
+
+    public function getArchivedMails()
+    {
+        $mails = auth()->user()->mails()->with('attachments')->where('is_archived', true)->where('is_sent', false)->orderBy('created_at', 'desc')->paginate(20);
         return inertia('Mail/Mails', [
-            'mails' =>  $mails
+            'mails' =>  $mails,
+            'buttonToggle' => 2
         ]);
     }
 
@@ -39,45 +130,127 @@ class MailController extends Controller
             'body' => 'string|required',
             'bcc' => 'email|nullable',
             'cc' => 'email|nullable',
-            'doc' => 'file|nullable|mimes:jpg,png,pdf,doc,docx',
+            //'file' => 'file|nullable|mimes:jpg,png,pdf,doc,docx',
         ]);
-        $newMail = new MailsModel();
-        $newMail->recipient = $request->recipient;
-        $newMail->subject = $request->subject;
-        $newMail->body = $request->body;
-        $newMail->sender = auth()->user()->first_name." ".auth()->user()->last_name;
-        $newMail->sender_id = auth()->user()->id;
-        $newMail->user_id = auth()->user()->id;
-        $newMail->save();
-        if($request->hasFile('doc')){
-            $file = $request->file('doc');
+
+        $file = [];
+        if($request->hasFile('file')){
+            $file = $request->file('file')[0];
+        }
+
+        $attach_path = null;
+        if($file){
+            $path = $file->store('public/attachments');
+            $attach_path = storage_path( $path);
+        }
+     
+        if($file){
+         Mail::queue(new SendClientMail($request->except('file'), $attach_path, auth()->user()->email));
+        }else{
+        Mail::queue(new SendClientMailNoAttachment($request->except('file'), auth()->user()->email));
+        }
+    
+        // return Redirect::route('mails.Mails');
+       // if ($send == 0) {
+            $newMail = new MailsModel();
+            $newMail->recipient = $request->recipient;
+            $newMail->subject = $request->subject;
+            $newMail->body = $request->body;
+            $newMail->sender = auth()->user()->first_name." ".auth()->user()->last_name;
+            $newMail->sender_id = auth()->user()->id;
+            $newMail->user_id = auth()->user()->id;
+            $newMail->is_sent = 1;
+            $newMail->save();
+            if($file && $attach_path){
+                // return $attach_path;
+                $attachment = new Attachment();
+                $attachment->file_path = str_replace('public/', '', $path);
+                $attachment->mail_id = $newMail->id;
+                $attachment->save();
+            }
+            if ($request->cc !== null) {
+                $mailcc = new mail_cc();
+                $mailcc->mail_id = $newMail->id;
+                $mailcc->recipient_mail = $request->cc;
+                $mailcc->save();
+            }
+            if ($request->bcc !== null) {
+                $mailbcc = new mail_bcc();
+                $mailbcc->mail_id = $newMail->id;
+                $mailbcc->recipient_mail = $request->bcc;
+                $mailbcc->save();
+            }
+
+            return redirect()->back()->with(['success'=>true]);
+        // } else {
+        //     response()->json([
+        //         'message' => 'An error occured'
+        //     ]);
+        // }
+    }
+
+    public function sendReply(Request $request){
+        $validated = $request->validate([
+            'recipient' => 'email|required',
+            'body' => 'string|required',
+            'original_message_id' => 'required',
+             'bcc' => 'email|nullable',
+            'cc' => 'email|nullable',
+            'file' => 'file|nullable|mimes:jpg,png,pdf,doc,docx',
+        ]);
+
+        $attach_path = '';
+        if($request->hasFile('file')){
+            $file = $request->file('file');
             $path = $file->store('public');
             $attach_path = storage_path('app/' . $path);
-            // return $attach_path;
-            $attachment = new Attachment();
-            $attachment->file_path = $path;
-            $attachment->mail_id = $newMail->id;
-            $attachment->save();
         }
-        if ($request->cc !== null) {
-            $mailcc = new mail_cc();
-            $mailcc->mail_id = $newMail->id;
-            $mailcc->recipient_mail = $request->cc;
-            $mailcc->save();
-        }
-        if ($request->bcc !== null) {
-            $mailbcc = new mail_bcc();
-            $mailbcc->mail_id = $newMail->id;
-            $mailbcc->recipient_mail = $request->bcc;
-            $mailbcc->save();
-        }
-        if($request->hasFile('doc')){
-        $send = Mail::send(new SendClientMail($request->all(), $attach_path));
-        }else{
-        $send = Mail::send(new SendClientMailNoAttachment($request->all(), auth()->user()->email));
-        }
+
+         $originalEmail = [
+            'subject' => $request->original_subject ?? '',
+            'from' => $request->original_from ?? '',
+            'date' => $request->original_date ?? '',
+            'body' => $request->original_body ?? '',
+            'message_id' => $request->original_message_id ?? '',
+            'recipient' => $request->recipient ?? ''
+        ];
+
+         //$send = Mail::send(new ReplyEmail($validated['body'], $originalEmail, $attach_path));
+         $send = Mail::to($request->recipient)->send(new ReplyEmail($validated['body'], $originalEmail, $attach_path));
+         
         // return Redirect::route('mails.Mails');
         if ($send) {
+            $newMail = new MailsModel();
+            $newMail->recipient = $request->recipient;
+            $newMail->subject = 'Re: '.$request->original_subject;
+            $newMail->body = $request->body;
+            $newMail->sender = auth()->user()->first_name." ".auth()->user()->last_name;
+            $newMail->sender_id = auth()->user()->id;
+            $newMail->user_id = auth()->user()->id;
+            $newMail->thread_id = $request->original_message_id;
+            $newMail->message_id = $request->original_message_id;
+            $newMail->is_sent = 1;
+            $newMail->save();
+            if($request->hasFile('doc') && $attach_path){
+                // return $attach_path;
+                $attachment = new Attachment();
+                $attachment->file_path = str_replace('public/', '', $path);
+                $attachment->mail_id = $newMail->id;
+                $attachment->save();
+            }
+            if ($request->cc !== null) {
+                $mailcc = new mail_cc();
+                $mailcc->mail_id = $newMail->id;
+                $mailcc->recipient_mail = $request->cc;
+                $mailcc->save();
+            }
+            if ($request->bcc !== null) {
+                $mailbcc = new mail_bcc();
+                $mailbcc->mail_id = $newMail->id;
+                $mailbcc->recipient_mail = $request->bcc;
+                $mailbcc->save();
+            }
+
             return redirect()->back()->with(['success'=>true]);
         } else {
             response()->json([
@@ -118,9 +291,12 @@ class MailController extends Controller
     }
     public function getSingleMail($id)
     {
-        $data = MailsModel::where('id', $id)->with('attachments')->get();
+        $data = MailsModel::with('attachments')->find($id);
+        $data->is_read = true;
+        $data->save();
+
         return  response()->json([
-            'message' => ' Mail Fecthed Successfully',
+            'message' => 'Mail Fetched Successfully',
             'data' => $data
         ]);
     }
@@ -134,15 +310,19 @@ class MailController extends Controller
     }
     public function isDraft(Request $request)
     {
-        $savedraft = new DraftModel();
-        $savedraft->body = $request->body;
-        $savedraft->subject = $request->subject;
-        $savedraft->recipient = $request->recipient;
-        $savedraft->save();
-        return  response()->json([
-            'message' => ' sent as drafts',
-            'data' => $savedraft
-        ]);
+        if($request->body){
+             $savedraft = new DraftModel();
+            $savedraft->body = $request->body;
+            $savedraft->subject = $request->subject??'No Subject';
+            $savedraft->recipient = $request->recipient;
+            $savedraft->user_id = auth()->user()->id;
+            $savedraft->save();
+            return  response()->json([
+                'message' => ' sent as drafts',
+                'data' => $savedraft
+            ]);
+        }
+       
     }
     public function getDrafts()
     {
@@ -171,14 +351,14 @@ class MailController extends Controller
 
 
 
-    public function getStarredMails()
-    {
-        $data = MailsModel::where('is_starred', true)->get();
-        return  response()->json([
-            'message' => 'Starred Mail Fecthed Successfully',
-            'data' => $data
-        ]);
-    }
+    // public function getStarredMails()
+    // {
+    //     $data = MailsModel::where('is_starred', true)->get();
+    //     return  response()->json([
+    //         'message' => 'Starred Mail Fecthed Successfully',
+    //         'data' => $data
+    //     ]);
+    // }
 
     public function starMail($id)
     {
@@ -242,153 +422,56 @@ class MailController extends Controller
 
   public function getAllMailsFolders(){
 
-    $server = new Server('mail.govmail.gbb.com.ng');
-    $connection = $server->authenticate('aakinmade@oagf.gov.ng', 'kPzJA3SynW*');
-    $mailbox = $connection->getMailbox('INBOX');
+//     $server = new Server('mail.govmail.gbb.com.ng');
+//     $connection = $server->authenticate('aakinmade@oagf.gov.ng', 'kPzJA3SynW*');
+//     $mailbox = $connection->getMailbox('INBOX');
 
-  $today = new DateTime();
-        $thirtyDaysAgo = $today->sub(new DateInterval('P30D'));
+// // Process emails in chunks for memory efficiency
+
+ 
+//     $thirtyDaysAgo = new DateTime('-30 days');
+//     $messages = $mailbox->getMessages(new Since($thirtyDaysAgo));
+    
+//     // Get all existing message IDs in one query
+//     $existingMessageIds = MailsModel::pluck('message_id')->toArray();
+    
+//     $emailsToInsert = [];
+    
+//     foreach ($messages as $message) {
+//         $emailMessageId = $message->getHeaders()->get('message-id');
         
-        $messages = $mailbox->getMessages(new Since($thirtyDaysAgo));
-
-foreach ($messages as $message) {
-    // Get message details
-    $subject = $message->getSubject();
-    $from = $message->getFrom(); // Returns EmailAddress object
-    $date = $message->getDate();
-    $bodyText = $message->getBodyText(); // Plain text
-    $bodyHtml = $message->getBodyHtml(); // HTML
+//         // Skip if already exists
+//         // if (in_array($emailMessageId, $existingMessageIds)) {
+//         //     continue;
+//         // }
+        
+//         $emailsToInsert[] = [
+//             'message_id' => $message->getNumber(),
+//             'subject' => $message->getSubject(),
+//             'recipient' => $message->getFrom()->getAddress(),
+//             'from_name' => $message->getFrom()->getName(),
+//             'body_text' => $message->getBodyText(),
+//             'body' => $message->getBodyHtml(),
+//             'received_at' => $message->getDate(),
+//             'has_attachments' => $message->hasAttachments(),
+//             'user_id' => auth()->user()->id,
+//             'created_at' => now(),
+//             'updated_at' => now(),
+//         ];
+//     }
     
-    // Example: Display the data
-    echo "Subject: " . $subject . "\n";
-    echo "From: " . $from->getAddress() . "\n";
-    echo "Date: " . $date->format('Y-m-d H:i:s') . "\n";
-    echo "Body: " . $bodyText . "\n\n";
-    echo "Body: " . $bodyHtml . "\n\n";
+//     // Insert all at once (much faster!)
+//     if (!empty($emailsToInsert)) {
+//         MailsModel::insert($emailsToInsert);
+//     }
     
-    // Get attachments
-    $attachments = $message->getAttachments();
-    foreach ($attachments as $attachment) {
-        $filename = $attachment->getFilename();
-        $content = $attachment->getDecodedContent();
-        // Save attachment
-        file_put_contents(storage_path('app/attachments/' . $filename), $content);
-    }
+//     return response()->json([
+//         'new_emails' => count($emailsToInsert),
+//         'total_processed' => count($messages),
+//         'emails_to_insert' => $emailsToInsert,
+//     ]);
     
-    // Mark as read (optional)
-    // $message->markAsSeen();
+//     return response()->json('true');
 }
 
-    // $mailbox = $connection->getMailbox('INBOX');
-    // $messages = $mailbox->getMessages();
-
-    // foreach ($messages as $message) {
-    //     echo $message->getSubject();
-    //     echo $message->getBodyText();
-    // }
-    // $client = Client::account("default");  
-    // $client->connect();  
-  
-    // $inbox = $client->getFolder('INBOX');
-    
-    // $inboxData = [
-    //     'path' => $inbox->path,
-    //     'name' => $inbox->name,
-    //     'full_name' => $inbox->full_name,
-    //     'messages' => []
-    // ];
-    
-    // // Count total messages
-    // $totalMessages = $inbox->all()->count();
-    // dd($totalMessages);
-    // // Calculate offset to get last 10 messages
-    // $offset = max(0, $totalMessages - 10);
-    // dd($offset);
-    // // Get the last 10 messages
-    // $messages = $inbox->messages()->all()->limit(10, $offset)->get();
-    
-    // // Reverse to show newest first
-    // $latestMessages = $messages->reverse();
-    
-    // foreach ($latestMessages as $message) {
-    //     $inboxData['messages'][] = [
-    //         'uid' => $message->uid,
-    //         'message_id' => $message->message_id,
-    //         'subject' => (string) $message->getSubject(),
-    //         'from' => $message->from ? $message->from->toArray() : [],
-    //         'date' => $message->date ? (string) $message->date : null,
-    //         'flags' => $message->flags,
-    //     ];
-    // }
-    
-    return response()->json($inboxData);
-}
-
-
-    public function getFolderMessages($folderName){
-        $client = Client::account("default");  
-        $client->connect();  
-        
-        $folder = $client->getFolder($folderName);
-        
-        if (!$folder) {
-            return response()->json(['error' => 'Folder not found'], 404);
-        }
-        
-        $messages = $folder->messages()->all()->get();  
-        
-        $messagesData = [];
-        
-        /** @var \Webklex\PHPIMAP\Message $message */  
-        foreach ($messages as $message) {  
-            $messagesData[] = [
-                'uid' => $message->uid,
-                'message_id' => $message->message_id,
-                'subject' => (string) $message->subject,
-                'from' => $message->from ? $message->from->toArray() : [],
-                'date' => $message->date ? (string) $message->date : null,
-                'flags' => $message->flags,
-            ];
-        }
-        
-        return response()->json($messagesData);
-    }
-
-    public function getMessage($folderName, $uid){
-        $client = Client::account("default");  
-        $client->connect();  
-        
-        $folder = $client->getFolder($folderName);
-        
-        if (!$folder) {
-            return response()->json(['error' => 'Folder not found'], 404);
-        }
-        
-        $message = $folder->messages()->getMessageByUid($uid);
-        
-        if (!$message) {
-            return response()->json(['error' => 'Message not found'], 404);
-        }
-        
-        $messageData = [
-            'uid' => $message->uid,
-            'message_id' => $message->message_id,
-            'subject' => (string) $message->subject,
-            'from' => $message->from ? $message->from->toArray() : [],
-            'to' => $message->to ? $message->to->toArray() : [],
-            'cc' => $message->cc ? $message->cc->toArray() : [],
-            'date' => $message->date ? (string) $message->date : null,
-            'body' => $message->getHTMLBody() ?: $message->getTextBody(),
-            'attachments' => $message->getAttachments()->map(function($attachment) {
-                return [
-                    'name' => $attachment->name,
-                    'size' => $attachment->size,
-                    'type' => $attachment->type,
-                ];
-            })->toArray(),
-            'flags' => $message->flags,
-        ];
-        
-        return response()->json($messageData);
-    }
 }

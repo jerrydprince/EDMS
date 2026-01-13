@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('task', function (Blueprint $table) {
-            $table->unsignedBigInteger('assigned_by')->nullable();
+        Schema::table('ratings', function (Blueprint $table) {
+            $table->unsignedBigInteger('task_assignment_id')->nullable()->after('user_id');
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('task', function (Blueprint $table) {
+        Schema::table('ratings', function (Blueprint $table) {
             //
         });
     }

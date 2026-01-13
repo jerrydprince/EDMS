@@ -6,7 +6,7 @@
 
     <section class="-mb-6  flex flex-col items-center ">
       <div class=" bg-white p-7 -mt-12  relative">
-        <img :src="'./../assets/images/grid.svg'" alt="">
+        <img :src="grid" alt="">
       </div>
       <div class=" border rounded-full p-3 absolute bg-[#F9FAFB] top-20">
         <Icon icon="lucide:key" width="50" />
@@ -66,6 +66,7 @@
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
 import {useForm} from "@inertiajs/vue3"
+import grid from '../../assets/images/grid.svg'
 
 const toast = useToast();
 const props = defineProps(["modelValue"]);
@@ -95,22 +96,27 @@ const visible = computed({
 });
 
 const closeModal = () => {
-
+form.reset()
   emit("update:modelValue", false);
 };
 
 const submit = () => {
   isLoading.value = true;
-  form.post('/forgot-password', {onSuccess: page=>{
-    emit("update:modelValue", false);
-    isLoading.value = false;
-    toast.add({
-      severity: "success",
-      summary: 'Password Changed',
-      detail: "Your password has been updated successfully.",
-      life: 3000,
-    });
-  }})
+  form.post('/forgot-password', {
+    onSuccess: page=>{
+      emit("update:modelValue", false);
+      isLoading.value = false;
+      toast.add({
+        severity: "success",
+        summary: 'Email sent',
+        detail: "A password reset email has been sent successfully. Please check your inbox.",
+        life: 3000,
+      });
+    },
+    onError: ()=>{
+      isLoading.value = false;
+    }
+  })
   
 };
 </script>

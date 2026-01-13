@@ -25,7 +25,7 @@
     </button>
     <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
       <section class="bg-white p-5">
-        <input type="text" class=" w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
+        <input type="text" id="task_title" class="w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
         <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
       </section>
       <Divider class="-mt-0" />
@@ -56,7 +56,7 @@
           <div class="flex items-center gap-14">
             <div class="flex items-center gap-3">
               <Icon icon="lucide:users" />
-              <p>Assign To</p>
+              <p>Assign To (optional)</p>
             </div>
 
             <!-- <div class="relative" v-if="toggleRecipient">
@@ -509,12 +509,18 @@ const filterRecipients = () => {
   searchUsers()
 };
 const updateUsers = (suggestion) => {
+  console.log(suggestion)
   Assigned_by.value = suggestion.first_name + " " + suggestion.last_name;
   assigned_by_img.value = suggestion.profile_image
   user_ids.value = suggestion.id
   toggleRecipient.value = false;
   selectedUsers.value.push(suggestion)
-  form.users.push(suggestion.id)
+  console.log(suggestion)
+  if(suggestion.user && suggestion.user.length > 0){
+    form.users.push(suggestion.user[0].id)
+  }else{
+    form.users.push(suggestion.id)
+  }
 
   let index = users.value.findIndex((item) => item.id == suggestion.id)
   users.value.splice(index, 1);
@@ -558,11 +564,11 @@ const Priorities = ref(["Low", "Medium", "High"]);
 const updatePriority = (event) => {
   priority.value = event;
   if (priority.value == 'Low') {
-    form.priority = 1
+    form.priority = 'low'
   } else if (priority.value == 'Medium') {
-    form.priority = 2
+    form.priority = 'medium'
   } else if (priority.value == 'High') {
-    form.priority = 3
+    form.priority = 'high'
   }
   select_Priority.value = false
 };
@@ -586,9 +592,40 @@ const closeModal = () => {
 };
 
 const submit = () => {
+  if(form.title ==''){
+     toast.add({
+        severity: "error",
+        summary: '',
+        detail: "Title field cannot be empty",
+        life: 3000,
+      });
+      return false;
+  }
+  if(form.due_date ==''){
+     toast.add({
+        severity: "error",
+        summary: '',
+        detail: "Due date field cannot be empty",
+        life: 3000,
+      });
+      return false;
+  }
+
+  if(form.priority ==''){
+     toast.add({
+        severity: "error",
+        summary: '',
+        detail: "Priority field cannot be empty",
+        life: 3000,
+      });
+      return false;
+  }
+
   form.post('/dashboard/create-task', {
     onSuccess: page => {
       form.reset()
+      files.value = null
+      form.files = null
       emit("update:modelValue", false);
       toast.add({
         severity: "success",

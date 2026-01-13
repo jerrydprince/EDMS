@@ -333,6 +333,7 @@ const buttonSwitch = ref(1);
 const files = ref([])
 const props = defineProps(["modelValue", 'task']);
 const emit = defineEmits(["update:modelValue", 'refresh']);
+const toast = useToast()
 
 const clickedButton = ref("");
 
@@ -405,11 +406,11 @@ const Priorities = ref(["Low", "Medium", "High"]);
 const updatePriority = (event) => {
   priority.value = event;
   if (priority.value == 'Low') {
-    form.priority = 1
+    form.priority = 'low'
   } else if (priority.value == 'Medium') {
-    form.priority = 2
+    form.priority = 'medium'
   } else if (priority.value == 'High') {
-    form.priority = 3
+    form.priority = 'high'
   }
   select_Priority.value = false
 };
@@ -461,16 +462,18 @@ onMounted(() => {
 
 const getDefaultPriority = () => {
   let priority_d = props.task.priority;
-  if (priority_d == 1) {
-    form.priority = 1
-    priority.value = 'Low'
-  } else if (priority_d == 2) {
-    form.priority = 2
-    priority.value = 'Medium'
-  } else if (priority_d == 3) {
-    form.priority = 3
-    priority.value = 'High'
-  }
+  // if (priority_d == ) {
+  //   form.priority = 1
+  //   priority.value = 'Low'
+  // } else if (priority_d == 2) {
+  //   form.priority = 2
+  //   priority.value = 'Medium'
+  // } else if (priority_d == 3) {
+  //   form.priority = 3
+  //   priority.value = 'High'
+  // }
+  form.priority = props.task.priority
+  priority.value = props.task.priority
   select_Priority.value = false
 };
 
@@ -540,7 +543,7 @@ const submit = () => {
       toast.add({
         severity: "success",
         summary: '',
-        detail: "Task created successfully",
+        detail: "Task edited successfully",
         life: 3000,
       });
     }

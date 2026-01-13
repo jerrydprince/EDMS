@@ -1150,21 +1150,29 @@ class ArchiveController extends Controller
        $unitId = request()->unitId? request()->unitId: auth()->user()->unit_id;
         if($unitId){
             $unit = Unit::with('fileType')->find($unitId);
-            $fileType= $unit->fileType;
-            return response()->json($fileType);
+            if($unit){
+                $fileType= $unit->fileType;
+                return response()->json($fileType);
+            }
         }
 
         if($divId){
             $division = Division::with('fileType')->find($divId);
-            $fileType= $division->fileType;
-            return response()->json($fileType);
+            if($division){
+                $fileType= $division->fileType;
+                return response()->json($fileType);
+            }
         }
 
         if($deptId){
             $department = Department::with('fileType')->find($deptId);
-            $fileType= $department->fileType;
-            return response()->json($fileType);
+            if($department){
+                $fileType= $department->fileType;
+                return response()->json($fileType);
+            }
         }
+
+        return response()->json([]);
     }
 
     public function updateBranchMetadatas(Request $request){

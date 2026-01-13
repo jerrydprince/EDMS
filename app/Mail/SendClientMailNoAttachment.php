@@ -10,7 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendClientMailNoAttachment extends Mailable
+class SendClientMailNoAttachment extends Mailable implements ShouldQueue
 {
     public array $data;
     public $email;
@@ -39,7 +39,7 @@ class SendClientMailNoAttachment extends Mailable
             $envelope->cc($this->data['cc']);
         }
         if (isset($this->data['bcc'])) {
-            $envelope->cc($this->data['bcc']);
+            $envelope->bcc($this->data['bcc']);
         }
         // if(array_key_exists('cc', $this->data)){
         //    $envelope->cc($this->data['cc']);

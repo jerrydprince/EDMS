@@ -34,217 +34,222 @@ class WorkFlowController extends Controller
         $searchTerm = $request->search; 
         $created_task = [];
         $assigned_task = [];
-        
-        if($this->isRole('division heads')){
-            $division = Division::find(auth()->user()->division_id);
-            $created_task = Task::with('assignedByDivision')
-                ->where('assigned_by_division', auth()->user()->division_id)
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-               // ->user()->division_id)
-                ->latest()
-                ->paginate(10)->withQueryString();
+
+        $created_task = Task::where('created_by', auth()->user()->id)->latest()->paginate(10)->withQueryString();
+        $assigned_task = Task::withWhereHas('assignments', function($query){
+            $query->where('assigned_to', auth()->user()->id);
+        })->latest()->paginate(10)->withQueryString();
+     
+        // if($this->isRole('division heads')){
+        //     $division = Division::find(auth()->user()->division_id);
+        //     $created_task = Task::with('assignedByDivision')
+        //         ->where('assigned_by_division', auth()->user()->division_id)
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //        // ->user()->division_id)
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
               
-            $assigned_task = $division->task()
-                ->with('assignedByDepartment')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        //     $assigned_task = $division->task()
+        //         ->with('assignedByDepartment')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
               
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
 
-                $created_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 2;  // Add the attribute
-                    return $task;
-                });
-        }
+        //         $created_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 2;  // Add the attribute
+        //             return $task;
+        //         });
+        // }
 
-        if($this->isRole('unit heads')){
-            $unit = Unit::find(auth()->user()->unit_id);
-            $created_task = Task::with('assignedBy')
-                ->where('assigned_by_unit', auth()->user()->unit_id)
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        // if($this->isRole('unit heads')){
+        //     $unit = Unit::find(auth()->user()->unit_id);
+        //     $created_task = Task::with('assignedBy')
+        //         ->where('assigned_by_unit', auth()->user()->unit_id)
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
                 
-            $assigned_task = $unit->task()
-                ->with('assignedByDivision')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        //     $assigned_task = $unit->task()
+        //         ->with('assignedByDivision')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
                
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
-                $created_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 2;  // Add the attribute
-                    return $task;
-                });
-        }
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
+        //         $created_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 2;  // Add the attribute
+        //             return $task;
+        //         });
+        // }
 
-        if($this->isRole('directors')){
-            $department = Department::find(auth()->user()->department_id);
-            $created_task = Task::with('assignedByDepartment')
-                ->where('assigned_by_department', auth()->user()->department_id)
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        // if($this->isRole('directors')){
+        //     $department = Department::find(auth()->user()->department_id);
+        //     $created_task = Task::with('assignedByDepartment')
+        //         ->where('assigned_by_department', auth()->user()->department_id)
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
                 
-            $assigned_task = $department->task()
-                ->with('assignedBySuperUser')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(40)->withQueryString();
+        //     $assigned_task = $department->task()
+        //         ->with('assignedBySuperUser')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(40)->withQueryString();
                
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
-                $created_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 2;  // Add the attribute
-                    return $task;
-                });
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
+        //         $created_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 2;  // Add the attribute
+        //             return $task;
+        //         });
             
-        }
+        // }
 
-        if(auth()->user()->hasRole('super users')){
+        // if(auth()->user()->hasRole('super users')){
             
-            //$department = Department::find(auth()->user()->department_id);
-            $created_task = Task::with('assignedBySuperUser')
-                ->where('assigned_by_super_user', auth()->user()->id)
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        //     //$department = Department::find(auth()->user()->department_id);
+        //     $created_task = Task::with('assignedBySuperUser')
+        //         ->where('assigned_by_super_user', auth()->user()->id)
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
   
-           // $assigned_task = $department->task()->with('assignedByDepartment')->paginate(10);
-            $assigned_task = [];
+        //    // $assigned_task = $department->task()->with('assignedByDepartment')->paginate(10);
+        //     $assigned_task = [];
 
-            $created_task->getCollection()->transform(function ($task) {
-                $task->is_assigned = 2;  // Add the attribute
-                return $task;
-            });
-        }
+        //     $created_task->getCollection()->transform(function ($task) {
+        //         $task->is_assigned = 2;  // Add the attribute
+        //         return $task;
+        //     });
+        // }
 
-        if($type == 'unit' && !$this->isRole('unit heads') && !$this->isRole('super users')){
-            //ordinary users cannot create task;
-            $created_task = [];
-            //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
-            $assigned_task = auth()->user()->task()
-                ->with('assignedBy')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        // if($type == 'unit' && !$this->isRole('unit heads') && !$this->isRole('super users')){
+        //     //ordinary users cannot create task;
+        //     $created_task = [];
+        //     //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
+        //     $assigned_task = auth()->user()->task()
+        //         ->with('assignedBy')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
             
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
-        }
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
+        // }
 
-        if($type == 'division' && !$this->isRole('division heads') && !$this->isRole('super users')){
-            //ordinary users cannot create task;
-            $created_task = [];
-            //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
-            $assigned_task = auth()->user()->task()
-                ->with('assignedBy')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        // if($type == 'division' && !$this->isRole('division heads') && !$this->isRole('super users')){
+        //     //ordinary users cannot create task;
+        //     $created_task = [];
+        //     //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
+        //     $assigned_task = auth()->user()->task()
+        //         ->with('assignedBy')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
             
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
-        }
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
+        // }
 
-        if($type == 'department' && !$this->isRole('directors') && !$this->isRole('super users')){
-            //ordinary users cannot create task;
-            $created_task = [];
-            //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
-            $assigned_task = auth()->user()->task()
-                ->with('assignedBy')
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    $query->where(function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('title', 'like', "%{$searchTerm}%")
-                                 ->orWhere('description', 'like', "%{$searchTerm}%")
-                                 ->orWhere('status', 'like', "%{$searchTerm}%" )
-                                 ->orWhere('due_date', 'like', "%{$searchTerm}%");
-                    });
-                })
-                ->latest()
-                ->paginate(10)->withQueryString();
+        // if($type == 'department' && !$this->isRole('directors') && !$this->isRole('super users')){
+        //     //ordinary users cannot create task;
+        //     $created_task = [];
+        //     //$created_task = Task::with('assignedBy')->where('assigned_by', auth()->user()->id)->latest()->paginate(10);
+        //     $assigned_task = auth()->user()->task()
+        //         ->with('assignedBy')
+        //         ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        //         ->latest()
+        //         ->paginate(10)->withQueryString();
             
-                $assigned_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 1;  // Add the attribute
-                    return $task;
-                });
-        }
+        //         $assigned_task->getCollection()->transform(function ($task) {
+        //             $task->is_assigned = 1;  // Add the attribute
+        //             return $task;
+        //         });
+        // }
 
         return ['created_task'=>$created_task, 'assigned_task'=>$assigned_task];
 
@@ -262,53 +267,6 @@ class WorkFlowController extends Controller
 
         return inertia('Workflow/Workflows', compact('created_task', 'assigned_task'));
     }
-
-    // public function createWorkFlow(Request $request){
-    //     $wkflow = new Workflow();
-    //     $wkflow->title = $request->title;
-    //     $wkflow->emoji = $request->emoji;
-    //     $wkflow->created_by = auth()->user()->id;
-    //     $wkflow->save();
-    //     return redirect()->back();
-    // }
-
-    // public function createTask(Request $request){
-    //     $request->validate([
-    //         'start' => 'required',
-    //         'end' => 'required',
-    //         'title' => 'required',
-    //         'workflow_id' => 'required'
-    //     ]);
-
-    //     if($request->file('file')){
-    //         $file = $request->file('file');
-    //        // $extension = strtolower($file->getClientOriginalExtension());
-    //         $fileName = time() . '_' . $file->getClientOriginalName();
-    //         $path = "/workflow";
-    //         $file->move(public_path($path),$fileName);
-    //     }
-
-    //     $task = new Task();
-    //     $task->start = $request->start;
-    //     $task->end = $request->end;
-    //     $task->title = $request->title;
-    //     $task->description = $request->description;
-    //     $task->workflow_id = $request->workflow_id;
-    //     $task->document_type = $request->documentType;
-    //     if($request->file('file')){
-    //         $task->file_path = $path.'/'.$fileName;
-    //     }
-    //     $task->save();
-
-    //     $ids = explode(',', $request->userIds);
-    //     $task->user()->sync($ids);
-
-    //     //user notification
-    //     $users = User::whereIn('id', $ids)->get();
-    //     Notification::send($users, new TaskNotification($request->title));
-
-    //     return redirect()->back();
-    // }
 
     public function getBranchType(){
         $user = auth()->user();

@@ -451,12 +451,25 @@ const submitForm = async () => {
     // }
     
 };
-const closeModal = async () => {
+const closeModal =  () => {
     try {
-        if (functionCalled.value === false && formData.value !== null) {
-            const response = await axios.post('/dashboard/mails/drafts', formData.value);
+
+       // if ( (formData.value.body !== ''|| formData.value.subject !== ''|| formData.value.recipient !== '')) {
+            const response =  axios.post('/dashboard/mails/drafts', formData.value);
             console.log('Response:', response.data); // Log the response
-        }
+       // }
+       if(form.body !== '' || form.subject !== '' || form.recipient !== ''){
+        form.post('/dashboard/mails/drafts',{onSuccess: ()=>{
+            toast.add({
+            severity: "info",
+                summary: "Draft Saved",
+                detail: "Your message has been saved to drafts.",
+                life: 3000,
+            });
+         }
+        });
+        
+       }
     } catch (error) {
         console.error('Error:', error.message);
     }

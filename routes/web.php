@@ -62,7 +62,8 @@ Route::middleware('guest')->group(function(){
     Route::get('/phone-exist', [RegistrationController::class, 'checkPhoneExist']);
     Route::get('/password/reset/{email}', [PasswordController::class, 'passwordReset'])->name('password.reset');
     Route::post('/password/reset', [PasswordController::class, 'ResetUserPassword']);
-
+    Route::get('/password/recovery', [PasswordController::class, 'getPasswordResetPage'])->name('password.recovery');
+    Route::post('/user-forgot-password', [PasswordController::class, 'passwordRecovery'])->name('user.forgot.password');
 });
 
 
@@ -226,6 +227,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::post('/mails/drafts', [MailController::class, 'isDraft'])->middleware('permission:mails create');
                 Route::get('/mails/drafts', [MailController::class, 'getDrafts'])->middleware('permission:mails create');
                 Route::get('/mails/delete/{id}', [MailController::class, 'deleteMail'])->middleware('permission:mails delete');
+                Route::post('/mails/reply-email', [MailController::class, 'sendReply'])->middleware('permission:mails create');
                 Route::get('/get-all-mails-folder/{folder}', [MailController::class, 'getAllMailsFolders']);
 
                 //workflow
@@ -240,7 +242,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
                 Route::get('/download-task-file/{file_name}', [TaskController::class, 'downloadFile'])->middleware('permission:workflow view');
                 Route::post('/task-comment', [TaskController::class, 'taskComment']);
                 Route::get('/remove-task-image', [TaskController::class, 'removeTaskImage'])->middleware('permission: workflow update');
-                Route::post('/reassign-task', [TaskController::class, 'reAssignTask']);
+                Route::post('/assign-task', [TaskController::class, 'AssignTask']);
                 Route::post('/task-submission', [TaskController::class, 'taskSubmission']);
                 Route::post('/mark-as-completed', [TaskController::class, 'markAsComplete']);
                 Route::post('/request-revision', [TaskController::class, 'requestRevision']);

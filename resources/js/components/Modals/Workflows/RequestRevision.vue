@@ -86,7 +86,10 @@ const visible = computed({
 
 const form = useForm({
   id: null,
-  description: ''
+  description: '',
+  assigned_to: (props.task.assignments && props.task.assignments.length > 0)?props.task.assignments[0].assigned_to: '',
+  assigned_by: (props.task.assignments && props.task.assignments.length > 0)?props.task.assignments[0].assigned_by: '',
+  task_assignment_id: (props.task.assignments && props.task.assignments.length > 0)? props.task.assignments[0].id: null
 })
 
 const closeModal = () => {
@@ -101,7 +104,7 @@ const submit = () => {
   toast.add({
     severity: "success",
     summary: "Task Submitted",
-    detail: "Your task as been marked as complete and is under review",
+    detail: "You have requested for a revision of task successfully",
     life: 3000,
   });
   }})

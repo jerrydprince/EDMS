@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tasks', function (Blueprint $table) {
+        Schema::create('task_assignment_files', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->date('start');
-            $table->date('end');
-            $table->string('file_path')->nullable();
-            $table->text('description')->nullable();
-            $table->string('document_type');
-            $table->integer('workflow_id');
+            $table->unsignedBigInteger('task_assignment_id');
+            $table->foreign('task_assignment_id')->references('id')->on('task_assignments')->onDelete('cascade');
+            $table->string('path');
             $table->timestamps();
         });
     }
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tasks');
+        Schema::dropIfExists('task_assignment_files');
     }
 };

@@ -16,6 +16,7 @@ class SettingsController extends Controller
     //profile
     public function settings(){
         $user = auth()->user();
+        $user->email_password = $user->email_password ? Crypt::decrypt($user->email_password) : null;
         return inertia('dashboard/settings/Settings', compact('user'));
     }
 

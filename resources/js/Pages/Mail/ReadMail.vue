@@ -29,14 +29,14 @@
         </div>
 
         <!-- ======================    MESSAGE BODY   =============== -->
-        <div class="w-full border-[1.5px] border-gray-300 rounded-xl p-10 my-10" v-for="(item, key) in mail.data" :key="key">
+        <div class="w-full border-[1.5px] border-gray-300 rounded-xl p-10 my-10"  :key="key">
             <div class="flex items-center w-full justify-between" >
                 <div class="flex items-center gap-5">
                     <div>
-                        {{ item.sender ? item.sender : 'Blank' }}
+                        {{ (mail && mail.sender) ? mail.sender : 'Blank' }}
                         <div class="flex items-center gap-1 text-xs">
-                            <p>{{ item.recipient }}</p>
-                            <p>{{ new Date(item.created_at).toDateString() }}<small>({{returnDifference(item.created_at)}})</small></p>
+                            <p>{{ (mail && mail.recipient)?mail.recipient: '' }}</p>
+                            <p v-if="mail && mail.created_at">{{ new Date(mail.created_at).toDateString() }}<small>({{returnDifference(mail.created_at)}})</small></p>
                         </div>
                     </div>
                 </div>
@@ -47,14 +47,44 @@
                 </button>
             </div>
             <div class="mt-10">
-                <h1 class="font-semibold text-xl">{{item.subject}}</h1>
+                <h1 class="font-semibold text-xl">{{(mail && mail.subject)? mail.subject: ''}}</h1>
                 <!-- <p v-html="message"></p> -->
-                <p v-html="item.body"></p>
-                <div v-for="(doc, index) in item?.attachments" :key="index">
-                    <!-- <iframe :src="'\storage\app/' + doc?.file_path"> </iframe> -->
-                    <embed :src="'\storage\app/' + doc?.file_path" />
+                <p v-if="mail && mail.body" v-html="mail.body"></p>
+                <p v-if="mail && mail.body_text" v-html="mail.body_text"></p>
+                 <!-- <p v-else v-html="mail.body_text"></p> -->
+                <!-- Display all attached files -->
+                <div v-if="mail?.attachments && mail.attachments.length > 0" class="my-5">
+                    <h2 class="font-semibold text-lg mb-3">Attachments ({{ mail.attachments.length }})</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div v-for="(attachment, index) in mail.attachments" :key="index"
+                            class="border rounded-md p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
+                                    <Icon icon="vscode-icons:file-type-pdf2" width="25" v-if="attachment.file_path?.endsWith('.pdf')" />
+                                    <Icon icon="vscode-icons:file-type-word" width="25" v-else-if="attachment.file_path?.endsWith('.doc') || attachment.file_path?.endsWith('.docx')" />
+                                    <Icon icon="vscode-icons:file-type-excel2" width="25" v-else-if="attachment.file_path?.endsWith('.xls') || attachment.file_path?.endsWith('.xlsx')" />
+                                    <Icon icon="vscode-icons:file-type-image" width="25" v-else-if="attachment.file_path?.match(/\.(jpg|jpeg|png|gif|bmp)$/i)" />
+                                    <Icon icon="vscode-icons:default-file" width="25" v-else />
+                                </div>
+                                <div>
+                                    <h1 class="text-sm">{{ attachment.file_name || attachment.file_path?.split('/').pop() || 'Attachment ' + (index + 1) }}</h1>
+                                    <p class="text-xs text-gray-400">{{ attachment.file_size || 'Unknown size' }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <a :href="'/storage/' + attachment.file_path" target="_blank" class="cursor-pointer">
+                                    <Icon icon="ph:eye-light" width="25" />
+                                </a>
+                                <a :href="'/storage/' + attachment.file_path" download class="cursor-pointer">
+                                    <Icon icon="material-symbols-light:download" width="25" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <Divider />
+                
                 <!-- Copy\storage\app/public/sNIwuIWBqb1REKCrKhcUKfdBwmE254eyzsCL2mzz.docx -->
                 <!-- <div class="border-b mb-5 grid grid-cols-2 gap-10">
                     <div v-for="(document, index) in documents" :key="index"
@@ -256,10 +286,11 @@
 import { ref, onMounted, defineProps } from "vue";
 //import DeleteMailMessage from '../../components/modals/Mail/DeleteMailMessage.vue';
 import image from '../../assets/images/members/1.svg'
-import { usePage, Link } from "@inertiajs/vue3";
+import { usePage, Link, router } from "@inertiajs/vue3";
+import { useToast } from "primevue/usetoast";
 
 const props = defineProps(['id']);
-console.log(props);
+const toast = useToast();
 
 const mail = ref([]);
 const currentDate = ref(new Date());
@@ -268,7 +299,7 @@ const timeDifference = ref('');
 const getSingleMail = async () => {
     try {
         const response = await axios.get(`/dashboard/mails/SingleMail/${props.id}`);
-        mail.value = response.data;
+        mail.value = response.data.data;
         console.log(mail.value)
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -321,9 +352,6 @@ const handleReply = (action) => {
         });
     }
 
-};
-const goBack = () => {
-    router.go(-1);
 };
 
 const searchInput = ref("");
@@ -427,6 +455,38 @@ const closeCarbonCopy = () => {
     Cc.value = false;
     CarbonCopy.value = [];
 };
+
+const submitForm = ()=>{
+    const formData = {
+        original_subject: mail.value.subject,
+        original_from: mail.value.from_name,
+        original_body: mail.value.body,
+        original_date: mail.value.received_at,
+        original_message_id: mail.value.message_id,
+        recipient:mail.value.recipient,
+        body: SendMessage.value,
+    };
+
+    router.post('/dashboard/mails/reply-email', formData, {
+        onSuccess: () => {
+            respond.value = false;
+            SendMessage.value = '';
+            Tags.value = [];
+            BlindCarbonCopy.value = [];
+            CarbonCopy.value = [];
+            getSingleMail()
+            toast.add({
+                    severity: "success",
+                    summary: "Mail sent successfully",
+                    detail: "Your message has been sent successfully.",
+                    life: 3000,
+                });
+        },
+        onError: (errors) => {
+            console.log(errors);
+        },
+    });
+}
 
 const documents = ref([
     {

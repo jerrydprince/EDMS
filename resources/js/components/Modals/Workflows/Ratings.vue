@@ -201,21 +201,23 @@ import { defineEmits, defineProps, computed, ref, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import RangeSlider from "../../../components/MulticolorSlider.vue";
 import SingleColorSlide from "../../../components/SingleColorSlide.vue";
-import {router} from "@inertiajs/vue3"
+import {router, usePage} from "@inertiajs/vue3"
 
 const props = defineProps(["modelValue", 'task']);
 
 const toast = useToast();
 const form = ref([])
-const page_count = ref()
+const page_count = ref(1)
 const activePage = ref(1);
 const maxPage = 4;
 const percentage = ref();
 const kra = ref()
 const percent_increment = ref(0)
 const description = ref()
+const page = usePage()
+const user = computed(() => page.props.user);
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "taskReload"]);
 const visible = computed({
   get() {
     return props.modelValue;
@@ -227,12 +229,13 @@ const visible = computed({
 
 const singleSlider = (item, event)=>{
   let obj = {
-    user_id: props.task.task_submission[0]?.user_id,
+    user_id: props.task.assignments[0]?.assigned_to?.id,
     key: item.key,
     value: event.target.value?event.target.value: 4,
     kra_value: item.value,
     string: item.string,
     task_id: props.task.id,
+    task_assignment_id: props.task.assignments[0]?.id,
     created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
   }
 
@@ -245,18 +248,18 @@ const singleSlider = (item, event)=>{
   }else{
     form.value.push(obj)
   }
-  console.log(item)
-  console.log(event.target.value)
+ 
 }
 
-const Slider = (item, event)=>{
+const Slider = (item, event)=>{console.log(event.target.value)
   let obj = {
-    user_id: props.task.task_submission[0]?.user_id,
+    user_id: props.task.assignments[0]?.assigned_to?.id,
     key: item.key,
-    value: event.target.value?event.target.value: 4,
+    value: event.target.value?event.target.value: 0,
     kra_value: item.value,
     string: item.string,
     task_id: props.task.id,
+    task_assignment_id: props.task.assignments[0]?.id,
     created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
   }
 
@@ -293,8 +296,11 @@ const closeModal = () => {
 
 const submit = () => {
   //form.value.description = description.value
-  router.post('/dashboard/rate-user',{form:form.value, user_id: form.value[0].user_id, description: description.value}, {onSuccess: page=>{
+  router.post('/dashboard/rate-user',
+    {form:form.value, user_id: form.value[0].user_id, description: description.value}, 
+      {onSuccess: page=>{
     emit("update:modelValue", false);
+    emit('taskReload');
     activePage.value = 1;
     percentage.value = 0;
 
@@ -308,8 +314,11 @@ const submit = () => {
 };
 
 const getTimeDifference = () => {
-  let time1 = props.task.created_at;
-  let time2 = props.task?.task_submission[props.task?.task_submission.length - 1]?.created_at
+  // let time1 = props.task.created_at;
+  // let time2 = props.task?.task_submission[props.task?.task_submission.length - 1]?.created_at
+
+  let time1 = props.task?.assigned_to_me[0]?.created_at
+  let time2 = props.task?.assigned_to_me[0]?.task_submissions[0]?.created_at
 
   if (time1 && time2) {
     time1 = new Date(time1);
@@ -347,7 +356,8 @@ const getTimeDifference = () => {
 }
 
 const getDepartmentKRA = () => {
-  let user_id = props.task.task_submission[0]?.user_id;
+  let user_id = props.task.assignments[0]?.assigned_to?.id;
+  
   if (user_id) {
     axios.get('/dashboard/get-department-kra', { params: { user_id: user_id } }).then((response) => {
       kra.value = response.data

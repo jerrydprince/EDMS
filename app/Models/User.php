@@ -204,4 +204,14 @@ class User extends Authenticatable
    {
        return $this->hasOne(User::class, 'assigned_by', 'id');
    }
+
+   /**
+    * Get all of the drafts for the User
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+   public function drafts()
+   {
+       return $this->hasMany(DraftModel::class, 'user_id', 'id');
+   }
 }

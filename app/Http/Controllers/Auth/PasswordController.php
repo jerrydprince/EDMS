@@ -39,4 +39,9 @@ class PasswordController extends Controller
                     ? back()->with(['status' => __($status)])
                     : back()->withErrors(['email' => __($status)]);
     }
+
+    public function getPasswordResetPage(Request $request){
+        $email = $request->email;
+       return view('password-reset');
+    }
 }

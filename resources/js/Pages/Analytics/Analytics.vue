@@ -1,29 +1,34 @@
 <template>
-    <div class=" px-5 md:px-7 py-5">
+    <div class="px-5 md:px-7 py-5">
         <div class="flex items-center gap-3">
             <div class="p-5 border rounded-full">
                 <Icon icon="carbon:analytics" width="30" />
             </div>
             <div>
                 <div class="flex items-center gap-5 mb-2">
-                    <h1 class=" text-2xl md:text-3xl font-semibold text-[#1D2939]">Analytics</h1>
-                    <div class="text-sm flex items-center gap-5 mt-4">
-                        <div class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl">
+                    <h1
+                        class="text-2xl md:text-3xl font-semibold text-[#1D2939]"
+                    >
+                        Analytics
+                    </h1>
+                    <div class="text-sm flex items-center gap-5 mt-1 md:mt-4">
+                        <div
+                            class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl"
+                        >
                             <Icon icon="mynaui:key" />
-                            <p>Admin</p>
+                            <p class="text-sm md:text-base">Admin</p>
                         </div>
                     </div>
                 </div>
-                <p class="text-[#667085]  text-sm md:text-base">
-                    This dashboard focuses on strategic metrics and overall system
-                    performance.
+                <p class="text-[#667085] text-sm md:text-base">
+                    This dashboard focuses on strategic metrics and overall
+                    system performance.
                 </p>
             </div>
         </div>
     </div>
 
     <section class="bg-slate-50 pb-10 px-5 md:px-7 pt-5">
-
         <system_analytics v-if="stat" :stat="stat" />
         <!-- <Department_Metrics/>
 <div class=" md:flex items-center gap-5">
@@ -42,24 +47,21 @@
         <!-- <SystemUptime /> -->
         <!-- <ResponseTime/> -->
     </section>
-
-
 </template>
 
 <script setup>
 import { ref, computed, onMounted, provide } from "vue";
 import AccessLevel from "../../components/AdminAnalytics/AccessLevel.vue";
 import ResponseTime from "../../components/AdminAnalytics/ResponseTime.vue";
-import system_analytics from "../../components/AdminAnalytics/system-analytics.vue"
+import system_analytics from "../../components/AdminAnalytics/system-analytics.vue";
 import Backup from "../../components/AdminAnalytics/BackupStatus.vue";
 import ExecutiveSummary from "../../components/ADF-Analytics/ExecutiveSummary.vue";
 import LoginActivity from "../../components/AdminAnalytics/LoginActivity.vue";
 import SystemUptime from "../../components/ADF-Analytics/SystemUptime.vue";
-import Department_Metrics from '../../components/Director-analysis/Department-metrics.vue';
+import Department_Metrics from "../../components/Director-analysis/Department-metrics.vue";
 import workflowSummary from "../../components/Director-analysis/workflow-summary.vue";
 import CommunicationMetric from "../../components/Director-analysis/communication-metrics.vue";
-import EmployeeProductivity from "../../components/Director-analysis/Employee-Productivity.vue"
-
+import EmployeeProductivity from "../../components/Director-analysis/Employee-Productivity.vue";
 
 import image1 from "../../assets/images/Chart_gain.svg";
 import image2 from "../../assets/images/Chart_loss.svg";
@@ -74,38 +76,38 @@ const handleSelection = (index) => {
 };
 const getStat = async () => {
     try {
-        const response = await axios.get('/dashboard/analytics/server-status');
+        const response = await axios.get("/dashboard/analytics/server-status");
         stat.value = response.data;
-        console.log('stats here', stat.value);
+        console.log("stats here", stat.value);
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
     }
 };
-provide('stat', stat)
-provide('roles', roles)
+provide("stat", stat);
+provide("roles", roles);
 const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toISOString().slice(0, 19).replace('T', ' ');
+    return date.toISOString().slice(0, 19).replace("T", " ");
 };
 const getLogins = async () => {
     try {
-        const response = await axios.get('/dashboard/analytics/user-logins');
-        logins.value = response.data.map(login => ({
+        const response = await axios.get("/dashboard/analytics/user-logins");
+        logins.value = response.data.map((login) => ({
             ...login,
-            created_at: formatTimestamp(login.created_at)
+            created_at: formatTimestamp(login.created_at),
         }));
-        console.log('logins details here', logins.value);
+        console.log("logins details here", logins.value);
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
     }
 };
 const getRoles = async () => {
     try {
-        const response = await axios.get('/dashboard/analytics/roles');
-        roles.value = response.data
-        console.log('roles here', roles.value);
+        const response = await axios.get("/dashboard/analytics/roles");
+        roles.value = response.data;
+        console.log("roles here", roles.value);
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
     }
 };
 // const buttonToggle = ref(1)
@@ -166,10 +168,10 @@ const overviews = [
     },
 ];
 onMounted(() => {
-    getStat()
-    getLogins()
-    getRoles()
-})
+    getStat();
+    getLogins();
+    getRoles();
+});
 </script>
 
 <style scoped>

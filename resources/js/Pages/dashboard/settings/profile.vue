@@ -91,6 +91,25 @@
 
     <Divider />
 
+    <div class=" flex items-center gap-44 ">
+      <div>
+        <h1 class=" text-lg font-semibold">Email Password</h1>
+        <p class="#667085 text-base font-light">Enter password to receive Email</p>
+      </div>
+
+      <div class=" flex items-center gap-3">
+        <div class=" flex  items-center  border border-gray-300 rounded-md overflow-hidden ">
+          <!-- <i class="pi pi-key text-gray-300 px-2"></i> -->
+          <input :type="showPassword ? 'text' : 'password'" class=" outline-none p-2  w-[400px]" v-model="form.email_password">
+          <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" class="text-gray-300 px-2 cursor-pointer" @click="showPassword = !showPassword"></i>
+        </div>
+
+      </div>
+
+    </div>
+
+    <Divider />
+
 
     <div class=" flex items-center  gap-52 ">
       <div>
@@ -125,9 +144,12 @@ const url = ref('')
 const toast = useToast();
 const page = usePage()
 const roles = computed(()=> page.props.user_roles)
+const showPassword = ref(false)
+const permissions = computed(()=> page.props.permissions)
 
 const form = useForm({
-  file: null
+  file: null,
+  email_password: props.user.email_password? props.user.email_password : '',
 })
 
 

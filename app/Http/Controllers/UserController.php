@@ -51,46 +51,73 @@ class UserController extends Controller
         //$branchType = $this->getBranchType();
         if($this->isRole('unit heads')){
             $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
+                ->where('unit_id', auth()->user()->unit_id)
+            ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')
+            ->get();
+            return response()->json(['data' => $users, 'type'=>'users']);
+        }
+
+        if($this->isRole('division heads')){ 
+            $units = Unit::withWhereHas('users', function($query){
+                $query->role('unit heads');
+            }) ->where('title', 'LIKE', '%'.$request->search.'%')
+            ->where('division_id', auth()->user()->division_id)
+            ->get();
+            return response()->json(['data'=>$units, 'type'=>'unit']);
+        }
+
+        if($this->isRole('directors')){
+            $divisions = Division::withWhereHas('users', function($query){
+                $query->role('division heads');
+            }) ->where('title', 'LIKE', '%'.$request->search.'%')
+            ->where('department_id', auth()->user()->department_id)
+            ->get();
+            return response()->json(['data'=>$divisions, 'type'=>'division']);
+        }
+
+        if($this->isRole('super users')){
+            $departments = Department::withWhereHas('user', function($query){
+                $query->role('directors');
+            })
+            ->where('title', 'LIKE', '%'.$request->search.'%')->get();
+           
+            return response()->json(['data'=>$departments, 'type'=>'department']);
+        }
+
+        if($this->isRole('super admin') || $this->isRole('admin')){
+            $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
+                ->where('unit_id', auth()->user()->unit_id)
             ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')->get();
             return response()->json(['data' => $users, 'type'=>'unit']);
         }
 
-        if($this->isRole('division heads')){ 
-            $divisions = Unit::where('division_id', auth()->user()->division_id)->get();
-            return response()->json(['data'=>$divisions, 'type'=>'division']);
-        }
-
-        if($this->isRole('directors')){
-            $departments = Division::where('department_id', auth()->user()->department_id)->get();
-            return response()->json(['data'=>$departments, 'type'=>'department']);
-        }
-
-        if($this->isRole('super users')){
-            $departments = Department::where('title', 'LIKE', '%'.$request->search.'%')->get();
-            return response()->json(['data'=>$departments, 'type'=>'department']);
-        }
         
     }
 
     public function updateProfileImage(Request $request){
         $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         $user = User::find(auth()->user()->id);
+        if($request->file('file')){
+             $image = $request->file('file');
+            $imageName = time() . '.' . $image->extension();
+            $path = 'users'.'/'.$imageName;
+            $image->move(public_path('users'), $imageName);
 
-        $image = $request->file('file');
-        $imageName = time() . '.' . $image->extension();
-        $path = 'users'.'/'.$imageName;
-        $image->move(public_path('users'), $imageName);
+            //delete old images
+            if($user->profile_image){
+                unlink(public_path($user->profile_image));
+            }
 
-        //delete old images
-        if($user->profile_image){
-            unlink(public_path($user->profile_image));
+            //update user
+            $user->profile_image = $path;
         }
-
-        //update user
-        $user->profile_image = $path;
+       
+        if($request->email_password){
+            $user->email_password = encrypt($request->email_password);
+        }
         $user->save();
         
         return redirect()->back();

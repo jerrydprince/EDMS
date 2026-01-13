@@ -10,7 +10,7 @@
 </head>
 <body>
     <div>
-        <div class=" grid grid-cols-12 max-h-screen overflow-y-hidden">
+        <div class="hidden md:grid grid-cols-12 max-h-screen overflow-y-hidden">
             <!-- left section of the login page -->
             <div class="col-span-6 bg-primary">
                 <div class="flex mt-16 flex-col w-11/12 ml-auto">
@@ -167,7 +167,7 @@
 
                                 <div class="relative mt-4">
                                     <label for="password" class=" text-gray-600 block">Password 
-                                        <span class="text-end absolute right-0" tabindex="-1"><a href="#" class="text-primary" tabindex="-1">Forgot password</a></span>
+                                        <span class="text-end absolute right-0" tabindex="-1"><a href="{{ route('password.recovery') }}" class="text-primary" tabindex="-1">Forgot password</a></span>
                                     </label>
                                     <div class="relative mt-1">
                                         <input type="password" required name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-primary focus:ring-primary disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter password">
@@ -192,6 +192,69 @@
                 </div>
             </div>
         </div>
+        <div class="md:hidden bg-white">
+                <div class=" w-4/6 mx-auto mt-32">
+                    <div class=" flex items-center justify-center">
+                        <svg width="54" height="54" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.5" y="0.5" width="63" height="63" rx="14.0455" fill="white"/>
+                            <rect x="0.5" y="0.5" width="63" height="63" rx="14.0455" stroke="#EAECF0"/>
+                            <path d="M43.6365 45.091V42.1819C43.6365 40.6388 43.0235 39.159 41.9324 38.0678C40.8413 36.9767 39.3614 36.3637 37.8183 36.3637H26.182C24.6389 36.3637 23.159 36.9767 22.0679 38.0678C20.9768 39.159 20.3638 40.6388 20.3638 42.1819V45.091M37.8183 24.7274C37.8183 27.9407 35.2134 30.5455 32.0001 30.5455C28.7868 30.5455 26.182 27.9407 26.182 24.7274C26.182 21.5141 28.7868 18.9092 32.0001 18.9092C35.2134 18.9092 37.8183 21.5141 37.8183 24.7274Z" stroke="#475467" stroke-width="2.90909" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            
+                    </div>
+                    <div class="mt-4">
+                        <h3 class=" text-3xl mt-4 text-center font-bold">
+                            Welcome Back
+                        </h3>
+                        <p class="text-center mt-2 text-gray-500">Enter your credentials to access your account.</p>
+                        <div class="mt-10">
+                        @if ($errors->any())
+                            <div class=" py-2 px-4 bg-red-400 text-white rounded-lg">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                            {{-- <form action="{{route('post-login')}}" method="post"> --}}
+                                <form action="{{url('/login')}}" method="post">
+                                <div>
+                                    <label for="username" class=" text-gray-600">Username</label>
+                                    <div class="relative mt-1">
+                                        <input type="email" required name="email" class="peer py-3 px-4 ps-11 block w-full bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter Email" value="{{old('email')}}">
+                                        <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
+                                            <svg class="flex-shrink-0 w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="relative mt-4">
+                                    <label for="password" class=" text-gray-600 block">Password 
+                                        <span class="text-end absolute right-0" tabindex="-1"><a href="#" class="text-primary" tabindex="-1">Forgot password</a></span>
+                                    </label>
+                                    <div class="relative mt-1">
+                                        <input type="password" required name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-primary focus:ring-primary disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter password">
+                                        <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
+                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6">
+                                    <button class=" bg-primary w-full text-white px-4 py-2 rounded-lg hover:bg-primary_hover">Login</button>
+                                </div>
+                                <div class="mt-6">
+                                    <p class="text-center text-gray-500">Do you have an account? <a href="{{route('registration')}}" class=" text-primary">Request an account</a></p>
+                                </div>
+                                @csrf
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 </body>
 {{-- <script src="{{mix('js/app.js')}}"></script> --}}

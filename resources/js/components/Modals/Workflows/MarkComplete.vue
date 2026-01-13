@@ -13,7 +13,7 @@
             <Icon icon="mdi:tick" width="30" />
           </div>
           <div>
-            <h1 class="text-2xl font-medium">Mark as complete</h1>
+            <h1 class="text-2xl font-medium">Submit Task</h1>
           </div>
         </div>
       </div>
@@ -85,14 +85,17 @@ import {useForm, router, usePage } from "@inertiajs/vue3";
 const progressModal = ref(false)
 
 const toast = useToast()
-const props = defineProps(["modelValue", 'task']);
+const props = defineProps(["modelValue", 'task', 'assignedToMe']);
 const emit = defineEmits(["update:modelValue"]);
 const files = ref([]);
 const form = useForm({
   task_id:null,
   description: "",
   is_revision:0,
-  files:null
+  files:null,
+  assigned_to: (props.assignedToMe && props.assignedToMe.length > 0)?props.assignedToMe[0]?.assigned_to: '',
+  assigned_by: (props.assignedToMe && props.assignedToMe.length > 0)?props.assignedToMe[0]?.assigned_by: '',
+  task_assignment_id: (props.assignedToMe && props.assignedToMe.length > 0)? props.assignedToMe[0].id: null
 })
 const page = usePage()
 
