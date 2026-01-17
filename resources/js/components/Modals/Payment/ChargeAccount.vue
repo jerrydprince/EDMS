@@ -16,7 +16,7 @@
         class="flex flex-col items-start max-h-[75vh] overflow-y-scroll hide_scroll">
         <section class="w-[90%] m-auto">
           <div class="-ml-8 -mb-3">
-            <img src="../../../assets/images/votebook.svg" alt="reject task" class="drop-shadow-xl" />
+            <img :src="voteBooksIcon" alt="reject task" class="drop-shadow-xl" />
           </div>
           <div class="pb-4">
             <p class="text-xl md:text-2xl mt-3 mb-3 font-semibold text-gray-800">
@@ -87,7 +87,7 @@
         class="flex flex-col items-start max-h-[85vh] overflow-y-scroll hide_scroll">
         <section class="w-[90%] m-auto">
           <div class="-ml-8 -mb-3">
-            <img src="../../../assets/images/votebook.svg" alt="reject task" class="drop-shadow-xl" />
+            <img :src="voteBooksIcon" alt="reject task" class="drop-shadow-xl" />
           </div>
           <div class="pb-4">
             <p class="text-xl md:text-2xl md:mt-3 mb-3 font-semibold text-gray-800">
@@ -188,7 +188,7 @@
       </section>
       <!-- Step 3 - Deduction Voucher Generating -->
       <section v-else-if="currentStep === 3" key="step3" class="flex flex-col items-center">
-        <img src="../../../assets/images/votebook.svg" alt="votebook icon" width="170" height="170" class="drop-shadow-xl" />
+        <img :src="voteBooksIcon" alt="votebook icon" width="170" height="170" class="drop-shadow-xl" />
         <div class="flex flex-col items-center p-4 md:p-8 gap-y-3 -mt-16">
           <Icon icon="line-md:loading-alt-loop" width="44" />
           <p class="text-xl md:text-2xl text-gray-800 font-semibold">
@@ -211,7 +211,7 @@
       </section>
       <!-- Step 4 - Voucher Generated -->
       <section v-else-if="currentStep === 4" key="step4" class="flex flex-col items-start">
-        <img src="../../../assets/images/voucher_generated.svg" alt="votebook icon" width="160" height="100"
+        <img :src="voucherGeneratedIcon" alt="votebook icon" width="160" height="100"
           class="drop-shadow-xl mt-2 -mb-3" />
         <div class="flex flex-col items-start gap-y-3 px-7">
           <p class="text-xl md:text-2xl font-semibold text-gray-800">Voucher Generated</p>
@@ -258,7 +258,7 @@
       <div v-if="currentStep === 1" class="flex items-center justify-between pb-2 pr-3 md:pr-7">
         <div class="flex items-center gap-3">
           <div class="-ml-1 mt-1 -mr-6 -mb-4">
-            <img src="../../../assets/images/votebook.svg" alt="reject task" class="drop-shadow-xl" width="93" />
+            <img :src="voteBooksIcon" alt="reject task" class="drop-shadow-xl" width="93" />
           </div>
           <div class="mt-2">
             <p class="font-medium font-sm md:text-base mb-1">
@@ -286,6 +286,9 @@
 import { defineEmits, ref, computed , onMounted, watch, defineProps} from "vue";
 import { useToast } from "primevue/usetoast";
 import { formatAmount, formatWithCommas } from "../../../utils/formatAmount";
+import voteBooksIcon from "../../../../../public/images/votebook.svg";
+import voucherGeneratedIcon from "../../../../../public/images/voucher_generated.svg";
+
 import { useForm, usePage } from "@inertiajs/vue3";
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled", "refreshPayment"]);

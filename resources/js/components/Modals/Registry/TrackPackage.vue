@@ -75,7 +75,7 @@
                         </div>
                     </div>
                     <div v-else class="flex flex-col items-center my-5">
-                        <img :src="'/assets/images/search.svg'" alt="" />
+                        <img :src="searchIcon" alt="" />
                         <h1 class="font-medium mt-3 text-lg">
                             No Result Found
                         </h1>
@@ -128,6 +128,7 @@ import { defineEmits, defineProps, onMounted, computed, ref, watch } from "vue";
 import ViewPackage from "../../Modals/Registry/ViewPackage.vue";
 import { useToast } from "primevue/usetoast";
 import image from "../../../assets/images/members/1.svg";
+import searchIcon from "../../../../../public/images/search.svg";
 import debounce from "lodash.debounce";
 import axios from "axios";
 

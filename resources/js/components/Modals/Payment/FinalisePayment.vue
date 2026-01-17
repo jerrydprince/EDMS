@@ -15,7 +15,7 @@
   >
     <section class="flex flex-col items-start">
       <div class="items-start justify-center flex -ml-3 -mt-2">
-        <img src="../../../assets/images/accepttask.svg" alt="reject task" />
+        <img :src="accepttask" alt="reject task" />
       </div>
       <div class="border-b border-solid border-[#E6E6E6] pb-4">
         <p class="text-2xl mt-3 mb-3 font-semibold text-gray-800">
@@ -58,6 +58,7 @@
 import { defineEmits, ref, computed, defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
 import { router } from "@inertiajs/vue3";
+import accepttask from "../../../../../public/images/accepttask.svg";
 
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);

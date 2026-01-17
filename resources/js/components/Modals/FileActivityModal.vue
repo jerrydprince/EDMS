@@ -5,7 +5,7 @@
         <template #header>
             <div class="flex items-center gap-3 -mb-6">
                 <div class="rounded-full py-4 px-4 border border-border_primary border-solid">
-                    <img :src="page.props.base+'/images/image.svg'" alt="">
+                    <img :src="imageIcon" alt="">
                 </div>
                 <div>
                     <p class="mb-1 font-medium text-lg">File Activity</p>
@@ -49,6 +49,8 @@
 <script setup>
 import { ref, defineEmits, defineProps, computed, watch } from "vue";
 import { useToast } from "primevue/usetoast";
+import imageIcon from "../../../../public/images/image.svg";
+
 import moment from 'moment';
 
 

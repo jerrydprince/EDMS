@@ -22,6 +22,7 @@ use App\Models\Division;
 use App\Models\Department;
 use App\Models\TaskAssignment;
 use App\Models\TaskAssignmentComments;
+use App\Notifications\TaskChangedNotification;
 
 class TaskController extends Controller
 {
@@ -218,6 +219,13 @@ class TaskController extends Controller
                         array_push($task_assignments, $data);
                     }
                     TaskAssignment::insert($task_assignments);
+
+                    //notify users
+                   
+                        $user = User::find(auth()->user()->id);
+                        $users = User::where('id', $request->users)->get();
+                        Notification::send($users, new TaskChangedNotification($task->id, $user, 'assigned'));
+                    
                 }
 
             }else{
@@ -227,11 +235,7 @@ class TaskController extends Controller
            DB::commit();
            //$users = User::where('id', $request->users)->get();
            //dd($users);
-           if($request->users){
-             $user = auth()->user()->id;
-             $users = User::where('id', $request->users)->get();
-             Notification::send($users, new TaskNotification($task,$user));
-           }
+           
             //broadcast()
            
         } catch (Exception $e) {
@@ -431,7 +435,7 @@ class TaskController extends Controller
         }, 'taskActivity' => function($query){
             $query->with('user')->oldest();
         },  'taskdocs'])->find($id);
-
+//dd($task);
 
         //  $task = Task::with('assignedToMe', ['assignments'=>function($query){
         //     $query->with(['assignedTo'=>function($q){
@@ -497,11 +501,11 @@ class TaskController extends Controller
         return response()->download($path);
     }
 
-    public function makeComment($comment_to, $comment){
-        $user = auth()->user();
+    public function makeComment($comment_to, $comment, $comment_obj){
+        $user = user::find(auth()->user()->id);
        
         $to = User::find($comment_to);
-        Notification::send($user, new CommentNotification($comment,$to));
+        Notification::send($to, new CommentNotification($comment,$user, $comment_obj));
            
     }
 
@@ -516,7 +520,8 @@ class TaskController extends Controller
         $comment->save();
 
         //notify user
-        $this->makeComment($request->comment_to, $request->comment);
+        $comment_obj = $comment->load('sentByUser');
+        $this->makeComment($request->comment_to, $request->comment, $comment_obj);
 
         // $comment = new Comment();
         // $comment->comment = $request->comment;
@@ -719,7 +724,7 @@ class TaskController extends Controller
                     $existingAssignment = TaskAssignment::where('task_id', $request->task_id)
                         ->where('assigned_to', $us['id'])
                         ->first();
-                    
+                   
                     if(!$existingAssignment){
                         $data = [
                             'task_id' => $request->task_id,
@@ -766,13 +771,20 @@ class TaskController extends Controller
                         array_push($user_names, $userName);
                     }
                 }
-            }
+             }
         }
 
         // Insert new assignments
         if(count($task_assignments) > 0){
             TaskAssignment::insert($task_assignments);
 
+            //change the task status to in progress
+            $task_assignment_count = TaskAssignment::where('task_id', $request->task_id)->count();
+            if($task_assignment_count >= 2){
+                $task->status = 'in progress';
+                $task->save();
+            }
+           
             // Log activity for each new assignment
             foreach($user_names as $userName){
                 $description = "Task reassigned to " . $userName;
@@ -781,15 +793,18 @@ class TaskController extends Controller
 
             // Send notifications to newly assigned users
             $users = User::whereIn('id', array_unique($user_ids))->get();
-          
-            foreach($users as $user){
-                // Add your notification logic here
-                // Example: 
-                // $user->notify(new TaskReassignedNotification($task));
-                // or
-                // Notification::send($user, new TaskReassignedNotification($task));
-            }
+            $assigner = User::find(auth()->user()->id);
+           Notification::send($users, new TaskChangedNotification($task->id, $assigner, 'assigned'));
         }
+          
+        //     foreach($users as $user){
+        //         // Add your notification logic here
+        //         // Example: 
+        //         // $user->notify(new TaskReassignedNotification($task));
+        //         // or
+        //         // Notification::send($user, new TaskReassignedNotification($task));
+        //     }
+        // }
 
         DB::commit();
         
@@ -881,6 +896,20 @@ class TaskController extends Controller
             $task_id = $request->task_id;
             $this->newTaskActivity($task_id, $description);
 
+            //if the user submitting is first on the assignment list, change the task status to under review
+            if ($task_assignment) {
+                $firstAssignment = TaskAssignment::where('task_id', $task_assignment->task_id)
+                    ->orderBy('created_at', 'asc')
+                    ->value('id');
+
+                $isFirstForTask = $task_assignment->id === $firstAssignment;
+                if ($isFirstForTask) {
+                    $task = Task::find($request->task_id);
+                    $task->status = 'under review';
+                    $task->save();
+                }
+            }
+
             //notify user
             $user = auth()->user()->id;
             $task = Task::find($request->task_id);
@@ -931,10 +960,10 @@ class TaskController extends Controller
            }
 
             //notify user
-            $user = auth()->user()->id;
+            $user = User::find(auth()->user()->id);
             $task = Task::find($request->id);
              $sent_to = User::where('id', $assigned_to)->first();
-             Notification::send($sent_to, new TaskNotification($task,$user));
+            Notification::send($sent_to, new TaskChangedNotification($task->id, $user, 'completed'));
         }
         return redirect()->back();
     }
@@ -943,7 +972,7 @@ class TaskController extends Controller
          $task = Task::find($request->id);
         // $task->status = 'revision';
         // $task->save();
-       
+      
         if($request->id && $request->task_assignment_id){
          
             $task_assignment = TaskAssignment::where('task_id', $request->id)
@@ -971,16 +1000,14 @@ class TaskController extends Controller
             $this->newTaskActivity($task_id, $description);
 
             //notify user
-            $user = auth()->user()->id;
+            $user = User::find(auth()->user()->id);
              $sent_to = User::where('id', $request->assigned_to)->first();
-             Notification::send($sent_to, new TaskNotification($task,$user));
+             Notification::send($sent_to, new TaskChangedNotification($task->id, $user, 'rejected'));
 
              //for super user
              if(auth()->user()->hasRole('super users')){
-                $task->status = 'completed';
-                $task->save();
-                // $director = User::role('directors')->first();
-                // Notification::send($director, new TaskNotification($task,$user));
+                // $task->status = 'completed';
+                // $task->save();
              }
 
         return redirect()->back();
@@ -1011,13 +1038,13 @@ class TaskController extends Controller
         }
     }
 
-    public function forwardTask(Request $request){dd($request->all());
+    public function forwardTask(Request $request){
         if($request->task){
-            if(isset($request->task['assigned_to_me']) && count($request->task['assigned_to_me']) > 0){
-                $assigned_to_me = $request->task['assigned_to_me'][0]['assigned_to'];
-                $assigned_by = $request->task['assigned_to_me'][0]['assigned_by'];
-                $task_id = $request->task['assigned_to_me'][0]['task_id'];
-                $assigned_task_assignment_id = $request->task['assigned_to_me'][0]['id'];
+            if(isset($request->task['assigned_to_me'])){
+                $assigned_to_me = $request->task['assigned_to_me']['assigned_to'];
+                $assigned_by = $request->task['assigned_to_me']['assigned_by'];
+                $task_id = $request->task['assigned_to_me']['task_id'];
+                $assigned_task_assignment_id = $request->task['assigned_to_me']['id'];
 
                 //check if these values exist in the assigned to me values
                 if($assigned_to_me && $assigned_by && $task_id && $assigned_task_assignment_id ){
@@ -1029,10 +1056,11 @@ class TaskController extends Controller
                             $assigned_to = $assignments[0]['assigned_to']['id'];
                             $task_assignment_id = $assignments[0]['id'];
 
-                            $task_submissions = TaskSubmission::with('taskSubmissionFiles')->where('task_id', $task_id)
-                                ->where('user_id', $assigned_to)
-                                ->where('task_assignment_id', $task_assignment_id)
-                                ->first();
+                            // $task_submissions = TaskSubmission::with('taskSubmissionFiles')->where('task_id', $task_id)
+                            //     ->where('user_id', $assigned_to)
+                            //     ->where('task_assignment_id', $task_assignment_id)
+                            //     ->first();
+                            $task_submissions = TaskSubmission::with('taskSubmissionFiles')->find($request->task_submission_id);
 
                             //if task submissions exist then move on to forward the task
                             if($task_submissions){
@@ -1082,6 +1110,12 @@ class TaskController extends Controller
                                 //update the task assignment status
                                 TaskAssignment::where('id', $assigned_task_assignment_id)
                                     ->update(['status'=>'review']);
+
+                                //notify user
+                                $user = User::find(auth()->user()->id);
+                                $task = Task::find($task_id);
+                                 $sent_to = User::where('id',  $assigned_to)->first();
+                                 Notification::send($sent_to, new TaskChangedNotification($task->id, $user, 'submitted'));
                             }
                         }
                     }

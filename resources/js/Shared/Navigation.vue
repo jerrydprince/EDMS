@@ -137,7 +137,7 @@
         </Link>
       </div>
 
-      <div class="pb-4 mb-10">
+      <div class="pb-4 mb-10" v-if="role.includes('super admin') || role.includes('super users') || role.includes('admin') || role.includes('directors') || role.includes('division heads') || role.includes('unit heads')">
         <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3 cursor-pointer" @click="branchesOpen = !branchesOpen">
           <div class="flex items-center gap-3">
             <Icon icon="octicon:git-branch-24" width="25" />

@@ -28,18 +28,170 @@ class WorkFlowController extends Controller
         }
     }
 
+    public function getCreatedTask($request){
+        $type = $this->getBranchType();
+        $searchTerm = $request->search; 
+        $created_task = [];
+        $assigned_task = [];
+        $btn = $request->assigned_btn;
+
+        //  $created_task = Task::with(['assignments' => function ($query) {
+        //         $query->with('assignedTo')
+        //             ->where('assigned_by', auth()->id());
+        //     }])
+        //     ->where('created_by', auth()->id())
+        //     ->when($request->status, function ($query, $status) {
+        //         $query->where('status', $status);
+        //     })
+        //     ->when($searchTerm, function ($query, $searchTerm) {
+        //         $query->where(function ($subQuery) use ($searchTerm) {
+        //             $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                     ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                     ->orWhere('status', 'like', "%{$searchTerm}%")
+        //                     ->orWhere('priority', 'like', "%{$searchTerm}%")
+        //                     ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //         });
+        //     })
+        //    // ->when($btn == 1, fn ($q) => $q->whereRaw('1 = 0')) // hide when viewing assigned
+        //     ->latest()
+        //     ->paginate(10)
+        //     ->withQueryString();
+        $created_task = Task::with('assignedToMe')
+            ->whereHas('assignments', function ($q) use ($request) {
+
+                // Always restrict to logged-in user
+                $q->where('assigned_by', auth()->id());
+
+                if ($request->status) {
+
+                    if ($request->status === 'uncompleted') {
+                        $q->where('status', 'uncompleted');
+                    } 
+                    else if (! auth()->user()->hasRole('super users')) {
+                        // NON super users → assignment status
+                        $q->where('status', $request->status);
+                    }
+
+                }
+            })
+            ->when(
+                $request->status === 'uncompleted',
+                fn ($q) => $q->where('due_date', '<', now())
+            )
+            ->when(
+                $request->status && auth()->user()->hasRole('super users'),
+                fn ($q) => $q->where('task.status', $request->status)
+            )
+            ->when($searchTerm, function ($q) use ($searchTerm) {
+                $q->where(function ($s) use ($searchTerm) {
+                    $s->where('tasks.title', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.description', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.status', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.priority', 'like', "%{$searchTerm}%")
+                    ->orWhereDate('tasks.due_date', $searchTerm);
+                });
+            })
+            ->where('created_by', auth()->id())
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+
+        return $created_task;
+    }
+
+    public function getAssignedTask($request){
+         $type = $this->getBranchType();
+        $searchTerm = $request->search; 
+        $created_task = [];
+        $assigned_task = [];
+        $btn = $request->assigned_btn;
+
+       
+
+        $assigned_task = Task::with('assignedToMe')
+            ->whereHas('assignments', function ($q) use ($request) {
+
+                // Always restrict to logged-in user
+                $q->where('assigned_to', auth()->id());
+
+                if ($request->status) {
+
+                    if ($request->status === 'uncompleted') {
+                        $q->where('status', 'uncompleted');
+                    } 
+                    else if (! auth()->user()->hasRole('super users')) {
+                        // NON super users → assignment status
+                        $q->where('status', $request->status);
+                    }
+
+                }
+            })
+            ->when(
+                $request->status === 'uncompleted',
+                fn ($q) => $q->where('due_date', '<', now())
+            )
+            ->when(
+                $request->status && auth()->user()->hasRole('super users'),
+                fn ($q) => $q->where('task.status', $request->status)
+            )
+            ->when($searchTerm, function ($q) use ($searchTerm) {
+                $q->where(function ($s) use ($searchTerm) {
+                    $s->where('tasks.title', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.description', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.status', 'like', "%{$searchTerm}%")
+                    ->orWhere('tasks.priority', 'like', "%{$searchTerm}%")
+                    ->orWhereDate('tasks.due_date', $searchTerm);
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+
+            return $assigned_task;
+
+    }
+
     public function getBranchTask($request){
 
         $type = $this->getBranchType();
         $searchTerm = $request->search; 
         $created_task = [];
         $assigned_task = [];
+        $btn = $request->assigned_btn;
 
-        $created_task = Task::where('created_by', auth()->user()->id)->latest()->paginate(10)->withQueryString();
-        $assigned_task = Task::withWhereHas('assignments', function($query){
-            $query->where('assigned_to', auth()->user()->id);
-        })->latest()->paginate(10)->withQueryString();
-     
+        // $created_task = Task::with(['assignments'=>function($query){
+        //     $query->with('assignedTo')->where('assigned_by', auth()->user()->id);
+        // }])
+        // ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('priority', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        // ->where('created_by', auth()->user()->id)->latest()->paginate(10)->withQueryString();
+
+        // $assigned_task = Task::withWhereHas('assignments', function($query){
+        //     $query->with('assignedBy')->where('assigned_to', auth()->user()->id);
+        // })
+        // ->when($searchTerm, function ($query, $searchTerm) {
+        //             $query->where(function ($subQuery) use ($searchTerm) {
+        //                 $subQuery->where('title', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('description', 'like', "%{$searchTerm}%")
+        //                          ->orWhere('status', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('priority', 'like', "%{$searchTerm}%" )
+        //                          ->orWhere('due_date', 'like', "%{$searchTerm}%");
+        //             });
+        //         })
+        // ->latest()->paginate(10)->withQueryString();
+
+        $created_task = $this->getCreatedTask($request);
+        $assigned_task = $this->getAssignedTask($request);
+
         // if($this->isRole('division heads')){
         //     $division = Division::find(auth()->user()->division_id);
         //     $created_task = Task::with('assignedByDivision')

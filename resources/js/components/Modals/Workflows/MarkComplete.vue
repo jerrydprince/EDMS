@@ -93,9 +93,9 @@ const form = useForm({
   description: "",
   is_revision:0,
   files:null,
-  assigned_to: (props.assignedToMe && props.assignedToMe.length > 0)?props.assignedToMe[0]?.assigned_to: '',
-  assigned_by: (props.assignedToMe && props.assignedToMe.length > 0)?props.assignedToMe[0]?.assigned_by: '',
-  task_assignment_id: (props.assignedToMe && props.assignedToMe.length > 0)? props.assignedToMe[0].id: null
+  assigned_to: (props.assignedToMe)?props.assignedToMe?.assigned_to: '',
+  assigned_by: (props.assignedToMe)?props.assignedToMe?.assigned_by: '',
+  task_assignment_id: (props.assignedToMe)? props.assignedToMe.id: null
 })
 const page = usePage()
 
@@ -127,7 +127,8 @@ const submit = () => {
   
   router.post('/dashboard/task-submission',form,{onSuccess:page=>{
     emit("update:modelValue", false);
-
+    form.reset();
+    files.value = [];
     toast.add({
       severity: "success",
       summary: 'Task Submitted',

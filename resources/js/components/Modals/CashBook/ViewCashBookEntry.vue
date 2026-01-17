@@ -20,7 +20,7 @@
     >
       <div class="w-full flex justify-between items-start">
         <img
-          :src="'/assets/images/cashbook.svg'"
+          :src="cashbookIcon"
           alt="ledger icon"
           class="w-28 md:w-40 -ml-4 md:-ml-8 -mt-6 drop-shadow-xl"
         />
@@ -128,6 +128,7 @@
 <script setup>
 import { defineEmits, ref, computed } from "vue";
 import { useToast } from "primevue/usetoast";
+import cashbookIcon  from "../../../../../public/images/cashbook.svg";
 
 const emit = defineEmits(["confirmed", "cancelled"]);
 const visible = ref(true);

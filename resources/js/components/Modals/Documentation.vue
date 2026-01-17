@@ -27,7 +27,7 @@
 
             <div v-for="(item, index) in docs" :key="index">
                 <div class=" flex items-center  gap-4 mx-7">
-                    <img :src="'../../assets/images/dot.svg'" alt="">
+                    <img :src="dotIcon" alt="">
                     <div>
                         <h1 class=" font-medium">Documentation {{ index + 1 }}</h1>
 
@@ -81,6 +81,7 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
+import dotIcon from "../../../../public/images/dot.svg";
 const docs = ref([
     {
         name: '',

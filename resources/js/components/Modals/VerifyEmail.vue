@@ -13,7 +13,7 @@
     <template #header>
 
         <div class=" flex flex-col items-center justify-center relative w-full">
-        <img :src="'/assets/images/grid.svg'" alt="" />
+        <img :src="gridIcon" alt="" />
         <div class=" p-2 rounded border border-solid bg-white absolute" v-if="activePage===1">
             <Icon icon="mdi:email-outline" width="40" />
         </div>
@@ -69,6 +69,8 @@
 <script setup>
 import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
+import gridIcon from "../../../../public/images/grid.svg";
+i
 const activePage = ref(1)
 const toast = useToast();
 const props = defineProps(["modelValue"]);

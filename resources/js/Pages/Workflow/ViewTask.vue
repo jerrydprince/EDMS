@@ -8,18 +8,26 @@
       </div>
       </Link>
       <div class="flex items-center gap-10 font-semibold text-gray-600">
+
         <button class="bg-white border rounded-md px-4 py-2" @click="Re_Assign_Modal = true"
-        v-if="props.task && props.task.assignments && props.task.assignments.length > 0 && 
-        props.task.assignments[0].status !='completed' && branchType !='users'">
+        v-if="props.task && props.task.assigned_to_me &&  
+        props.task.assigned_to_me.status !='completed' && branchType !='users' && !user_roles.includes('super users')">
           Assign Task
         </button>
 
-        <div v-if="!user_roles.includes('super users')">
-        <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-          v-if="(props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0 && props.task.assigned_to_me[0].status == 'pending' || props.task.assigned_to_me[0].status == 'revision') && props.is_assigned == 1" @click="completeModal = true">
-          <Icon icon="mdi:tick" width="25" />
-          <p>Submit task</p>
+        <div>
+          <button class="bg-white border rounded-md px-4 py-2" @click="Re_Assign_Modal = true"
+          v-if="(props.task.created_by == current_user.id && branchType !='users')">
+            Assign Task
         </button>
+
+        <div v-if="props.task && props.task.assigned_to_me">
+          <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
+            v-if="(props.task && props.task.assigned_to_me &&  props.task.assigned_to_me.status && props.task.assigned_to_me.status == 'pending' || props.task.assigned_to_me.status == 'revision') && props.is_assigned == 1" @click="completeModal = true">
+            <Icon icon="mdi:tick" width="25" />
+            <p>Submit task</p>
+          </button>
+        </div>
         </div>
 
         <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
@@ -31,7 +39,7 @@
 
 
         <button class="flex items-center bg-white border rounded-md gap-2 px-4 py-2"
-        v-if="props.status != 'completed' && props.is_assigned == 2"
+        v-if="props.task.status != 'completed' && props.task.created_by == current_user.id"
           @click="editModal = true">
           <Icon icon="icon-park-outline:edit" width="25" />
           <p>Edit Task</p>
@@ -182,7 +190,7 @@
               </div>
 
               <!-- for other users -->
-               <div class="flex items-center gap-24 mt-5" v-if="props.task.assigned_to_me && props.task.assigned_to_me.length > 0">
+               <div class="flex items-center gap-24 mt-5" v-if="props.task.assigned_to_me">
                   <div class="flex items-center gap-3">
                     <Icon icon="lucide:calendar" />
                     <p>Status</p>
@@ -194,17 +202,17 @@
 
                       <p class=" uppercase text-xs w-fit font-semibold" :style="{
                           color:
-                            props.task.assigned_to_me[0].status === 'Completed'
+                            props.task.assigned_to_me.status === 'completed'
                               ? '#0D6E1A'
-                              : props.task.assigned_to_me[0].status === 'Under Review'
+                              : props.task.assigned_to_me.status === 'revision'
                                 ? '#FB6514'
-                                : props.task.assigned_to_me[0].status === 'In Progress'
+                                : props.task.assigned_to_me.status === 'pending'
                                   ? '#F79009'
-                                  : props.task.assigned_to_me[0].status === 'Uncompleted'
+                                  : props.task.assigned_to_me.status === 'uncompleted'
                                     ? '#F04438'
                                     : '#F04438',
                         }">
-                        {{ props.task.assigned_to_me[0].status }}
+                        {{ props.task.assigned_to_me.status }}
                       </p>
 
                     </div>
@@ -216,11 +224,12 @@
                   <Icon icon="lucide:file-text" />
                   <p>Task Description</p>
                 </div>
-
-                <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
-
-                  {{ (props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0)? props.task.assigned_to_me[0].description: '' }}
-
+                <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full" 
+                  v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.description">
+                  {{ (props.task && props.task.assigned_to_me)? props.task.assigned_to_me.description: '' }}
+                </p>
+                <p v-else class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
+                  {{ (props.task.description)? props.task.description: '' }}
                 </p>
               </div>
 
@@ -252,29 +261,29 @@
               </div>
             </div>
           </section>
-          <Divider class="mt-0" />
+          <Divider class="mt-0" v-if="props.task.assigned_to_me &&  props.task.assigned_to_me.comments" />
 
           <!-- upline comment -->
           <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-            @click="toggleSidemenu('comment')">
+            @click="toggleSidemenu('comment')" v-if="props.task.assigned_to_me &&  props.task.assigned_to_me.comments">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:message-square" width="25" />
-              <p class="text-xl">Comments [{{ props.task.assigned_to_me && props.task.assigned_to_me.length > 0? 
-                  props.task.assigned_to_me && props.task.assigned_to_me[0].assigned_by.last_name+ ' '+props.task.assigned_to_me[0].assigned_by.first_name: ''
+              <p class="text-xl">Comments [{{ props.task.assigned_to_me? 
+                  props.task.assigned_to_me && props.task.assigned_to_me.assigned_by.last_name+ ' '+props.task.assigned_to_me.assigned_by.first_name: ''
                 }}]</p>
               <p
                 class="w-7 h-7 rounded-md text-gray-800 font-semibold bg-primary/10 flex items-center justify-center flex-col p-3">
-                {{ (props.task.assigned_to_me && props.task.assigned_to_me.length > 0 && props.task.assigned_to_me[0].comments)? 
-                    props.task.assigned_to_me[0].comments.length: 0}}
+                {{ (props.task.assigned_to_me &&  props.task.assigned_to_me.comments)? 
+                    props.task.assigned_to_me.comments.length: 0}}
               </p>
             </div>
             <Icon icon="flowbite:angle-right-outline" width="25" />
           </div>
-          <Divider class="mt-0" />
+          <Divider class="mt-0" v-if="props.task.assignments && props.task.assignments.length > 0" />
 
           <!-- downline comment -->
           <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-            @click="toggleSidemenu('comment_down')">
+            @click="toggleSidemenu('comment_down')" v-if="props.task.assignments && props.task.assignments.length > 0">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:message-square" width="25" />
               <p class="text-xl">Comments [{{ props.task.assignments && props.task.assignments.length > 0? 
@@ -315,13 +324,13 @@
             </div>
             <Icon icon="flowbite:angle-right-outline" width="25" />
           </div>
-          <Divider class="mt-0" v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0
-             && props.task.assigned_to_me[0].task_submissions && props.task.assigned_to_me[0].task_submissions.length > 0" />
+          <Divider class="mt-0" v-if="props.task && props.task.assigned_to_me
+             && props.task.assigned_to_me.task_submissions && props.task.assigned_to_me.task_submissions.length > 0" />
 
           <!-- my task submissions -->
            <div class="px-5 flex w-full items-center pb-5 justify-between cursor-pointer"
-            @click="toggleSidemenu('submitted')" v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0
-             && props.task.assigned_to_me[0].task_submissions && props.task.assigned_to_me[0].task_submissions.length > 0">
+            @click="toggleSidemenu('submitted')" v-if="props.task && props.task.assigned_to_me
+             && props.task.assigned_to_me.task_submissions && props.task.assigned_to_me.task_submissions.length > 0">
             <div class="flex items-center gap-5">
               <Icon icon="lucide:activity" width="25" />
               <p class="text-xl">Submitted Files</p>
@@ -348,8 +357,8 @@
           </div>
           <Divider class="mt-0" />
           <div class="">
-            <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments [{{ props.task.assigned_to_me && props.task.assigned_to_me.length > 0? 
-                  props.task.assigned_to_me && props.task.assigned_to_me[0].assigned_by.last_name+ ' '+props.task.assigned_to_me[0].assigned_by.first_name: ''
+            <h1 class="px-5 font-semibold text-gray-800 text-3xl">Comments [{{ props.task.assigned_to_me? 
+                  props.task.assigned_to_me && props.task.assigned_to_me.assigned_by.last_name+ ' '+props.task.assigned_to_me.assigned_by.first_name: ''
                 }}]</h1>
 
             <div class="mx-5 bg-slate-50 p-5 rounded-lg mt-5">
@@ -361,8 +370,8 @@
                 </button>
               </div>
             </div>
-            <div class="mt-5 px-5" v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0">
-              <div v-for="(item, index) in props.task.assigned_to_me[0].comments" :key="index">
+            <div class="mt-5 px-5" v-if="props.task && props.task.assigned_to_me ">
+              <div v-for="(item, index) in upComment" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
@@ -411,7 +420,7 @@
               </div>
             </div>
             <div class="mt-5 px-5" v-if="props.task && props.task.assignments && props.task.assignments.length > 0">
-              <div v-for="(item, index) in props.task.assignments[0].comments" :key="index">
+              <div v-for="(item, index) in downComment" :key="index">
                 <Divider class="mt-0" />
                 <div class="flex items-start w-full">
                   <div class="w-[15%]">
@@ -532,7 +541,7 @@
                 </div>
 
                 <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end">
-                  <button v-if="props.task.assignments[0].status =='review'"  class="text-red-600" @click="RequestRevisionModal = true">
+                  <button v-if="props.task.assignments[0].status =='review' || (props.task && props.task.assigned_to_me && props.task.assigned_to_me.status == 'revision' && props.task.assignments[0].status !='completed')"  class="text-red-600" @click="RequestRevisionModal = true">
                     Request Revision
                   </button>
 
@@ -541,11 +550,11 @@
                   </Link>
                 </div>
                 <div class="px-5 mt-5 w-full gap-5 flex items-center justify-end">
-                  <button v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0 && props.task.assigned_to_me[0].status != 'review' && !user_roles.includes('super users')"  class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="ForwardTask(document)">
+                  <button v-if="props.task && props.task.assignments && props.task.assignments.length > 0 && props.task.assignments[0].status != 'revision' && !user_roles.includes('super users')"  class="font-semibold text-gray-800 px-3 py-2 border rounded-md" @click="ForwardTask(document)">
                     Forward Task
                   </button>
                 </div>
-                 
+                 <Divider class="my-2" />
               </div>
             </div>
           </div>
@@ -567,9 +576,9 @@
               My Submitted Task
             </h1>
 
-            <div v-if="props.task && props.task.assigned_to_me && props.task.assigned_to_me.length > 0
-             && props.task.assigned_to_me[0].task_submissions && props.task.assigned_to_me[0].task_submissions.length > 0">
-              <div v-for="(document, index) in props.task.assigned_to_me[0].task_submissions" :key="index">
+            <div v-if="props.task && props.task.assigned_to_me
+             && props.task.assigned_to_me.task_submissions && props.task.assigned_to_me.task_submissions.length > 0">
+              <div v-for="(document, index) in props.task.assigned_to_me.task_submissions" :key="index">
                 <div class="px-5 mt-3" v-if="document.task_submission_files">
                   <div class="bg-slate-50 p-3 rounded-md">
                     <div
@@ -605,8 +614,9 @@
                     {{ document.description }}
                   </p>
                 </div>
-                 
+                 <Divider class="my-2" />
               </div>
+              
             </div>
           </div>
         </div>
@@ -615,7 +625,7 @@
     </section>
   </main>
   <MarkComplete v-model="completeModal" :task="props.task" :assignedToMe="props.task.assigned_to_me" />
-  <ReAssign v-model="Re_Assign_Modal" :users="props.task?.user" @refresh="refreshHandler" :task_id="props.task?.id" />
+  <ReAssign v-model="Re_Assign_Modal" :userType="props.branchType" :users="props.task?.user" @refresh="refreshHandler" :task_id="props.task?.id" />
   <RequestRevision v-model="RequestRevisionModal" :task="props.task" />
   <DeleteRevision v-model="deleteRevisionModal" />
   <Ratings v-model="rating" @taskReload="ReloadTask" :task="props.task" />
@@ -950,6 +960,8 @@ const notifications = inject('notifications');
 const user_roles = computed(()=>page.props.roles)
 const comment_down = ref(false)
 const toast = useToast();
+const up_comment = ref([])
+const down_comment = ref([])
 
 const ratingsModal = () => {
   rating.value = true;
@@ -970,9 +982,9 @@ const makeComment = (direction) => {
   }
 
   if(direction == 'up'){
-    if(props.task.assigned_to_me && props.task.assigned_to_me.length >0){
-      const comment_to = props.task.assigned_to_me[0].assigned_by.id;
-      const task_assignment_id = props.task.assigned_to_me[0].id
+    if(props.task.assigned_to_me){
+      const comment_to = props.task.assigned_to_me.assigned_by.id;
+      const task_assignment_id = props.task.assigned_to_me.id
       router.post('/dashboard/task-comment', 
         { task_id: props.task.id, comment: user_comment.value, comment_to: comment_to, task_assignment_id: task_assignment_id }, {
         onSuccess: page => {
@@ -1054,7 +1066,7 @@ const getUserName = (comment) => {
 }
 
 const getUserNameDown = (comment) => {
-console.log(comment)
+
   if (comment.sent_to_user) {
     if (page.props.user.id == comment.comment_by) {
       return 'You';
@@ -1086,7 +1098,7 @@ const getUserProfileImage = (comment) => {
 
 const getUserProfileImageDown = (comment) => {
   if(comment.sent_to_user){
-    if(page.props.user && page.page.props.user.id == comment.sent_by){
+    if(page.props.user && page.props.user.id == comment.sent_by){
        if(comment.sent_to_user.profile_image){
         return page.props.base + '/' + props.user.profile_image;
        }else{
@@ -1117,14 +1129,14 @@ const setFilePath = (path) => {
   file_path.value = path;
 }
 
-const ForwardTask = (task) => {
-  
-  router.post('/dashboard/forward-task', { task: task, branchType: props.branchType }, {
+const ForwardTask = (submission) => {
+  let task_submission_id = submission?.id;
+  router.post('/dashboard/forward-task', { task: props.task, branchType: props.branchType, task_submission_id: task_submission_id }, {
     onSuccess: () => {
       router.reload({ only: ['task'] })
       toast.add({
         severity: "success",
-        detail: `Your task has been forwarded to ${props.task?.assigned_to_me[0]?.assigned_by?.last_name} ${props.task?.assigned_to_me[0]?.assigned_by?.first_name}`,
+        detail: `Your task has been forwarded to ${props.task?.assigned_to_me?.assigned_by?.last_name} ${props.task?.assigned_to_me?.assigned_by?.first_name}`,
         life: 3000,
       });
     }
@@ -1191,6 +1203,31 @@ const downloadFile = async (filename) => {
     console.error('There has been a problem with your fetch operation:', error);
   }
 }
+
+const downComment = computed({
+  get() {
+    if (props.task && props.task.assignments && props.task.assignments.length > 0) {
+      down_comment.value = props.task.assignments[0].comments
+      return down_comment.value
+    }
+    return [];
+  }, 
+  set(value){
+    down_comment.value.unshift(value)
+  }
+})
+
+const upComment = computed({
+  get(){
+    if(props.task && props.task.assigned_to_me && props.task.assigned_to_me.comments){
+      up_comment.value = props.task.assigned_to_me.comments
+      return up_comment.value;
+    }
+  },
+  set(value){
+    up_comment.value.unshift(value)
+  }
+})
 
 const toggleSidemenu = (action) => {
 
@@ -1270,7 +1307,7 @@ const fileType = (file) => {
 }
 
 watch(notifications,(newVal)=>{
-console.log(newVal)
+
   if(newVal && newVal.Today){
     // alert('yes')
     let new_comment = newVal.Today[0].data.comment;
@@ -1295,6 +1332,24 @@ onMounted(()=>{
   //         //getUserNotifications()
   //     });
 
+Echo.private('task.' + current_user.value.id)
+    .notification((notification) => {
+      console.log(notification)
+        if (comment.value) {
+            console.log('up comment');
+            up_comment.value.unshift(notification.comment_obj); // add to beginning
+        } else if (comment_down.value) {
+            console.log('down comment');
+            down_comment.value.unshift(notification.comment_obj); // add to beginning
+        } else if(!comment.value && !comment_down.value) {
+            console.log('reload task');
+            router.reload({
+                only: ['task'],
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    });
 
 
 })

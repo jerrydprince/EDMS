@@ -49,47 +49,60 @@ class UserController extends Controller
 
     public function searchUsers(Request $request){
         //$branchType = $this->getBranchType();
-        if($this->isRole('unit heads')){
-            $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
-                ->where('unit_id', auth()->user()->unit_id)
-            ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')
-            ->get();
-            return response()->json(['data' => $users, 'type'=>'users']);
+        $user = auth()->user();
+        $search = $request->search;
+
+        if ($user->hasRole('unit heads')) {
+            $users = User::select('id', 'first_name', 'last_name', 'email', 'profile_image')
+                ->where('unit_id', $user->unit_id)
+                ->where(function ($q) use ($search) {
+                    $q->where('first_name', 'LIKE', "%{$search}%")
+                    ->orWhere('last_name', 'LIKE', "%{$search}%");
+                })
+                ->get();
+
+            return response()->json(['data' => $users, 'type' => 'users']);
         }
 
-        if($this->isRole('division heads')){ 
+        if($user->hasRole('division heads')){ 
             $units = Unit::withWhereHas('users', function($query){
                 $query->role('unit heads');
-            }) ->where('title', 'LIKE', '%'.$request->search.'%')
+            })
             ->where('division_id', auth()->user()->division_id)
+            ->where('title', 'LIKE', '%'.$search.'%')
             ->get();
             return response()->json(['data'=>$units, 'type'=>'unit']);
         }
 
-        if($this->isRole('directors')){
+        if($user->hasRole('directors')){
             $divisions = Division::withWhereHas('users', function($query){
                 $query->role('division heads');
-            }) ->where('title', 'LIKE', '%'.$request->search.'%')
+            }) 
             ->where('department_id', auth()->user()->department_id)
+            ->where('title', 'LIKE', '%'.$search.'%')
             ->get();
             return response()->json(['data'=>$divisions, 'type'=>'division']);
         }
 
-        if($this->isRole('super users')){
+        if($user->hasRole('super users')){
             $departments = Department::withWhereHas('user', function($query){
                 $query->role('directors');
             })
-            ->where('title', 'LIKE', '%'.$request->search.'%')->get();
+            ->where('title', 'LIKE', '%'.$search.'%')->get();
            
             return response()->json(['data'=>$departments, 'type'=>'department']);
         }
 
-        if($this->isRole('super admin') || $this->isRole('admin')){
-            $users = User::where('first_name', 'LIKE', '%'.$request->search.'%')
-                ->where('unit_id', auth()->user()->unit_id)
-            ->orWhere('last_name', 'LIKE','%'.$request->search.'%')->select('first_name', 'last_name','profile_image', 'id', 'email', 'profile_image')->get();
-            return response()->json(['data' => $users, 'type'=>'unit']);
-        }
+          if ($user->hasAnyRole(['super admin', 'admin'])) {
+                $users = User::select('id', 'first_name', 'last_name', 'email', 'profile_image')
+                    ->where(function ($q) use ($search) {
+                        $q->where('first_name', 'LIKE', "%{$search}%")
+                        ->orWhere('last_name', 'LIKE', "%{$search}%");
+                    })
+                    ->get();
+
+                return response()->json(['data' => $users, 'type' => 'users']);
+            }
 
         
     }
@@ -261,7 +274,7 @@ class UserController extends Controller
 
     public function getUserUnreadNotification(){
         $user = auth()->user();
-        $notifications = $user->notifications->groupBy('type'); // First, group notifications by type
+        $notifications = $user->notifications->take(50)->groupBy('type'); // First, group notifications by type
 
         $count = $notifications->flatten()->whereNull('read_at')->count(); // Flatten the collection for counting unread notifications
 
@@ -332,6 +345,33 @@ class UserController extends Controller
         $user->is_on_leave = false;
         $user->save();
         return redirect()->back();
+    }
+
+    public function updateTaskNotification(){
+        $user = auth()->user();
+        $notifications = $user->unreadNotifications()->where('type', 'App\Notifications\TaskChangedNotification')->get();
+        foreach($notifications as $notification){
+            $notification->markAsRead();
+        }
+        return response()->json(['status'=>'success']);
+    }
+
+    public function updateCommentNotification(){
+        $user = auth()->user();
+        $notifications = $user->unreadNotifications()->where('type', 'App\Notifications\CommentNotification')->get();
+        foreach($notifications as $notification){
+            $notification->markAsRead();
+        }
+        return response()->json(['status'=>'success']);
+    }
+
+    public function markNotificationAsRead(Request $request){
+        if($request->type == 'Task'){
+            return $this->updateTaskNotification();
+        }
+        if($request->type == 'Comments'){
+            return $this->updateCommentNotification();
+        }
     }
 
 }

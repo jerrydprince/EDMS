@@ -12,7 +12,7 @@
 	>
 	
 		<section class="-mb-6  flex flex-col items-center relative">
-            <img :src="'/assets/images/encription.png'" alt="" class=" -mt-12">
+            <img :src="encryptionIcon" alt="" class=" -mt-12">
             <div class=" text-center w-[75%] absolute mt-28 shadow-2xl shadow-white  bg-white p-5" >
                 <h1 class=" text-2xl">Encryption Code</h1>
                 <p  class=" opacity-70 my-2">Generate a one time encryption code to grant someone one-time access to this file</p>
@@ -61,6 +61,7 @@
 <script setup>
 import { defineEmits, defineProps, computed } from "vue";
 import { useToast } from "primevue/usetoast";
+import encryptionIcon from "../../../../../public/images/encription.png";
 
 const toast = useToast();
 const props = defineProps(["modelValue"]);

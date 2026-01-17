@@ -34,7 +34,7 @@
             <div class=" h-[60vh] flex flex-col justify-center items-center" v-if="!packages">
                 <section class="flex flex-col items-center justify-center">
                     <div class="flex flex-col items-center justify-center px-4 mb-5">
-                        <img :src="'/assets/images/registry.svg'" alt="" class="w-20" />
+                        <img :src="registryIcon" alt="" class="w-20" />
                         <div class="text-center px-7 mt-1">
                             <h1 class="font-semibold text-lg">Registry Search</h1>
                             <p class="opacity-80 text-base">
@@ -56,9 +56,9 @@
                                     @click="updateBranch(branch)">
                                     <div class="p-2 border border-gray-600 rounded-full">
                                         <!-- <Icon :icon="suggestion.icon" width="20" /> -->
-                                        <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="branch.branch_type == 'unit'">
-                                        <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="branch.branch_type == 'division'">
-                                        <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="branch.branch_type == 'department'">
+                                        <img :src="unitIcon" alt="" width="20" v-if="branch.branch_type == 'unit'">
+                                        <img :src="divisionIcon" alt="" width="20" v-if="branch.branch_type == 'division'">
+                                        <img :src="departmentIcon" alt="" width="20" v-if="branch.branch_type == 'department'">
                                     </div>
                                     <p class="text-sm w-fit font-normal">{{ branch.title }}</p>
                                 </div>
@@ -87,6 +87,14 @@ import TrackPackage from "../../components/Modals/Registry/TrackPackage.vue";
 import EditPermission from "../../components/Modals/Registry/EditPermission.vue"
 import debounce from 'lodash.debounce'
 import {usePage} from '@inertiajs/vue3'
+//import registry from '/assets/images/registry.svg';
+import registryIcon from "../../assets/images/registry.svg";
+import unitIcon from '../../../../public/images/unit.svg';
+// import divisionIcon from '../../assets/images/Division-icon.svg';
+// import departmentIcon from '../../assets/images/department.svg';
+
+import divisionIcon from "../../../../public/images/division.svg";
+import departmentIcon from "../../../../public/images/department.svg";
 
 const AssignRoleModel = ref(false);
 const TrackPackageModel = ref(false);

@@ -259,7 +259,8 @@ import { defineEmits, ref, computed, defineProps, onMounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import accepttask from "../../../assets/images/accepttask.svg";
 import { useForm, usePage } from "@inertiajs/vue3";
-import checkBox from "../../../assets/images/Checkbox.svg";
+//import checkBox from "../../../assets/images/Checkbox.svg";
+import checkBox from "../../../../../public/images/checkBox.svg";
 import axios from "axios";
 
 const props = defineProps(['paymentId', 'payment', 'assignTask']);

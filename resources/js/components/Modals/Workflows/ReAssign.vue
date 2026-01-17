@@ -112,7 +112,7 @@ import { usePage, router } from "@inertiajs/vue3"
 import { onClickOutside } from '@vueuse/core'
 
 const toast = useToast()
-const props = defineProps(["modelValue", 'users', 'task_id']);
+const props = defineProps(["modelValue", 'users', 'task_id', 'userType']);
 const emit = defineEmits(["update:modelValue"]);
 const search = ref('')
 const page = usePage()
@@ -271,7 +271,7 @@ const searchUsers = debounce(() => {
   branch.value = [];
   
   axios.get('/dashboard/search-users', { 
-    params: { search: search.value } 
+    params: { search: search.value, user_type: props.userType } 
   }).then((response) => {
     console.log(response);
     
@@ -313,6 +313,8 @@ const submit = () => {
     onSuccess: page => {
       emit("update:modelValue", false);
       emit('refresh');
+      selectedUsers.value = [];
+      description.value = '';
       toast.add({
         severity: "success",
         summary: 'Task Submitted',

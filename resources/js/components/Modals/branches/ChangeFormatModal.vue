@@ -8,20 +8,20 @@
       <div
         class="w-full absolute shadow-2xl -mt-7  shadow-white bg-white pb-[5px] flex items-center justify-between px-5" @click="downloadFile">
         <div class=" flex items-center gap-3">
-          <img :src="page.props.base+'/images/file.svg'" alt="" class="">
+          <img :src="fileIcon" alt="" class="">
           <p>{{ props.archive?.name }}</p>
         </div>
         <i class="pi pi-download font-semibold cursor-pointer"></i>
       </div>
       <Divider class=" bg-white" />
-      <img :src="page.props.base+'/images/change_format.svg'" alt="" class=" -mt-16 w-70">
+      <img :src="change_format" alt="" class=" -mt-16 w-70">
       <div class=" text-center w-[75%] absolute bottom-5 shadow-2xl shadow-white  bg-white p-5">
         <h1 class=" text-2xl">Convert Format</h1>
         <p class=" opacity-70 my-2">Choose the conversion format for your file.</p>
         <div class=" flex  justify-between mt-5">
           <input type="text" class=" outline-none border w-32 rounded-md p-2 bg-slate-50" :placeholder="currentFileFormat"
             disabled>
-          <img :src="page.props.base+'/images/converter.svg'" alt="" class=" px-[20px] py-[2px]  rounded-3xl border ">
+          <img :src="converter" alt="" class=" px-[20px] py-[2px]  rounded-3xl border ">
           <select @change="setSelectedFormat" class=" border w-32 rounded-md p-2 bg-slate-50 outline-none cursor-pointer">
             <option value="">Select format</option>
             <option v-for="format in fileFormat" :value="format">{{ format }}</option>
@@ -52,6 +52,9 @@
 import { defineEmits, defineProps, computed, onMounted, ref } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from "@inertiajs/vue3";
+import fileIcon from "../../../../../public/images/file.svg";
+import change_format from "../../../../../public/images/change_format.svg";
+import converter from "../../../../../public/images/converter.svg";
 
 const toast = useToast();
 const props = defineProps(["modelValue", "archive"]);

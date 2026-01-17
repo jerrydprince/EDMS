@@ -84,9 +84,9 @@
                   <div class="p-3 rounded-full border w-fit">
                     <!-- <img :src="slotProps.data.icon" alt="" v-if="slotProps.data.name">
                     <Icon icon="fa-solid:question" v-else /> -->
-                    <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'unit'">
-                    <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'division'">
-                    <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'department'">
+                    <img :src="unitIcon" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'unit'">
+                    <img :src="divisionIcon" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'division'">
+                    <img :src="departmentIcon" alt="" width="20" v-if="getSourceBranchType(slotProps.data) == 'department'">
                   </div>
                   <div>
                     <h1 class="font-medium" v-if="slotProps.data.name">{{ slotProps.data.name }}
@@ -172,9 +172,9 @@
                   <div class="p-3 rounded-full border w-fit">
                     <!-- <img :src="slotProps.data.icon" alt="" v-if="slotProps.data.name">
                     <Icon icon="fa-solid:question" v-else /> -->
-                    <img :src="page.props.base+'/images/unit.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'unit'">
-                                            <img :src="page.props.base+'/images/division.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'division'">
-                                            <img :src="page.props.base+'/images/department.svg'" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'department'">
+                    <img :src="unitIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'unit'">
+                                            <img :src="divisionIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'division'">
+                                            <img :src="departmentIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'department'">
                   </div>
                   <div>
                     <!-- <h1 class="font-medium" v-if="slotProps.data.name">{{ slotProps.data.name }}
@@ -201,6 +201,10 @@
 import { ref, computed, defineProps, onMounted, defineEmits} from "vue";
 import division from "../assets/images/Division-Icon.svg"
 import {usePage} from "@inertiajs/vue3"
+import unitIcon from "../../../public/images/unit.svg"
+import divisionIcon from "../../../public/images/division.svg"
+import departmentIcon from "../../../public/images/department.svg"
+
 const props = defineProps(["toggleStateFunction", "data", 'branch', 'department', 'division', 'unit']);
 // const props = defineProps(["data"]);
 const files = ref([])

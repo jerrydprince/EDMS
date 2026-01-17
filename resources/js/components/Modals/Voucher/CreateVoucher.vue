@@ -167,7 +167,7 @@
       <!-- Step 2: Generating Voucher -->
       <section v-else-if="currentStep === 2" key="step2"
         class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-center">
-        <img :src="'../../../assets/images/votebook.svg'" alt="votebook icon" width="170" height="170" class="drop-shadow-xl" />
+        <img :src="votebookIcon" alt="votebook icon" width="170" height="170" class="drop-shadow-xl" />
         <div class="flex flex-col items-center p-8 gap-y-3 -mt-16">
           <Icon icon="line-md:loading-alt-loop" width="44" />
           <p class="text-2xl text-gray-800 font-semibold">
@@ -182,7 +182,7 @@
       <!-- Step 3: Voucher Generated -->
       <section v-else-if="currentStep === 3" key="step3"
         class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-center">
-        <img :src="'../../../assets/images/voucher_generated.svg'" alt="votebook icon" width="160" height="100"
+        <img :src="voucher_generated" alt="votebook icon" width="160" height="100"
           class="drop-shadow-xl mt-2 -mb-3" />
         <div class="flex flex-col items-center gap-y-3 px-7">
           <p class="text-2xl font-semibold text-gray-800">Voucher Generated</p>
@@ -240,6 +240,8 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import DropdownComp from "../../DropdownComp.vue";
 //import html2pdf from "html2pdf.js";
 import Voucher from "../../../components/Voucher.vue"
+import votebookIcon from "../../../../../public/images/votebook.svg";
+import voucher_generated from "../../../../../public/images/voucher_generated.svg";
 
 const voucherEl = ref(null)
 const page = usePage();

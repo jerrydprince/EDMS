@@ -74,7 +74,7 @@
       </Column>
     </DataTable>
   </main>
-  <CreateLevels v-model="create_levels" />
+  <CreateLevel v-model="create_levels" />
   <EditPermission v-model="edit_permission" :selectedPermission="selectedLevel.permissions" :permissions="props.permissions" :role_id="selectedLevel.id"/>
   <DeleteLevel v-model="delete_level" :id="selectedLevel.id" />
   <Deactivate v-model="deactivate_modal" @refresh="refreshPage" :id="selectedLevel.id" />
@@ -83,7 +83,7 @@
 <script setup>
 
 import { ref, defineProps } from "vue";
-import CreateLevels from "../../components/Modals/AccessLevel/CreateLevel.vue";
+import CreateLevel from "../../components/Modals/AccessLevel/CreateLevel.vue";
 import EditPermission from "../../components/Modals/AccessLevel/EditPermission.vue";
 import DeleteLevel from "../../components/Modals/AccessLevel/DeleteLevel.vue";
 import Deactivate from "../../components/Modals/AccessLevel/Deactivate.vue";

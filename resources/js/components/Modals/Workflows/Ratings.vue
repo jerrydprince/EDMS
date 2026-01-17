@@ -210,12 +210,13 @@ const form = ref([])
 const page_count = ref(1)
 const activePage = ref(1);
 const maxPage = 4;
-const percentage = ref();
+const percentage = ref(0);
 const kra = ref()
 const percent_increment = ref(0)
 const description = ref()
 const page = usePage()
 const user = computed(() => page.props.user);
+const roles = computed(() => page.props.roles);
 
 const emit = defineEmits(["update:modelValue", "taskReload"]);
 const visible = computed({
@@ -317,9 +318,18 @@ const getTimeDifference = () => {
   // let time1 = props.task.created_at;
   // let time2 = props.task?.task_submission[props.task?.task_submission.length - 1]?.created_at
 
-  let time1 = props.task?.assigned_to_me[0]?.created_at
-  let time2 = props.task?.assigned_to_me[0]?.task_submissions[0]?.created_at
+  let time1 = 0
+   let time2 = 0
 
+   if(roles.value.includes('super users')){
+      time1 = props.task.assignments[0]?.created_at
+      time2 = props.task?.assignments[0]?.task_submissions[0]?.created_at
+    }else{
+      time1 = props.task?.assigned_to_me[0]?.created_at
+      time2 = props.task?.assigned_to_me[0]?.task_submissions[0]?.created_at
+
+    }
+  
   if (time1 && time2) {
     time1 = new Date(time1);
     time2 = new Date(time2);

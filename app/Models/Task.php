@@ -196,7 +196,7 @@ class Task extends Model
     */
    public function assignedToMe()
    {
-       return $this->hasMany(TaskAssignment::class, 'task_id', 'id')->where('assigned_to', auth()->user()->id);
+       return $this->hasOne(TaskAssignment::class, 'task_id', 'id')->where('assigned_to', auth()->user()->id);
    }
 
    /**

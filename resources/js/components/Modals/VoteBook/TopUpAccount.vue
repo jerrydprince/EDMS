@@ -15,7 +15,7 @@
         <div class="bg-white rounded-2xl p-4">
           <p class="font-medium text-sm mb-3">Add Amount To</p>
           <div class="flex items-center -mt-3 -mb-8">
-            <img :src="'../../../assets/images/votebook.svg'" alt="votebook" class="-ml-7 w-24" />
+            <img :src="votebookIcon" alt="votebook" class="-ml-7 w-24" />
             <div class="-mt-4 -ml-4">
               <p class="font-medium mb-1">{{ accountSelected.name }}</p>
               <p class="text-sm text-gray-600">
@@ -60,6 +60,7 @@ import { defineEmits, ref, computed, defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm } from "@inertiajs/vue3";
 import { formatWithCommas, formatAmount } from "../../../utils/formatAmount";
+import votebookIcon from "../../../../../public/images/votebook.svg";
 
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled", "refreshVoteBook", 'account']);

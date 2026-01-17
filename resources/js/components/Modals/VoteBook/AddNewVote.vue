@@ -18,7 +18,7 @@
         class="items-start justify-start flex flex-col border-b-2 border-solid border-[#E6E6E6] w-full pb-4"
       >
         <img
-          :src="'../../../assets/images/votebook.svg'"
+          :src="votebookIcon"
           alt="reject task"
           class="-ml-2 drop-shadow-lg"
         />
@@ -135,6 +135,7 @@ import { defineEmits, ref, computed, defineProps, } from "vue";
 import { useToast } from "primevue/usetoast";
 import DropdownComp from "../../DropdownComp.vue";
 import { useForm } from "@inertiajs/vue3";
+import votebookIcon from "../../../../../public/images/votebook.svg";
 
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled", "refreshVoteBook"]);

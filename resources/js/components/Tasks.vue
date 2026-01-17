@@ -43,7 +43,7 @@
               </div>
               <div class="p-2 flex items-center justify-between">
                 <img v-if="item.assigned_by && item.assigned_by.profile_image" width="50" :src="page.props.base+'/'+item.assigned_by.profile_image" alt="">
-                <img v-else :src="'../assets/images/members/1.svg'" alt="" />
+                <img v-else :src="oneIcon" alt="" />
                 <div class="flex gap-3 items-center">
                   <div class="flex items-center gap-1">
                     <Icon icon="iconamoon:comment" width="13" />
@@ -69,6 +69,7 @@
 import { ref, defineProps } from "vue";
 import moment from "moment"
 import {usePage, Link} from "@inertiajs/vue3"
+import oneIcon from "../../../public/images/members/1.svg"
 
 const props = defineProps(['task'])
 const scrollContainer = ref(null);

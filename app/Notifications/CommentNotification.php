@@ -18,10 +18,12 @@ class CommentNotification extends Notification
 
      protected $user;
      protected $comment;
-    public function __construct($comment, $user)
+     protected $comment_obj;
+    public function __construct($comment, $user, $comment_obj)
     {
         $this->user = $user;
         $this->comment = $comment;
+        $this->comment_obj = $comment_obj;
     }
 
     /**
@@ -54,7 +56,8 @@ class CommentNotification extends Notification
     {
         return [
             'user' => $this->user,
-            'comment' =>$this->comment
+            'comment' =>$this->comment,
+            'comment_obj' => $this->comment_obj,
         ];
     }
 
@@ -65,7 +68,8 @@ class CommentNotification extends Notification
     {
         return new BroadcastMessage([
            'comment' =>$this->comment,
-           'user'=> $this->user
+           'user'=> $this->user,
+         'comment_obj' => $this->comment_obj,
         ]);
     }
 }

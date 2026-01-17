@@ -27,7 +27,7 @@
             </div>
             <div v-for="(item, index) in faqs" :key="index">
                 <div class=" flex items-center  gap-3 ml-7">
-                    <img :src="'../../assets/images/dot.svg'" alt="">
+                    <img :src="dotIcon" alt="">
                     <div>
                         <h1 class=" font-medium">Question {{ index + 1 }}</h1>
                     </div>
@@ -83,6 +83,8 @@
 <script setup>
 import { defineEmits, defineProps, ref, computed } from "vue";
 import { useToast } from "primevue/usetoast";
+import dotIcon from "../../../../public/images/dot.svg";
+
 const fileInputs = ref([])
 const faqs = ref([
     {

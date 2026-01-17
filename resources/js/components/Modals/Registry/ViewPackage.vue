@@ -34,10 +34,10 @@
           <div class="flex items-center flex-col">
             <div class="p-3 mb-2 border rounded-full">
               <!-- <Icon :icon="branch.icon" width="25" class="text-gray-600" /> -->
-               <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branchType(branch) == 'unit'">
-               <img :src="page.props.base+'/images/division.svg'" alt="" width="25" v-if="branchType(branch) == 'division'">
-               <img :src="page.props.base+'/images/department.svg'" alt="" width="25" v-if="branchType(branch) == 'department'">
-               <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branch.sent_to_branch.toLowerCase() == 'agf registry'">
+               <img :src="unitIcon" alt="" width="25" v-if="branchType(branch) == 'unit'">
+               <img :src="divisionIcon" alt="" width="25" v-if="branchType(branch) == 'division'">
+               <img :src="departmentIcon" alt="" width="25" v-if="branchType(branch) == 'department'">
+               <img :src="unitIcon" alt="" width="25" v-if="branch.sent_to_branch.toLowerCase() == 'agf registry'">
             </div>
             <div class="w-[1px] h-11 bg-slate-300"></div>
           </div>
@@ -57,10 +57,10 @@
             <div class="flex items-center flex-col">
               <div class="p-3 border rounded-full">
                 <!-- <Icon :icon="branch.icon" width="25" class="text-gray-600" /> -->
-                <img :src="page.props.base+'/images/unit.svg'" alt="" width="25" v-if="branchType2(branch) == 'unit'">
-               <img :src="page.props.base+'/images/division.svg'" alt="" width="25" v-if="branchType2(branch) == 'division'">
-               <img :src="page.props.base+'/images/department.svg'" alt="" width="25" v-if="branchType2(branch) == 'department'">
-               <img v-if="file.is_agf" :src="page.props.base+'/images/department.svg'" alt="" width="25">
+                <img :src="unitIcon" alt="" width="25" v-if="branchType2(branch) == 'unit'">
+               <img :src="divisionIcon" alt="" width="25" v-if="branchType2(branch) == 'division'">
+               <img :src="departmentIcon" alt="" width="25" v-if="branchType2(branch) == 'department'">
+               <img v-if="file.is_agf" :src="departmentIcon" alt="" width="25">
               </div>
               <div class="w-[1px] h-11 bg-slate-300" v-if="props.fileMovement.length - 1 !== index"></div>
             </div>
@@ -87,6 +87,9 @@ import { defineEmits, defineProps, nextTick, computed, ref } from "vue";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas'
 import { usePage } from '@inertiajs/vue3'
+import unitIcon from '../../../../../public/images/unit.svg';
+import divisionIcon from '../../../../../public/images/division.svg';
+import departmentIcon from '../../../../../public/images/department.svg';
 
 const props = defineProps(["modelValue", "fileMovement", 'file', 'department', 'division', 'unit']);
 const page = usePage();

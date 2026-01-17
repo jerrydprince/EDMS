@@ -136,7 +136,7 @@
                         >
                             <div class="flex items-center gap-3 w-full">
                                 <img
-                                    :src="'/assets/images/display_picture.svg'"
+                                    :src="display_picture"
                                     alt=""
                                     class="flex-none w-8 h-8 lg:w-auto lg:h-auto"
                                 />
@@ -191,7 +191,7 @@
                                 />
                                 <img
                                     v-else
-                                    :src="'/assets/images/display_picture.svg'"
+                                    :src="display_picture"
                                     alt=""
                                     class="flex-none w-8 h-8 lg:w-auto lg:h-auto"
                                 />
@@ -350,7 +350,7 @@
                                     />
                                     <img
                                         v-else
-                                        :src="'/assets/images/display_picture.svg'"
+                                        :src="display_picture"
                                         alt=""
                                         class="flex-none w-8 h-8 lg:w-auto lg:h-auto"
                                     />
@@ -417,6 +417,7 @@ import EmptyChatRoom from "../../components/EmptyChatRoom.vue";
 import ReportDialog from "../../components/Modals/chat/ReportDialog.vue";
 import AddLink from "../../components/Modals/chat/AddLink.vue";
 import Messages from "../../components/Messages.vue";
+import display_picture from "../../../../public/images/display_picture.svg"
 import { useStore } from "vuex";
 
 const clickedIndex = ref(null);

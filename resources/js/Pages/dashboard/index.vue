@@ -88,7 +88,7 @@
 
     <div class="  flex items-center pl-5 pt-5 relative justify-between border overflow-hidden rounded-xl   my-10">
       <div class=" flex items-center gap-10">
-        <img :src="'/assets/images/tutorial.svg'" alt="" class=" pb-5 w-80">
+        <img :src="tutorialIcon" alt="" class=" pb-5 w-80">
         <div>
           <h1 class=" text-3xl">Archiving Tutorial</h1>
           <p class=" text-[#667085] opacity-50">Watch a quick video guide to streamline your archiving process.</p>
@@ -230,6 +230,7 @@ import { usePage } from '@inertiajs/vue3';
 import ListVue from '../dashboard/partials/ListVue.vue';
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
 import EditArchiveDocsMetadataDialog from "../../components/Modals/EditArchiveDocsMetadataDialog.vue";
+import tutorialIcon from "../../../../public/images/tutorial.svg";
 
 
 const documentsGridView = ref(true)

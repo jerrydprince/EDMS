@@ -113,7 +113,7 @@
 
           <Link href="/branches-folder">
             <div class=" border rounded-md  p-2 bg-gray-100 cursor-pointer  ">
-              <img :src="'/assets/images/folder.svg'" alt="">
+              <img :src="folderIcon" alt="">
             </div>
           </Link>
           <div>
@@ -297,6 +297,8 @@ import GenerateEncriptionCode from "../../components/Modals/branches/GenerateEnc
 import ChangeFormat from "../../components/Modals/branches/ChangeFormatModal.vue"
 import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.vue";
 import ListVue from '../dashboard/partials/ListVue.vue';
+//import folderIcon from '/assets/images/folder.svg';
+import folderIcon from "../../../../public/images/folder.svg";
 import axios from "axios";
 
 const createFolderModal = ref(false);

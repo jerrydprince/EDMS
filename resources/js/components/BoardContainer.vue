@@ -60,7 +60,7 @@
               </p>
             </div>
             <div class="p-2 flex items-center justify-between">
-              <img :src="'../assets/images/members/1.svg'" />
+              <img :src="oneIcon" />
               <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-1">
                   <Icon icon="iconamoon:comment" width="13" />
@@ -92,6 +92,8 @@
 import { ref, defineProps } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import AddTask from '../components/Modals/Workflows/AddTask.vue';
+
+import oneIcon from "../../../public/images/members/1.svg";
 
 import ArchiveDocument from "./Modals/Workflows/ArchiveDocument.vue";
 import draggable from "vuedraggable";

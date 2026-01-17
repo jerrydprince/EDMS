@@ -45,7 +45,7 @@
 <script setup>
 import { defineEmits, defineProps, computed, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-import grid from "./../../assets/images/grid.svg";
+import grid from "../../../../public/images/grid.svg";
 
 const toast = useToast();
 const props = defineProps(["modelValue"]);

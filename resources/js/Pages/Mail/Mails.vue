@@ -268,7 +268,7 @@
         </div>
 
         <div v-else class="flex items-center h-[60vh] justify-center flex-col px-4">
-            <img :src="'/assets/images/illustration.svg'" alt="" class="w-48 lg:w-auto" />
+            <img :src="illustration" alt="" class="w-48 lg:w-auto" />
             <h1 class="font-semibold text-base lg:text-lg mt-4">No Mail Yet</h1>
             <p class="text-sm lg:text-base text-center">
                 All Received mail would appear here.
@@ -281,7 +281,7 @@
         </div>
         <div class="fixed right-5 lg:right-10 bottom-20 cursor-pointer" @click="newMessage = true">
             <div class="flex flex-col items-center justify-center">
-                <img :src="'/assets/images/Bubble.svg'" alt="" class="w-12 lg:w-auto" />
+                <img :src="Bubble" alt="" class="w-12 lg:w-auto" />
             </div>
         </div>
     </main>
@@ -295,6 +295,14 @@ import NewMessageModal from "../../components/Modals/Mail/NewMessage.vue";
 import DeleteMailMessage from "../../components/Modals/Mail/DeleteMailMessage.vue";
 import { Link, router } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
+// import illustration from './assets/images/illustration.svg';
+// import Bubble from './assets/images/Bubble.svg';
+// import illustration from "../../../../public/assets/images/illustration.svg";
+// import Bubble from "../../../../public/assets/images/Bubble.svg";
+// import illustration from '/assets/images/illustration.svg';
+// import Bubble from '/assets/images/Bubble.svg';
+import illustration from "../../assets/images/Illustration.svg";
+import Bubble from "../../assets/Bubble.svg";
 
 const toast = useToast();
 

@@ -3,7 +3,7 @@
 
 		<div class=" flex justify-between items-center">
 			<div class=" flex justify-between gap-3 items-center">
-				<img :src="'/assets/images/detail.svg'" alt="">
+				<img :src="detailIcon" alt="">
 				<h1 class=" text-[#1D2939] font-semibold text-xl">Details</h1>
 			</div>
 			<button class="" @click=" visible = false">
@@ -157,6 +157,7 @@ import PreviewFile from "../../../components/Modals/branches/PreviewFile.vue";
 import { usePage } from '@inertiajs/vue3';
 import UploadDocumentDialog from "../UploadDocumentDialog.vue";
 import moment from 'moment';
+import detailIcon from "../../../../../public/images/detail.svg";
 
 const previewModal = ref(false)
 const props = defineProps(["modelValue", "file", 'folder']);

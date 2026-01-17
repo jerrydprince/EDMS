@@ -25,7 +25,8 @@
     </button>
     <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
       <section class="bg-white p-5">
-        <input type="text" id="task_title" class="w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
+        <input type="text" id="task_title" class="w-full text-3xl outline-none" placeholder="Write a Task Name"
+          v-model="form.title">
         <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
       </section>
       <Divider class="-mt-0" />
@@ -101,8 +102,9 @@
             <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
               <div v-for="user in selectedUsers"
                 class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
-                <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
-                <p class="text-xs w-fit" v-if="search_type == 'unit'">{{ user.first_name + ' ' + user.last_name }}</p>
+                <img v-if="!search_type" :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
+                <img v-else :src="getImageForGroup(user)" alt="" class="w-5 h-5 rounded-full" />
+                <p class="text-xs w-fit" v-if="!search_type">{{ user.first_name + ' ' + user.last_name }}</p>
                 <p class="text-xs w-fit" v-else>{{ user.title }}</p>
                 <div class="bg-white border rounded-full p-0.5 text-sm">
                   <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
@@ -112,25 +114,41 @@
               <div class="relative">
                 <input v-model="search" type="text"
                   class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-                  placeholder="Search department / staff" 
-                  @focus="clickOutside=false" @input="filterRecipients" />
+                  placeholder="Search department / staff" @focus="clickOutside = false" @input="filterRecipients" />
 
                 <div ref="pop_up"
                   class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                  v-if="users && users.length > 0 && !is_dropwdown_blur && !clickOutside">
+                  v-if="branch && branch.length > 0 && !is_dropwdown_blur && !clickOutside && search_type">
+                  <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
+                    v-for="(suggestion, index) in branch" :key="index" @click="updateUsers(suggestion)">
+                    <div class=" flex items-center gap-3 ">
+                      <img  :src="getImageForGroup(suggestion)" alt=""
+                        class="w-8 h-8 rounded-full" />
+                      <p class="text-sm w-fit text-black font-semibold">
+                        {{ suggestion.title }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <!-- <p>{{ suggestion.email }}</p> -->
+                    </div>
+                  </div>
+                </div>
+
+                <div ref="pop_up"
+                  class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
+                  v-if="users && users.length > 0 && !is_dropwdown_blur && !clickOutside && !search_type">
                   <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
                     v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
                     <div class=" flex items-center gap-3 ">
-                      <img v-if="search_type == 'unit'" :src="page.props.base + '/' + suggestion.profile_image" alt=""
+                      <img  :src="page.props.base + '/' + suggestion.profile_image" alt=""
                         class="w-8 h-8 rounded-full" />
-                      <p v-if="search_type == 'unit'" class="text-sm w-fit text-black font-semibold">{{
-                      (suggestion.first_name + " " + suggestion.last_name).length > 15
-                        ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                        : suggestion.first_name + " " + suggestion.last_name
-                    }}</p>
-                      <p v-else class="text-sm w-fit text-black font-semibold">
-                        {{ suggestion.title }}
-                      </p>
+                      <p class="text-sm w-fit text-black font-semibold">{{
+                        (suggestion.first_name + " " + suggestion.last_name).length > 15
+                          ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
+                          : suggestion.first_name + " " + suggestion.last_name
+                        }}</p>
+                      
                     </div>
 
                     <div>
@@ -138,6 +156,7 @@
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -185,15 +204,15 @@
                 v-if="select_Priority">
                 <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
                   <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-    color:
-      priority === 'Low'
-        ? '#FFBC53'
-        : priority === 'High'
-          ? '#FF3737'
-          : priority === 'Medium'
-            ? '#F67E5A'
-            : 'black',
-  }">
+                    color:
+                      priority === 'Low'
+                        ? '#FFBC53'
+                        : priority === 'High'
+                          ? '#FF3737'
+                          : priority === 'Medium'
+                            ? '#F67E5A'
+                            : 'black',
+                  }">
                     {{ priority }}
                   </p>
                 </div>
@@ -201,15 +220,15 @@
             </div>
 
             <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-    color:
-      priority === 'Low'
-        ? '#FFBC53'
-        : priority === 'High'
-          ? '#FF3737'
-          : priority === 'Medium'
-            ? '#F67E5A'
-            : 'black',
-  }" v-else>
+              color:
+                priority === 'Low'
+                  ? '#FFBC53'
+                  : priority === 'High'
+                    ? '#FF3737'
+                    : priority === 'Medium'
+                      ? '#F67E5A'
+                      : 'black',
+            }" v-else>
               <p class="text-xs w-fit">{{ priority }}</p>
               <div class="">
                 <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
@@ -289,7 +308,7 @@
                     <div class="ml-2">
                       <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
                       <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
-    form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
+                        form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
                       <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
                         <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
                           <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
@@ -400,6 +419,7 @@ let is_dropwdown_blur = ref(false)
 const search_type = ref('')
 const pop_up = ref(null)
 const clickOutside = ref(false)
+const branch = ref([])
 
 const props = defineProps(["modelValue"]);
 
@@ -440,6 +460,22 @@ const handleFileUpload = (event) => {
   files.value = Array.from(event.target.files);
   form.files = Array.from(event.target.files);
   //uploadFiles()
+}
+
+function getImageForGroup(user) {
+    if(search_type.value == 'unit'){
+      return page.props.base + "/images/unit_active.svg";
+    }else if(search_type.value == 'division'){
+      return page.props.base + "/images/division_active.svg";
+    }else if(search_type.value == 'department'){
+       return page.props.base + "/images/department_active.svg";
+    }else{
+       if(user.profile_image){
+        return page.props.base + "/" + user.profile_image;
+       }else{
+        return page.props.base + "/images/user.svg";
+       }
+    }
 }
 
 
@@ -495,8 +531,19 @@ const getFileURL = (file) => {
 
 const searchUsers = debounce(() => {
   axios.get('/dashboard/search-users', { params: { search: search.value } }).then((response) => {
-    users.value = response.data.data
-    search_type.value = response.data.type
+    // users.value = response.data.data
+     search_type.value = response.data.type
+    if(response.data.type == 'unit' || response.data.type == 'division' || response.data.type == 'department'){
+      branch.value = response.data.data.filter(item => 
+        !selectedUsers.value.some(selected => selected.id === item.id)
+      );
+      //clickOutside2.value = false;
+    } else {
+      users.value = response.data.data.filter(item => 
+        !selectedUsers.value.some(selected => selected.id === item.id)
+      );
+      clickOutside.value = false;
+    }
   })
 }, 500)
 
@@ -516,9 +563,9 @@ const updateUsers = (suggestion) => {
   toggleRecipient.value = false;
   selectedUsers.value.push(suggestion)
   console.log(suggestion)
-  if(suggestion.user && suggestion.user.length > 0){
+  if (suggestion.user && suggestion.user.length > 0) {
     form.users.push(suggestion.user[0].id)
-  }else{
+  } else {
     form.users.push(suggestion.id)
   }
 
@@ -531,10 +578,10 @@ const removeUser = (user) => {
   users.value.push(user)
   let index = selectedUsers.value.findIndex((item) => item.id == user.id)
   selectedUsers.value.splice(index, 1)
-  
-  let index2 = form.users.findIndex((item)=>item.id == user.id);
-  if(index2){
-    form.users.splice(index,1)
+
+  let index2 = form.users.findIndex((item) => item.id == user.id);
+  if (index2) {
+    form.users.splice(index, 1)
   }
 }
 
@@ -592,33 +639,33 @@ const closeModal = () => {
 };
 
 const submit = () => {
-  if(form.title ==''){
-     toast.add({
-        severity: "error",
-        summary: '',
-        detail: "Title field cannot be empty",
-        life: 3000,
-      });
-      return false;
+  if (form.title == '') {
+    toast.add({
+      severity: "error",
+      summary: '',
+      detail: "Title field cannot be empty",
+      life: 3000,
+    });
+    return false;
   }
-  if(form.due_date ==''){
-     toast.add({
-        severity: "error",
-        summary: '',
-        detail: "Due date field cannot be empty",
-        life: 3000,
-      });
-      return false;
+  if (form.due_date == '') {
+    toast.add({
+      severity: "error",
+      summary: '',
+      detail: "Due date field cannot be empty",
+      life: 3000,
+    });
+    return false;
   }
 
-  if(form.priority ==''){
-     toast.add({
-        severity: "error",
-        summary: '',
-        detail: "Priority field cannot be empty",
-        life: 3000,
-      });
-      return false;
+  if (form.priority == '') {
+    toast.add({
+      severity: "error",
+      summary: '',
+      detail: "Priority field cannot be empty",
+      life: 3000,
+    });
+    return false;
   }
 
   form.post('/dashboard/create-task', {

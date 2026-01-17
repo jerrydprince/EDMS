@@ -87,7 +87,7 @@
               <th class="pl-5 py-3 font-medium w-28 md:w-auto text-sm">Task Title</th>
               <th class="font-medium w-28 md:w-auto text-sm">Date Assigned</th>
               <th class="font-medium w-28 md:w-auto text-sm">Deadline</th>
-              <th class="font-medium w-28 md:w-auto text-sm" v-if="!roles.includes('super users')">Assigned By</th>
+              <th class="font-medium w-28 md:w-auto text-sm" v-if="!roles.includes('super users')">Assigned To</th>
               <th class="font-medium w-28 md:w-auto text-sm">Priority</th>
               <th class="font-medium w-28 md:w-auto text-sm">Status</th>
               <th class="font-medium w-28 md:w-auto text-sm">Actions</th>
@@ -120,15 +120,15 @@
                 </div>
               </td>
               <td class="align-middle" v-if="!roles.includes('super users')">
-                <div class="flex items-center gap-2" v-if="item.assigned_by">
-                  <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                <div class="flex items-center gap-2">
+                  <p>{{ (item.assignments && item.assignments.length > 0) ? item.assignments[0].assigned_to.first_name + " " + item.assignments[0].assigned_to.last_name : '' }}</p>
                 </div>
-                <div class="flex items-center gap-2" v-if="item.assigned_by_division">
+                <!-- <div class="flex items-center gap-2" v-if="item.assigned_by_division">
                   <p>{{item.assigned_by_division.title }}</p>
                 </div>
                 <div class="flex items-center gap-2" v-if="item.assigned_by_department">
                   <p>{{ item.assigned_by_department.department }}</p>
-                </div>
+                </div> -->
               </td>
               <td class="align-middle">
                 <div class="flex items-center gap-2">
@@ -180,7 +180,7 @@
         <div class="w-full pt-8 pb-4">
         <div class="flex">
           <div class="flex pl-6" v-if="created_task && created_task.first_page_url && created_task.links[0].url">
-            <Link :data="{assigned_btn: assignmentButton}" preserve-state :href="created_task.first_page_url">
+            <Link :data="{assigned_btn: assignmentButton}" preserve-state :href="created_task.prev_page_url">
               <svg width="86" class=" cursor-pointer" height="20" viewBox="0 0 86 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15.8333 9.99935H4.16663M4.16663 9.99935L9.99996 15.8327M4.16663 9.99935L9.99996 4.16602" stroke="#667085" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M29.1186 15V4.81818H32.7479C33.54 4.81818 34.1963 4.96236 34.7166 5.25071C35.237 5.53906 35.6264 5.93347 35.8849 6.43395C36.1435 6.93111 36.2727 7.49124 36.2727 8.11435C36.2727 8.74077 36.1418 9.30421 35.88 9.80469C35.6214 10.3018 35.2304 10.6963 34.7067 10.9879C34.1863 11.2763 33.5317 11.4205 32.7429 11.4205H30.2472V10.1179H32.6037C33.1042 10.1179 33.5102 10.0317 33.8217 9.85938C34.1333 9.68371 34.362 9.44508 34.5078 9.14347C34.6536 8.84186 34.7266 8.49882 34.7266 8.11435C34.7266 7.72988 34.6536 7.38849 34.5078 7.0902C34.362 6.7919 34.1316 6.55824 33.8168 6.3892C33.5052 6.22017 33.0942 6.13565 32.5838 6.13565H30.6548V15H29.1186ZM37.9544 15V7.36364H39.3912V8.5767H39.4707C39.6099 8.16572 39.8552 7.84257 40.2065 7.60724C40.5611 7.36861 40.9622 7.24929 41.4096 7.24929C41.5024 7.24929 41.6118 7.2526 41.7377 7.25923C41.867 7.26586 41.9681 7.27415 42.041 7.28409V8.70597C41.9814 8.68939 41.8753 8.67116 41.7228 8.65128C41.5704 8.62808 41.4179 8.61648 41.2654 8.61648C40.9141 8.61648 40.6009 8.69105 40.3258 8.8402C40.054 8.98603 39.8386 9.18987 39.6795 9.4517C39.5204 9.71023 39.4409 10.0052 39.4409 10.3366V15H37.9544ZM46.3452 15.1541C45.5928 15.1541 44.9448 14.9934 44.4013 14.6719C43.861 14.3471 43.4434 13.8913 43.1484 13.3047C42.8568 12.7147 42.7109 12.0237 42.7109 11.2315C42.7109 10.4493 42.8568 9.75994 43.1484 9.16335C43.4434 8.56676 43.8544 8.10109 44.3814 7.76633C44.9117 7.43158 45.5315 7.2642 46.2408 7.2642C46.6716 7.2642 47.0893 7.33546 47.4936 7.47798C47.898 7.6205 48.2609 7.84422 48.5824 8.14915C48.9039 8.45407 49.1574 8.85014 49.343 9.33736C49.5286 9.82126 49.6214 10.4096 49.6214 11.1023V11.6293H43.5511V10.5156H48.1648C48.1648 10.1245 48.0852 9.77817 47.9261 9.47656C47.767 9.17164 47.5433 8.93134 47.255 8.75568C46.9699 8.58002 46.6352 8.49219 46.2507 8.49219C45.8331 8.49219 45.4685 8.59493 45.157 8.80043C44.8487 9.0026 44.6101 9.26776 44.4411 9.59588C44.2753 9.92069 44.1925 10.2737 44.1925 10.6548V11.5249C44.1925 12.0353 44.282 12.4695 44.4609 12.8274C44.6432 13.1854 44.8968 13.4588 45.2216 13.6477C45.5464 13.8333 45.9259 13.9261 46.3601 13.9261C46.6418 13.9261 46.8987 13.8864 47.1307 13.8068C47.3627 13.724 47.5632 13.6013 47.7322 13.4389C47.9013 13.2765 48.0305 13.076 48.12 12.8374L49.527 13.0909C49.4143 13.5052 49.2121 13.8681 48.9205 14.1797C48.6321 14.4879 48.2692 14.7282 47.8317 14.9006C47.3975 15.0696 46.902 15.1541 46.3452 15.1541ZM57.5847 7.36364L54.8155 15H53.2246L50.4505 7.36364H52.0463L53.9803 13.2401H54.0598L55.9888 7.36364H57.5847ZM58.9817 15V7.36364H60.4682V15H58.9817ZM59.7324 6.18537C59.4739 6.18537 59.2518 6.09919 59.0662 5.92685C58.8839 5.75118 58.7928 5.54238 58.7928 5.30043C58.7928 5.05516 58.8839 4.84635 59.0662 4.67401C59.2518 4.49834 59.4739 4.41051 59.7324 4.41051C59.9909 4.41051 60.2114 4.49834 60.3936 4.67401C60.5792 4.84635 60.6721 5.05516 60.6721 5.30043C60.6721 5.54238 60.5792 5.75118 60.3936 5.92685C60.2114 6.09919 59.9909 6.18537 59.7324 6.18537ZM65.6847 15.1541C64.9688 15.1541 64.344 14.9901 63.8104 14.6619C63.2768 14.3338 62.8625 13.8748 62.5675 13.2848C62.2725 12.6948 62.125 12.0054 62.125 11.2166C62.125 10.4245 62.2725 9.73177 62.5675 9.13849C62.8625 8.54522 63.2768 8.08452 63.8104 7.75639C64.344 7.42827 64.9688 7.2642 65.6847 7.2642C66.4006 7.2642 67.0253 7.42827 67.5589 7.75639C68.0926 8.08452 68.5069 8.54522 68.8018 9.13849C69.0968 9.73177 69.2443 10.4245 69.2443 11.2166C69.2443 12.0054 69.0968 12.6948 68.8018 13.2848C68.5069 13.8748 68.0926 14.3338 67.5589 14.6619C67.0253 14.9901 66.4006 15.1541 65.6847 15.1541ZM65.6896 13.9062C66.1536 13.9062 66.5381 13.7836 66.843 13.5384C67.148 13.2931 67.3733 12.9666 67.5192 12.5589C67.6683 12.1513 67.7429 11.7022 67.7429 11.2116C67.7429 10.7244 67.6683 10.277 67.5192 9.86932C67.3733 9.45833 67.148 9.12855 66.843 8.87997C66.5381 8.63139 66.1536 8.5071 65.6896 8.5071C65.2223 8.5071 64.8345 8.63139 64.5263 8.87997C64.2214 9.12855 63.9943 9.45833 63.8452 9.86932C63.6993 10.277 63.6264 10.7244 63.6264 11.2116C63.6264 11.7022 63.6993 12.1513 63.8452 12.5589C63.9943 12.9666 64.2214 13.2931 64.5263 13.5384C64.8345 13.7836 65.2223 13.9062 65.6896 13.9062ZM75.7409 11.8331V7.36364H77.2324V15H75.7708V13.6776H75.6912C75.5156 14.0852 75.2338 14.425 74.8461 14.6967C74.4616 14.9652 73.9827 15.0994 73.4093 15.0994C72.9187 15.0994 72.4846 14.9917 72.1067 14.7763C71.7322 14.5575 71.4372 14.2344 71.2218 13.8068C71.0096 13.3793 70.9036 12.8506 70.9036 12.2209V7.36364H72.3901V12.0419C72.3901 12.5623 72.5343 12.9766 72.8226 13.2848C73.111 13.593 73.4855 13.7472 73.9462 13.7472C74.2246 13.7472 74.5014 13.6776 74.7765 13.5384C75.0549 13.3991 75.2852 13.1887 75.4675 12.907C75.6531 12.6252 75.7443 12.2673 75.7409 11.8331ZM84.9521 9.22798L83.6048 9.46662C83.5484 9.29427 83.4589 9.13021 83.3363 8.97443C83.217 8.81865 83.0546 8.69105 82.8491 8.59162C82.6436 8.49219 82.3867 8.44247 82.0785 8.44247C81.6576 8.44247 81.3062 8.53693 81.0245 8.72585C80.7428 8.91146 80.6019 9.15175 80.6019 9.44673C80.6019 9.70194 80.6964 9.90743 80.8853 10.0632C81.0742 10.219 81.3791 10.3466 81.8001 10.446L83.0131 10.7244C83.7158 10.8868 84.2395 11.1371 84.5842 11.4751C84.9289 11.8132 85.1012 12.2524 85.1012 12.7926C85.1012 13.25 84.9686 13.6577 84.7035 14.0156C84.4416 14.3703 84.0754 14.6487 83.6048 14.8509C83.1374 15.053 82.5955 15.1541 81.979 15.1541C81.1239 15.1541 80.4263 14.9718 79.886 14.6072C79.3458 14.2393 79.0143 13.7173 78.8917 13.0412L80.3285 12.8224C80.418 13.197 80.6019 13.4804 80.8803 13.6726C81.1587 13.8615 81.5217 13.956 81.9691 13.956C82.4563 13.956 82.8458 13.8549 83.1374 13.6527C83.4291 13.4472 83.5749 13.197 83.5749 12.902C83.5749 12.6634 83.4854 12.4628 83.3065 12.3004C83.1308 12.138 82.8607 12.0154 82.4961 11.9325L81.2035 11.6491C80.4909 11.4867 79.9639 11.2282 79.6225 10.8736C79.2844 10.5189 79.1154 10.0698 79.1154 9.52628C79.1154 9.07552 79.2414 8.68111 79.4933 8.34304C79.7451 8.00497 80.0932 7.74148 80.5373 7.55256C80.9814 7.36032 81.4902 7.2642 82.0636 7.2642C82.8888 7.2642 83.5385 7.44318 84.0124 7.80114C84.4864 8.15578 84.7996 8.63139 84.9521 9.22798Z" fill="#667085"/>
@@ -189,7 +189,7 @@
 
           </div>
 
-          <div class="mx-auto flex" v-if="created_task && created_task.links && created_task.per_page <= created_task.total">
+          <div class="mx-auto flex" v-if="created_task && created_task.links">
             <template v-for="link in created_task.links">
                 <Link :data="{assigned_btn: assignmentButton}" preserve-state  :class="{'hidden': link.label.includes('Previous') || link.label.includes('Next')}" :href="link.url"><span class="w-[30px] h-[30px] rounded-full text-[#0D6E1A]  flex items-end justify-center p-1 cursor-pointer mx-1" :class="link.active? 'bg-[#b5d1b0]':'bg-[#E7F2E8]'">{{ link.label }}</span></Link>
             </template>
@@ -248,34 +248,29 @@
                 </div>
               </td>
               <td class="align-middle">
-                <div class="flex items-center gap-2" v-if="item.assigned_by">
-                  <p>{{ item.assigned_by.first_name+" "+item.assigned_by.last_name }}</p>
+                <div class="flex items-center gap-2" >
+                  <p>{{ (item.assignments && item.assignments.length > 0) ? item.assignments[0].assigned_by.first_name + " " + item.assignments[0].assigned_by.last_name : '' }}</p>
                 </div>
-                <div class="flex items-center gap-2" v-if="item.assigned_by_division">
-                  <p>{{ item.assigned_by_division.title }}</p>
-                </div>
-                <div class="flex items-center gap-2" v-if="item.assigned_by_department">
-                  <p>{{ item.assigned_by_department.title }}</p>
-                </div>
+              
               </td>
               <td class="align-middle">
                 <div class="flex items-center gap-2">
-                  <p class="bg-[#FEFBF6] px-5 py-1 rounded-3xl" :style="{
+                  <p class="bg-[#FEFBF6] px-5 py-1 rounded-3xl capitalize" :style="{
               color:
-                item.priority === '1'
+                item.priority === 'low'
                   ? '#FFBC53'
-                  : item.priority === '2'
+                  : item.priority === 'medium'
                     ? '#FF3737'
-                    : item.priority === '3'
+                    : item.priority === 'high'
                       ? '#F67E5A'
                       : 'black',
             }">
-                    {{ item.priority == 1? "Low": (item.priority == 2? 'Medium' : 'High') }}
+                    {{ item.priority }}
                   </p>
                 </div>
               </td>
               <td class="align-middle">
-                <p class="bg-slate-50 rounded-3xl w-fit px-3 py-1" :style="{
+                <p v-if="roles.includes('super users')" class="bg-slate-50 rounded-3xl w-fit px-3 py-1" :style="{
               color:
                 item.status === 'Completed'
                   ? '#0D6E1A'
@@ -288,6 +283,21 @@
                         : '#F04438',
             }">
                   {{ item.status }}
+                </p>
+
+                <p v-if="item.assigned_to_me" class="bg-slate-50 rounded-3xl w-fit px-3 py-1" :style="{
+              color:
+                item.assigned_to_me.status === 'completed'
+                  ? '#0D6E1A'
+                  : item.assigned_to_me.status === 'review'
+                    ? '#FB6514'
+                    : item.assigned_to_me.status === 'pending'
+                      ? '#F79009'
+                      : item.assigned_to_me.status === 'uncompleted'
+                        ? '#F04438'
+                        : '#F04438',
+            }">
+                  {{ item.assigned_to_me.status }}
                 </p>
               </td>
               <td class="align-top py-3">
@@ -308,10 +318,10 @@
         <!-- <pagination :archives="assigned_task" /> -->
 
         <!-- pagination -->
-        <div class="w-full pt-8 pb-4" v-if="assigned_task && assigned_task.length > 0">
+        <div class="w-full pt-8 pb-4" v-if="assigned_task && assigned_task.links.length > 0">
         <div class="flex">
           <div class="flex pl-6" v-if="assigned_task && assigned_task.first_page_url && assigned_task.links[0].url">
-            <Link :data="{assigned_btn: assignmentButton}" preserve-state :href="assigned_task.first_page_url">
+            <Link :data="{assigned_btn: assignmentButton}" preserve-state :href="assigned_task.prev_page_url">
               <svg width="86" class=" cursor-pointer" height="20" viewBox="0 0 86 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15.8333 9.99935H4.16663M4.16663 9.99935L9.99996 15.8327M4.16663 9.99935L9.99996 4.16602" stroke="#667085" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M29.1186 15V4.81818H32.7479C33.54 4.81818 34.1963 4.96236 34.7166 5.25071C35.237 5.53906 35.6264 5.93347 35.8849 6.43395C36.1435 6.93111 36.2727 7.49124 36.2727 8.11435C36.2727 8.74077 36.1418 9.30421 35.88 9.80469C35.6214 10.3018 35.2304 10.6963 34.7067 10.9879C34.1863 11.2763 33.5317 11.4205 32.7429 11.4205H30.2472V10.1179H32.6037C33.1042 10.1179 33.5102 10.0317 33.8217 9.85938C34.1333 9.68371 34.362 9.44508 34.5078 9.14347C34.6536 8.84186 34.7266 8.49882 34.7266 8.11435C34.7266 7.72988 34.6536 7.38849 34.5078 7.0902C34.362 6.7919 34.1316 6.55824 33.8168 6.3892C33.5052 6.22017 33.0942 6.13565 32.5838 6.13565H30.6548V15H29.1186ZM37.9544 15V7.36364H39.3912V8.5767H39.4707C39.6099 8.16572 39.8552 7.84257 40.2065 7.60724C40.5611 7.36861 40.9622 7.24929 41.4096 7.24929C41.5024 7.24929 41.6118 7.2526 41.7377 7.25923C41.867 7.26586 41.9681 7.27415 42.041 7.28409V8.70597C41.9814 8.68939 41.8753 8.67116 41.7228 8.65128C41.5704 8.62808 41.4179 8.61648 41.2654 8.61648C40.9141 8.61648 40.6009 8.69105 40.3258 8.8402C40.054 8.98603 39.8386 9.18987 39.6795 9.4517C39.5204 9.71023 39.4409 10.0052 39.4409 10.3366V15H37.9544ZM46.3452 15.1541C45.5928 15.1541 44.9448 14.9934 44.4013 14.6719C43.861 14.3471 43.4434 13.8913 43.1484 13.3047C42.8568 12.7147 42.7109 12.0237 42.7109 11.2315C42.7109 10.4493 42.8568 9.75994 43.1484 9.16335C43.4434 8.56676 43.8544 8.10109 44.3814 7.76633C44.9117 7.43158 45.5315 7.2642 46.2408 7.2642C46.6716 7.2642 47.0893 7.33546 47.4936 7.47798C47.898 7.6205 48.2609 7.84422 48.5824 8.14915C48.9039 8.45407 49.1574 8.85014 49.343 9.33736C49.5286 9.82126 49.6214 10.4096 49.6214 11.1023V11.6293H43.5511V10.5156H48.1648C48.1648 10.1245 48.0852 9.77817 47.9261 9.47656C47.767 9.17164 47.5433 8.93134 47.255 8.75568C46.9699 8.58002 46.6352 8.49219 46.2507 8.49219C45.8331 8.49219 45.4685 8.59493 45.157 8.80043C44.8487 9.0026 44.6101 9.26776 44.4411 9.59588C44.2753 9.92069 44.1925 10.2737 44.1925 10.6548V11.5249C44.1925 12.0353 44.282 12.4695 44.4609 12.8274C44.6432 13.1854 44.8968 13.4588 45.2216 13.6477C45.5464 13.8333 45.9259 13.9261 46.3601 13.9261C46.6418 13.9261 46.8987 13.8864 47.1307 13.8068C47.3627 13.724 47.5632 13.6013 47.7322 13.4389C47.9013 13.2765 48.0305 13.076 48.12 12.8374L49.527 13.0909C49.4143 13.5052 49.2121 13.8681 48.9205 14.1797C48.6321 14.4879 48.2692 14.7282 47.8317 14.9006C47.3975 15.0696 46.902 15.1541 46.3452 15.1541ZM57.5847 7.36364L54.8155 15H53.2246L50.4505 7.36364H52.0463L53.9803 13.2401H54.0598L55.9888 7.36364H57.5847ZM58.9817 15V7.36364H60.4682V15H58.9817ZM59.7324 6.18537C59.4739 6.18537 59.2518 6.09919 59.0662 5.92685C58.8839 5.75118 58.7928 5.54238 58.7928 5.30043C58.7928 5.05516 58.8839 4.84635 59.0662 4.67401C59.2518 4.49834 59.4739 4.41051 59.7324 4.41051C59.9909 4.41051 60.2114 4.49834 60.3936 4.67401C60.5792 4.84635 60.6721 5.05516 60.6721 5.30043C60.6721 5.54238 60.5792 5.75118 60.3936 5.92685C60.2114 6.09919 59.9909 6.18537 59.7324 6.18537ZM65.6847 15.1541C64.9688 15.1541 64.344 14.9901 63.8104 14.6619C63.2768 14.3338 62.8625 13.8748 62.5675 13.2848C62.2725 12.6948 62.125 12.0054 62.125 11.2166C62.125 10.4245 62.2725 9.73177 62.5675 9.13849C62.8625 8.54522 63.2768 8.08452 63.8104 7.75639C64.344 7.42827 64.9688 7.2642 65.6847 7.2642C66.4006 7.2642 67.0253 7.42827 67.5589 7.75639C68.0926 8.08452 68.5069 8.54522 68.8018 9.13849C69.0968 9.73177 69.2443 10.4245 69.2443 11.2166C69.2443 12.0054 69.0968 12.6948 68.8018 13.2848C68.5069 13.8748 68.0926 14.3338 67.5589 14.6619C67.0253 14.9901 66.4006 15.1541 65.6847 15.1541ZM65.6896 13.9062C66.1536 13.9062 66.5381 13.7836 66.843 13.5384C67.148 13.2931 67.3733 12.9666 67.5192 12.5589C67.6683 12.1513 67.7429 11.7022 67.7429 11.2116C67.7429 10.7244 67.6683 10.277 67.5192 9.86932C67.3733 9.45833 67.148 9.12855 66.843 8.87997C66.5381 8.63139 66.1536 8.5071 65.6896 8.5071C65.2223 8.5071 64.8345 8.63139 64.5263 8.87997C64.2214 9.12855 63.9943 9.45833 63.8452 9.86932C63.6993 10.277 63.6264 10.7244 63.6264 11.2116C63.6264 11.7022 63.6993 12.1513 63.8452 12.5589C63.9943 12.9666 64.2214 13.2931 64.5263 13.5384C64.8345 13.7836 65.2223 13.9062 65.6896 13.9062ZM75.7409 11.8331V7.36364H77.2324V15H75.7708V13.6776H75.6912C75.5156 14.0852 75.2338 14.425 74.8461 14.6967C74.4616 14.9652 73.9827 15.0994 73.4093 15.0994C72.9187 15.0994 72.4846 14.9917 72.1067 14.7763C71.7322 14.5575 71.4372 14.2344 71.2218 13.8068C71.0096 13.3793 70.9036 12.8506 70.9036 12.2209V7.36364H72.3901V12.0419C72.3901 12.5623 72.5343 12.9766 72.8226 13.2848C73.111 13.593 73.4855 13.7472 73.9462 13.7472C74.2246 13.7472 74.5014 13.6776 74.7765 13.5384C75.0549 13.3991 75.2852 13.1887 75.4675 12.907C75.6531 12.6252 75.7443 12.2673 75.7409 11.8331ZM84.9521 9.22798L83.6048 9.46662C83.5484 9.29427 83.4589 9.13021 83.3363 8.97443C83.217 8.81865 83.0546 8.69105 82.8491 8.59162C82.6436 8.49219 82.3867 8.44247 82.0785 8.44247C81.6576 8.44247 81.3062 8.53693 81.0245 8.72585C80.7428 8.91146 80.6019 9.15175 80.6019 9.44673C80.6019 9.70194 80.6964 9.90743 80.8853 10.0632C81.0742 10.219 81.3791 10.3466 81.8001 10.446L83.0131 10.7244C83.7158 10.8868 84.2395 11.1371 84.5842 11.4751C84.9289 11.8132 85.1012 12.2524 85.1012 12.7926C85.1012 13.25 84.9686 13.6577 84.7035 14.0156C84.4416 14.3703 84.0754 14.6487 83.6048 14.8509C83.1374 15.053 82.5955 15.1541 81.979 15.1541C81.1239 15.1541 80.4263 14.9718 79.886 14.6072C79.3458 14.2393 79.0143 13.7173 78.8917 13.0412L80.3285 12.8224C80.418 13.197 80.6019 13.4804 80.8803 13.6726C81.1587 13.8615 81.5217 13.956 81.9691 13.956C82.4563 13.956 82.8458 13.8549 83.1374 13.6527C83.4291 13.4472 83.5749 13.197 83.5749 12.902C83.5749 12.6634 83.4854 12.4628 83.3065 12.3004C83.1308 12.138 82.8607 12.0154 82.4961 11.9325L81.2035 11.6491C80.4909 11.4867 79.9639 11.2282 79.6225 10.8736C79.2844 10.5189 79.1154 10.0698 79.1154 9.52628C79.1154 9.07552 79.2414 8.68111 79.4933 8.34304C79.7451 8.00497 80.0932 7.74148 80.5373 7.55256C80.9814 7.36032 81.4902 7.2642 82.0636 7.2642C82.8888 7.2642 83.5385 7.44318 84.0124 7.80114C84.4864 8.15578 84.7996 8.63139 84.9521 9.22798Z" fill="#667085"/>
@@ -320,7 +330,7 @@
 
           </div>
 
-          <div class="mx-auto flex" v-if="assigned_task && assigned_task.links && assigned_task.per_page <= assigned_task.total">
+          <div class="mx-auto flex" v-if="assigned_task && assigned_task.links">
             <template v-for="link in assigned_task.links">
                 <Link :data="{assigned_btn: assignmentButton}" preserve-state  :class="{'hidden': link.label.includes('Previous') || link.label.includes('Next')}" :href="link.url"><span class="w-[30px] h-[30px] rounded-full text-[#0D6E1A]  flex items-end justify-center p-1 cursor-pointer mx-1" :class="link.active? 'bg-[#b5d1b0]':'bg-[#E7F2E8]'">{{ link.label }}</span></Link>
             </template>
@@ -370,6 +380,7 @@ const search = ref('')
 const props = defineProps(['created_task', 'assigned_task'])
 
 const roles = computed(()=> page.props.roles)
+const user = computed(()=> page.props.user)
 
 const notifications = inject('notifications')
 const created_task = ref([])
@@ -434,8 +445,13 @@ const isRole = (role)=>{
 
 const taskByStatus = (status)=>{
   let type = assignmentButton.value ==1? 'assigned_to_me': 'assigned_by_me';
-  axios.get('/dashboard/task-by-status',{params:{status: status, type: type}}).then((response)=>{
-    tasks.value = response.data.data;
+  // axios.get('/dashboard/task-by-status',{params:{status: status, type: type}}).then((response)=>{
+  //   tasks.value = response.data.data;
+  // })
+  router.get('/dashboard/workflow', {status: status.toLowerCase(), assigned_btn: assignmentButton.value}, {
+    preserveState: true,
+    replace: true,
+    only: ['created_task', 'assigned_task']
   })
 }
 
@@ -509,49 +525,53 @@ const filteredTask = computed(()=>{
 })
 
 const filteredAssignedTask = computed(()=>{
-  // if(buttonSwitch.value !== 1){
-  //   return tasks.value
-  // }else{
-  //   return props.assigned_task?.data
+ return assigned_task.value?.data;
+  //  if( buttonSwitch.value == 1 && assignmentButton.value == 1){
+  //   return assigned_task.value?.data
+  // }else
+  // if(buttonSwitch.value == 2 && assignmentButton.value == 1){
+  //   if(assigned_task.value && assigned_task.value.data){
+  //     let data = assigned_task.value.data.filter((item)=> item.status==='pending');
+  //     return data
+  //   }
+    
+  // }else
+  // if(buttonSwitch.value == 3 && assignmentButton.value == 1){
+  //   if(assigned_task.value && assigned_task.value.data){
+  //     let data = assigned_task.value.data.filter((item)=>item.status=='in progress');
+  //     return data
+  //   }
+    
+  // }else
+  // if(buttonSwitch.value == 4 && assignmentButton.value == 1){
+  //   if(assigned_task.value && assigned_task.value.data){
+  //     let data = assigned_task.value.data.filter((item)=>item.status=='under review');
+  //     return data
+  //   }
+    
+  // }else
+  // if(buttonSwitch.value == 5 && assignmentButton.value == 1){
+  //   if(assigned_task.value && assigned_task.value.data){
+  //     let data = assigned_task.value.data.filter((item)=>item.status=='completed');
+  //     return data
+  //   }
+    
+  // }else
+  // if(buttonSwitch.value == 6 && assignmentButton.value == 1){
+  //   if(assigned_task.value && assigned_task.value.data){
+  //     let today = new Date();
+  //     today.setHours(0,0,0,0);
+  //     let data = assigned_task.value.data.filter((item) => {
+  //       if (!item.due_date) return false;
+  //       const due = new Date(item.due_date);
+  //       due.setHours(0,0,0,0);
+  //       return  due.getTime() < today.getTime();
+  //     });
+  //     //let data = assigned_task.value.data.filter((item)=>item.status=='uncompleted');
+  //   return data
+  //   }
+    
   // }
-   if( buttonSwitch.value == 1 && assignmentButton.value == 1){
-    return assigned_task.value?.data
-  }else
-  if(buttonSwitch.value == 2 && assignmentButton.value == 1){
-    if(assigned_task.value && assigned_task.value.data){
-      let data = assigned_task.value.data.filter((item)=> item.status==='pending');
-      return data
-    }
-    
-  }else
-  if(buttonSwitch.value == 3 && assignmentButton.value == 1){
-    if(assigned_task.value && assigned_task.value.data){
-      let data = assigned_task.value.data.filter((item)=>item.status=='in progress');
-      return data
-    }
-    
-  }else
-  if(buttonSwitch.value == 4 && assignmentButton.value == 1){
-    if(assigned_task.value && assigned_task.value.data){
-      let data = assigned_task.value.data.filter((item)=>item.status=='under review');
-      return data
-    }
-    
-  }else
-  if(buttonSwitch.value == 5 && assignmentButton.value == 1){
-    if(assigned_task.value && assigned_task.value.data){
-      let data = assigned_task.value.data.filter((item)=>item.status=='completed');
-      return data
-    }
-    
-  }else
-  if(buttonSwitch.value == 6 && assignmentButton.value == 1){
-    if(assigned_task.value && assigned_task.value.data){
-      let data = assigned_task.value.data.filter((item)=>item.status=='uncompleted');
-    return data
-    }
-    
-  }
 })
 const pageStart = ref(1);
 const pageEnd = ref(1);
@@ -570,14 +590,14 @@ watch(()=>props.created_task, ()=>{
 },{deep: true})
 
 
-watch(assignmentButton, (newVal)=>{
-  buttonSwitch.value = 1;
-  // if(newVal == 1){
-  //   router.reload({only: ['created_at']})
-  // }else{
-  //   router.reload({only:['assigned_task']})
-  // }
-})
+// watch(assignmentButton, (newVal)=>{
+//   buttonSwitch.value = 1;
+//   // if(newVal == 1){
+//   //   router.reload({only: ['created_at']})
+//   // }else{
+//   //   router.reload({only:['assigned_task']})
+//   // }
+// })
 
 watch(notifications, (newVal)=>{
   if(newVal.Today && newVal.Today[0].data.task){
@@ -586,11 +606,14 @@ watch(notifications, (newVal)=>{
 })
 
 const getSearchResult = debounce((event)=>{
+   const params = new URLSearchParams(window.location.search)
+  const val = params.get('assigned_btn');
   let search_value = event.target.value;
-  axios.get('/dashboard/search-workflow',{params:{search:search_value}}).then((response)=>{
-    created_task.value = response.data.created_task
-    assigned_task.value = response.data.assigned_task
-  })
+  // axios.get('/dashboard/workflow',{params:{search:search_value, assigned_btn: val}}).then((response)=>{
+  //   created_task.value = response.data.created_task
+  //   assigned_task.value = response.data.assigned_task
+  // })
+  router.get('/dashboard/workflow',{search: search_value, assigned_btn: val}, {preserveState: true, replace: true})
 }, 500)
 
 const addToURLParam = ()=>{
@@ -621,6 +644,35 @@ onMounted(()=>{
   const params = new URLSearchParams(window.location.search)
   const val = params.get('assigned_btn');
   assignmentButton.value = val?val : 1
+  const status = params.get('status');
+  if(status == 'in progress'){
+    //activeButton(status.charAt(0).toUpperCase() + status.slice(1))
+    buttonSwitch.value = 3;
+  }
+  if(status == 'under review'){
+   // activeButton(status.charAt(0).toUpperCase() + status.slice(1))
+    buttonSwitch.value = 4;
+  }
+  if(status == 'completed'){
+   // activeButton(status.charAt(0).toUpperCase() + status.slice(1))
+    buttonSwitch.value = 5;
+  }
+  if(status == 'uncompleted'){
+    //activeButton(status.charAt(0).toUpperCase() + status.slice(1))
+    buttonSwitch.value = 6;
+  }
+  if(status == 'pending'){
+   // activeButton(status.charAt(0).toUpperCase() + status.slice(1))
+    buttonSwitch.value = 2;
+  }
+  if(!status){
+    buttonSwitch.value = 1;
+   // taskByStatus('')
+  }
+  Echo.private('task.' + user.value.id)
+      .notification((notification) => {
+          router.reload({ only: ['assigned_task'] })
+      });
 })
 
 onUpdated(()=>{

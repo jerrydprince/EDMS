@@ -13,11 +13,11 @@
 	
 		<section class="  flex flex-col items-center ">
 			<div class=" relative items-center justify-center  flex -mt-5">
-				  <img :src="'/assets/images/grid.png'" alt="" class=" -mt-10 ">
+				  <img :src="grid" alt="" class=" -mt-10 ">
 				
-				  <img :src="'/assets/images/caution.png'" alt="" class=" absolute " v-if=" action === 'close'">
+				  <img :src="caution" alt="" class=" absolute " v-if=" action === 'close'">
 				
-				  <img :src="'/assets/images/open.png'" alt="" class=" absolute " v-else>
+				  <img :src="open" alt="" class=" absolute " v-else>
 				
 
 
@@ -64,6 +64,13 @@
 <script setup>
 import { defineEmits, defineProps, computed ,ref} from "vue";
 import { useToast } from "primevue/usetoast";
+// import grid from '/assets/images/grid.png';
+// import caution from '/assets/images/caution.png';
+// import open from '/assets/images/open.png';
+import grid from "../../../../../public/images/grid.png";
+import caution from "../../../../../public/images/caution.png";
+import open from "../../../../../public/images/open.png";
+
 const toast = useToast();
 const props = defineProps(["modelValue", "action"]);
 const emit = defineEmits(["update:modelValue"]);

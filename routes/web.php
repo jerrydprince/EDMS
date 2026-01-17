@@ -412,6 +412,7 @@ Route::middleware(['auth','check2fastatus'])->group(function () {
 
     //notifications 
     Route::get('/user-notifications', [UserController::class, 'getUserUnreadNotification']);
+    Route::post('/mark-notification-as-read', [UserController::class, 'markNotificationAsRead']);
 
      //settings
      Route::get('/settings', [SettingsController::class, 'settings']);

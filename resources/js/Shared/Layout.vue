@@ -128,6 +128,11 @@ const comment = ref([])
           store.dispatch("fetchNotifications")
       });
 
+      // Echo.private('App.Models.User.' + user.value.id)
+      // .notification((notification) => {
+      //     console.log(notification.type);
+      // });
+
       //  Echo.private('comment.' + user.value.id)
       //   .notification((nots) => {
       //       comment.value = nots

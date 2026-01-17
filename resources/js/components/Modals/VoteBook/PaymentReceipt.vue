@@ -17,7 +17,7 @@
         class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-center justify-center">
         <section class="w-[80%] m-auto">
           <div class="w-full flex items-center justify-center">
-            <img :src="'../../../assets/images/votebook.svg'" alt="reject task" class="drop-shadow-xl -mb-7" />
+            <img :src="votebookIcon" alt="reject task" class="drop-shadow-xl -mb-7" />
           </div>
           <div class="pb-4 text-center">
             <p class="text-2xl mt-3 mb-4 font-semibold text-gray-800">
@@ -179,6 +179,7 @@ import { defineEmits, ref, computed, defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
 import { formatWithCommas } from "../../../utils/formatAmount";
 import { useForm } from "@inertiajs/vue3";
+import votebookIcon from "../../../../../public/images/votebook.svg";
 
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled"]);

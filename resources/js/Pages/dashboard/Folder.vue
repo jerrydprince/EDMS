@@ -308,7 +308,7 @@
           </div>
 
           <div class="mt-2">
-            <img class="w-full rounded-md" :src="'/assets/images/document.svg'" alt="Document image" />
+            <img class="w-full rounded-md" :src="documentIcon" alt="Document image" />
           </div>
         </div>
       </div>
@@ -362,7 +362,7 @@
           </div>
 
           <div class="mt-2">
-            <img class="w-full rounded-md" :src="'/assets/images/document.svg'" alt="Document image" />
+            <img class="w-full rounded-md" :src="documentIcon" alt="Document image" />
           </div>
         </div>
       </div>
@@ -385,6 +385,7 @@ import LockDocument from "../../components/Modals/branches/LockDocument.vue";
 import UnlockDocument from "../../components/Modals/branches/UnlockDocument.vue";
 import GenerateEncriptionCode from "../../components/Modals/branches/GenerateEncriptionCode.vue";
 import ChangeFormat from "../../components/Modals/branches/ChangeFormatModal.vue";
+import documentIcon from "../../../../public/images/document.png";
 import { onClickOutside } from '@vueuse/core'
 
 const goBack = () => {

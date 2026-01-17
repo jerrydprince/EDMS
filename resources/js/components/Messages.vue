@@ -79,7 +79,7 @@
                             />
                             <img
                                 v-else
-                                :src="'../assets/images/display_picture.svg'"
+                                :src="displayIcon"
                                 alt=""
                             />
                         </div>
@@ -163,7 +163,7 @@
                                     class="py-2 flex items-center gap-2"
                                 >
                                     <img
-                                        :src="'../assets/images/display_picture.svg'"
+                                        :src="displayIcon"
                                         alt=""
                                     />
                                     <div
@@ -238,7 +238,7 @@
                                     />
                                     <img
                                         v-else
-                                        :src="'../assets/images/display_picture.svg'"
+                                        :src="displayIcon"
                                         alt=""
                                     />
                                     <div
@@ -380,7 +380,7 @@
                     >
                         <div class="relative w-36 h-36">
                             <img
-                                :src="'../assets/images/display_picture.svg'"
+                                :src="displayIcon"
                                 alt=""
                                 class="w-36"
                             />
@@ -443,7 +443,7 @@
                         @click="reportModal = true"
                     >
                         <img
-                            :src="'../assets/images/report.svg'"
+                            :src="reportIcon"
                             alt=""
                             class="w-7"
                         />
@@ -545,7 +545,7 @@
                         class="flex flex-col items-center justify-center"
                     >
                         <img
-                            :src="'../assets/images/no_file.svg'"
+                            :src="noFile"
                             alt=""
                             class="w-40 my-5"
                         />
@@ -642,7 +642,7 @@
                                         class="flex items-center gap-5 font-semibold mb-3"
                                     >
                                         <img
-                                            :src="'../assets/images/display_picture.svg'"
+                                            :src="displayIcon"
                                             alt=""
                                             class="w-9"
                                         />
@@ -812,7 +812,7 @@
                         class="flex flex-col items-center justify-center"
                     >
                         <img
-                            :src="'../assets/images/no_file.svg'"
+                            :src="noFile"
                             alt=""
                             class="w-40 my-5"
                         />
@@ -837,6 +837,9 @@ import {
     onUpdated,
 } from "vue";
 import { useInfiniteScroll } from "@vueuse/core";
+import displayIcon from "../../../public/images/display_picture.svg";
+import noFile from "../../../public/images/no_file.svg";
+import reportIcon from "../../../public/images/report.svg";
 
 import { defineProps } from "vue";
 import { useToast } from "primevue/usetoast";
