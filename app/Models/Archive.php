@@ -53,11 +53,19 @@ class Archive extends Model
  }
 
 
-   /**
-    * The filePath that belong to the Archive
-    *
-    * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    */
+    /**
+     * Get the file that owns the Archive
+     */
+    public function file()
+    {
+        return $this->hasOne(File::class, 'archive_id', 'id');
+    }
+
+    /**
+     * The filePath that belong to the Archive
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
    public function filePath()
    {
        return $this->belongsToMany(FilePath::class, 'archive_file_path');
@@ -104,6 +112,7 @@ class Archive extends Model
    }
 
    protected static function booted(){
+    static::addGlobalScope(new \App\Models\Scopes\DepartmentScope);
 
     $agent = new Agent();
 
@@ -124,78 +133,59 @@ class Archive extends Model
         $device = 'Desktop';
     }
 
-    static::created(function($archive) use($device){
-    
-        activity()
-        ->performedOn($archive)
-        ->causedBy(auth()->user()->id)
-        ->withProperties([
-            'archive' => 'archive created',
-            'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-            'ip' => request()->ip(),
-            'event' => 'Document archived',
-            'user_agent' => request()->userAgent(),
-            'device' => $device,
-            'document_type' =>$archive->load(['archiveDocs','department', 'division','unit', 'folder']),
-            'files' => $archive->load('filePath'),
-            ])
-        ->log('Archive was created by '.auth()->user()->first_name.' '.auth()->user()->last_name);
-            });
+    static::created(function($archive) {
+        if (auth()->check()) {
+            \App\Services\AuditTrailService::logRecord(
+                'document_archived',
+                'Document archived into repository: ' . ($archive->title ?? 'Archive #' . $archive->id),
+                [
+                    'archive_id' => $archive->id,
+                    'event' => 'Document archived',
+                    'document_type' => $archive->loadMissing(['archiveDocs', 'department', 'division', 'unit', 'folder']),
+                    'files' => $archive->loadMissing('filePath'),
+                ],
+                $archive,
+                \App\Services\AuditTrailService::SEVERITY_ROUTINE
+            );
+        }
+    });
 
-            static::updated(function($archive) use($device){
-                activity()
-                ->performedOn($archive)
-                ->causedBy(auth()->user()->id)
-                ->withProperties([
-                    'archive' => 'archive updated',
-                    'ip' => request()->ip(),
-                    'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-                    'user_agent' => request()->userAgent(),
+    static::updated(function($archive) {
+        if (auth()->check()) {
+            \App\Services\AuditTrailService::logRecord(
+                'document_updated',
+                'Archive document modified: ' . ($archive->title ?? 'Archive #' . $archive->id),
+                [
+                    'archive_id' => $archive->id,
                     'event' => 'Document updated',
-                    'device' => $device,
-                    'document_type' =>$archive->load(['archiveDocs','department', 'division','unit', 'folder']),
-                    'files' => $archive->load('filePath'),
-                    ])
-                ->log('Archive was updated by '.auth()->user()->first_name.' '.auth()->user()->last_name);
-               });
-            
-               static::deleted(function($archive) use($device){
-                activity()
-                    ->performedOn($archive)
-                    ->causedBy(auth()->user()->id)
-                    ->withProperties([
-                        'archive' => 'archive deleted',
-                        'ip' => request()->ip(),
-                        'event' => 'Document deleted',
-                        'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-                        'user_agent' => request()->userAgent(),
-                        'device' => $device,
-                        'document_type' =>$archive->load(['archiveDocs','department', 'division','unit', 'folder']),
-                        'files' => $archive->load('filePath'),
-                        ])
-                    ->log('Archive was deleted by '.auth()->user()->first_name.' '.auth()->user()->last_name);
+                    'document_type' => $archive->loadMissing(['archiveDocs', 'department', 'division', 'unit', 'folder']),
+                    'files' => $archive->loadMissing('filePath'),
+                ],
+                $archive,
+                \App\Services\AuditTrailService::SEVERITY_NOTICE
+            );
+        }
+    });
+ 
+    static::deleted(function($archive) {
+        if (auth()->check()) {
+            \App\Services\AuditTrailService::logRecord(
+                'document_deleted',
+                'Archive document purged or soft-deleted: ' . ($archive->title ?? 'Archive #' . $archive->id),
+                [
+                    'archive_id' => $archive->id,
+                    'event' => 'Document deleted',
+                    'document_type' => $archive->loadMissing(['archiveDocs', 'department', 'division', 'unit', 'folder']),
+                    'files' => $archive->loadMissing('filePath'),
+                ],
+                $archive,
+                \App\Services\AuditTrailService::SEVERITY_WARNING
+            );
 
-                    $archive->deleted_by = auth()->user()->id;
-                    $archive->save();
-               });
-
-               static::retrieved(function($archive) use($device){
-    
-                activity()
-                ->performedOn($archive)
-                ->causedBy(auth()->user()->id)
-                ->withProperties([
-                    'archive' => 'archive viewed',
-                    'ip' => request()->ip(),
-                    'event' => 'Document viewed',
-                    'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-                    'user_agent' => request()->userAgent(),
-                    'device' => $device,
-                    'document_type' =>$archive->load(['archiveDocs','department', 'division','unit', 'folder']),
-                    'files' => $archive->load('filePath'),
-                    ])
-                ->log('Archive was viewed by '.auth()->user()->first_name.' '.auth()->user()->last_name);
-                    });
+            $archive->deleted_by = auth()->id();
+            $archive->saveQuietly();
+        }
+    });
         
    }
 

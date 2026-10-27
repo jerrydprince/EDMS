@@ -9,6 +9,10 @@ class FileType extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'headings' => 'array',
+    ];
+
     /**
      * The department that belong to the FileType
      *
@@ -37,6 +41,36 @@ class FileType extends Model
     public function unit()
     {
         return $this->belongsToMany(Unit::class, 'unit_file_type');
+    }
+
+    /**
+     * The section that belong to the FileType
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function section()
+    {
+        return $this->belongsToMany(Section::class, 'section_file_type', 'file_type_id', 'section_id');
+    }
+
+    public function departments()
+    {
+        return $this->department();
+    }
+
+    public function divisions()
+    {
+        return $this->division();
+    }
+
+    public function units()
+    {
+        return $this->unit();
+    }
+
+    public function sections()
+    {
+        return $this->section();
     }
 
     /**

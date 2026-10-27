@@ -406,11 +406,11 @@ const Priorities = ref(["Low", "Medium", "High"]);
 const updatePriority = (event) => {
   priority.value = event;
   if (priority.value == 'Low') {
-    form.priority = 'low'
+    form.priority = 1
   } else if (priority.value == 'Medium') {
-    form.priority = 'medium'
+    form.priority = 2
   } else if (priority.value == 'High') {
-    form.priority = 'high'
+    form.priority = 3
   }
   select_Priority.value = false
 };

@@ -21,17 +21,17 @@ class AdminController extends Controller
     public function index(){
         $user = auth()->user();
 
-        if(auth()->user()->department && auth()->user()->department->title == 'Finance and Accounts'){
-            return redirect()->route('f-and-a');
-        }
-
        $role_type_registry = $user->roles->where('role_type', 'registry')->first();
-       $role_type_edms = $user->roles->where('role_type', 'data entry')->first();
+       $role_type_edms = $user->roles->where('role_type', 'record manager')->first();
 
     //if user has only registry role redirect to registry
     
         if ($user && $user->hasRole('registry') && $user->roles->count() === 1) {
             return redirect()->route('registry'); 
+        }
+
+        if ($user && $user->hasRole('AGF Registry') && $user->roles->count() === 1) {
+            return redirect()->route('agf.dashboard'); 
         }
 
         if ($user && $user->hasRole('edms') && $user->roles->count() === 1) {
@@ -53,80 +53,115 @@ class AdminController extends Controller
             return inertia('admin/index', compact('departments'));
         }
 
-        if($user->hasRole('data entry')){
-            return redirect()->to('/edms');
-        }
-      
-        if($user->hasRole('super users') || $user->hasRole('directors') || $user->hasRole('division heads')
-         || $user->hasRole('unit heads') || $user->hasRole('regular users')){
+        if($user->hasRole('super user') || $user->hasRole('director') || $user->hasRole('deputy director')
+         || $user->hasRole('assistant director') || $user->hasRole('regular user') || $user->hasRole('Accountant-General') || $user->hasRole('record manager')){
 
-            if($user->hasRole('division heads')){
+            if($user->hasRole('deputy director')){
                 $division = Division::find(auth()->user()->division_id);
                 $created_task = Task::with('assignedByDivision')
-                    ->where('assigned_by_division', auth()
-                    ->user()->division_id)
+                    ->where(function($q) use ($user) {
+                        $q->where('assigned_by_division', $user->division_id)
+                          ->orWhereHas('assignments', fn($aq) => $aq->where('assigned_to', $user->id))
+                          ->orWhere('created_by', $user->id);
+                    })
                     ->latest()
                     ->paginate(10);
                   
                     $created_task->getCollection()->transform(function ($task) {
-                        $task->is_assigned = 2;  // Add the attribute
+                        $task->is_assigned = 2;
                         return $task;
                     });
             }
             else
-            if($user->hasRole('unit heads')){
+            if($user->hasRole('assistant director')){
                 $unit = Unit::find(auth()->user()->unit_id);
                 $created_task = Task::with('assignedBy')
-                    ->where('assigned_by_unit', auth()->user()->unit_id)
+                    ->where(function($q) use ($user) {
+                        $q->where('assigned_by_unit', $user->unit_id)
+                          ->orWhereHas('assignments', fn($aq) => $aq->where('assigned_to', $user->id))
+                          ->orWhere('created_by', $user->id);
+                    })
                     ->latest()
                     ->paginate(10);
                     
                     $created_task->getCollection()->transform(function ($task) {
-                        $task->is_assigned = 2;  // Add the attribute
+                        $task->is_assigned = 2;
                         return $task;
                     });
             }
             else
-            if($user->hasRole('directors')){
+            if($user->hasRole('director')){
                 $department = Department::find(auth()->user()->department_id);
                 $created_task = Task::with('assignedByDepartment')
-                    ->where('assigned_by_department', auth()->user()->department_id)
+                    ->where(function($q) use ($user) {
+                        $q->where('assigned_by_department', $user->department_id)
+                          ->orWhereHas('assignments', fn($aq) => $aq->where('assigned_to', $user->id))
+                          ->orWhere('created_by', $user->id);
+                    })
                     ->latest()
                     ->paginate(10);
                     
                     $created_task->getCollection()->transform(function ($task) {
-                        $task->is_assigned = 2;  // Add the attribute
+                        $task->is_assigned = 2;
                         return $task;
                     });
                 
             }
             else
-            if(auth()->user()->hasRole('super users')){
-                
-                //$department = Department::find(auth()->user()->department_id);
+            if(auth()->user()->hasRole('super user') || auth()->user()->hasRole('Accountant-General')){
                 $created_task = Task::with('assignedBySuperUser')
-                    ->where('assigned_by_super_user', auth()->user()->id)
+                    ->where(function($q) use ($user) {
+                        $q->where('assigned_by_super_user', $user->id)
+                          ->orWhereHas('assignments', fn($aq) => $aq->where('assigned_to', $user->id))
+                          ->orWhere('created_by', $user->id);
+                    })
                     ->latest()
                     ->paginate(10);
     
                 $created_task->getCollection()->transform(function ($task) {
-                    $task->is_assigned = 2;  // Add the attribute
+                    $task->is_assigned = 2;
                     return $task;
                 });
-            }else{
-                $created_task = [];
+            } else {
+                $created_task = Task::where(function($q) use ($user) {
+                        $q->whereHas('assignments', fn($aq) => $aq->where('assigned_to', $user->id))
+                          ->orWhere('created_by', $user->id);
+                    })
+                    ->latest()
+                    ->paginate(10);
+                $created_task->getCollection()->transform(function ($task) {
+                    $task->is_assigned = 2;
+                    return $task;
+                });
             }
 
             $mails = auth()->user()->mails()->orderBy('created_at', 'desc')->get();
 
             return inertia('dashboard/Dashboard', compact('created_task', 'mails'));
         }
+
+        abort(403, 'Unauthorized. No roles assigned.');
+    }
+
+    public function getChangeLog($type, $id) {
+        $modelClass = 'App\\Models\\' . ucfirst(strtolower($type));
+        if(!class_exists($modelClass)) return response()->json([]);
+        $logs = \Spatie\Activitylog\Models\Activity::where('subject_type', $modelClass)
+            ->where('subject_id', $id)
+            ->with('causer:id,first_name,last_name,profile_image')
+            ->latest()
+            ->get();
+        return response()->json($logs);
     }
 
     public function BranchSetup(){
-        $departments = Department::with(['documentType','fileType:id,id','division'=>function($query){
-            $query->with('unit');
-        }])->withSum('folder','file_count')->withCount('user','division')->get();
+        $departments = Department::with(['documentType','fileType:id,id','user:id,department_id,profile_image,first_name,last_name','division'=>function($query){
+            $query->with(['unit' => function($q) {
+                $q->with(['sections' => function($sq) {
+                    $sq->with('users:id,section_id,profile_image,first_name,last_name')->withCount(['archive', 'users']);
+                }, 'users:id,unit_id,profile_image,first_name,last_name'])->withCount(['archive', 'users', 'sections']);
+            }, 'users:id,division_id,profile_image,first_name,last_name'])->withCount(['archive', 'users', 'unit']);
+        }])->withCount(['archive', 'user', 'division'])->get();
 
         $department = $departments->count();
         // $division = $departments->pluck('division')->flatten()->count();
@@ -211,7 +246,7 @@ class AdminController extends Controller
     
     public function getDivision(Request $request){
         $department = Department::with(['division'=>function($query){
-            $query->with(['documentType','fileType'])->withSum('folder', 'file_count')->withCount('users','unit');
+            $query->with(['documentType','fileType','users:id,division_id,profile_image,first_name,last_name'])->withCount(['archive', 'users', 'unit']);
         }])->where('id', $request->id)->first();
         $department_name = $department->title;
         $division = $department->division;
@@ -240,7 +275,7 @@ class AdminController extends Controller
 
     public function getUnits(Request $request){
         $div = Division::with(['unit'=>function($query){
-            $query->with(['documentType', 'fileType'])->withSum('folder','file_count')->withCount('users');
+            $query->with(['documentType', 'fileType', 'users:id,unit_id,profile_image,first_name,last_name'])->withCount(['archive', 'users']);
         }])->where('id', $request->id)->first();
         $division_name = $div->title;
         $units = $div->unit;
@@ -287,6 +322,15 @@ class AdminController extends Controller
 
         $unit = Unit::find($request->id);
         $unit->documentType()->sync($request->doctypes);
+        return redirect()->back();
+    }
+
+    public function addDocumentTypeToSection(Request $request){
+
+        $section = \App\Models\Section::find($request->id);
+        if ($section) {
+            $section->documentType()->sync($request->doctypes);
+        }
         return redirect()->back();
     }
 
@@ -342,12 +386,46 @@ class AdminController extends Controller
 
     public function editUnit(Request $request){
         $request->validate([
-            'title'=>'required'
+            'title'=> 'required'
         ]);
+
         $unit = Unit::find($request->id);
         $unit->title = $request->title;
         $unit->description = $request->description;
         $unit->save();
+        return redirect()->back();
+    }
+
+    public function addSectionToUnit(Request $request){
+        $request->validate([
+            'title' => 'required',
+            'unit_id' => 'required'
+        ]);
+
+        $section = new \App\Models\Section();
+        $section->title = $request->title;
+        $section->description = $request->description;
+        $section->unit_id = $request->unit_id;
+        $section->head = 0;
+        $section->save();
+        
+        return redirect()->back();
+    }
+
+    public function editSection(Request $request){
+        $request->validate([
+            'title' => 'required'
+        ]);
+
+        $section = \App\Models\Section::find($request->id);
+        $section->title = $request->title;
+        $section->description = $request->description;
+        $section->save();
+        return redirect()->back();
+    }
+
+    public function deleteSection(Request $request){
+        \App\Models\Section::find($request->id)->delete();
         return redirect()->back();
     }
 
@@ -403,6 +481,7 @@ class AdminController extends Controller
         $filetype = $request->id? FileType::find($request->id) : new FileType();
         $filetype->name = $request->name;
         $filetype->description = $request->description;
+        $filetype->headings = $request->headings; // array of strings
         $filetype->save();
         return redirect()->back();
     }
@@ -430,6 +509,14 @@ class AdminController extends Controller
             $unit->fileType()->sync($request->filetypes);
             return redirect()->back();
         }
+
+        if($request->branch == 'section'){
+            $section = Section::find($request->id);
+            if ($section) {
+                $section->fileType()->sync($request->filetypes);
+            }
+            return redirect()->back();
+        }
     }
 
     public function getFileType(){
@@ -440,20 +527,20 @@ class AdminController extends Controller
     public function getBranchesByRole(){
         $user = auth()->user();
         $branches = [];
-        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super users')){
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user') || $user->hasPermissionTo('department view') || $user->hasPermissionTo('division view') || $user->hasPermissionTo('unit view')){
             $branches = Department::with(['division'=> function($query){
                 $query->with('unit');
             }])->get();
         }
 
-        if($user->hasRole('directors')){
+        if($user->hasRole('director')){
             $department_id = $user->department_id;
             $branches = Department::with(['division'=>function($query){
                 $query->with('unit');
             }])->where('id', $department_id)->get();
         }
 
-        if($user->hasRole('division heads')){
+        if($user->hasRole('deputy director')){
             $division_id = $user->division_id;
             $department_id = $user->department_id;
             
@@ -462,7 +549,7 @@ class AdminController extends Controller
             }])->where('id', $department_id)->get();
         }
 
-        if($user->hasRole('unit heads')){
+        if($user->hasRole('assistant director')){
             $division_id = $user->division_id;
             $department_id = $user->department_id;
             $unit_id = $user->unit_id;
@@ -478,3 +565,5 @@ class AdminController extends Controller
     }
    
 }
+
+

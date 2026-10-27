@@ -33,7 +33,7 @@ class DocumentTypeController extends Controller
             }
         }
 
-        return redirect()->to("/dashboard/setup-document-type");
+        return redirect()->back();
     }
 
     public function SetupDocumentType(){
@@ -48,7 +48,7 @@ class DocumentTypeController extends Controller
 
     public function configureMetaData(Request $request){
         DocumentType::find($request->id)->metadata()->sync($request->metadata);
-        return redirect()->to('/dashboard/setup-document-type');
+        return redirect()->back();
     }
 
     public function duplicateDocumentType(Request $request){

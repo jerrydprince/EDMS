@@ -4,11 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Unit extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    protected $guarded = [];
+
+    public function getActivitylogOptions(): LogOptions { return LogOptions::defaults()->logAll()->logOnlyDirty(); }
 
     /**
      * Get the division that owns the Unit
@@ -48,6 +54,16 @@ class Unit extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function designations()
+    {
+        return $this->hasMany(Designation::class);
+    }
+
+    public function sections()
+    {
+        return $this->hasMany(Section::class);
     }
 
     /**
@@ -92,7 +108,7 @@ class Unit extends Model
 
     protected static function booted(){
         static::deleted(function($unit){
-            $unit->deleted_by = auth()->user()->id;
+            $unit->deleted_by = auth()->id();
             $unit->save();
         });
     }
@@ -107,3 +123,5 @@ class Unit extends Model
        return $this->hasOne(User::class, 'id', 'deleted_by');
    }
 }
+
+

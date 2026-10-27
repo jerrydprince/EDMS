@@ -74,7 +74,9 @@ const form = useForm({
 })
 
 const SelectedMetadataOptions = (val) => {
-  selectedMetadata.value = val.value
+  const unwrapped = (val && val.value !== undefined) ? val.value : val;
+  selectedMetadata.value = Array.isArray(unwrapped) ? unwrapped : [];
+  form.metadata = selectedMetadata.value;
 }
 
 const setSingleDocType = (data) => {
@@ -97,15 +99,20 @@ const configureMetadataModal = () => {
 };
 
 const submitForm = () => {
+  if (selectedMetadata.value && selectedMetadata.value.length) {
+    form.metadata = selectedMetadata.value;
+  }
   form.post('/dashboard/create-document-type', {
+    preserveScroll: true,
     onSuccess: () => {
       toast.add({
         severity: "success",
         summary: "Document Created",
-        detail: "You've successfully created a new document.",
+        detail: "You've successfully created a new document type.",
         life: 3000,
       });
       form.reset()
+      selectedMetadata.value = [];
       emit("update:modelValue", false);
     }
   })

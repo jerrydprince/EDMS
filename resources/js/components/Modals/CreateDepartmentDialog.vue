@@ -156,7 +156,7 @@
             class: 'py-2 px-8 border-gray-200 border border-solid rounded-lg',
           },
         }" @click="closeModal" label="Cancel" severity="secondary" outlined />
-        <Button label="Save" class="" :pt="{
+        <Button label="Save" type="button" class="" :pt="{
           root: {
             class:
               'py-2 bg-primary px-10 border-0 text-white font-light hover:bg-primary/90 rounded-lg',
@@ -230,7 +230,7 @@
         }" @click="submitForm('Division')" />
       </template>
     </Dialog>
-    <Dialog v-model:visible="visible" v-else-if="(props.step = 3)" modal header="Header" :pt="{
+    <Dialog v-model:visible="visible" v-else-if="props.step === 3" modal header="Header" :pt="{
       content: { class: 'px-0 bg-white pb-6' },
     }" :style="{ width: '35rem', padding: '10px 0px' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
       <template #header>
@@ -436,49 +436,54 @@ const submitForm = (modal) => {
 */
 
 const submitForm = (modal) => {
-
-if (props.step === 1) {
-  //check if the unit form is empty
+  if (props.step === 1) {
     if (departmentForm.title == '') {
-      document.getElementById('unit_title').focus();
+      document.getElementById('department_title').focus();
+      toast.add({
+        severity: "error",
+        summary: `Validation Error`,
+        detail: `Department title is required.`,
+        life: 3000,
+      });
       return false;
     }
    
-
-  let data = {
-    department: departmentForm,
-    division: divisionForm,
-    unit: unitForm,
-    heads: selectedHead.value
-  }
-  router.post('/dashboard/create-department-division-unit', data, {
-    onSuccess: function () {
-      emit("update:modelValue", false);
-      emit("update:step", 1)
-
-      departmentForm.title = '';
-      departmentForm.description = ''
-      departmentForm.head = ''
-      selectedHead.value.length = 0;
-      departmentHead.value.length=0;
-      // divisionForm.title = '';
-      // divisionForm.description = '';
-      // divisionForm.head = ''
-      // unitForm.title = ''
-      // unitForm.description = '';
-      // unitForm.head = ''
-
-      toast.add({
-        severity: "success",
-        summary: `Department Created`,
-        detail: `You've successfully created a new Department.`,
-        life: 3000,
-      });
+    let data = {
+      department: departmentForm,
+      division: divisionForm,
+      unit: unitForm,
+      heads: selectedHead.value
     }
-  })
+    
+    router.post('/dashboard/create-department-division-unit', data, {
+      onSuccess: function () {
+        emit("update:modelValue", false);
+        emit("update:step", 1)
 
-} 
+        departmentForm.title = '';
+        departmentForm.description = ''
+        departmentForm.head = ''
+        selectedHead.value.length = 0;
+        departmentHead.value.length=0;
 
+        toast.add({
+          severity: "success",
+          summary: `Department Created`,
+          detail: `You've successfully created a new Department.`,
+          life: 3000,
+        });
+      },
+      onError: function (errors) {
+        console.error(errors);
+        toast.add({
+          severity: "error",
+          summary: `Error Creating Department`,
+          detail: Object.values(errors)[0] || `An error occurred while creating the department.`,
+          life: 5000,
+        });
+      }
+    })
+  } 
 };
 
 const Search = (search) => {

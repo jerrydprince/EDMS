@@ -139,12 +139,26 @@ const saveForms = (data)=>{
     })
 }
 
-watch(()=>props.file, ()=>{
+const processMetadata = () => {
     if(props.file && props.file.archive_docs){
+        // Deduplicate archive_docs by key
+        const uniqueDocsMap = new Map();
+        for (const doc of props.file.archive_docs) {
+            if (!doc.archive_keys || String(doc.archive_keys).toLowerCase() === 'null') continue;
+            uniqueDocsMap.set(doc.archive_keys.toLowerCase(), doc);
+        }
+        const uniqueDocs = Array.from(uniqueDocsMap.values());
+
         let arr = []
         let docs = [];
-        for(let item of props.file.archive_docs){
-            let found = metadata.value.filter((meta)=>meta.name.toLowerCase() === item.archive_keys.toLowerCase())
+        for(let item of uniqueDocs){
+            let found = metadata.value.filter((meta) => {
+                let formattedName = meta.name.toLowerCase();
+                if(formattedName.includes(' ')){
+                    formattedName = formattedName.split(' ').join('_');
+                }
+                return formattedName === item.archive_keys.toLowerCase();
+            })
             if(found[0] !== undefined){
                  arr.push(found[0])
                  form[item.archive_keys.toLowerCase()] = item.archive_values
@@ -155,7 +169,11 @@ watch(()=>props.file, ()=>{
         selectedMetadata.value = arr
         archiveDocs.value = docs
     }
-})
+}
+
+watch(()=>props.file, ()=>{
+    processMetadata()
+}, { immediate: true })
 
 // watch(()=> props.modelValue,()=>{
 //     let keys = Object.keys(form)
@@ -172,13 +190,7 @@ watch(()=>props.file, ()=>{
 onMounted(()=>{
     axios.get('/edms/metadatas').then((response)=>{
         metadata.value = response.data
-        for(let docs of archiveDocs.value){
-            if(document.getElementById(docs.archive_keys)){
-               let element = document.getElementById(docs.archive_keys);
-               element.value = docs.archive_values
-               element.setAttribute('data-id', docs.id)
-            }
-        }
+        processMetadata()
     })
 })
 

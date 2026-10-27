@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('task_assignment_comments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('task_assignment_id');
-            $table->foreign('task_assignment_id')->references('id')->on('task_assignment_id')->onDelete('cascade');
+            $table->foreign('task_assignment_id')->references('id')->on('task_assignments')->onDelete('cascade');
             $table->unsignedBigInteger('sent_by');
             $table->unsignedBigInteger('sent_to');
             $table->text('comments');

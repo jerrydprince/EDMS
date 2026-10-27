@@ -26,6 +26,10 @@ Broadcast::channel('chat.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+Broadcast::channel('chat-requests.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 Broadcast::channel('comment.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
@@ -35,22 +39,36 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('group.{groupId}.{groupType}', function ($user, $groupId, $groupType) {
+    if (!$user) return false;
+    if ($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('Accountant-General') || $user->hasRole('super user')) {
+        return true;
+    }
+
     if ($groupType === 'department') {
-        $department = Department::find($groupId);
-        return $department && $department->id === (int) $groupId;
+        return (int)$user->department_id === (int)$groupId || $user->hasRole('director');
     }
 
     if ($groupType === 'division') {
         $division = Division::find($groupId);
-        return $division && $division->id === (int) $groupId;
+        return (int)$user->division_id === (int)$groupId || ((int)$user->department_id === (int)optional($division)->department_id);
     }
 
     if ($groupType === 'unit') {
-        $unit = Unit::find($groupId);
-        return $unit && $unit->id === (int) $groupId;
+        return (int)$user->unit_id === (int)$groupId;
     }
 
-    // Add a fallback if needed
+    return true;
+});
+
+Broadcast::channel('chat.presence', function ($user) {
+    if ($user) {
+        return [
+            'id' => (int)$user->id,
+            'name' => $user->first_name . ' ' . $user->last_name,
+            'first_name' => $user->first_name,
+            'profile_image' => $user->profile_image
+        ];
+    }
     return false;
 });
 
@@ -88,3 +106,5 @@ Broadcast::channel('registry.{sentToId}.{branchType}', function (User $user, $se
     }
     // return (int) $user->id === (int) $id;
 });
+
+Broadcast::channel('chat-requests.{userId}', function ($user, $userId) { return (int) $user->id === (int) $userId; });

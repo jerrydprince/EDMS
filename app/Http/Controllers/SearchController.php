@@ -47,7 +47,7 @@ class SearchController extends Controller
     //     $unit = [];
     //     $branch = '';
 
-    //     if(auth()->user()->hasRole('data entry')){
+    //     if(auth()->user()->hasRole('record manager')){
            
     //         $branch_id = '';
     //         if(auth()->user()->unit_id){
@@ -206,7 +206,7 @@ class SearchController extends Controller
     //     $unit = [];
     //     $branch = '';
 
-    //     if(auth()->user()->hasRole('data entry')){
+    //     if(auth()->user()->hasRole('record manager')){
            
     //         $branch_id = '';
     //         if(auth()->user()->unit_id){
@@ -368,7 +368,7 @@ public function search(Request $request)
     }
 
     $user = auth()->user();
-    $isDataEntry = $user->hasRole('data entry');
+    $isDataEntry = $user->hasRole('record manager');
 
     // Build queries
     $archives = $this->searchArchives($request, $dateFrom, $isDataEntry);
@@ -445,9 +445,21 @@ private function getUserBranchModel()
 
 private function searchArchives(Request $request, $dateFrom, $isDataEntry)
 {
-    $query = $isDataEntry
-        ? $this->getUserBranchModel()->archive()
-        : Archive::query();
+    $user = auth()->user();
+    if ($isDataEntry) {
+        $query = $this->getUserBranchModel()->archive();
+    } else {
+        $query = Archive::query();
+        if (!$user->hasRole('super admin') && !$user->hasRole('super user')) {
+            $query->where('department_id', $user->department_id);
+            if ($user->hasRole('deputy director') || $user->hasRole('assistant director')) {
+                $query->where('division_id', $user->division_id);
+            }
+            if ($user->hasRole('assistant director')) {
+                $query->where('unit_id', $user->unit_id);
+            }
+        }
+    }
 
     $archives = $query->with(['filePath', 'archiveDocs', 'department', 'division', 'unit'])
         ->where(function ($q) use ($request) {
@@ -483,9 +495,21 @@ private function searchArchives(Request $request, $dateFrom, $isDataEntry)
 
 private function searchFolders(Request $request, $isDataEntry)
 {
-    $query = $isDataEntry
-        ? $this->getUserBranchModel()->folder()
-        : Folder::query();
+    $user = auth()->user();
+    if ($isDataEntry) {
+        $query = $this->getUserBranchModel()->folder();
+    } else {
+        $query = Folder::query();
+        if (!$user->hasRole('super admin') && !$user->hasRole('super user')) {
+            $query->where('department_id', $user->department_id);
+            if ($user->hasRole('deputy director') || $user->hasRole('assistant director')) {
+                $query->where('division_id', $user->division_id);
+            }
+            if ($user->hasRole('assistant director')) {
+                $query->where('unit_id', $user->unit_id);
+            }
+        }
+    }
 
     return $query->with(['division', 'unit', 'department'])
         ->where(function ($q) use ($request) {

@@ -1,131 +1,172 @@
 <template>
-    <main class="p-7 bg-slate-50">
-      <div class="mb-5 flex items-center w-full justify-between">
-        <Link href="/dashboard/correspondence">
-        <div class="flex items-center gap-2 cursor-pointer">
-          <Icon icon="flowbite:angle-left-outline" />
-          <p>Back</p>
+  <main class="min-h-screen bg-gray-50/50 p-4 md:p-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <Link href="/dashboard/correspondence" class="group flex items-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors w-fit">
+        <div class="p-2 bg-white border border-gray-200 rounded-lg group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-all shadow-sm">
+          <Icon icon="flowbite:angle-left-outline" width="18" />
         </div>
-        </Link>
-        <div class="flex items-center gap-10 font-semibold text-gray-600">
-          <button class="bg-white border rounded-md px-4 py-2" @click="assign_modal = true" v-if="props.correspondence && props.correspondence.is_assigned">
-            Re-assign Task
-          </button>
+        <span class="font-medium text-sm">Back to Dashboard</span>
+      </Link>
 
-          <button class="bg-white border rounded-md px-4 py-2" @click="AssignModal = true" v-if="props.correspondence && !props.correspondence.is_assigned">
-            Assign Task
+      <div class="flex items-center gap-3">
+        <button v-if="props.correspondence?.is_assigned" @click="assign_modal = true" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <Icon icon="lucide:user-cog" width="18" class="text-gray-400" />
+          <span>Re-assign Task</span>
+        </button>
+        
+        <button v-if="props.correspondence && !props.correspondence.is_assigned" @click="AssignModal = true" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none">
+          <Icon icon="lucide:user-plus" width="18" />
+          <span>Assign Task</span>
+        </button>
+
+        <div class="cursor-pointer block lg:hidden p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50" @click="subNavVisible = true">
+          <Icon icon="mdi:hamburger-menu-back" width="20" class="text-gray-600" />
+        </div>
+      </div>
+    </div>
+
+    <section class="flex flex-col lg:flex-row items-start gap-8 w-full">
+      <!-- Main Document Viewer Area -->
+      <div class="bg-white w-full lg:w-[65%] rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden flex flex-col h-[calc(100vh-140px)]">
+        <!-- Viewer Header -->
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-4 bg-gray-50/30">
+          <div class="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl shadow-inner">
+            <Icon icon="lucide:file-text" width="24" />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-800 leading-tight">{{ props.correspondence?.file_name || 'Untitled Document' }}</h2>
+            <p class="text-xs font-medium text-gray-500 mt-0.5" v-if="props.correspondence?.document_number">Doc No: <span class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{{ props.correspondence.document_number }}</span></p>
+          </div>
+        </div>
+
+        <!-- Viewer Content -->
+        <div class="flex-1 overflow-auto bg-slate-100/50 p-6 flex flex-col">
+          <div class="w-full bg-white rounded-xl shadow-sm border border-gray-200/50 p-2 min-h-full flex items-center justify-center relative overflow-hidden group">
+            
+            <template v-if="props.correspondence?.correspondence_file?.length > 0">
+              <!-- Render Image -->
+              <img v-if="fileType(file_path?.path ? file_path : props.correspondence.correspondence_file[0]) == 'image'"
+                   :src="file_path?.path ? getFileExtension(file_path) : getFileExtension(props.correspondence.correspondence_file[0])" 
+                   alt="Document Preview"
+                   class="max-w-full rounded-lg object-contain shadow-sm border border-gray-100 transition-transform duration-300" />
+
+              <!-- Render PDF -->
+              <object v-else-if="fileType(file_path?.path ? file_path : props.correspondence.correspondence_file[0]) == 'pdf'"
+                      :data="file_path?.path ? page.props.base + file_path.path : page.props.base + props.correspondence.correspondence_file[0].path"
+                      type="application/pdf" width="100%" class="h-[75vh] w-full rounded-lg">
+                <div class="flex flex-col items-center justify-center h-full text-gray-500">
+                  <Icon icon="lucide:file-warning" width="40" class="mb-3 text-gray-300" />
+                  <p>Your browser doesn't support PDF viewing.</p>
+                  <a :href="file_path?.path ? page.props.base + file_path.path : page.props.base + props.correspondence.correspondence_file[0].path" class="mt-2 text-indigo-600 hover:underline">Download PDF instead</a>
+                </div>
+              </object>
+              
+              <!-- Unknown File Type -->
+              <div v-else class="flex flex-col items-center justify-center text-center p-12">
+                 <Icon icon="lucide:file-question" width="64" class="text-gray-300 mb-4" />
+                 <h3 class="text-lg font-medium text-gray-700">Preview not available</h3>
+                 <p class="text-sm text-gray-500 mt-2">This file type cannot be previewed in the browser.</p>
+              </div>
+            </template>
+            
+            <template v-else>
+              <div class="flex flex-col items-center justify-center text-center p-12">
+                 <Icon icon="lucide:file-x-2" width="64" class="text-gray-300 mb-4" />
+                 <h3 class="text-lg font-medium text-gray-700">No attached files</h3>
+                 <p class="text-sm text-gray-500 mt-2">There are no files attached to this correspondence.</p>
+              </div>
+            </template>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Metadata Panel -->
+      <div class="bg-white hidden lg:flex flex-col w-[35%] rounded-2xl shadow-sm border border-gray-200/60 h-[calc(100vh-140px)] overflow-hidden">
+        
+        <!-- Tabs Header -->
+        <div class="flex items-center border-b border-gray-100 bg-gray-50/30 px-2 pt-2">
+          <button class="px-6 py-3.5 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-700 bg-white rounded-t-lg transition-colors">
+            Details & Files
           </button>
-  
         </div>
-        <div class="absolute top-12 cursor-pointer z-50 right-7 block md:hidden" @click="subNavVisible = true">
-          <Icon icon="mdi:hamburger-menu-back" width="30" />
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-8 hide_scroll">
+          
+          <!-- Description Block -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <Icon icon="lucide:align-left" class="text-indigo-500" width="18" />
+              <h3 class="font-bold text-gray-800 text-sm tracking-wide uppercase">Description</h3>
+            </div>
+            <div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-5 shadow-inner">
+              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                {{ props.correspondence?.description ? props.correspondence.description : 'No description provided for this correspondence.' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Attachments Block -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <Icon icon="lucide:paperclip" class="text-indigo-500" width="18" />
+                <h3 class="font-bold text-gray-800 text-sm tracking-wide uppercase">Attached Documents</h3>
+              </div>
+              <span class="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ props.correspondence?.correspondence_file?.length || 0 }}</span>
+            </div>
+            
+            <div v-if="props.correspondence?.correspondence_file?.length > 0" class="space-y-3">
+              <div v-for="(document, index) in props.correspondence.correspondence_file" :key="index"
+                   @click="setFilePath(document)"
+                   :class="[
+                     'group flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer shadow-sm',
+                     document.path === file_path?.path 
+                       ? 'bg-indigo-50/50 border-indigo-300 ring-1 ring-indigo-300' 
+                       : 'bg-white border-gray-200 hover:border-indigo-200 hover:bg-gray-50'
+                   ]">
+                
+                <div class="flex items-center gap-4 overflow-hidden">
+                  <div class="flex-shrink-0 bg-white border border-gray-100 w-10 h-10 rounded-lg shadow-sm flex items-center justify-center p-1.5">
+                    <img :src="getFileExtension(document)" alt="icon" class="max-w-full max-h-full opacity-90 group-hover:opacity-100 transition-opacity">
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-semibold text-gray-800 truncate" :title="props.correspondence.file_name">
+                      {{ props.correspondence.file_name }}
+                    </h4>
+                    <p class="text-xs font-medium text-gray-400 mt-0.5">{{ document.size || 'Unknown size' }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button @click.stop="downloadFile(document.path)" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Download">
+                    <Icon icon="lucide:download-cloud" width="18" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div v-else class="text-center p-6 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+              <p class="text-sm text-gray-400">No documents attached</p>
+            </div>
+          </div>
+          
         </div>
       </div>
-  
-      <section class="lg:flex items-center gap-10 w-full">
-        <div class="bg-white w-full lg:w-[60%] rounded-lg p-5">
-          <div class="pb-5 flex items-center gap-10">
-            <div class="p-4 border rounded-md">
-              <Icon icon="lucide:file-text" width="25" />
-            </div>
-            <p class="text-2xl">{{ props.correspondence.file_name }}</p>
-          </div>
-  
-          <div class="h-[1000px] overflow-y-auto hide_scroll">
-            <div>
-              <div class="bg-slate-50 p-5 w-full rounded-md" >
-                <img v-if="fileType(props.correspondence.correspondence_file[0]) == 'image'"
-                :src="file_path != '' ? getFileExtension(file_path) : getFileExtension(props.correspondence.correspondence_file[0])" alt=""
-                class="overflow-hidden rounded-md w-full" />
-  
-  
-                <object v-if="fileType(props.correspondence.correspondence_file[0]) == 'pdf'"
-                  :data="file_path != '' ? page.props.base + file_path.path : page.props.base + props.correspondence.correspondence_file[0].path"
-                  type="application/pdf" width="100%" class="min-h-[80vh]">
-                  <p>{{ page.props.base + props.correspondence.correspondence_file[0].path }}
-                    <a
-                      :href="file_path != '' ? page.props.base + file_path.path : page.props.base + props.correspondence.correspondence_file[0].path">click
-                      here to
-                      download the PDF file.</a>
-                  </p>
-                </object>
-              </div>
-            </div>
-          </div>
-        </div>
-  
-        <div class="bg-white hidden lg:block w-[40%] h-[1120px] overflow-y-scroll hide_scroll rounded-lg">
-          <div v-if="!sidemenu">
-           
-  
-            <section class="p-5 text-gray-600 max-h-[1000px]">
-              <div>
-  
-                <div class="mt-5">
-                  <div class="flex items-center gap-3">
-                    <Icon icon="lucide:file-text" />
-                    <p>Correspondence Description</p>
-                  </div>
-  
-                  <p class="bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full">
-  
-                   {{props.correspondence.description? props.correspondence.description: 'Description'}}
-  
-                  </p>
-                </div>
-  
-                <div class="mt-5" >
-                  <div class="flex mb-5 items-center gap-3">
-                    <Icon icon="grommet-icons:attachment" width="20" />
-                    <p>Attached Document</p>
-                  </div>
-                  <div v-for="(document, index) in props.correspondence.correspondence_file" :key="index"
-                    :class="document.path === file_path.path ? 'border-gray-500' : 'border-gray-300'"
-                    class="border  hover:border-primary rounded-md p-4 flex items-center justify-between  mb-5">
-                    <div class="flex items-center gap-3">
-                      <div class="bg-[#EBF9FF] w-fit p-2 rounded-full">
-                        
-                        <img :src="getFileExtension(document)" alt="" width="20">
-                      </div>
-                      <div>
-                        <h1>{{ props.correspondence.file_name }}</h1>
-                        <p class="text-sm text-gray-400">{{ document.size }}</p>
-                      </div>
-                    </div>
-  
-                    <div class="flex items-center gap-3">
-                      <Icon icon="ph:eye-light" width="25" @click="setFilePath(document)" class="cursor-pointer" />
-                      <Icon icon="material-symbols-light:download" width="25" @click="downloadFile(document.path)"
-                        class="cursor-pointer" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-         
-          </div>
-  
-          <!-- /////   comments   ///// -->
-  
-         
-  
-        </div>
-      </section>
-    </main>
- 
+    </section>
+
+    <!-- Modals & Sidebar -->
     <ReassignTask :users="[]" v-model="assign_modal" @refresh="refreshHandler" :task_id="props.correspondence?.task_id" />
-    <AGFAssignTask v-model="AssignModal" :files="props.correspondence?.correspondence_file" :correspondence="props.correspondence"
-     :correspondence_id="props.correspondence?.id" />
+    <AGFAssignTask v-model="AssignModal" :files="props.correspondence?.correspondence_file" :correspondence="props.correspondence" :correspondence_id="props.correspondence?.id" />
    
-    <Sidebar v-model:visible="subNavVisible" header=" Left Sidebar" position="right"
-      :style="{ width: '32rem', padding: '10px 0px' }">
-      <div class="bg-white hide_scroll sticky top-0 h-screen pr-5 overflow-y-scroll">
-      
-  
+    <Sidebar v-model:visible="subNavVisible" header="Options" position="right" :style="{ width: '32rem' }">
+      <div class="bg-white hide_scroll sticky top-0 h-screen pr-5 overflow-y-auto">
+        <!-- Sidebar content for mobile can go here -->
       </div>
-  
     </Sidebar>
-  </template>
+  </main>
+</template>
   
   <script setup>
   import { ref, defineProps, computed, onMounted, inject, watch } from "vue";

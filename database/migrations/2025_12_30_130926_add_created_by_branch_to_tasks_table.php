@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('task', function (Blueprint $table) {
-            $table->unsignedBigInteger('created_by_branch')->nullable()->after('created_by');
-        });
+        if (!Schema::hasColumn('task', 'created_by_branch')) {
+            Schema::table('task', function (Blueprint $table) {
+                $table->unsignedBigInteger('created_by_branch')->nullable()->after('created_by');
+            });
+        }
     }
 
     /**

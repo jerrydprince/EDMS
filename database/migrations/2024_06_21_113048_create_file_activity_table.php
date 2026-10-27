@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('file_activity', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('archive_id');
+            $table->unsignedBigInteger('archive_id');
             $table->string('details');
             $table->foreign('archive_id')->references('id')->on('archives');
             $table->timestamps();

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class updateOnlineStatus
 {
@@ -16,22 +17,28 @@ class updateOnlineStatus
      */
     public function handle(Request $request, Closure $next): Response
     {
-       // return $next($request);
-       $response = $next($request);
+        $response = $next($request);
 
-       if (Auth::check()) {
-           Auth::user()->is_online = 1; // Keep user online while session is active
-           Auth::user()->save();
-       }
+        if ($request->user()) {
+            $user = $request->user();
+            // Cache active status for 3 minutes (refreshed on every request)
+            Cache::put('user-is-online-' . $user->id, true, now()->addMinutes(3));
 
-       return $response;
-    }
-
-    public function terminate($request, $response)
-    {
-        if (Auth::check()) {
-            Auth::user()->is_online = 0; 
-            Auth::user()->save();
+            if ($user->getRawOriginal('is_online') != 1) {
+                \Illuminate\Support\Facades\DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['is_online' => 1]);
+            }
         }
+
+        return $response;
     }
+
+    // public function terminate($request, $response)
+    // {
+    //     if (Auth::check()) {
+    //         Auth::user()->is_online = 0; 
+    //         Auth::user()->save();
+    //     }
+    // }
 }

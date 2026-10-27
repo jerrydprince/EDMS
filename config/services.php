@@ -31,4 +31,29 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => '/integrations/google/callback',
+    ],
+
+    'dropbox' => [
+        'client_id' => env('DROPBOX_CLIENT_ID'),
+        'client_secret' => env('DROPBOX_CLIENT_SECRET'),
+        'redirect' => '/integrations/dropbox/callback',
+    ],
+
+    'graph' => [
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+        'redirect' => '/integrations/microsoft/callback',
+        'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
+    ],
+
+    'adobe' => [
+        'client_id' => env('ADOBE_CLIENT_ID'),
+        'client_secret' => env('ADOBE_CLIENT_SECRET'),
+        'redirect' => '/integrations/pdf-adobe/callback',
+    ],
+
 ];

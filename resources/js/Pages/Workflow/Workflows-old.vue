@@ -15,13 +15,13 @@
           </div>
         </div>
       </div>
-      <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm" v-if="!isRole('regular users')">
+      <div class="flex items-center justify-between mt-5 lg:mt-0 text-sm" v-if="!isRole('regular user')">
         <div class="bg-gray-100 flex items-center rounded-md p-1">
-          <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignedByMeButton"
+          <button v-if="!roles.includes('super user')" class="flex gap-1 items-center text-gray-400 rounded-lg py-2 px-4" @click="assignedByMeButton"
             :class="{ activeButton: assignmentButton == 1 }">
             <p>Assigned to Me</p>
           </button>
-          <button v-if="!roles.includes('super users')" class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignedToMeButton"
+          <button v-if="!roles.includes('super user')" class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4" @click="assignedToMeButton"
             :class="{ activeButton: assignmentButton == 2  }">
             <p>Assigned by Me</p>
           </button>
@@ -80,7 +80,7 @@
       </div>
 
       <!-- Assigned by me table -->
-      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2 && !roles.includes('regular users') || roles.includes('super users')">
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 2 && !roles.includes('regular user') || roles.includes('super user')">
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
@@ -208,7 +208,7 @@
       </div>
 
       <!-- Assigned to me table  -->
-      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1 && !roles.includes('super users') || roles.includes('regular users')">
+      <div class="overflow-x-scroll lg:overflow-hidden mt-10" v-if="assignmentButton == 1 && !roles.includes('super user') || roles.includes('regular user')">
         <table class="min-w-max w-full border">
           <thead class="bg-gray-100">
             <tr class="text-left">
@@ -596,7 +596,7 @@ const getSearchResult = debounce((event)=>{
 const addToURLParam = ()=>{
   const params = new URLSearchParams(window.location.search)
   const val = params.get('assigned_btn');
-  if(roles.value.includes('super users')){
+  if(roles.value.includes('super user')){
     assignmentButton.value = val? val: 2
   }else{
     assignmentButton.value = val? val: 1
@@ -613,7 +613,7 @@ watch(()=>props.created_task, ()=>{
 },{immediate:true})
 
 onMounted(()=>{
-  if(roles.value.includes('super users')){
+  if(roles.value.includes('super user')){
     assignmentButton.value = 2;
   }
   

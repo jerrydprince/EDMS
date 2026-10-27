@@ -1,16 +1,16 @@
 <template>
-  <div class=" rounded-2xl bg-white mt-5 p-5 ">
+  <div class=" rounded-2xl bg-white dark:bg-gray-800 mt-5 p-5 border border-gray-100 dark:border-gray-700">
     <div class=" md:flex items-center justify-between w-full">
-        <h1 class=" bg-slate-50 p-2 rounded-2xl w-fit px-5 mb-3 whitespace-nowrap">Login Activity</h1>
-        <div class=" flex items-center border p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
+        <h1 class=" bg-slate-50 dark:bg-gray-900 dark:text-gray-300 border dark:border-gray-700 p-2 rounded-2xl w-fit px-5 mb-3 whitespace-nowrap">Login Activity</h1>
+        <div class=" flex items-center border dark:border-gray-700 p-2 rounded-lg gap-2 text-sm mt-5 lg:mt-0">
      <i class="pi pi-search text-gray-300 " style="font-size: 1rem"></i>
-     <Input type="text" v-model="value" placeholder="Search Employee" class=" w-96 border-0 outline-none text-[#98A2B3]" />
+     <Input type="text" v-model="value" placeholder="Search Employee" class=" w-96 border-0 outline-none text-[#98A2B3] bg-transparent dark:text-white" />
  </div>
     </div>
     <DataTable
           paginator
           :rows="10"
-          :value="newLogins"
+          :value="props.logins"
           dataKey="id"
           :pt="{
             table: {
@@ -78,63 +78,11 @@
   </div>
 </template>
 
-<script  setup>
-import {ref, defineProps} from 'vue'
+<script setup>
+import { defineProps, ref } from 'vue'
 const props = defineProps(["logins"]);
-const newLogins = ref(props.logins)
-const sessions = ref([
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-      TimeStamp: '2024-06-26 14:23:45',
-      User_ID: 'john.doe'
-    },
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-            TimeStamp: '2024-06-26 14:23:45',
-              User_ID: 'john.doe'
-    },
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-            TimeStamp: '2024-06-26 14:23:45',
-              User_ID: 'john.doe'
-    },
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-            TimeStamp: '2024-06-26 14:23:45',
-              User_ID: 'john.doe'
-    },
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-            TimeStamp: '2024-06-26 14:23:45',
-              User_ID: 'john.doe'
-    },
-    {
-      browser: 'chrome',
-      location: 'Lagos Nigeria',
-      session: 'Current session',
-      ip: '224.0.1.1',
-            TimeStamp: '2024-06-26 14:23:45',
-              User_ID: 'john.doe'
-    }
-  ])
+const value = ref("");
 </script>
 
 <style>
-
-
 </style>

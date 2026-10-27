@@ -11,6 +11,32 @@ window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+window.axios.interceptors.response.use(
+    response => {
+        return response;
+    },
+    error => {
+        if (error.response) {
+            // Do not trigger global 'Access Denied' / 'Not Found' modal for background presence/auth/heartbeat checks
+            if (error.config && error.config.url && (
+                error.config.url.includes('/broadcasting/auth') ||
+                error.config.url.includes('/chat/heartbeat') ||
+                error.config.url.includes('/chat/leave')
+            )) {
+                return Promise.reject(error);
+            }
+            if (error.response.status === 401 || error.response.status === 419) {
+                window.location.href = '/login';
+            } else if (error.response.status === 403) {
+                window.dispatchEvent(new CustomEvent('axios-error', { detail: { summary: 'Access Denied', message: 'You do not have permission to perform this action.' } }));
+            } else if (error.response.status === 404) {
+                window.dispatchEvent(new CustomEvent('axios-error', { detail: { summary: 'Not Found', message: 'The requested record does not exist or you do not have permission to access it.' } }));
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 //import 'flowbite';
 
 /**
@@ -69,10 +95,35 @@ window.Pusher = Pusher;
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT,
-    wssPort: import.meta.env.VITE_REVERB_PORT,
+    key: import.meta.env.VITE_REVERB_APP_KEY || 'reverb_key',
+    wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
+    wsPort: import.meta.env.VITE_REVERB_PORT ?? 9090,
+    wssPort: import.meta.env.VITE_REVERB_PORT ?? 9090,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
+    authorizer: (channel, options) => {
+        return {
+            authorize: (socketId, callback) => {
+                const isSubfolder = window.location.pathname.toLowerCase().startsWith('/edms');
+                const authUrl = (isSubfolder ? '/EDMS' : '') + '/broadcasting/auth';
+                const token = localStorage.getItem('token');
+                const headers = { 'X-No-Reload': 'true' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                axios.post(authUrl, {
+                    socket_id: socketId,
+                    channel_name: channel.name
+                }, { headers })
+                .then(response => {
+                    callback(null, response.data);
+                })
+                .catch(error => {
+                    console.error('Echo channel auth error:', error);
+                    callback(error);
+                });
+            }
+        };
+    }
 });
+

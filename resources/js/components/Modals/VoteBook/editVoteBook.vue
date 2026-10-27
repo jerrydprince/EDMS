@@ -4,211 +4,291 @@
     :closable="false"
     modal
     :pt="{
-      root: { class: 'bg-gray-100 rounded-2xl mx-2 md:mx-0' },
+      root: { class: 'bg-white rounded-3xl shadow-2xl mx-2 md:mx-0 overflow-hidden border border-gray-100' },
       header: { class: 'hidden' },
-      content: { class: 'px-0 bg-gray-100 w-[100%] m-auto rounded-t-2xl' },
-      footer: { class: 'bg-gray-100 rounded-2xl' },
+      content: { class: 'p-0 bg-white w-full' },
+      footer: { class: 'p-0 bg-gray-50 border-t border-gray-100' },
     }"
-    :style="{ width: '32rem', padding: '0px 0px' }"
-    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-    class=".custom-dialog"
+    :style="{ width: '36rem' }"
+    :breakpoints="{ '1199px': '75vw', '575px': '95vw' }"
   >
-    <section class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-center">
-      <div
-        class="items-start justify-start flex flex-col border-b-2 border-solid border-[#E6E6E6] w-full pb-4"
-      >
-        <img
-          :src="votebookIcon"
-          alt="reject task"
-          class="-ml-2 drop-shadow-lg"
-        />
-        <div class="-mt-5 ml-6">
-          <p class="text-2xl font-semibold text-gray-800">Edit Vote</p>
-        </div>
-      </div>
-      <!-- THE FORM GOES HERE -->
-      <section class="w-full px-5">
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">Vote Name</p>
+    <section class="flex flex-col">
+      <!-- MODAL HEADER -->
+      <div class="px-6 py-5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0">
+            <Icon icon="solar:pen-new-square-bold-duotone" width="24" class="text-indigo-400" />
           </div>
           <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                Vote Book Configuration
+              </span>
+            </div>
+            <h2 class="text-lg font-bold text-white tracking-tight mt-0.5">
+              Edit Vote Book Details
+            </h2>
+            <p class="text-xs text-slate-300">
+              Update subhead metadata, codes, and allocation balances
+            </p>
+          </div>
+        </div>
+        <button 
+          @click="cancelModal"
+          class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+        >
+          <Icon icon="solar:close-circle-bold" width="20" />
+        </button>
+      </div>
+
+      <!-- FORM CONTENT -->
+      <form @submit.prevent="updateVoteBook" class="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
+        <!-- Vote Subhead Name -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+            Vote Subhead Title <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <Icon icon="solar:document-text-bold-duotone" width="18" />
+            </div>
             <input
               v-model="form.name"
               type="text"
-              placeholder="Enter Vote Name"
-              class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
+              required
+              class="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm text-gray-900 outline-none transition-all shadow-2xs"
             />
           </div>
         </div>
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">Account Number</p>
-          </div>
+
+        <!-- Account Number & GIFMIS Code -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <input
-              v-model="form.account_number"
-              type="text"
-              placeholder="Enter Account Number"
-              class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-            />
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              Account Number / Ref <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon icon="solar:card-2-bold-duotone" width="18" />
+              </div>
+              <input
+                v-model="form.account_number"
+                type="text"
+                required
+                class="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm font-mono text-gray-900 outline-none transition-all shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              GIFMIS Code <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon icon="solar:hashtag-bold-duotone" width="18" />
+              </div>
+              <input
+                v-model="form.gifmis_code"
+                type="text"
+                required
+                class="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm font-mono text-gray-900 outline-none transition-all shadow-2xs"
+              />
+            </div>
           </div>
         </div>
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">Balance</p>
-          </div>
+
+        <!-- NCOA Code & Fund Code -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              NCOA Economic Code
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon icon="solar:tag-bold-duotone" width="18" />
+              </div>
+              <input
+                v-model="form.ncoa_code"
+                type="text"
+                placeholder="e.g. 22020501"
+                class="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm font-mono text-gray-900 outline-none transition-all shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              Fund Code
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon icon="solar:archive-minimalistic-bold-duotone" width="18" />
+              </div>
+              <input
+                v-model="form.fund_code"
+                type="text"
+                placeholder="e.g. 01101"
+                class="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm font-mono text-gray-900 outline-none transition-all shadow-2xs"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Balance -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+            Current Available Balance (₦) <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none font-bold text-indigo-600 text-sm">
+              ₦
+            </div>
             <input
               v-model="form.balance"
-              type="text"
-              placeholder="₦  Enter Balance"
-              class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
+              type="number"
+              step="0.01"
+              required
+              class="w-full pl-9 pr-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-base font-bold font-mono text-gray-900 outline-none transition-all shadow-2xs"
             />
           </div>
         </div>
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">GIFMIS Code</p>
-          </div>
+
+        <!-- Classification & Date Created -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <input
-              v-model="form.gifmis_code"
-              type="text"
-              placeholder="Enter GIFMIS Code"
-              class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
-            />
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              Account Classification <span class="text-rose-500">*</span>
+            </label>
+            <select
+              v-model="form.account_type"
+              required
+              class="w-full px-3 py-2.5 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-200 focus:border-indigo-500 rounded-xl text-sm text-gray-900 outline-none transition-all shadow-2xs"
+            >
+              <option value="standard">Standard Account (Overhead/Capital)</option>
+              <option value="special">Special Account (Sub-Account / Project)</option>
+            </select>
           </div>
-        </div>
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">Account type</p>
-          </div>
-          <div class="">
-            <DropdownComp v-model="form.account_type" :items="accountType" />
-          </div>
-        </div>
-        <div class="self-start mt-5">
-          <div class="text-gray-700 font-normal mb-2 text-sm">
-            <p class="">Date Created</p>
-          </div>
+
           <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              Registration Date
+            </label>
             <input
               v-model="form.date_created"
-              type="datetime-local"
-              placeholder="Add Comments"
-              class="py-2 px-3 rounded-lg focus:outline-none text-sm w-full text-gray-500 drop-shadow-sm border border-solid border-gray-300"
+              type="text"
+              readonly
+              class="w-full px-3 py-2.5 bg-gray-100 text-gray-500 rounded-xl text-sm border border-gray-200 cursor-not-allowed outline-none"
             />
           </div>
         </div>
-      </section>
-    </section>
+      </form>
 
-    <template #footer>
-      <div
-        class="flex items-center justify-end gap-3 mt-5 py-3 pr-5 border-t-2 border-solid border-[#E6E6E6]"
-      >
+      <!-- MODAL FOOTER -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
         <button
+          type="button"
           @click="cancelModal"
-          class="py-2 w-auto border-gray-200 border-2 border-solid rounded-lg px-10 bg-white"
-          label="Cancel"
+          class="px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 transition-all cursor-pointer shadow-2xs"
         >
           Cancel
         </button>
 
         <button
-          @click="addNewVote"
-          class="bg-[#0D6E1A] w-auto py-2 text-white rounded-lg disabled:opacity-70 px-10"
-          :disabled="!isFormValid"
-          severity="secondary"
-          outlined
+          type="button"
+          @click="updateVoteBook"
+          :disabled="!isFormValid || form.processing"
+          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs shadow-indigo-600/30 transition-all cursor-pointer flex items-center gap-2"
         >
-          Edit
+          <Icon v-if="form.processing" icon="solar:restart-bold" class="animate-spin" width="16" />
+          <Icon v-else icon="solar:check-circle-bold" width="16" />
+          <span>Save Changes</span>
         </button>
       </div>
-    </template>
+    </section>
   </Dialog>
 </template>
 
 <script setup>
-import { defineEmits, ref, computed, defineProps, watch } from "vue";
+import { ref, computed, defineEmits, defineProps, watch } from "vue";
 import { useToast } from "primevue/usetoast";
-import DropdownComp from "../../DropdownComp.vue";
 import { useForm } from "@inertiajs/vue3";
-import votebookIcon from "../../../../../public/images/votebook.svg";
+import { Icon } from "@iconify/vue";
+import Dialog from "primevue/dialog";
 
 const toast = useToast();
 const emit = defineEmits(["confirmed", "cancelled", "refreshVoteBook"]);
-const visible = ref(true);
-const props = defineProps(['selectedVoteBook'])
-const addNewVote = () => {
-  form.post('/finance-and-accounts/create-vote-book', {onSuccess:()=>{
-    toast.add({
-      severity: "success",
-      summary: "Vote successfully edited!",
-      detail: "Votebook was successfully edited",
-      life: 3000,
-    });
-  emit("cancelled");
-  emit('refreshVoteBook')
-  },
-  onError: ()=>{
-    toast.add({
-      severity: "error",
-      summary: "Error!",
-      detail: "Failed to create votebook.",
-      life: 3000,
-    });
+const props = defineProps({
+  selectedVoteBook: {
+    type: Object,
+    default: () => ({})
   }
-})
-};
+});
+
+const visible = ref(true);
 
 const form = useForm({
+  id: null,
   name: "",
   account_number: "",
   gifmis_code: "",
-  date_created: new Date(),
-  account_type: "",
+  ncoa_code: "",
+  fund_code: "",
+  account_type: "standard",
   balance: "",
-  id: null
-})
+  date_created: "",
+});
 
-const accountType = ref([
-  {name: 'Select Account'},
-  { name: "Standard Account" },
-  { name: "Special Account" },
-]);
+watch(() => props.selectedVoteBook, (newVal) => {
+  if (newVal) {
+    form.id = newVal.id;
+    form.name = newVal.name || "";
+    form.account_number = newVal.account_number || "";
+    form.gifmis_code = newVal.gifmis_code || "";
+    form.ncoa_code = newVal.ncoa_code || "";
+    form.fund_code = newVal.fund_code || "01101";
+    form.account_type = newVal.account_type === 'special' ? 'special' : 'standard';
+    form.balance = newVal.balance || "";
+    form.date_created = newVal.date_created || "";
+  }
+}, { immediate: true });
 
 const isFormValid = computed(() => {
   return (
-    form.name.trim() !== "" &&
-    form.date_created !== "" &&
-    form.gifmis_code.trim() !== "" &&
-    form.account_number.trim() !== "" &&
-    form.account_type !== "" &&
-    form.account_type !== "Select Account" &&
-    form.balance.trim() !== ""
+    Boolean(form.name && form.name.trim()) &&
+    Boolean(form.account_number && form.account_number.trim()) &&
+    Boolean(form.gifmis_code && form.gifmis_code.trim()) &&
+    Boolean(form.balance !== null && form.balance !== "" && !isNaN(Number(form.balance))) &&
+    Boolean(form.account_type)
   );
 });
+
+const updateVoteBook = () => {
+  if (!isFormValid.value) return;
+
+  form.post('/finance-and-accounts/create-vote-book', {
+    onSuccess: () => {
+      toast.add({
+        severity: "success",
+        summary: "Vote Book Updated",
+        detail: `Changes to "${form.name}" saved successfully.`,
+        life: 3500,
+      });
+      emit("refreshVoteBook");
+      emit("cancelled");
+    },
+    onError: () => {
+      toast.add({
+        severity: "error",
+        summary: "Update Failed",
+        detail: "Could not update vote book details.",
+        life: 4000,
+      });
+    }
+  });
+};
 
 const cancelModal = () => {
   emit("cancelled");
 };
-
-watch(()=>props.selectedVoteBook, (newVal)=>{
-  if(newVal){
-    form.name = newVal.name;
-    form.date_created = newVal.date_created;
-    form.gifmis_code = newVal.gifmis_code;
-    form.account_number = newVal.account_number
-    form.account_type = accountType.value.find((item)=> item.name.toLowerCase().includes(newVal.account_type.toLowerCase()))
-    form.balance = newVal.balance;
-    form.id = newVal.id
-  }
-}, {immediate: true})
 </script>
-<style scoped>
-.custom-dialog .p-dialog-header {
-  display: none; /* Hide the header */
-}
-</style>

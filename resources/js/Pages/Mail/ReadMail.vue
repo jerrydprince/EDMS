@@ -40,11 +40,27 @@
                         </div>
                     </div>
                 </div>
-                <button class="text-sm text-white bg-primary py-2 px-3 rounded-md flex items-center gap-2"
-                    v-if="respond === false" @click="handleReply('Reply')">
-                    <Icon icon="material-symbols:reply" />
-                    <p>Reply Message</p>
-                </button>
+                <div class="flex items-center gap-4" v-if="respond === false">
+                    <div class="flex items-center gap-2 border border-gray-200 px-3 py-1.5 rounded-md">
+                        <input type="checkbox" id="allow_step_splitting" v-model="allowStepSplitting" class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary">
+                        <label for="allow_step_splitting" class="text-xs text-gray-600 cursor-pointer">Allow Parallel Splitting</label>
+                    </div>
+                    <button class="text-sm text-white bg-green-600 py-2 px-3 rounded-md flex items-center gap-2 hover:bg-green-700"
+                        @click="submitToWorkflow">
+                        <Icon icon="tabler:share" />
+                        <p>Submit to Workflow</p>
+                    </button>
+                    <button class="text-sm text-white bg-blue-600 py-2 px-3 rounded-md flex items-center gap-2 hover:bg-blue-700"
+                        @click="jacketAsFile">
+                        <Icon icon="tabler:folder" />
+                        <p>Jacket as File & Submit</p>
+                    </button>
+                    <button class="text-sm text-white bg-primary py-2 px-3 rounded-md flex items-center gap-2"
+                        @click="handleReply('Reply')">
+                        <Icon icon="material-symbols:reply" />
+                        <p>Reply Message</p>
+                    </button>
+                </div>
             </div>
             <div class="mt-10">
                 <h1 class="font-semibold text-xl">{{(mail && mail.subject)? mail.subject: ''}}</h1>
@@ -287,12 +303,14 @@ import { ref, onMounted, defineProps } from "vue";
 //import DeleteMailMessage from '../../components/modals/Mail/DeleteMailMessage.vue';
 import image from '../../assets/images/members/1.svg'
 import { usePage, Link, router } from "@inertiajs/vue3";
+import Editor from 'primevue/editor';
 import { useToast } from "primevue/usetoast";
 
 const props = defineProps(['id']);
 const toast = useToast();
 
 const mail = ref([]);
+const allowStepSplitting = ref(false);
 const currentDate = ref(new Date());
 const timeDifference = ref('');
 
@@ -487,6 +505,54 @@ const submitForm = ()=>{
         },
     });
 }
+
+const submitToWorkflow = () => {
+    router.post(`/dashboard/mails/submit-workflow/${props.id}`, {
+        allow_step_splitting: allowStepSplitting.value
+    }, {
+        onSuccess: () => {
+            toast.add({
+                severity: "success",
+                summary: "Workflow Started",
+                detail: "Mail successfully submitted to Workflow.",
+                life: 3000,
+            });
+        },
+        onError: (errors) => {
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: errors.message || "Failed to start workflow.",
+                life: 3000,
+            });
+            console.log(errors);
+        },
+    });
+};
+
+const jacketAsFile = () => {
+    router.post(`/dashboard/mails/jacket-file-submit/${props.id}`, {
+        allow_step_splitting: allowStepSplitting.value
+    }, {
+        onSuccess: () => {
+            toast.add({
+                severity: "success",
+                summary: "File Created",
+                detail: "Mail successfully jacketed as File and submitted to Workflow.",
+                life: 3000,
+            });
+        },
+        onError: (errors) => {
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: errors.message || "Failed to jacket file.",
+                life: 3000,
+            });
+            console.log(errors);
+        },
+    });
+};
 
 const documents = ref([
     {

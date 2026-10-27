@@ -44,9 +44,9 @@
                 <Actions />
                 <p class="text-xl lg:text-2xl font-medium">Quick Actions</p>
             </div>
-            <div class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10">
+            <div class="flex overflow-x-auto mt-4 gap-5 lg:gap-10 pb-4 custom-scrollbar">
                 <Link :href="'/dashboard/metadata-setup'">
-                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
                     <QuickActions1 class="absolute top-0 left-[6%]" />
                     <QuickActions1_1 class="absolute top-20 z-[999] left-[12%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 </Link>
-                <Link href='/settings' class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                <Link href='/settings' class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
                     <QuickActions2 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
                         <p class="text-xl font-semibold mb-2">Security Settings.</p>
@@ -67,7 +67,7 @@
                     </div>
                 </Link>
                 <Link href="/dashboard/manage-users">
-                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
                     <QuickActions3 class="absolute top-0 left-[6%]" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
                         <p class="text-xl font-semibold mb-2">Manage Users.</p>
@@ -77,7 +77,8 @@
                     </div>
                 </div>
                 </Link>
-                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                <Link href="/settings">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
                     <QuickActions4 class="top-0 left-0 w-full object-cover" />
                     <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
                         <p class="text-xl font-semibold mb-2">Customize Interface.</p>
@@ -86,6 +87,51 @@
                         </p>
                     </div>
                 </div>
+                </Link>
+                <Link href="/dashboard/working-calendar">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
+                    <QuickActions4 class="top-0 left-0 w-full object-cover" />
+                    <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
+                        <p class="text-xl font-semibold mb-2">Working Calendar.</p>
+                        <p class="text-gray-500 text-sm">
+                            Configure operating hours and holidays for SLAs.
+                        </p>
+                    </div>
+                </div>
+                </Link>
+                <Link href="/dashboard/workflow-builder">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
+                    <QuickActions4 class="top-0 left-0 w-full object-cover" />
+                    <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
+                        <p class="text-xl font-semibold mb-2">Workflow Builder.</p>
+                        <p class="text-gray-500 text-sm">
+                            Design and configure dynamic workflows.
+                        </p>
+                    </div>
+                </div>
+                </Link>
+                <Link href="/dashboard/workflow-settings">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
+                    <QuickActions4 class="top-0 left-0 w-full object-cover" />
+                    <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
+                        <p class="text-xl font-semibold mb-2">Workflow Rules.</p>
+                        <p class="text-gray-500 text-sm">
+                            Manage workflow assignment and routing rules.
+                        </p>
+                    </div>
+                </div>
+                </Link>
+                <Link href="/dashboard/templates">
+                <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl min-w-[270px]">
+                    <QuickActions4 class="top-0 left-0 w-full object-cover" />
+                    <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
+                        <p class="text-xl font-semibold mb-2">Document Templates.</p>
+                        <p class="text-gray-500 text-sm">
+                            Manage templates for dynamic document generation.
+                        </p>
+                    </div>
+                </div>
+                </Link>
             </div>
         </section>
         <section class="mt-8">

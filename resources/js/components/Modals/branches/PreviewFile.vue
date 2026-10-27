@@ -53,7 +53,7 @@
       </div>
     </div>
     <div class=" absolute bottom-5 flex items-center px-10 w-full justify-center h-[85vh]">
-      <div class="text-2xl p-2 rounded-full bg-white cursor-pointer" :class="{ ' opacity-0': currentIndex === 0 }"
+      <div v-if="file.files && file.files.length > 1" class="text-2xl p-2 rounded-full bg-white cursor-pointer" :class="{ ' opacity-0 pointer-events-none': currentIndex === 0 }"
         @click="moveItems(-1)">
         <Icon icon="ph:arrow-left" />
       </div>
@@ -69,8 +69,8 @@
           </object>
         </div>
       </div>
-      <div v-if="file.files" class="text-2xl p-2 rounded-full bg-white cursor-pointer"
-        :class="{ 'opacity-0': currentIndex === file.files.length - 1 }" @click="moveItems(1)">
+      <div v-if="file.files && file.files.length > 1" class="text-2xl p-2 rounded-full bg-white cursor-pointer"
+        :class="{ 'opacity-0 pointer-events-none': currentIndex === file.files.length - 1 }" @click="moveItems(1)">
         <Icon icon="ph:arrow-right" />
       </div>
     </div>
@@ -106,8 +106,9 @@ const currentIndex = ref(0);
 const previousIndex = ref(null);
 
 function moveItems(step) {
+  const maxLen = (file.files && file.files.length) ? file.files.length : previews.value.length;
   const newIndex = currentIndex.value + step;
-  if (newIndex >= 0 && newIndex < previews.value.length) {
+  if (newIndex >= 0 && newIndex < maxLen) {
     previousIndex.value = currentIndex.value;
     currentIndex.value = newIndex;
   }

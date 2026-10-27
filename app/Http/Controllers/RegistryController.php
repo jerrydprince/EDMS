@@ -37,12 +37,50 @@ class RegistryController extends Controller
         return inertia('Registry/AdminRegistry', compact('department', 'division', 'unit'));
     }
 
-    public function registry()
+    public function agfTasks(Request $request)
+    {
+        return redirect('/dashboard/workflow');
+    }
+
+    public function getWorkflows()
+    {
+        $workflows = \App\Models\WorkflowVersion::with('workflow')
+            ->has('workflow')
+            ->where('is_published', true)
+            ->latest()
+            ->get();
+            
+        return response()->json(['data' => $workflows]);
+    }
+
+    public function registry(Request $request)
     {
         $department = Department::get();
         $division = Division::get();
         $unit = Unit::get();
-        return Inertia::render('Registry/Registry', compact('department', 'division', 'unit'));
+        
+        $correspondences = \App\Models\Correspondence::with(['correspondenceFile', 'sentBy.department'])
+            ->latest()
+            ->paginate(15);
+
+        return Inertia::render('Registry/Registry', compact('department', 'division', 'unit', 'correspondences'));
+    }
+
+    public function getCorrespondences(Request $request)
+    {
+        $search = $request->search;
+        $query = \App\Models\Correspondence::with(['correspondenceFile', 'sentBy.department']);
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('file_name', 'like', "%{$search}%")
+                  ->orWhere('document_number', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        $correspondences = $query->latest()->paginate(15);
+        return response()->json($correspondences);
     }
     // public function login()
     // {
@@ -132,65 +170,107 @@ class RegistryController extends Controller
             $newfile->sent_to_unit = null;
             $newfile->sent_to_division = null;
         }
-        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-            $newfile->sent_to_agf = null;
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
+            if ($request->branch['branch_type'] == 'agf') {
+                $newfile->sent_to_agf = $request->branch['id'] ?? true;
+                $newfile->sent_to_department = null;
+            } else {
+                $newfile->sent_to_agf = null;
+                $newfile->sent_to_department = $request->branch['id'];
+            }
             $newfile->sent_to_unit = null;
             $newfile->sent_to_division = null;
-            $newfile->sent_to_department=$request->branch['id'];
 
             $newfile->sent_from_unit = null;
             $newfile->sent_from_division = null;
             $newfile->sent_from_department = null;
             $newfile->sent_from_agf = true;
-
-        }
-
-        if($request->branch_type === 'unit'){
-            $newfile->sent_from_unit = $current_branch_id;
-            $newfile->sent_from_division = null;
-            $newfile->sent_from_department = null;
-            $newfile->sent_from_agf = null;
-
-            $newfile->unit_id = $user->unit_id;
-            $newfile->division_id = null;
-            $newfile->department_id = null;
-        }
-        if($request->branch_type === 'division'){
-            $newfile->sent_from_division = $current_branch_id;
-            $newfile->sent_from_unit = null;
-            $newfile->sent_from_department = null;
-            $newfile->sent_from_agf = null;
-
-            $newfile->unit_id = null;
-            $newfile->division_id = $user->division_id;
-            $newfile->department_id = null;
-        }
-        if($request->branch_type === 'department' && $request->branch['branch_type'] !='agf'){
-            $newfile->sent_from_department = $current_branch_id;
-            $newfile->sent_from_division = null;
-            $newfile->sent_from_unit = null;
-            $newfile->sent_from_agf = null;
-
-            $newfile->unit_id = null;
-            $newfile->division_id = null;
-            $newfile->sent_from_agf = null;
-            $newfile->department_id = $user->department_id;
-        }
-
-        if($request->branch_type === 'department' && $request->branch['branch_type'] == 'agf'){
-            $newfile->sent_from_unit = null;
-            $newfile->sent_from_division = null;
-            $newfile->sent_from_department = auth()->user()->department_id;
-            $newfile->sent_from_agf = null;
-
+            
             $newfile->unit_id = null;
             $newfile->division_id = null;
             $newfile->department_id = null;
+        } else {
+            if($loggedInUser === 'unit'){
+                $newfile->sent_from_unit = $current_branch_id;
+                $newfile->sent_from_division = null;
+                $newfile->sent_from_department = null;
+                $newfile->sent_from_agf = null;
 
-            $newfile->sent_to_agf = true;
-            $newfile->sent_to_unit = null;
-            $newfile->sent_to_division = null;
-            $newfile->sent_to_department=null;
+                $newfile->unit_id = $user->unit_id;
+                $newfile->division_id = null;
+                $newfile->department_id = null;
+            }
+            if($loggedInUser === 'division'){
+                $newfile->sent_from_division = $current_branch_id;
+                $newfile->sent_from_unit = null;
+                $newfile->sent_from_department = null;
+                $newfile->sent_from_agf = null;
+
+                $newfile->unit_id = null;
+                $newfile->division_id = $user->division_id;
+                $newfile->department_id = null;
+            }
+            if($loggedInUser === 'department' && $request->branch['branch_type'] !='agf'){
+                $newfile->sent_from_department = $current_branch_id;
+                $newfile->sent_from_division = null;
+                $newfile->sent_from_unit = null;
+                $newfile->sent_from_agf = null;
+
+                $newfile->unit_id = null;
+                $newfile->division_id = null;
+                $newfile->department_id = $user->department_id;
+            }
+            if($loggedInUser === 'department' && $request->branch['branch_type'] == 'agf'){
+                $newfile->sent_from_unit = null;
+                $newfile->sent_from_division = null;
+                $newfile->sent_from_department = $current_branch_id;
+                $newfile->sent_from_agf = null;
+
+                $newfile->unit_id = null;
+                $newfile->division_id = null;
+                $newfile->department_id = null;
+
+                $newfile->sent_to_agf = true;
+                $newfile->sent_to_unit = null;
+                $newfile->sent_to_division = null;
+                $newfile->sent_to_department = null;
+            }
+        }
+        
+        // Ensure AGF task is generated when creating a file sent to AGF
+        if ($request->branch['branch_type'] == 'agf') {
+            $agf = \App\Models\User::role('super user')->first();
+            if($agf){
+                $task = new \App\Models\Task();
+                $task->title = 'Registry File: ' . $newfile->name;
+                $task->file_id = $newfile->id;
+                $task->created_by = auth()->id();
+                $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+                $task->status = 'pending';
+                
+                $masterWorkflowVersionId = \App\Models\WorkflowVersion::whereHas('workflow', function($q) {
+                    $q->where('title', 'Master Routing Workflow');
+                })->where('is_published', true)->value('id');
+                
+                if ($masterWorkflowVersionId) {
+                    $task->workflow_version_id = $masterWorkflowVersionId;
+                }
+                $task->save();
+                
+                $assignment = new \App\Models\TaskAssignment();
+                $assignment->task_id = $task->id;
+                $assignment->assigned_to = $agf->id;
+                $assignment->assigned_by = auth()->id();
+                $assignment->status = 'pending';
+                $assignment->save();
+                
+                $workflowService = app(\App\Services\GenericWorkflowService::class);
+                try {
+                    $workflowService->start($task, auth()->user(), []);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Generic Workflow Start Error: ' . $e->getMessage());
+                }
+            }
         }
 
         $newfile->updated_at = \Carbon\Carbon::now();
@@ -277,7 +357,7 @@ class RegistryController extends Controller
             $branch_id = $user->division_id;
         }elseif($user->department_id){
             $branch_id = $user->department_id;
-        }elseif(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+        }elseif(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
             $branch_id = $user->id;
         }
 
@@ -301,7 +381,7 @@ class RegistryController extends Controller
         // make uploaded paths available inside the transaction closure
         //$request->merge(['uploaded_paths' => $uploaded_paths]);
 
-        DB::transaction(function () use($request, $branch_id, $user) {
+        DB::transaction(function () use($request, $branch_id, $user, $uploaded_paths) {
             $logedInUserBranch = $this->getLogedInUserBranch();
             
             $newFile = new File();
@@ -309,7 +389,9 @@ class RegistryController extends Controller
             $newFile->file_type = $request->file_type;
             $newFile->doc_no = $request->document_number;
             $newFile->description = $request->description;
-            $newFile->created_by = $branch_id;
+            $newFile->path = !empty($uploaded_paths) ? $uploaded_paths[0] : 'N/A';
+            $newFile->archive_id = 1; // Default archive id to satisfy DB schema
+            $newFile->created_by = auth()->id();
             if($logedInUserBranch =='unit'){
                 $newFile->unit_id = $branch_id;
             }
@@ -319,47 +401,111 @@ class RegistryController extends Controller
             if($logedInUserBranch == 'department'){
                 $newFile->department_id = $branch_id;
             }
-            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
                 $newFile->is_agf = true;
             }
             $newFile->save();
     
+            // Phase 4: Generic Workflow Engine Integration for Registry
+            if ($request->route_to_workflow && $request->workflow_version_id) {
+                try {
+                    $task = new \App\Models\Task();
+                    $task->title = 'Registry File: ' . $newFile->name;
+                    $task->workflow_version_id = $request->workflow_version_id;
+                    $task->file_id = $newFile->id;
+                    $task->created_by = $user->id;
+                    $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+                    $task->save();
+
+                    $workflowService = app(\App\Services\GenericWorkflowService::class);
+                    $workflowService->start($task, $user, []);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Generic Workflow Start Error: ' . $e->getMessage());
+                }
+            }
+
+            $branchData = is_string($request->branch) ? json_decode($request->branch, true) : $request->branch;
+            $branchId = is_array($branchData) ? ($branchData['id'] ?? 0) : ($request->branch ?? 0);
+            $branchType = is_array($branchData) ? ($branchData['branch_type'] ?? null) : ($request->branch_type ?? null);
+
             $fm = new FileMovement();
             $fm->sent_from = $branch_id;
-            $fm->sent_to = $request->branch;
+            $fm->sent_to = $branchId;
             $fm->file_id = $newFile->id;
             $fm->status = "pending";
             $fm->file_movement_id = $this->getFileMovementUniqueId();
-            $fm->sent_to_branch = $request->branch_type;
-            if($request->branch_type == 'unit'){
-                $fm->sent_to_unit = $request->branch;
-               
+            $fm->sent_to_branch = $branchType;
+            if($branchType == 'unit'){
+                $fm->sent_to_unit = $branchId;
             }
-            if($request->branch_type == 'division'){
-                $fm->sent_to_division = $request->branch;
-                
+            if($branchType == 'division'){
+                $fm->sent_to_division = $branchId;
             }
-            if($request->branch_type == 'department'){
-                $fm->sent_to_department = $request->branch;
-                
+            if($branchType == 'department'){
+                $fm->sent_to_department = $branchId;
             }
             if($logedInUserBranch == 'unit'){
                 $fm->unit_id = $branch_id;
-                $fm->sent_from_unit = $request->branch;
+                $fm->sent_from_unit = $branch_id;
             }
             if($logedInUserBranch == 'division'){
                 $fm->division_id = $branch_id;
-                $fm->sent_from_division = $request->branch;
+                $fm->sent_from_division = $branch_id;
             }
             if($logedInUserBranch == 'department'){
                 $fm->department_id = $branch_id;
-                $fm->sent_from_department = $request->branch;
+                $fm->sent_from_department = $branch_id;
             }
-            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
-                if($request->branch_type =='agf'){
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
+                $fm->sent_from_agf = true;
+                if($branchType =='agf'){
                     $fm->sent_to_agf = true;
-                }else{
-                    $fm->sent_from_agf = true;
+                    
+                    // Auto-generate Task for AGF to show up in Workflow Dashboard
+                    $agf = \App\Models\User::role('super user')->first();
+                    if($agf){
+                        $task = new \App\Models\Task();
+                        $task->title = 'AGF Registry File: ' . $newFile->name;
+                        $task->file_id = $newFile->id;
+                        $task->created_by = auth()->id();
+                        $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+                        $task->status = 'pending';
+                        
+                        $masterWorkflowVersionId = \App\Models\WorkflowVersion::whereHas('workflow', function($q) {
+                            $q->where('title', 'Master Routing Workflow');
+                        })->where('is_published', true)->value('id');
+                        
+                        if ($masterWorkflowVersionId) {
+                            $task->workflow_version_id = $masterWorkflowVersionId;
+                        }
+
+                        $task->save();
+                        
+                        $assignment = new \App\Models\TaskAssignment();
+                        $assignment->task_id = $task->id;
+                        $assignment->assigned_to = $agf->id;
+                        $assignment->assigned_by = auth()->id();
+                        $assignment->status = 'pending';
+                        $assignment->save();
+                        
+                        if (!empty($uploaded_paths)) {
+                            foreach ($uploaded_paths as $path) {
+                                \App\Models\TaskDoc::create([
+                                    'task_id' => $task->id,
+                                    'path' => $path,
+                                    'file_name' => basename($path),
+                                    'size' => file_exists(public_path($path)) ? filesize(public_path($path)) : 0
+                                ]);
+                            }
+                        }
+
+                        $workflowService = app(\App\Services\GenericWorkflowService::class);
+                        try {
+                            $workflowService->start($task, auth()->user(), []);
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error('Generic Workflow Start Error: ' . $e->getMessage());
+                        }
+                    }
                 }
             }
 
@@ -555,6 +701,7 @@ class RegistryController extends Controller
                 $query->where('sent_to_unit', $id);
             });
         }])
+        ->with('task.activeSteps.step')
         ->latest()
         ->paginate(20);
         
@@ -579,6 +726,7 @@ class RegistryController extends Controller
                 $query->where('sent_to_division', $id);
             });
         }])
+        ->with('task.activeSteps.step')
         ->latest()
         ->paginate(20);
 
@@ -595,6 +743,7 @@ class RegistryController extends Controller
         ->with(['fileMovement' => function ($query) use ($user, $id) {
             $query->where('sent_from_department', $user->department_id);
         }])
+        ->with('task.activeSteps.step')
         ->latest()
         ->paginate(20);
 
@@ -605,6 +754,7 @@ class RegistryController extends Controller
         ->with(['fileMovement' => function ($query) use ($user, $id) {
             $query->where('sent_to_department', $user->department_id);
         }])
+        ->with('task.activeSteps.step')
         ->latest()
         ->paginate(20);
 
@@ -633,6 +783,7 @@ class RegistryController extends Controller
                 $query->where('sent_to_agf', 1);
             });
         }])
+        ->with('task.activeSteps.step')
         ->latest()
         ->paginate(20);
 
@@ -688,7 +839,7 @@ class RegistryController extends Controller
             return response()->json(['incoming'=>$incoming, 'outgoing'=>$outgoing]);
         }
         
-        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
             $branch = $this->getAGFFile();
             // $branch = $this->branchMap($branch);
             // return response()->json($branch);
@@ -777,7 +928,7 @@ class RegistryController extends Controller
             return response()->json($divisions);
         }        
 
-        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+        if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
             $departments = DB::table('departments')
             // ->where('department_id', $user->department_id)
             // ->select('divisions.*') 
@@ -807,103 +958,74 @@ class RegistryController extends Controller
 
     public function TrackFile(Request $request){
         $branch_type = $this->getBranchType();
-     
         $user = auth()->user();
+        
+        $filesQuery = File::where(function($q) use ($request) {
+            $q->where('id', $request->search)
+              ->orWhere('name', 'LIKE', '%'.$request->search.'%')
+              ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
+              ->orWhereHas('tasks', function($q) use ($request) {
+                  $q->where('tracking_id', 'LIKE', '%'.$request->search.'%');
+              });
+        });
 
-        if($branch_type == 'unit'){
-            if($user->unit_id){
-                $branch = File::whereHas('fileMovement', function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('unit_id', $user->unit_id);
-                             // ->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_unit', $user->unit_id);
-                    });
-                })
-                ->with(['fileMovement' => function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('unit_id', $user->unit_id);
-                              //->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_unit', $user->unit_id);
-                    })->latest()->take(40);
-                }])
-                ->where('name', 'LIKE', '%'.$request->search.'%')
-                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
-                ->latest()
-                ->get()
-                ->take(10);
-    
-                return response()->json($branch);
-            }
+        if($branch_type == 'unit' && $user->unit_id){
+            $filesQuery->whereHas('fileMovement', function($query) use ($user) {
+                $query->where('unit_id', $user->unit_id)
+                      ->orWhere('sent_to_unit', $user->unit_id);
+            })->with(['fileMovement' => function($query) use ($user) {
+                $query->where('unit_id', $user->unit_id)
+                      ->orWhere('sent_to_unit', $user->unit_id)
+                      ->latest()->take(40);
+            }]);
+        } elseif($branch_type == 'division' && $user->division_id){
+            $filesQuery->whereHas('fileMovement', function($query) use ($user) {
+                $query->where('division_id', $user->division_id)
+                      ->orWhere('sent_to_division', $user->division_id);
+            })->with(['fileMovement' => function($query) use ($user) {
+                $query->where('division_id', $user->division_id)
+                      ->orWhere('sent_to_division', $user->division_id)
+                      ->latest()->take(40);
+            }]);
+        } elseif($branch_type == 'department' && $user->department_id){
+            $filesQuery->whereHas('fileMovement', function($query) use ($user) {
+                $query->where('department_id', $user->department_id)
+                      ->orWhere('sent_to_department', $user->department_id);
+            })->with(['fileMovement' => function($query) use ($user) {
+                $query->where('department_id', $user->department_id)
+                      ->orWhere('sent_to_department', $user->department_id)
+                      ->latest()->take(40);
+            }]);
+        } else {
+            $filesQuery->with('fileMovement');
         }
+        
+        $files = $filesQuery->latest()->take(10)->get()->map(function($file) {
+            $arr = $file->toArray();
+            $arr['result_type'] = 'file';
+            return $arr;
+        });
 
-        if($branch_type == 'division'){
-            if($user->division_id){
-                $branch = File::whereHas('fileMovement', function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('division_id', $user->division_id);
-                             // ->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_division', $user->division_id);
-                    });
-                })
-                ->with(['fileMovement' => function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('division_id', $user->division_id);
-                              //->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_division', $user->division_id);
-                    })->latest()->take(40);
-                }])
-                ->where('name', 'LIKE', '%'.$request->search.'%')
-                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
-                ->latest()
-                ->get()
-                ->take(10);
-    
-                return response()->json($branch);
-            }
-        }
+        $tasksQuery = \App\Models\Task::where(function($q) use ($request) {
+            $q->where('tracking_id', 'LIKE', '%'.$request->search.'%')
+              ->orWhere('title', 'LIKE', '%'.$request->search.'%');
+        });
 
-        if($branch_type == 'department'){
-            if($user->department_id){
-                $branch = File::whereHas('fileMovement', function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('department_id', $user->department_id);
-                             // ->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_department', $user->department_id);
-                    });
-                })
-                ->with(['fileMovement' => function($query) use ($user) {
-                    $query->where(function($query) use ($user) {
-                        $query->where('department_id', $user->department_id);
-                              //->where('sent_to_branch', 'unit');
-                    })->orWhere(function($query) use ($user) {
-                        $query->where('sent_to_department', $user->department_id);
-                    })->latest()->take(40);
-                }])
-                ->where('name', 'LIKE', '%'.$request->search.'%')
-                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
-                ->latest()
-                ->get()
-                ->take(10);
-    
-                return response()->json($branch);
-            }
-        }else{
-             $branch = File::with('fileMovement')->where('name', 'LIKE', '%'.$request->search.'%')
-                ->orWhere('doc_no', 'LIKE', '%'.$request->search.'%')
-                ->latest()
-                ->get()
-                ->take(10);
-    
-                return response()->json($branch);
-        }
+        $tasks = $tasksQuery->latest()->take(10)->get()->map(function($task) {
+            $arr = $task->toArray();
+            $arr['result_type'] = 'task';
+            return $arr;
+        });
+
+        $results = $files->concat($tasks);
+        return response()->json($results);
     }
-
     public function getTrackedFile(Request $request){
+        if ($request->type == 'task') {
+            $task = \App\Models\Task::with(['user.designation', 'assignments.assignedTo.designation', 'assignments.assignedBy.designation'])->find($request->file_id);
+            $minutes = \App\Models\TaskMinute::with('user.designation')->where('task_id', $request->file_id)->orderBy('created_at', 'ASC')->get();
+            return response()->json(['task' => $task, 'minutes' => $minutes]);
+        }
        
         $file = File::find($request->file_id);
         $file_movement = $file->fileMovement()->where('file_movement_id', $request->file_movement_id)->orderBy('id','ASC')->get();
@@ -921,12 +1043,16 @@ class RegistryController extends Controller
             return $division;
         });
         $department = Department::where('title', 'LIKE', '%'.$search.'%')->get()->map(function ($department) {
-            $department->branch_type = 'department';
+            if (stripos($department->title, 'agf') !== false) {
+                $department->branch_type = 'agf';
+            } else {
+                $department->branch_type = 'department';
+            }
             return $department;
-        });;
+        });
 
-        $branches = $department->merge($division->merge($unit));
-        return response()->json($branches);
+        $branches = $department->concat($division)->concat($unit);
+        return response()->json($branches->values());
     }
 
     function formatSize($bytes) {
@@ -973,7 +1099,7 @@ class RegistryController extends Controller
                 // $newFile->description = $request->description;
                     $newFile->created_by = auth()->user()->id;
                 
-                    if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                    if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
                         $newFile->is_agf = true;
                     }
                     $newFile->save();
@@ -999,7 +1125,7 @@ class RegistryController extends Controller
                 }
                 FinanceFilePaths::insert($data);
 
-                $superUsers = User::role('super users')->first();
+                $superUsers = User::role('super user')->first();
                 if($superUsers){
                     $fm = new FileMovement();
                     $fm->sent_from = auth()->user()->id;
@@ -1011,7 +1137,7 @@ class RegistryController extends Controller
                     $fm->sent_to_branch = 'finance';
                 }
             
-                if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+                if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
                     $fm->sent_to_agf = true;
                 }
 
@@ -1024,6 +1150,175 @@ class RegistryController extends Controller
             DB::rollBack();
             return to_route('registry')->withErrors('Error', 'An error occured');
         }
-        
     }
+        
+    public function acknowledgeFileMovement(Request $request, $movementId)
+    {
+        $movement = FileMovement::findOrFail($movementId);
+        $user = auth()->user();
+
+        // Security Validation: Only the intended destination (branch) can acknowledge the file.
+        $isAuthorized = false;
+        
+        if ($movement->sent_to_branch === 'unit' && $user->unit_id == $movement->sent_to_unit) {
+            $isAuthorized = true;
+        } elseif ($movement->sent_to_branch === 'division' && $user->division_id == $movement->sent_to_division) {
+            $isAuthorized = true;
+        } elseif ($movement->sent_to_branch === 'department' && $user->department_id == $movement->sent_to_department) {
+            $isAuthorized = true;
+        }
+
+        if (!$isAuthorized) {
+            return response()->json(['message' => 'Unauthorized. You do not belong to the destination branch of this file.'], 403);
+        }
+
+        if ($movement->status === 'delivered') {
+            return response()->json(['message' => 'File movement already acknowledged.'], 400);
+        }
+
+        DB::transaction(function () use ($movement, $user) {
+            // Update movement status
+            $movement->status = 'delivered';
+            $movement->save();
+
+            // Find the associated task
+            $task = \App\Models\Task::where('file_id', $movement->file_id)->latest()->first();
+
+            // Log Audit Material Action
+            if ($task) {
+                \App\Models\WorkflowLog::create([
+                    'task_id' => $task->id,
+                    'action_by' => $user->id,
+                    'action_type' => 'file_received',
+                    'comments' => 'Physical file received and acknowledged.'
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'File movement acknowledged successfully.']);
+    }
+
+    public function editFile(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'branch' => 'required',
+        ]);
+
+        $file = \App\Models\File::findOrFail($id);
+        
+        $branchId = null;
+        $branchType = null;
+        
+        if (is_array($request->branch)) {
+            $branchId = $request->branch['id'] ?? null;
+            $branchType = $request->branch['branch_type'] ?? null;
+        } else {
+            $branchId = $request->branch;
+            $branchType = $request->branch_type;
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($file, $branchId, $branchType) {
+            $logedInUserBranch = $this->getLogedInUserBranch();
+            $user = auth()->user();
+            
+            $senderBranchId = null;
+            if ($logedInUserBranch == 'unit') {
+                $senderBranchId = $user->unit_id;
+            } elseif ($logedInUserBranch == 'division') {
+                $senderBranchId = $user->division_id;
+            } elseif ($logedInUserBranch == 'department') {
+                $senderBranchId = $user->department_id;
+            } else {
+                $senderBranchId = $user->id;
+            }
+
+            // Find the most recent pending file movement
+            $fm = \App\Models\FileMovement::where('file_id', $file->id)
+                ->where('status', 'pending')
+                ->latest()
+                ->first();
+                
+            if (!$fm) {
+                // if there is no pending file movement, we probably shouldn't edit.
+                // But let's create one if needed, or just update the latest.
+                $fm = \App\Models\FileMovement::where('file_id', $file->id)->latest()->first();
+            }
+            
+            if ($fm) {
+                $fm->sent_to = $branchId;
+                $fm->sent_to_branch = $branchType;
+                
+                $fm->sent_to_unit = null;
+                $fm->sent_to_division = null;
+                $fm->sent_to_department = null;
+                $fm->sent_to_agf = null;
+                
+                if ($branchType == 'unit') {
+                    $fm->sent_to_unit = $branchId;
+                }
+                if ($branchType == 'division') {
+                    $fm->sent_to_division = $branchId;
+                }
+                if ($branchType == 'department') {
+                    $fm->sent_to_department = $branchId;
+                }
+                
+                if (auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])) {
+                    if ($branchType == 'agf') {
+                        $fm->sent_to_agf = true;
+                        
+                        // Auto-generate Task for AGF
+                        $agf = \App\Models\User::role('super user')->first();
+                        if($agf){
+                            // check if task already exists
+                            $existingTask = \App\Models\Task::where('file_id', $file->id)
+                                ->whereHas('assignments', function($q) use ($agf) {
+                                    $q->where('assigned_to', $agf->id);
+                                })->first();
+                                
+                            if (!$existingTask) {
+                                $task = new \App\Models\Task();
+                                $task->title = 'AGF Registry File: ' . $file->name;
+                                $task->file_id = $file->id;
+                                $task->created_by = auth()->id();
+                                $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+                                $task->status = 'pending';
+                                
+                                $masterWorkflowVersionId = \App\Models\WorkflowVersion::whereHas('workflow', function($q) {
+                                    $q->where('title', 'Master Routing Workflow');
+                                })->where('is_published', true)->value('id');
+                                
+                                if ($masterWorkflowVersionId) {
+                                    $task->workflow_version_id = $masterWorkflowVersionId;
+                                }
+
+                                $task->save();
+                                
+                                $assignment = new \App\Models\TaskAssignment();
+                                $assignment->task_id = $task->id;
+                                $assignment->assigned_to = $agf->id;
+                                $assignment->assigned_by = auth()->id();
+                                $assignment->status = 'pending';
+                                $assignment->save();
+                                
+                                $workflowService = app(\App\Services\GenericWorkflowService::class);
+                                try {
+                                    $workflowService->start($task, auth()->user(), []);
+                                } catch (\Exception $e) {
+                                    \Illuminate\Support\Facades\Log::error('Generic Workflow Start Error: ' . $e->getMessage());
+                                }
+                            }
+                        }
+                    } else {
+                        $fm->sent_from_agf = true;
+                    }
+                }
+                
+                $fm->save();
+            }
+        });
+
+        return redirect()->back();
+    }
+
 }

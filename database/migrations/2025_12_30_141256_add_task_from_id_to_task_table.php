@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('task', function (Blueprint $table) {
-            $table->unsignedBigInteger('task_from_id')->nullable()->after('created_by');
+            if (!Schema::hasColumn('task', 'task_from_id')) {
+                $table->foreignId('task_from_id')->nullable()->after('created_by')->constrained('users')->onDelete('cascade');
+            }
         });
     }
 

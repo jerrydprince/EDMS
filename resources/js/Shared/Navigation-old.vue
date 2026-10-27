@@ -101,7 +101,7 @@
       </section>
     </div>
 
-    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('data entry')">
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('record manager')">
       <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3" :class="{ ' -ml-3': shouldShow }">
         <div class="flex items-center gap-2">
           <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" />
@@ -139,7 +139,7 @@
       </section>
     </div>
 
-    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('super users')">
+    <div class="pb-4 mb-10" v-if="branches && branches.length > 0 && role.includes('super user')">
       <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between" :class="{ ' -ml-3': shouldShow }">
         <div class="flex items-center gap-2">
           <!-- <Icon icon="ic:round-greater-than" width="20" v-if="!shouldShow" /> -->
@@ -387,7 +387,7 @@ const handleUnitMouseLeave = () => {
 
 const isDepartmentRole = (item) => {
   if (role.value.includes('super admin') || role.value.includes('admin')
-    || role.value.includes('super users') || role.value.includes('directors')) {
+    || role.value.includes('super user') || role.value.includes('director')) {
     return `/dashboard/branches/department/${item.id}/0/0`
   } else {
     return '#'
@@ -396,8 +396,8 @@ const isDepartmentRole = (item) => {
 
 const isDivisionRole = (item, department) => {
   if (role.value.includes('super admin') || role.value.includes('admin')
-    || role.value.includes('super users') || role.value.includes('directors')
-    || role.value.includes('division heads')) {
+    || role.value.includes('super user') || role.value.includes('director')
+    || role.value.includes('deputy director')) {
       let department_id = department.id
       //let unit = item.unit && item.unit.length > 0? item.unit[0].id: 0
     return `/dashboard/branches/division/${department_id}/${item.id}/0`
@@ -408,8 +408,8 @@ const isDivisionRole = (item, department) => {
 
 const isUnitRole = (item, department) => {
   if (role.value.includes('super admin') || role.value.includes('admin')
-    || role.value.includes('super users') || role.value.includes('directors')
-    || role.value.includes('division heads') || role.value.includes('unit heads')) {
+    || role.value.includes('super user') || role.value.includes('director')
+    || role.value.includes('deputy director') || role.value.includes('assistant director')) {
       let department_id = department.id
       let division = department.division && department.division.length > 0?
           department.division[0].id: 0;
@@ -434,7 +434,7 @@ const checkPermission = (item) => {
 const shouldShow = ref(false);
 
 const setDepartments = () => {
-  if (role.value.includes('super users')) {
+  if (role.value.includes('super user')) {
     for (let dept of departments.value) {
       let data = {
         name: dept.title,
@@ -452,7 +452,7 @@ const setDepartments = () => {
     const branchType = userBranchName.value;
     const branchData = userBranch.value[branchType];
 
-    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads') || role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
+    if (branchData && (role.value.includes('director') || role.value.includes('assistant director') || role.value.includes('deputy director') || role.value.includes('admin') || role.value.includes('super user'))) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -663,7 +663,7 @@ const admin = ref([
     permission: 'metadata setup view'
   },
   {
-    name: "Admin Registry",
+    name: "Registry",
     path: "/dashboard/admin-registry",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -736,9 +736,9 @@ onMounted(() => {
   // shouldShow.value =
   //   current_page.value.startsWith("/settings") || current_page.value.startsWith("/dashboard/chat") || current_page.value.startsWith("/dashboard/workflow");
 
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users')
-    || role.value.includes('directors') || role.value.includes('division heads') ||
-    role.value.includes('unit heads')) {
+  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super user')
+    || role.value.includes('director') || role.value.includes('deputy director') ||
+    role.value.includes('assistant director')) {
     getBranchesByRole()
     isBranches.value = true;
   }

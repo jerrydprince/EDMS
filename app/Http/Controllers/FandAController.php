@@ -17,9 +17,11 @@ use App\Notifications\PaymentAssignedNotification;
 use App\Events\UserNotificationEvent;
 use App\Models\PaymentReceipt;
 use App\Models\PaymentAssignment;
-use Illuminate\Support\Str;
 use App\Notifications\CommentNotification;
 use App\Events\PaymentCommentEvent;
+use App\Models\AdvancesLedger;
+use App\Models\PaymentAuditQuery;
+use App\Services\AdvancesManagementService;
 
 class FandAController extends Controller
 {
@@ -34,7 +36,7 @@ class FandAController extends Controller
         $payment = null;
         if($request->id){
             $payment = Payment::with(['files', 'recipient'])
-                ->findOrFail($request->id);
+                ->find($request->id);
         }
         return inertia('Payment/Finance', ['payment' => $payment]);
     }
@@ -171,64 +173,54 @@ class FandAController extends Controller
 
     public function getDivisionHeads()
     {   
-        $department = Department::where('title', 'Finance and Accounts')->first();
-   
-        if (!$department) {
-            return redirect()->back()->with('message', 'Department not found');
+        $deputyDirectors = User::where('department_id', 3)
+            ->where(function($q) {
+                $q->where('division_id', 5)
+                  ->orWhereHas('roles', function($r) {
+                      $r->where('name', 'deputy director');
+                  });
+            })
+            ->select('id','first_name', 'last_name', 'email','phone', 'gender', 'department_id', 'division_id')
+            ->get();
+
+        if ($deputyDirectors->isEmpty()) {
+            $deputyDirectors = User::role('deputy director')
+                ->select('id','first_name', 'last_name', 'email','phone', 'gender', 'department_id', 'division_id')
+                ->get();
         }
-        $deputyDirectors = User::role('division heads') // Spatie method
-        ->where('department_id', $department->id)
-        ->select('id','first_name', 'last_name', 'email','phone', 'gender', 'department_id', 'division_id')
-        ->get();
 
         return response()->json($deputyDirectors);
     }
 
     public function getUnitHeads()
-    {   
-        // $division = Division::where('title', 'Finance and Accounts')->first();
-   
-        // if (!$division) {
-        //     return redirect()->back()->withErrors(['message'=> 'Division not found']);
-        // }
-        // $assistantDirector = User::with('unit')->role('unit heads') // Spatie method
-        // ->where('division_id', $division->id)
-        // ->select('id','first_name', 'last_name', 'email','phone', 'gender', 'department_id', 'division_id')
-        // ->get();
-    $department = Department::where('title', 'Finance and Accounts')
-            ->with('division.unit.users')
-            ->first();
+    {
+        $unitHeads = User::where('department_id', 3)
+            ->where(function ($query) {
+                $query->where('is_unit_head', 1)
+                    ->orWhere('unit_id', 61)
+                    ->orWhereHas('roles', function ($r) {
+                        $r->where('name', 'assistant director');
+                    });
+            })
+            ->with('unit')
+            ->select('id', 'first_name', 'last_name', 'email', 'phone', 'gender', 'department_id', 'division_id', 'unit_id')
+            ->get();
 
-        if (!$department) {
-            return redirect()->back()->with('message', 'Department not found');
+        if ($unitHeads->isEmpty()) {
+            $unitHeads = User::role('assistant director')
+                ->with('unit')
+                ->select('id', 'first_name', 'last_name', 'email', 'phone', 'gender', 'department_id', 'division_id', 'unit_id')
+                ->get();
         }
 
-        // collect all users from all divisions & units in this department
-        $users = $department->division
-            ->flatMap(function ($division) {
-                return $division->unit->flatMap(function ($unit) {
-                    return $unit->users()
-                        ->role('unit heads') // filter by role
-                        ->with('unit')       // eager load unit
-                        ->select('id','first_name','last_name','email','phone','gender','department_id','division_id', 'unit_id')
-                        ->get();
-                });
-            });
-
-        if ($users->isEmpty()) {
-        return redirect()->back()->with('message', 'No unit heads found in this department');
-    }
-
-    return response()->json($users);
-
-       // return response()->json($assistantDirector);
+        return response()->json($unitHeads);
     }
 
     public function getActivePayments(Request $request)
     {
         $payments = Payment::query();
         $user_id = auth()->user()->id;
-        if(auth()->user()->hasRole('directors')){
+        if(auth()->user()->hasRole('director')){
            $payments = $payments->with(['files'=>function($query) use($user_id){
             $query->with('path');
            }, 'recipient', 'assignedTo' => function($query) use($user_id) {
@@ -303,55 +295,60 @@ class FandAController extends Controller
         $my_unique_id = isset($my_unique_id->unique_id)? $my_unique_id->unique_id: [''];
         
 
-        if(auth()->user()->hasRole('directors')){
-            $payment = Payment::with(['vatVoucher', 'Receipt','files'=>function($query){
-                $query->with('path');
-            }, 'voucher', 'recipient', 'assignedTo' => function($query) {
-                $query->with(['user','comments'=>function($q){
-                    $q->with('sender', 'receiver')->latest();
-                }])->where('assigned_by', auth()->user()->id);
-            } ,'comments'=>function($query){
-                $query->with('sender','receiver')
-                ->where('sender_id', 'assigned_by.id')
-                ->orWhere('recipient_id', auth()->user()->id)
-                ->latest();
-            }])
-            ->withCount('ledger')
-            ->findOrFail($id);
+        $user = auth()->user();
+        $isPrivileged = $user->hasRole('director') || $user->hasRole('super admin') || $user->hasRole('admin') || ($user->department_id == 3) || $user->can('payment view');
+
+        $query = Payment::with([
+            'vatVoucher',
+            'Receipt',
+            'files' => function($q) { $q->with('path'); },
+            'voucher.checkingOfficer',
+            'voucher.auditOfficer',
+            'recipient',
+            'advancesLedger.retirements',
+            'auditQueries.auditor',
+            'auditQueries.respondent',
+            'currentSection',
+            'assignedTo.user',
+            'assignedTo.comments.sender',
+            'assignedTo.comments.receiver',
+            'assignedBy.user',
+            'assignedBy.comments.sender',
+            'assignedBy.comments.receiver',
+            'comments.sender',
+            'comments.receiver'
+        ])->withCount('ledger');
+
+        if (!$isPrivileged) {
+            $query->where(function($q) use ($user) {
+                $q->whereHas('assignedTo', function($sub) use ($user) {
+                    $sub->where('recipient_id', $user->id);
+                })->orWhere('recipient_id', $user->id);
+            });
+        }
+
+        $payment = $query->find($id);
+
+        if (!$payment) {
+            return redirect()->route('f-and-a')->with('error', 'The requested payment was not found or you do not have permission to access it.');
+        }
+
+        $ebewe_instance = \Illuminate\Support\Facades\DB::table('ebewe_instances')
+            ->where('document_type', 'App\\Models\\Payment')
+            ->where('document_id', $payment->id)
+            ->first();
             
-        } else {
-            $payment = Payment::with(['vatVoucher', 'Receipt','files'=>function($query){
-                $query->with('path');
-            }, 'voucher', 'recipient', 
-                'assignedTo' => function($query) {
-                $query->with(['user', 'comments'=>function($q){
-                    $q->with(['sender', 'receiver'])->latest();
-                }])->where('assigned_by', auth()->user()->id );
-            }, 'assignedBy'=>function($query){
-                $query->with(['user', 'comments'=>function($q){
-                    $q->with(['sender', 'receiver'])->latest();
-                }])->where('recipient_id', auth()->user()->id);
-             },'comments'=>function($query){
-                $query->with('sender','receiver')
-               ->where(function($q){
-                    $q->where('sender_id', 'assignedBy.id')
-                    ->orWhere('recipient_id', auth()->user()->id)
-                   // ->orWhere('sender_id', auth()->user()->id)
-                    ;
-                })
-                ->latest();
-            }])
-             ->withCount('ledger')
-            ->whereHas('assignedTo', function ($q) {
-                $q->where('recipient_id', auth()->user()->id);
-            })
-            ->findOrFail($id);
-
-
+        $ebewe_stamps = [];
+        if ($ebewe_instance) {
+            $ebewe_stamps = \Illuminate\Support\Facades\DB::table('ebewe_stamps')
+                ->where('instance_id', $ebewe_instance->id)
+                ->get();
         }
 
         return inertia('Payment/ViewPayment', [
             'payment' => $payment,
+            'ebewe_instance' => $ebewe_instance,
+            'ebewe_stamps' => $ebewe_stamps
         ]);
     }
 
@@ -365,7 +362,7 @@ class FandAController extends Controller
             'assigned_by' => 'required',
         ]);
 
-        if(auth()->user()->hasRole('division heads')){
+        if(auth()->user()->hasRole('deputy director')){
             $payment = Payment::findOrFail($data['payment_id']);
             $payment->status = 'reverted';
             $payment->save();
@@ -405,7 +402,10 @@ class FandAController extends Controller
           
     }
 
-    public function acceptDivisionPayment(Request $request)
+    /**
+     * Unified EBEWE Routing Handler for all specific assignments
+     */
+    private function processEbeweRouting(Request $request, $actionStr)
     {
         $data = $request->validate([
             'payment_id' => 'required|exists:payments,id',
@@ -414,84 +414,56 @@ class FandAController extends Controller
             'generalComment' => 'nullable|string',
         ]);
 
-        // $payment = Payment::findOrFail($data['payment_id']);
-        // $payment->due_date = date('Y-m-d H:i:s', strtotime($data['dueDate']));
-        // $payment->division_head_status = "accepted";
-        // $payment->division_head_comments = $data['generalComment'] ?? '';
-        // $payment->status = 'due';
-        // $payment->save();
+        $recipient_id = is_array($data['recipient']) ? $data['recipient'][0] : $data['recipient'];
 
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient'][0]);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
+        try {
+            $ebewe = new \App\Services\EbeweEngine();
+            // In a fully migrated system, we'd pass the actual instance ID. 
+            // For now, we find the EBEWE instance mapped to this payment.
+            $instance = \Illuminate\Support\Facades\DB::table('ebewe_instances')
+                ->where('document_type', 'App\\Models\\Payment')
+                ->where('document_id', $data['payment_id'])
+                ->first();
 
-        $payment_assignment_id = DB::table('payment_assignment')
-           ->insertGetId([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-               // 'is_finished' => 1,
-                'assigned_by' => auth()->user()->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if (!$instance) {
+                // Fallback for legacy payments not migrated or freshly created
+                throw new \Exception("EBEWE Instance not found for this payment.");
+            }
 
-            $request->merge(['comment' => $data['generalComment'] ?? '']);
-        $this->paymentComment($request, $data['payment_id'], $payment_assignment_id);
+            $ebewe->advance($instance->id, auth()->user(), $data['generalComment'] ?? '', $recipient_id);
 
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment accepted successfully.');
+            // Trigger notifications (using legacy logic)
+            $recipient = User::find($recipient_id);
+            if ($recipient) {
+                $recipient->notify(new PaymentAssignedNotification($data['generalComment'] ?? '', $recipient));
+                broadcast(new UserNotificationEvent('A new payment has been assigned to you via EBEWE.', $recipient->id))->toOthers();
+            }
+
+            return to_route('view-payment', $data['payment_id'])->with('message', 'Payment routed successfully via EBEWE Engine.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'EBEWE Routing Error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function acceptDivisionPayment(Request $request)
+    {
+        return $this->processEbeweRouting($request, 'Division Accepted');
     }
 
     public function assignToAdvanceOtherSection(Request $request)
     {
-        $data = $request->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'dueDate' => 'required|date',
-            'recipient' => 'required',
-            'generalComment' => 'nullable|string',
-        ]);
-
-        // $payment = Payment::findOrFail($data['payment_id']);
-        // $payment->due_date = date('Y-m-d H:i:s', strtotime($data['dueDate']));
-        // $payment->unit_head_status = "accepted";
-        // $payment->unit_head_comments = $data['generalComment'] ?? '';
-        // $payment->status = 'due';
-        // $payment->save();
-
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient']);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
-
-        $payment_assignment_id = DB::table('payment_assignment')
-           ->insertGetId([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-                'assigned_by' => auth()->user()->id,
-                //'is_finished' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        $request->merge(['comment' => $data['generalComment'] ?? '']);
-        $this->paymentComment($request, $data['payment_id'], $payment_assignment_id);
-        //$recipient->notify(new PaymentAssignedNotification($data['generalComment'] ?? '', $recipient));
-       // broadcast(new UserNotificationEvent('A new payment has been assigned to you.', $recipient->id))->toOthers();
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+        return $this->processEbeweRouting($request, 'Assigned to Advance/Other');
     }
 
     public function getAdvancedSectionAndOtherChargesUsers(){
-        $other_charges_hos = User::role('other charges(HOS)')->first();
-        $advance_section_hos = User::role('advance section(HOS)')->first();
+        $other_charges_hos = User::where('section_id', 81)->where('is_section_head', 1)->first() 
+            ?? User::where('section_id', 81)->first()
+            ?? User::role('other charges(HOS)')->first();
+
+        $advance_section_hos = User::where('section_id', 82)->where('is_section_head', 1)->first() 
+            ?? User::where('section_id', 82)->first()
+            ?? User::role('advance section(HOS)')->first();
+
         return response()->json([
             'other_charges_hos' => $other_charges_hos,
             'advance_section_hos' => $advance_section_hos,
@@ -499,189 +471,249 @@ class FandAController extends Controller
     }
 
     public function getAdvanceSectionUsers(){
-        $users = User::role('advance section')->select('id','first_name', 'last_name')->get();
+        $users = User::where('section_id', 82)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        if ($users->isEmpty()) {
+            $users = User::role('advance section')->select('id','first_name', 'last_name')->get();
+        }
         return response()->json($users);
     }
 
     public function getOtherChargesUsers(){
-        $users = User::role('other charges')->select('id','first_name', 'last_name')->get();
+        $users = User::where('section_id', 81)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        if ($users->isEmpty()) {
+            $users = User::role('other charges')->select('id','first_name', 'last_name')->get();
+        }
         return response()->json($users);
     }
 
     public function getCheckingUsers(){
-        $users = User::role('checking')->select('id','first_name', 'last_name')->get();
+        $users = User::where('section_id', 83)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        if ($users->isEmpty()) {
+            $users = User::role('checking')->select('id','first_name', 'last_name')->get();
+        }
         return response()->json($users);
     }
 
     public function getOtherChargesHOS(){
-        $user = User::role('other charges(HOS)')->select('id','first_name', 'last_name')->first();
+        $user = User::where('section_id', 81)->where('is_section_head', 1)->first()
+            ?? User::where('section_id', 81)->first()
+            ?? User::role('other charges(HOS)')->first();
         return response()->json($user);
     }
 
-     public function assignToAdvanceSection(Request $request)
+    public function getInternalAuditUsers(){
+        $users = User::where('section_id', 84)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        return response()->json($users);
+    }
+
+    public function getCashOfficeUsers(){
+        $users = User::where('section_id', 85)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        return response()->json($users);
+    }
+
+    public function getFinalAccountsUsers(){
+        $users = User::where('unit_id', 11)->select('id','first_name', 'last_name', 'email', 'phone')->get();
+        return response()->json($users);
+    }
+
+    public function getSectionHeads(){
+        $heads = [
+            'other_charges' => User::where('section_id', 81)->where('is_section_head', 1)->first() ?? User::where('section_id', 81)->first(),
+            'advances' => User::where('section_id', 82)->where('is_section_head', 1)->first() ?? User::where('section_id', 82)->first(),
+            'checking' => User::where('section_id', 83)->where('is_section_head', 1)->first() ?? User::where('section_id', 83)->first(),
+            'internal_audit' => User::where('section_id', 84)->where('is_section_head', 1)->first() ?? User::where('section_id', 84)->first(),
+            'cash_office' => User::where('section_id', 85)->where('is_section_head', 1)->first() ?? User::where('section_id', 85)->first(),
+            'final_accounts' => User::where('unit_id', 11)->where('is_unit_head', 1)->first() ?? User::where('unit_id', 11)->first(),
+        ];
+        return response()->json($heads);
+    }
+
+    /**
+     * Assistant Director Classification & Routing (Task 2.3)
+     * Classifies payment into Advances (Track 1) or Capital/Overhead (Track 2)
+     * Enforces FR 1420 guard on Advances
+     */
+    public function classifyPayment(Request $request)
     {
         $data = $request->validate([
             'payment_id' => 'required|exists:payments,id',
-            'dueDate' => 'required|date',
-            'recipient' => 'required',
-            'generalComment' => 'nullable|string',
+            'payment_type' => 'required|in:advances,capital,overhead',
+            'comments' => 'nullable|string',
+            'recipient_id' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date'
         ]);
 
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient'][0]);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
+        $payment = Payment::findOrFail($data['payment_id']);
+        $payment->payment_type = $data['payment_type'];
 
-        $payment_assignment_id = DB::table('payment_assignment')
-           ->insertGetId([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-                'assigned_by' => auth()->user()->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-             $request->merge(['comment' => $data['generalComment'] ?? '']);
-            $this->paymentComment($request, $data['payment_id'], $payment_assignment_id);
-           // $recipient->notify(new PaymentAssignedNotification($data['generalComment'] ?? '', $recipient));
-           // broadcast(new UserNotificationEvent('A new payment has been assigned to you.', $recipient->id))->toOthers();
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
-    }
+        // Determine destination section
+        // Track 1: Advances -> Section ID 82
+        // Track 2: Capital / Overhead -> Section ID 81
+        $targetSectionId = ($data['payment_type'] === 'advances') ? 82 : 81;
+        $payment->current_section_id = $targetSectionId;
 
-    public function advanceTaskSubmit(Request $request){
-        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
-        return to_route('view-payment', $request->payment_id);
-    }
+        // If recipient was passed, or fallback to section head
+        $sectionHead = User::where('section_id', $targetSectionId)
+            ->where('is_section_head', 1)
+            ->first() ?? User::where('section_id', $targetSectionId)->first();
 
-    public function otherChargesTaskSubmit(Request $request){
-        $assignment = DB::table('payment_assignment')->where('id', $request->id)->first();
-        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
+        $targetUserId = $data['recipient_id'] ?? ($sectionHead ? $sectionHead->id : null);
 
-        if ($assignment) {
-            $recipient = User::find($assignment->assigned_by);
-            if ($recipient) {
-                //$recipient->notify(new PaymentAssignedNotification('Your assigned payment task has been submitted.', $recipient));
-                //broadcast(new UserNotificationEvent('Your assigned payment task has been submitted.', $recipient->id))->toOthers();
+        // If classifying as Advances, enforce FR 1420 guard
+        if ($data['payment_type'] === 'advances') {
+            $advService = new AdvancesManagementService();
+            $beneficiaryId = $payment->recipient_id ?? $targetUserId;
+            if ($beneficiaryId) {
+                $frCheck = $advService->checkFR1420Compliance($beneficiaryId);
+                if (!$frCheck['allowed'] && !$request->boolean('bypass_fr1420')) {
+                    return back()->withErrors(['fr1420' => $frCheck['message']]);
+                }
             }
         }
 
-        return to_route('view-payment', $request->payment_id);
-    }
-    
+        $payment->save();
 
-     public function assignToChecking(Request $request)
+        // Create assignment record to the section officer
+        if ($targetUserId) {
+            $senderId = auth()->id() ?? 1;
+            $assignmentId = DB::table('payment_assignment')->insertGetId([
+                'payment_id' => $payment->id,
+                'recipient_id' => $targetUserId,
+                'assigned_by' => $senderId,
+                'role' => ($targetSectionId === 82) ? 'advances_head' : 'other_charges_head',
+                'status' => 'pending',
+                'comments' => $data['comments'] ?? 'Classified as ' . strtoupper($data['payment_type']) . ' payment.',
+                'due_date' => $data['due_date'] ?? now()->addDays(3),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Save comment
+            $comment = new PaymentComment();
+            $comment->comment = "Classified as " . strtoupper($data['payment_type']) . " by Assistant Director. Directed to Section Head.";
+            $comment->payment_id = $payment->id;
+            $comment->recipient_id = $targetUserId;
+            $comment->sender_id = $senderId;
+            $comment->payment_assignment_id = $assignmentId;
+            $comment->unique_id = uniqid();
+            $comment->save();
+        }
+
+        return to_route('view-payment', $payment->id)->with('message', 'Payment classified as ' . strtoupper($data['payment_type']) . ' and dispatched to Section Head.');
+    }
+
+    /**
+     * FR 1420 Compliance Check Endpoint
+     */
+    public function checkFR1420($userId)
     {
+        $advService = new AdvancesManagementService();
+        return response()->json($advService->checkFR1420Compliance((int)$userId));
+    }
+
+    /**
+     * Get Advances Subsidiary Ledger Records
+     */
+    public function getAdvancesLedger(Request $request)
+    {
+        $query = AdvancesLedger::with(['beneficiary', 'creator', 'retirements', 'payment']);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('purpose', 'like', "%{$request->search}%")
+                  ->orWhere('destination', 'like', "%{$request->search}%")
+                  ->orWhereHas('beneficiary', function($b) use ($request) {
+                      $b->where('first_name', 'like', "%{$request->search}%")
+                        ->orWhere('last_name', 'like', "%{$request->search}%");
+                  });
+            });
+        }
+        return response()->json($query->latest()->paginate(15));
+    }
+
+    /**
+     * Process Advance Retirement
+     */
+    public function retireAdvance(Request $request)
+    {
+        $advancesLedgerId = $request->advances_ledger_id;
+        if (!$advancesLedgerId && $request->payment_id) {
+            $ledger = AdvancesLedger::where('payment_id', $request->payment_id)->latest()->first();
+            $advancesLedgerId = $ledger?->id;
+        }
+
+        if (!$advancesLedgerId) {
+            return back()->withErrors(['advances_ledger_id' => 'Active Advances Ledger entry not found for this payment.']);
+        }
+
         $data = $request->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'dueDate' => 'required|date',
-            'recipient' => 'required',
-            'generalComment' => 'nullable|string',
+            'total_expended' => 'required|numeric|min:0',
+            'refund_amount' => 'nullable|numeric|min:0',
+            'refund_rrr' => 'nullable|string',
+            'retirement_voucher_no' => 'nullable|string',
+            'status' => 'nullable|string'
         ]);
 
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient'][0]);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
+        $advService = new AdvancesManagementService();
+        $retirement = $advService->processRetirement($advancesLedgerId, $data, auth()->user()->id);
 
-        $payment_assignment_id = DB::table('payment_assignment')
-           ->insertGetId([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-                'assigned_by' => auth()->user()->id,
-                'created_at' => now(),
-                'updated_at' => now(),
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Advance retirement submitted successfully (Retirement Ref: ' . $retirement->retirement_voucher_no . ').',
+                'data' => $retirement
             ]);
-             $request->merge(['comment' => $data['generalComment'] ?? '']);
-        $this->paymentComment($request, $data['payment_id'], $payment_assignment_id);
-       // $recipient->notify(new PaymentAssignedNotification($data['generalComment'] ?? '', $recipient));
-       // broadcast(new UserNotificationEvent('A new payment has been assigned to you.', $recipient->id))->toOthers();
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+        }
+
+        return back()->with('message', 'Advance retirement submitted successfully (Retirement Ref: ' . $retirement->retirement_voucher_no . ').');
+    }
+
+    public function assignToAdvanceSection(Request $request)
+    {
+        return $this->processEbeweRouting($request, 'Assigned to Advance');
+    }
+
+    public function assignToChecking(Request $request)
+    {
+        return $this->processEbeweRouting($request, 'Assigned to Checking');
     }
 
     public function assignToOtherChargesByHOS(Request $request)
     {
-        $data = $request->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'dueDate' => 'required|date',
-            'recipient' => 'required',
-            'generalComment' => 'nullable|string',
-        ]);
-
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient'][0]);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
-
-        DB::table('payment_assignment')
-           ->insert([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-                'assigned_by' => auth()->user()->id,
-                //'is_finished' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+        return $this->processEbeweRouting($request, 'Assigned to Other Charges');
     }
 
-    /**
-     * Streamlined functions below
-     * These function was used for checkings down to final accounts
-     * assistant directors to other charges to be reviewed
-     */
-     public function assignToSectionUsers(Request $request)
+    public function assignToSectionUsers(Request $request)
     {
-        $data = $request->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'dueDate' => 'required|date',
-            'recipient' => 'required',
-            'generalComment' => 'nullable|string',
-        ]);
-
-            //$user = User::with('roles')->findOrFail($data['recipient']);
-            $recipient = User::findOrFail($data['recipient'][0]);
-               $recipient_role = $recipient->roles->first()->name;
-               $recipient_role_id = $recipient->roles->first()->id;
-
-        $payment_assignment_id = DB::table('payment_assignment')
-           ->insertGetId([
-                'due_date' => $data['dueDate'],
-                'status' => 'pending',
-                'comments' => $data['generalComment'] ?? '',
-                'role'=> $recipient_role,
-                'role_id' => $recipient_role_id,
-                'recipient_id' => $recipient->id,
-                'payment_id' => $data['payment_id'],
-                'assigned_by' => auth()->user()->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-             $request->merge(['comment' => $data['generalComment'] ?? '']);
-        $this->paymentComment($request, $data['payment_id'], $payment_assignment_id);
-        $recipient->notify(new PaymentAssignedNotification($data['generalComment'] ?? '', $recipient));
-        broadcast(new UserNotificationEvent('A new payment has been assigned to you.', $recipient->id))->toOthers();
-        return to_route('view-payment', $data['payment_id'])->with('message', 'Payment assigned successfully.');
+        return $this->processEbeweRouting($request, 'Assigned to Section');
     }
 
-    public function submitTask(Request $request){
-        DB::table('payment_assignment')->where('id', $request->id)->update(['status'=>'done']);
-        return to_route('view-payment', $request->payment_id);
+    // Unified Submit Task
+    private function processEbeweSubmit(Request $request)
+    {
+        try {
+            $ebewe = new \App\Services\EbeweEngine();
+            $instance = \Illuminate\Support\Facades\DB::table('ebewe_instances')
+                ->where('document_type', 'App\\Models\\Payment')
+                ->where('document_id', $request->payment_id)
+                ->first();
+
+            if ($instance) {
+                // In a purely automated map, advance goes to the next configured target
+                // For a raw submit, we just let EBEWE auto-resolve next target
+                $ebewe->advance($instance->id, auth()->user(), 'Task Submitted');
+            }
+            return to_route('view-payment', $request->payment_id);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'EBEWE Submission Error: ' . $e->getMessage()]);
+        }
     }
+
+    public function advanceTaskSubmit(Request $request) { return $this->processEbeweSubmit($request); }
+    public function otherChargesTaskSubmit(Request $request) { return $this->processEbeweSubmit($request); }
+    public function submitTask(Request $request) { return $this->processEbeweSubmit($request); }
 
     public function getSectionUsers(Request $request){
         if(strpos($request->role, '(HOS)') !== false){
@@ -775,7 +807,7 @@ class FandAController extends Controller
      public function getResolvedPayments(Request $request)
     {
         $payments = Payment::query();
-       // if(auth()->user()->hasRole('directors')){
+       // if(auth()->user()->hasRole('director')){
            $payments = $payments->with(['files'=>function($query){
             $query->with('path');
            }, 'recipient', 'assignedTo' => function($query) {
@@ -818,5 +850,47 @@ class FandAController extends Controller
         });
     }
 
-        
+    public function affixDigitalStamp(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'stamp_type' => 'required|string',
+            'label' => 'required|string',
+            'color' => 'required|string',
+            'comments' => 'nullable|string'
+        ]);
+
+        $instance = \Illuminate\Support\Facades\DB::table('ebewe_instances')
+            ->where('document_type', 'App\\Models\\Payment')
+            ->where('document_id', $data['payment_id'])
+            ->first();
+
+        if (!$instance) {
+            return redirect()->back()->withErrors(['error' => 'No active EBEWE instance for this document.']);
+        }
+
+        // Save Stamp
+        \Illuminate\Support\Facades\DB::table('ebewe_stamps')->insert([
+            'instance_id' => $instance->id,
+            'stage_id' => $instance->current_stage_id,
+            'applied_by' => auth()->user()->id,
+            'stamp_type' => $data['stamp_type'],
+            'label' => $data['label'],
+            'color' => $data['color'],
+            'design_pattern' => 'circular',
+            'comments' => $data['comments'],
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Auto-advance EBEWE logic after stamping
+        try {
+            $ebewe = new \App\Services\EbeweEngine();
+            $ebewe->advance($instance->id, auth()->user(), 'Digital Stamp Affixed: ' . $data['label']);
+        } catch (\Exception $e) {
+            // Ignore advance errors for manual routings
+        }
+
+        return redirect()->back()->with('message', 'Digital Stamp Affixed Successfully!');
+    }
 }

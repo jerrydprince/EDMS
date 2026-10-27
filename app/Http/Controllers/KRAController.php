@@ -9,28 +9,33 @@ use App\Models\KRA;
 
 class KRAController extends Controller
 {
-    public function createKRA(Request $request){
-        $department_id = $request->department_id? $request->department_id: auth()->user()->department_id;
-        if($department_id){
+    public function createKRA(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'department_id' => 'nullable|integer',
+        ]);
 
+        $department_id = $request->department_id ? $request->department_id : auth()->user()->department_id;
+        if ($department_id) {
             DB::transaction(function () use ($request, $department_id) {
-                 //create KRA
-            $kra = new KRA();
-            $kra->name = $request->name;
-            $kra->description = $request->description;
-            $kra->department_id = $department_id;
-            $kra->save();
+                $kra = new KRA();
+                $kra->name = $request->name;
+                $kra->description = $request->description;
+                $kra->department_id = $department_id;
+                $kra->save();
 
-            $default_kpi = [
+                $default_kpi = [
                     [
-                    'key' => 'timeliness',
-                    'value' => 'time',
-                    'string' => 'time',
-                    'department_id' => $department_id,
-                    'kra_id' => $kra->id,
-                    'ordering' => 1,
-                    'created_at' => \Carbon\Carbon::now(),
-                    'description' =>'Timeliness'
+                        'key' => 'timeliness',
+                        'value' => 'time',
+                        'string' => 'time',
+                        'department_id' => $department_id,
+                        'kra_id' => $kra->id,
+                        'ordering' => 1,
+                        'created_at' => \Carbon\Carbon::now(),
+                        'description' => 'Timeliness in delivery and task milestone adherence'
                     ],
                     [
                         'key' => 'accuracy',
@@ -39,7 +44,7 @@ class KRAController extends Controller
                         'department_id' => $department_id,
                         'kra_id' => $kra->id,
                         'ordering' => 2,
-                        'description' =>'How accurately did the employee perform the assigned tasks and data entries? ',
+                        'description' => 'How accurately did the employee perform the assigned tasks and data entries?',
                         'created_at' => \Carbon\Carbon::now()
                     ],
                     [
@@ -59,55 +64,104 @@ class KRAController extends Controller
                         'department_id' => $department_id,
                         'kra_id' => $kra->id,
                         'ordering' => 4,
-                        'description' =>'How effectively does the employee convey information and interact with others?',
+                        'description' => 'How effectively does the employee convey information and interact with stakeholders?',
                         'created_at' => \Carbon\Carbon::now()
                     ]
                 ];
 
-              KPI::insert($default_kpi);  
-
+                KPI::insert($default_kpi);
             });
         }
 
-        return redirect()->back();
-    }
-
-    public function getKRA(Request $request){
-        if($request->id){
-            $kra = KRA::with('kpi')->where('department_id', $request->id)->first();
-            return response()->json($kra);
-        }else{
-            $department_id = auth()->user()->department_id;
-            if($department_id){
-                $kra = KRA::with('kpi')->where('department_id', $department_id)->first();
-                return response()->json($kra);
-            }
-        }
-    }
-
-    public function addKPI(Request $request){
-        $department_id = auth()->user()->department_id;
-        if($department_id){
-            $kpi = $request->kpi_id? KPI::find($request->kpi_id): new KPI();
-            $kpi->key = $request->name;
-            $kpi->string = $request->string;
-            $kpi->value = $request->string == 'point'? $request->points: $request->string;
-            $kpi->kra_id = $request->kra_id;
-            $kpi->ordering = 0;
-            $kpi->department_id = $department_id;
-            $kpi->save();
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
         }
 
         return redirect()->back();
     }
 
-    public function deleteKPI(Request $request){
+    public function updateKRA(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:k_r_a_s,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $kra = KRA::find($request->id);
+        $kra->name = $request->name;
+        $kra->description = $request->description;
+        $kra->save();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'kra' => $kra]);
+        }
+
+        return redirect()->back();
+    }
+
+    public function getKRA(Request $request)
+    {
+        $department_id = $request->id ?: auth()->user()->department_id;
+        if (!$department_id) {
+            return response()->json([]);
+        }
+
+        $query = KRA::with(['kpi' => function($q) {
+            $q->orderBy('ordering', 'ASC')->orderBy('id', 'ASC');
+        }])->where('department_id', $department_id)->orderBy('id', 'DESC');
+
+        if ($request->has('single') && filter_var($request->single, FILTER_VALIDATE_BOOLEAN)) {
+            return response()->json($query->first());
+        }
+
+        $kras = $query->get();
+        return response()->json($kras);
+    }
+
+    public function addKPI(Request $request)
+    {
+        $request->validate([
+            'kra_id' => 'required|exists:k_r_a_s,id',
+            'name' => 'required|string|max:255',
+            'string' => 'required|string',
+        ]);
+
+        $kra = KRA::find($request->kra_id);
+        $department_id = $kra ? $kra->department_id : (auth()->user()->department_id ?? null);
+
+        $kpi = $request->kpi_id ? KPI::find($request->kpi_id) : new KPI();
+        $kpi->key = $request->name;
+        $kpi->string = $request->string;
+        $kpi->value = $request->string == 'point' ? ($request->points ?? 5) : $request->string;
+        $kpi->kra_id = $request->kra_id;
+        $kpi->department_id = $department_id;
+        if ($request->has('description')) {
+            $kpi->description = $request->description;
+        }
+        if ($request->has('ordering')) {
+            $kpi->ordering = $request->ordering;
+        }
+        $kpi->save();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'kpi' => $kpi]);
+        }
+
+        return redirect()->back();
+    }
+
+    public function deleteKPI(Request $request)
+    {
         $kpi = KPI::find($request->id);
-        $kpi->delete();
-        return response()->json(['success'=>true]);
+        if ($kpi) {
+            $kpi->delete();
+        }
+        return response()->json(['success' => true]);
     }
 
-    public function deleteKRA(Request $request){
+    public function deleteKRA(Request $request)
+    {
         $kra = KRA::with('kpi')->find($request->id);
 
         if ($kra) {
@@ -116,7 +170,9 @@ class KRAController extends Controller
                     $kpi->delete();
                 }
             }
-            $kra->delete(); 
+            $kra->delete();
         }
+
+        return response()->json(['success' => true]);
     }
 }

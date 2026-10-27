@@ -50,39 +50,39 @@
         <div class=" bg-white rounded-xl p-5">
           <div class=" flex items-start w-full justify-between">
             <div>
-              <p class=" text-gray-500 text-base">Average Completion Time</p>
-              <h1 class=" font-semibold text-2xl">1hr 30 mins</h1>
+              <p class=" text-gray-500 text-base">Average Turnaround Time</p>
+              <h1 class=" font-semibold text-2xl">{{ props.taskCompletionRate?.avg_completion_time || 'N/A' }}</h1>
             </div>
 
             <div>
               <p class=" text-[#039855] text-lg flex items-center gap-1 ">
-                <Icon icon="oui:dot" /><span class=" text-sm text-gray-400">Completion rate </span>
+                <Icon icon="oui:dot" /><span class=" text-sm text-gray-400">Completed ({{ props.taskCompletionRate?.completion_rate || 0 }}%)</span>
               </p>
-              <p class=" text-red-500 text-lg my-2 flex items-center gap-1 ">
-                <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Failure rate </span>
+              <p class=" text-yellow-500 text-lg my-2 flex items-center gap-1">
+                <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Pending ({{ props.taskCompletionRate?.pending_rate || 0 }}%)</span>
               </p>
-              <p class=" text-yellow-500 text-lg flex items-center gap-1">
-                <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Pending </span>
+              <p class=" text-red-500 text-lg flex items-center gap-1 ">
+                <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Overdue / Returned ({{ props.taskCompletionRate?.uncompleted_rate || 0 }}%)</span>
               </p>
             </div>
           </div>
 
-          <p class=" text-gray-500 text-base">Task Completed</p>
-          <div class=" flex items-center w-full gap-3 justify-between mt-5" v-if="props.taskCompletionRate">
+          <p class=" text-gray-500 text-base mt-2">Task Execution Rate</p>
+          <div class=" flex items-center w-full gap-3 justify-between mt-3" v-if="props.taskCompletionRate">
 
-            <div  :class="'w-['+props.taskCompletionRate.completion_rate+'%]'">
+            <div v-if="props.taskCompletionRate.completion_rate > 0" :style="{ width: props.taskCompletionRate.completion_rate + '%' }">
               <div class="h-2 rounded-md w-full bg-green-500"></div>
-              <h1 v-if="props.taskCompletionRate.completion_rate > 0" class=" mt-2 font-semibold text-2xl">{{props.taskCompletionRate.completion_rate}}%</h1>
+              <h1 class=" mt-2 font-semibold text-lg text-emerald-700">{{props.taskCompletionRate.completion_rate}}%</h1>
             </div>
 
-            <div :class="'w-['+props.taskCompletionRate.uncompleted_rate+'%]'">
-              <div class="h-2 rounded-md w-full bg-red-500"></div>
-              <h1 v-if="props.taskCompletionRate.uncompleted_rate > 0" class=" mt-2 font-semibold text-2xl">{{props.taskCompletionRate.uncompleted_rate}}%</h1>
-            </div>
-
-            <div :class="'w-['+props.taskCompletionRate.pending_rate+'%]'">
+            <div v-if="props.taskCompletionRate.pending_rate > 0" :style="{ width: props.taskCompletionRate.pending_rate + '%' }">
               <div class="h-2 rounded-md w-full bg-yellow-500"></div>
-              <h1 v-if="props.taskCompletionRate.pending_rate > 0" class=" mt-2 font-semibold text-2xl">{{props.taskCompletionRate.pending_rate}}%</h1>
+              <h1 class=" mt-2 font-semibold text-lg text-amber-700">{{props.taskCompletionRate.pending_rate}}%</h1>
+            </div>
+
+            <div v-if="props.taskCompletionRate.uncompleted_rate > 0" :style="{ width: props.taskCompletionRate.uncompleted_rate + '%' }">
+              <div class="h-2 rounded-md w-full bg-red-500"></div>
+              <h1 class=" mt-2 font-semibold text-lg text-red-700">{{props.taskCompletionRate.uncompleted_rate}}%</h1>
             </div>
 
           </div>
@@ -91,11 +91,14 @@
     </section>
 
     <section class="w-full justify-between lg:flex items-center gap-10 mt-5">
-      <div class="bg-slate-100  w-full lg:w-[100php %]    rounded-lg p-1">
+      <div class="bg-slate-100  w-full lg:w-full rounded-lg p-1">
         <div class="flex items-center justify-between w-full p-3">
-          <h1 class=" font-semibold text-lg">Profesional Development</h1>
+          <h1 class=" font-semibold text-lg">Professional Development</h1>
           <button
-            class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300">
+            @click="generateReport"
+            class="p-2 rounded-md text-xs font-semibold text-gray-700 hover:bg-slate-50 border flex items-center gap-1 border-gray-300 transition-colors"
+            title="Download Performance Report PDF"
+          >
             <Icon icon="pepicons-pop:file" />
             <p>Generate Report</p>
           </button>
@@ -147,16 +150,13 @@
       </div> -->
     </section>
 
-    <section  v-if="props.ratings">
-      <div >
-        <div v-for="(item, index) in props.ratings"   class="w-full justify-between lg:flex items-center gap-10 mt-5">
-          <div   class="bg-slate-100  w-full lg:w-[40%]    rounded-lg p-1">
-            <PolicyChart v-if="item[0].string=='percentage'" :chart="item" />
-            <ProductivityChart v-if="item[0].string=='point'" :chart="item" />
-          </div>
+    <section v-if="props.ratings">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+        <div v-for="(item, index) in props.ratings" :key="index" class="bg-slate-100 w-full rounded-2xl p-1">
+          <PolicyChart v-if="item[0].string=='percentage'" :chart="item" />
+          <ProductivityChart v-if="item[0].string=='point'" :chart="item" />
         </div>
       </div>
-     
     </section>
 
 
@@ -237,6 +237,12 @@ const deleteCert = (cert)=>{
 
 const selectedCert = ref()
 
+const generateReport = () => {
+  if (props.user?.id) {
+    window.open(`/dashboard/pms/report/user/${props.user.id}`, '_blank')
+  }
+}
+
 function formatDate(dateString) {
   return moment(dateString).format('h:mm A');
 }
@@ -272,48 +278,39 @@ const getCheckOut = ()=>{
   }
 }
 
-const timeDif = (login, logout)=>{
-
+const timeDif = (login, logout) => {
   const start = moment(login);
   const end = moment(logout);
 
-  // Difference in various units
-  const differenceInHours = end.diff(start, 'hours'); // Difference in hours
-  const differenceInMinutes = end.diff(start, 'minutes'); // Difference in minutes
+  const differenceInHours = end.diff(start, 'hours');
+  const differenceInMinutes = end.diff(start, 'minutes') % 60;
 
-  return `${differenceInHours} hrs ${differenceInMinutes} mins`
+  return `${differenceInHours}h ${differenceInMinutes}m`;
 }
 
-const totalTimeSpent = ()=>{
-  if(props.user?.attendance && props.user.attendance.length > 0){
-    let login = props.user?.attendance[0];
-    if(login.logout_time){
-      return timeDif(login.login_time, login.logout_time)
-    }else{
-      return "--"
+const totalTimeSpent = () => {
+  if (props.user?.attendance && props.user.attendance.length > 0) {
+    let login = props.user.attendance[0];
+    if (login && login.login_time && login.logout_time) {
+      return timeDif(login.login_time, login.logout_time);
     }
-   
   }
+  return "--";
 }
 
-const getDate = ()=>{
-  const user = props.user?.attendance
-  if(user){
-    const formattedDate = moment(user.created_at).format('ddd, MMM Do, YYYY');
-    return formattedDate
+const getDate = () => {
+  const attendance = props.user?.attendance;
+  if (attendance && attendance.length > 0) {
+    const item = attendance[0];
+    return moment(item.created_at || item.login_time).format('ddd, MMM Do, YYYY');
   }
+  return moment().format('ddd, MMM Do, YYYY');
 }
 
-function certDate(date){
+function certDate(date) {
   return moment(date).format('ddd, MMM Do, YYYY');
 }
-
-
-
 </script>
 
 <style scoped>
-body {
-  filter: grayscale(100%);
-}
 </style>

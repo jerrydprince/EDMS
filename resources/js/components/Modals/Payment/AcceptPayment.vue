@@ -44,7 +44,7 @@
         <!-- Recipient Selection is based on Current Role - [Deputy Director or Assistant Director] -->
         <div class="my-4">
           <!-- Deputy Director Authorization -->
-          <div class="w-full" v-if="roles.includes('division heads')">
+          <div class="w-full" v-if="roles.includes('deputy director')">
             <p class="text-gray-700 text-sm">Select Recipient</p>
             <div
               class="bg-gray-100 rounded-2xl py-3 flex flex-col justify-between items-start gap-y-2 h-[170px] overflow-y-scroll hide_scroll">
@@ -64,7 +64,7 @@
             </div>
           </div>
           <!-- Assistant Director Authorization -->
-          <div v-if="roles.includes('unit heads')" class="self-start mt-5">
+          <div v-if="roles.includes('assistant director')" class="self-start mt-5">
             <div class="text-gray-700 flex gap-1 items-center font-normal mb-4 ml-1 text-sm">
               <Icon icon="lucide:user" width="18" />
               <p class="">Select Recipient</p>
@@ -715,11 +715,11 @@ form.recipient = form4.recipient? form4.recipient: form.recipient
 
 // Roles - Deputy Director, Assistant Director, Advance Section
 const acceptTask = () => {
-  if(roles.value.includes('division heads')){
+  if(roles.value.includes('deputy director')){
     assignToUnit();
   }
 
-  if(roles.value.includes('unit heads')){
+  if(roles.value.includes('assistant director')){
     form2.recipient = recipient.value =="advanceSection"? hos_advanced_section.value.id: hos_other_charges.value.id
     form2.generalComment = form.generalComment
     form2.dueDate = form.dueDate
@@ -895,7 +895,7 @@ watch(()=>form.dueDate, ()=>{
 
 onMounted(() => {
   getUnitHeads();
-  if(roles.value.includes('unit heads')){
+  if(roles.value.includes('assistant director')){
     getAdvancedSectionAndOtherChargesUsers()
   }
   if(roles.value.includes('advance section(HOS)')){

@@ -1,53 +1,146 @@
 <!-- TopBar.vue -->
 
 <template>
-  <main class="h-[50px] lg:h-[67px] py-1 lg:py-3 border-b border-solid border-gray-200 flex items-center lg:justify-end">
+  <main class="h-[50px] lg:h-[67px] py-1 lg:py-3 border-b border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center lg:justify-end transition-colors duration-200">
     <div class="hidden 2xl:flex text-xl font-semibold items-center justify-end gap-4 px-7">
       <span class="text-gray-400 relative mr-1" @click="toggleSearch">
         <Icon icon="iconamoon:search-light" width="20"
           class="pi pi-search absolute top-2/4 -mt-[10.2px] left-3 text-surface-400 dark:text-surface-600" />
-        <InputText v-model="value1" placeholder="Search for documents, folders & branches"
-          class="pl-10 w-[28rem] h-10 bg-transparent font-light" size="small" />
+        <InputText
+          v-model="value1"
+          type="search"
+          name="edms_global_query"
+          id="edms_global_query"
+          autocomplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          placeholder="Search for documents, folders & branches (Ctrl+K)"
+          class="pl-10 w-[28rem] h-10 bg-transparent font-light dark:text-white"
+          size="small"
+        />
       </span>
-      <div class="flex gap-3 items-center bg-gray-200 h-full py-1 px-2 rounded-full mr-1">
-        <Icon icon="heroicons:sun-20-solid" width="30" class="bg-white rounded-full p-1" />
-        <Icon class="text-gray-500" icon="ion:moon-sharp" width="20" />
+
+      <!-- Digital Signature Attendance Duty Status -->
+      <div class="flex items-center mr-1">
+        <!-- Approved Official Duty Assignment Exemption -->
+        <span
+          v-if="attendanceStatus.is_official_assignment"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full shadow-sm"
+          :title="'Official Duty Assignment: ' + (attendanceStatus.official_assignment_title || 'Exempt from daily check-in')"
+        >
+          <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+          <span>Official Duty (Exempt)</span>
+        </span>
+
+        <!-- Approved Leave Exemption -->
+        <span
+          v-else-if="attendanceStatus.is_on_leave"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full shadow-sm"
+          title="Currently on approved leave"
+        >
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span>On Leave</span>
+        </span>
+
+        <!-- Not Checked In Yet -->
+        <button
+          v-else-if="!attendanceStatus.is_checked_in"
+          @click="openAttendanceModal('check-in')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full shadow-sm transition-all"
+          title="Verify physical duty via Digital Signature PIN"
+        >
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          <span>Duty Check-In</span>
+        </button>
+
+        <!-- Checked In (Active On Duty) -->
+        <div v-else-if="attendanceStatus.is_checked_in && !attendanceStatus.is_checked_out" class="flex items-center gap-1.5">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>On Duty ({{ attendanceStatus.check_in_time }})</span>
+          </span>
+          <button
+            @click="openAttendanceModal('check-out')"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-50 border border-amber-200 rounded-full transition-all"
+            title="Check out using Digital Signature PIN"
+          >
+            <Icon icon="lucide:log-out" width="13" />
+            <span>Check Out</span>
+          </button>
+        </div>
+
+        <!-- Shift Completed -->
+        <span
+          v-else
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-100 border border-gray-200 rounded-full"
+          :title="'Checked in at ' + attendanceStatus.check_in_time + ', out at ' + attendanceStatus.check_out_time"
+        >
+          <Icon icon="lucide:check-circle-2" width="13" class="text-emerald-600" />
+          <span>Shift Done ({{ attendanceStatus.duration }})</span>
+        </span>
       </div>
-      <div @click.stop="toggle_notification = !toggle_notification" class="cursor-pointer flex relative">
-        <Icon icon="iconamoon:notification" width="25" />
-        <span v-if="props.total_task_notifications > 0" class="flex items-center justify-center p-1 w-[20px] h-[20px] rounded-full bg-red-400 text-xs text-white">{{ props.total_task_notifications }}</span>
+
+      <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-full border border-gray-200 dark:border-slate-700 mr-1 shadow-2xs">
+        <button
+          type="button"
+          @click="toggleTheme('light')"
+          :class="currentTheme === 'light' ? 'bg-white text-amber-500 shadow-xs font-bold' : 'text-gray-400 hover:text-gray-600 dark:text-gray-400'"
+          class="flex items-center justify-center w-7 h-7 rounded-full transition-all cursor-pointer"
+          title="Light Mode"
+        >
+          <Icon icon="heroicons:sun-20-solid" width="16" />
+        </button>
+        <button
+          type="button"
+          @click="toggleTheme('dark')"
+          :class="currentTheme === 'dark' ? 'bg-slate-700 text-blue-400 shadow-xs font-bold' : 'text-gray-400 hover:text-gray-600 dark:text-gray-400'"
+          class="flex items-center justify-center w-7 h-7 rounded-full transition-all cursor-pointer"
+          title="Dark Mode"
+        >
+          <Icon icon="ion:moon-sharp" width="15" />
+        </button>
+      </div>
+      <div @click.stop="toggle_notification = !toggle_notification" class="cursor-pointer flex relative dark:text-gray-200 p-1 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700 transition-colors">
+        <Icon icon="iconamoon:notification" width="24" />
+        <span v-if="props.total_task_notifications > 0" class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-gray-800">
+          {{ props.total_task_notifications > 99 ? '99+' : props.total_task_notifications }}
+        </span>
       </div>
       <div v-if="toggle_notification" ref="notificationModalRef"
-        class="top-16 absolute max-h-[60vh] overflow-y-auto w-[550px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-7">
+        class="top-14 absolute w-[460px] max-w-[95vw] shadow-2xl z-[99999999] bg-white border border-gray-200/80 rounded-2xl right-4 overflow-hidden dark:bg-gray-800 dark:border-gray-700 dark:text-white transition-all">
         <Notification :notifications="props.notifications" @close="closeNotificationHandler" :total_task_notifications="total_task_notifications" />
       </div>
 
       <div class="ml-1 cursor-pointer relative">
-        <div class="ml-1 w-10 h-10 overflow-hidden rounded-full" @click.stop="Profile_option = !Profile_option" ref="profileTriggerRef">
-          <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" />
-          <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" alt="Default Profile" />
+        <div class="ml-1 w-10 h-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700 shadow-2xs" @click.stop="Profile_option = !Profile_option" ref="profileTriggerRef">
+          <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-tr from-emerald-700 via-teal-600 to-indigo-700 text-white font-bold text-sm select-none">
+            {{ userInitials }}
+          </div>
         </div>
 
         <div
-          class="mt-4 absolute w-[300px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-0"
+          class="mt-4 absolute w-[300px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg right-0 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           v-if="Profile_option"
           ref="profileModalRef">
-          <div class="flex items-center gap-3 p-4 border-b">
-            <div class="ml-1 w-10 h-10 overflow-hidden rounded-full">
-              <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" />
-              <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" alt="Default Profile" />
+          <div class="flex items-center gap-3 p-4 border-b dark:border-gray-700">
+            <div class="ml-1 w-11 h-11 overflow-hidden rounded-full flex-shrink-0 shadow-inner">
+              <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" class="w-full h-full object-cover" />
+              <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-tr from-emerald-700 via-teal-600 to-indigo-700 text-white font-bold text-sm select-none">
+                {{ userInitials }}
+              </div>
             </div>
-            <div>
-              <h1>{{ user.last_name+' '+user.first_name }}</h1>
-              <div class="flex items-center text-xs gap-2 text-gray-500">
-                <p>{{user.email}}</p>
-                <Icon icon="iconoir:copy" />
+            <div class="overflow-hidden">
+              <h1 class="font-bold text-gray-900 dark:text-white text-sm truncate">{{ user.last_name+' '+user.first_name }}</h1>
+              <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 truncate">{{ userRoleTitle }}</p>
+              <div class="flex items-center text-xs gap-1.5 text-gray-500">
+                <p class="truncate">{{user.email}}</p>
               </div>
             </div>
           </div>
           <Link href="/settings">
-            <div class="border-b">
-              <div class="flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold"
+            <div class="border-b dark:border-gray-700">
+              <div class="flex items-center gap-2 text-[#344054] dark:text-gray-300 p-3 rounded-md m-3 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold"
                 @click="Profile_option = false">
                 <Icon icon="lucide:user" width="25" />
                 <p>Profile Settings</p>
@@ -55,8 +148,8 @@
             </div>
           </Link>
           <Link href="/dashboard/support">
-            <div class="border-b">
-              <div class="flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold"
+            <div class="border-b dark:border-gray-700">
+              <div class="flex items-center gap-2 text-[#344054] dark:text-gray-300 p-3 rounded-md m-3 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold"
                 @click="Profile_option = false">
                 <Icon icon="system-uicons:support" width="25" />
                 <p>Help & Support</p>
@@ -75,33 +168,70 @@
     </div>
 
     <div class="flex 2xl:hidden text-xl font-semibold items-center justify-between px-4 w-full">
-      <div class="flex items-center gap-4">
-        <Icon icon="quill:hamburger" width="30" @click="navVisible = true" />
-        <div class="text-lg font-semibold flex items-center gap-4">
-          <!-- <p>Ansel LTD</p> -->
+      <div class="flex items-center gap-3">
+        <Icon icon="quill:hamburger" width="28" @click="navVisible = true" />
+        <!-- Mobile Attendance Button -->
+        <div>
+          <button
+            v-if="!attendanceStatus.is_checked_in"
+            @click="openAttendanceModal('check-in')"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-full shadow-xs"
+            title="Duty Check-In"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+            <span>Check In</span>
+          </button>
+          <button
+            v-else-if="attendanceStatus.is_checked_in && !attendanceStatus.is_checked_out"
+            @click="openAttendanceModal('check-out')"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full shadow-xs"
+            title="Shift Check-Out"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Check Out</span>
+          </button>
+          <span
+            v-else
+            class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-gray-500 bg-gray-100 rounded-full"
+          >
+            Done ({{ attendanceStatus.duration }})
+          </span>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <Icon icon="mynaui:search" width="25" @click="toggleSearch" class="cursor-pointer" />
+        <button
+          type="button"
+          @click="toggleTheme(currentTheme === 'dark' ? 'light' : 'dark')"
+          class="p-1 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center"
+          :title="currentTheme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+        >
+          <Icon :icon="currentTheme === 'dark' ? 'heroicons:sun-20-solid' : 'ion:moon-sharp'" width="20" class="text-amber-500 dark:text-blue-400" />
+        </button>
+        <Icon icon="mynaui:search" width="24" @click="toggleSearch" class="cursor-pointer" />
         <div class="relative cursor-pointer">
-          <Icon icon="iconamoon:notification" width="25" @click.stop="toggle_notification = !toggle_notification" />
+          <Icon icon="iconamoon:notification" width="24" @click.stop="toggle_notification = !toggle_notification" />
           <span v-if="props.total_task_notifications > 0" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-red-400 text-[10px] text-white">{{ props.total_task_notifications }}</span>
         </div>
-        <div class="w-6 h-6 rounded-full overflow-hidden cursor-pointer" @click.stop="Profile_option = !Profile_option" ref="mobileProfileTriggerRef">
+        <div class="w-8 h-8 rounded-full overflow-hidden cursor-pointer shadow-2xs" @click.stop="Profile_option = !Profile_option" ref="mobileProfileTriggerRef">
           <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" class="w-full h-full object-cover" />
-          <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" alt="Default Profile" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-tr from-emerald-700 via-teal-600 to-indigo-700 text-white font-bold text-xs select-none">
+            {{ userInitials }}
+          </div>
         </div>
       </div>
     </div>
 
     <div v-if="Profile_option" class="xl:hidden fixed top-[50px] right-0 w-[260px] shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg m-4" ref="mobileProfileModalRef">
-      <div class="flex items-center gap-2 p-3 border-b">
-        <div class="w-8 h-8 overflow-hidden rounded-full flex-shrink-0">
+      <div class="flex items-center gap-2.5 p-3 border-b">
+        <div class="w-9 h-9 overflow-hidden rounded-full flex-shrink-0 shadow-inner">
           <img v-if="user.profile_image" :src="page.props.base+'/'+user.profile_image" alt="Profile" class="w-full h-full object-cover" />
-          <img v-else src="https://i.pinimg.com/originals/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.png" alt="Default Profile" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-tr from-emerald-700 via-teal-600 to-indigo-700 text-white font-bold text-xs select-none">
+            {{ userInitials }}
+          </div>
         </div>
         <div class="overflow-hidden">
           <h1 class="text-sm font-semibold truncate">{{ user.last_name+' '+user.first_name }}</h1>
+          <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 truncate">{{ userRoleTitle }}</p>
           <div class="flex items-center text-[11px] gap-1 text-gray-500">
             <p class="truncate">{{user.email}}</p>
           </div>
@@ -134,7 +264,7 @@
       </div>
     </div>
 
-    <div v-if="toggle_notification" class="xl:hidden fixed top-[50px] left-0 right-0 max-h-[60vh] overflow-y-auto shadow-lg z-[99999999] bg-white border border-gray-300 border-solid rounded-lg m-4" ref="mobileNotificationModalRef">
+    <div v-if="toggle_notification" class="xl:hidden fixed top-[55px] left-2 right-2 max-h-[82vh] shadow-2xl z-[99999999] bg-white border border-gray-200 rounded-2xl overflow-hidden" ref="mobileNotificationModalRef">
       <Notification :notifications="props.notifications" @close="closeNotificationHandler" :total_task_notifications="total_task_notifications" />
     </div>
   </main>
@@ -148,19 +278,27 @@
       <div class="border-b border-dashed pb-4">
         <p class="text-gray-500 pl-4 mt-4 mb-2">Main</p>
         <section>
-          <div v-for="(item, index) in main" :key="index" class="mb-1">
-            <div v-if="checkPermission(item)">
-              <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="page.url === item.path
+          <template v-for="(item, index) in main" :key="index">
+            <div v-if="checkPermission(item) && userHasPermission(item.permission)" class="mb-1">
+              <Link :href="item.path" :class="page.url === item.path || page.url.startsWith(item.path + '?')
                   ? 'border bg-gray-25 text-primary'
                   : 'hover:border-0'
                 "
-                class="px-4 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+                class="px-4 py-3 flex gap-3 items-center justify-between text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
                 @click="navVisible = false">
-                <span v-html="item.icon"></span>
-                <p class="text-lg">{{ item.name }}</p>
+                <div class="flex items-center gap-3">
+                  <span v-html="item.icon"></span>
+                  <p class="text-lg">{{ item.name }}</p>
+                </div>
+                <span v-if="item.name === 'Notifications' && props.total_task_notifications > 0" class="flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-primary text-xs font-bold text-white shadow-xs">
+                  {{ props.total_task_notifications > 99 ? '99+' : props.total_task_notifications }}
+                </span>
+                <span v-else-if="item.name === 'Workflow' && pendingWorkflowCount > 0" class="flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-amber-500 text-xs font-bold text-white shadow-xs">
+                  {{ pendingWorkflowCount > 99 ? '99+' : pendingWorkflowCount }}
+                </span>
               </Link>
             </div>
-          </div>
+          </template>
         </section>
 
         <section v-if="userDepartment && userDepartment.title && userDepartment.title === 'Finance and Accounts' || (role.includes('super admin') || role.includes('admin'))">
@@ -214,7 +352,7 @@
         </section>
       </div>
 
-      <div v-if="(!userBranch.department || (userBranch.department && userBranch.department.title && userBranch.department.title !== 'Finance and Accounts')) && (role.includes('super admin') || role.includes('admin'))" class="border-b border-dashed pb-4">
+      <div v-if="admin.some(item => userHasPermission(item.permission))" class="border-b border-dashed pb-4">
         <p class="text-gray-500 pl-4 mt-4 mb-2">Admin</p>
         <section>
           <div v-for="(item, index) in admin" :key="index" class="mb-1">
@@ -231,11 +369,11 @@
         </section>
       </div>
 
-      <div class="pb-4" v-if="branches && branches.length > 0 && role.includes('data entry')">
+      <div class="pb-4" v-if="branches && branches.length > 0 && userHasPermission('branch setup view')">
         <div class="text-gray-500 pl-4 mt-4 mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Icon icon="ic:round-greater-than" width="20" />
-            <p>Branches</p>
+            <p>My Branch</p>
           </div>
           <Icon icon="line-md:grid-3-filled" width="20" />
         </div>
@@ -257,79 +395,22 @@
         </section>
       </div>
 
-      <div class="pb-4" v-if="branches && branches.length > 0 && role.includes('super users')">
-        <Link :href="'/dashboard/correspondence'" :class="page.url === '/dashboard/correspondence'
-            ? 'border bg-gray-25 text-primary'
-            : 'hover:border-0'
-          "
-          class="px-4 py-3 mx-4 mt-4 flex justify-between items-center text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
-          @click="navVisible = false">
+
+      <div class="pb-4" v-if="userHasPermission('document management view')">
+        <Link :href="'/dashboard/document-management'" :class="(page.url === '/dashboard/document-management' || page.url.startsWith('/dashboard/branches'))
+          ? 'border bg-gray-25 text-primary'
+          : 'hover:border-0'
+        "
+        class="px-4 py-3 mx-4 mt-4 flex justify-between items-center text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
+        @click="navVisible = false">
           <div class="flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" class="iconify iconify--lucide">
-              <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                <rect width="8" height="8" x="3" y="3" rx="2"></rect>
-                <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
-                <rect width="8" height="8" x="13" y="13" rx="2"></rect>
-              </g>
-            </svg>
-            <span class="text-lg">Correspondence</span>
+            <Icon icon="octicon:git-branch-24" width="25" />
+            <span class="text-lg">Document Management</span>
           </div>
         </Link>
       </div>
 
-      <div class="pb-4">
-        <div class="text-gray-500 pl-4 mt-4 mb-2 flex items-center justify-between cursor-pointer" @click="branchesOpen = !branchesOpen">
-          <div class="flex items-center gap-3">
-            <Icon icon="octicon:git-branch-24" width="25" />
-            <p>Branches</p>
-          </div>
-          <Icon :class="!branchesOpen ? '-rotate-90' : ''" icon="ep:arrow-down" width="19" class="mr-4" />
-        </div>
-        
-        <section v-if="branchesOpen" class="pl-4 max-h-[300px] overflow-y-auto">
-          <div v-for="(department, deptIndex) in roleBranches" :key="'dept-' + deptIndex" class="mb-2">
-            <Link :href="isDepartmentRole(department)" @click="navVisible = false" class="cursor-pointer">
-              <div class="py-2 px-3 flex items-center justify-between text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                <p class="text-[15px]">{{ department.title }}</p>
-                <Icon 
-                  @click.prevent.stop="toggleDepartment(deptIndex)" 
-                  :class="expandedDepartments[deptIndex] ? 'rotate-0' : '-rotate-90'" 
-                  icon="ep:arrow-down" 
-                  width="16"
-                  class="cursor-pointer transition-transform duration-200" 
-                />
-              </div>
-            </Link>
-
-            <div v-if="expandedDepartments[deptIndex] && department.division && department.division.length > 0" class="pl-4 mt-1">
-              <div v-for="(division, divIndex) in department.division" :key="'div-' + divIndex" class="mb-1">
-                <Link :href="isDivisionRole(division, department)" @click="navVisible = false" class="cursor-pointer">
-                  <div class="py-2 px-3 flex items-center justify-between text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-                    <p class="text-sm">{{ division.title }}</p>
-                    <Icon 
-                      v-if="division.unit && division.unit.length > 0"
-                      @click.prevent.stop="toggleDivision(deptIndex, divIndex)" 
-                      :class="expandedDivisions[`${deptIndex}-${divIndex}`] ? 'rotate-0' : '-rotate-90'" 
-                      icon="ep:arrow-down" 
-                      width="14"
-                      class="cursor-pointer transition-transform duration-200"
-                    />
-                    <div v-else class="w-3.5"></div>
-                  </div>
-                </Link>
-
-                <div v-if="expandedDivisions[`${deptIndex}-${divIndex}`] && division.unit && division.unit.length > 0" class="pl-4 mt-1">
-                  <Link v-for="(unit, unitIndex) in division.unit" :key="'unit-' + unitIndex" :href="isUnitRole(unit, department)" @click="navVisible = false">
-                    <div class="py-2 px-3 flex items-center text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all cursor-pointer mb-1">
-                      <p class="text-sm">{{ unit.title }}</p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <div class="pb-4" v-if="userHasPermission('shared files view')">
         <Link href="/dashboard/shared-files" :class="page.url === '/dashboard/shared-files'
             ? 'border bg-gray-25 text-primary'
             : 'hover:border-0'
@@ -367,6 +448,12 @@
       </div>
     </section>
   </Sidebar>
+
+  <SignatureAttendanceModal
+    v-model="showAttendanceModal"
+    :action="attendanceAction"
+    @verified="fetchAttendanceStatus"
+  />
 </template>
 
 <script setup>
@@ -375,10 +462,39 @@ import logo from "../assets/logo.vue";
 import { Link, usePage } from '@inertiajs/vue3';
 import Userplaceholder from "../assets/Userimageholder.vue";
 import Notification from "../components/Notification.vue";
+import SignatureAttendanceModal from "../components/Modals/PMS/SignatureAttendanceModal.vue";
+import axios from 'axios';
 
 const props = defineProps(['toggleSearchFunction', 'notifications', "total_task_notifications", 'sidebarVisible']);
 const { toggleSearchFunction } = props;
 const emit = defineEmits(['update:sidebarVisible']);
+
+// Digital Signature Verified Attendance State
+const attendanceStatus = ref({
+  is_checked_in: false,
+  is_checked_out: false,
+  check_in_time: null,
+  check_out_time: null,
+  duration: '--'
+});
+const showAttendanceModal = ref(false);
+const attendanceAction = ref('check-in');
+
+const fetchAttendanceStatus = async () => {
+  try {
+    const res = await axios.get('/dashboard/pms/attendance/status');
+    if (res.data) {
+      attendanceStatus.value = res.data;
+    }
+  } catch (err) {
+    console.error('Error fetching attendance status:', err);
+  }
+};
+
+const openAttendanceModal = (action) => {
+  attendanceAction.value = action;
+  showAttendanceModal.value = true;
+};
 
 const toggleSearch = () => {
   toggleSearchFunction();
@@ -394,6 +510,27 @@ const Profile_option = ref(false);
 const toggle_notification = ref(false);
 const page = usePage();
 
+const currentTheme = ref('light');
+
+const checkCurrentTheme = () => {
+  if (typeof document !== 'undefined') {
+    currentTheme.value = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  }
+};
+
+const toggleTheme = (mode) => {
+  currentTheme.value = mode;
+  localStorage.setItem('edms_theme', mode);
+  if (mode === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+  axios.post('/settings/preferences', { theme: mode }).catch(err => {
+    console.error('Failed to save theme preference', err);
+  });
+};
+
 const profileTriggerRef = ref(null);
 const profileModalRef = ref(null);
 const mobileProfileTriggerRef = ref(null);
@@ -408,6 +545,30 @@ const userDepartment = computed(() => page.props.userDepartment);
 const departments = computed(() => page.props.shared_departments);
 const permissions = computed(() => page.props.permissions);
 const userBranchName = computed(() => page.props.branchName);
+const pendingWorkflowCount = computed(() => page.props.pending_workflow_count || 0);
+
+const userInitials = computed(() => {
+  if (!user.value) return 'U';
+  const first = user.value.first_name ? user.value.first_name.charAt(0) : '';
+  const last = user.value.last_name ? user.value.last_name.charAt(0) : '';
+  return (first + last).toUpperCase() || 'U';
+});
+
+const userRoleTitle = computed(() => {
+  const r = role.value;
+  if (r && (Array.isArray(r) ? r.length > 0 : !!r)) {
+    const primary = Array.isArray(r) ? r[0] : r;
+    const rName = typeof primary === 'string' ? primary : primary?.name;
+    if (rName) {
+      const formatted = rName.charAt(0).toUpperCase() + rName.slice(1);
+      if (userDepartment.value?.title) {
+        return `${formatted} • ${userDepartment.value.title}`;
+      }
+      return formatted;
+    }
+  }
+  return userDepartment.value?.title || 'Staff Officer';
+});
 
 const branches = ref([]);
 const roleBranches = ref([]);
@@ -475,63 +636,59 @@ const userHasPermission = (permit) => {
   if (permit == '') {
     return true;
   }
-  if (role.value.includes('super admin')) {
+  
+  const userRoleLower = role.value ? role.value.map(r => typeof r === 'string' ? r.toLowerCase() : (r.name ? r.name.toLowerCase() : '')) : [];
+  
+  if (userRoleLower.includes('super admin') || userRoleLower.includes('admin')) {
     return true;
   } else {
-    let index = permissions.value.findIndex(permission => permission.name == permit);
-    if (index != -1) {
-      return true;
-    } else {
-      return false;
+    // If user is explicitly an 'agf registry' role, give them access to AGF Registry View menus
+    if (userRoleLower.includes('agf registry') && (permit === 'agf registry view' || permit === 'task inbox view')) {
+        return true;
     }
+
+    if (permissions.value && permissions.value.length > 0) {
+      if (typeof permissions.value[0] === 'string') {
+        const userPermsLower = permissions.value.map(p => p.toLowerCase());
+        return userPermsLower.includes(permit.toLowerCase());
+      } else {
+        let index = permissions.value.findIndex(permission => permission.name.toLowerCase() == permit.toLowerCase());
+        return index != -1;
+      }
+    }
+    return false;
   }
 };
 
 const isDepartmentRole = (item) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors')) {
-    return `/dashboard/branches/department/${item.id}/0/0`;
-  } else {
-    return '#';
-  }
+  return `/dashboard/branches/department/${item.id}/0/0`;
 };
 
 const isDivisionRole = (item, department) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads')) {
-    let department_id = department.id;
-    return `/dashboard/branches/division/${department_id}/${item.id}/0`;
-  } else {
-    return '#';
-  }
+  let department_id = department.id;
+  return `/dashboard/branches/division/${department_id}/${item.id}/0`;
 };
 
 const isUnitRole = (item, department) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads') || role.value.includes('unit heads')) {
-    let department_id = department.id;
-    let division = department.division && department.division.length > 0 ? department.division[0].id : 0;
-    return `/dashboard/branches/unit/${department_id}/${division}/${item.id}`;
-  } else {
-    return '#';
-  }
+  let department_id = department.id;
+  let division = department.division && department.division.length > 0 ? department.division[0].id : 0;
+  return `/dashboard/branches/unit/${department_id}/${division}/${item.id}`;
 };
 
-const setDepartments = () => {
-  if (role.value.includes('super users')) {
-    for (let dept of departments.value) {
-      let data = {
-        name: dept.title,
-        path: "/dashboard/branches/department/" + dept.id,
-        icon: `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="9" height="9" rx="4.5" stroke="#344054"/>
-        </svg>`,
-        permission: 'edms view'
-      };
-      branches.value.push(data);
-    }
-  } else {
-    const branchType = userBranchName.value;
-    const branchData = userBranch.value[branchType];
+const canViewDocumentManagement = computed(() => {
+  return userHasPermission('branch setup view') || 
+         userHasPermission('department view') || 
+         userHasPermission('division view') || 
+         userHasPermission('unit view') || 
+         userHasPermission('edms view') ||
+         userHasPermission('archiving view');
+});
 
-    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads') || role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
+const setDepartments = () => {
+  const branchType = userBranchName.value;
+  const branchData = userBranch.value ? userBranch.value[branchType] : null;
+
+  if (branchData && userHasPermission('edms view')) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -541,7 +698,6 @@ const setDepartments = () => {
         permission: 'edms view'
       };
       branches.value.push(data);
-    }
   }
 };
 
@@ -552,9 +708,11 @@ const getBranchesByRole = () => {
 };
 
 onMounted(() => {
+  checkCurrentTheme();
   document.addEventListener('click', handleClickOutside);
   setDepartments();
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads') || role.value.includes('unit heads')) {
+  fetchAttendanceStatus();
+  if (userHasPermission('branch setup view')) {
     getBranchesByRole();
   }
 });
@@ -570,6 +728,15 @@ const main = ref([
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M7.5 18.3327V9.99935H12.5V18.3327M2.5 7.49935L10 1.66602L17.5 7.49935V16.666C17.5 17.108 17.3244 17.532 17.0118 17.8445C16.6993 18.1571 16.2754 18.3327 15.8333 18.3327H4.16667C3.72464 18.3327 3.30072 18.1571 2.98816 17.8445C2.67559 17.532 2.5 17.108 2.5 16.666V7.49935Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
+    permission: ''
+  },
+  {
+    name: "Notifications",
+    path: "/dashboard/notifications",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>`,
     permission: ''
   },
   {
@@ -594,7 +761,7 @@ const main = ref([
     name: "Mails",
     path: "/dashboard/mails",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M18.3334 10.0007H13.3334L11.6667 12.5007H8.33335L6.66669 10.0007H1.66669M18.3334 10.0007V15.0007C18.3334 15.4427 18.1578 15.8666 17.8452 16.1792C17.5326 16.4917 17.1087 16.6673 16.6667 16.6673H3.33335C2.89133 16.6673 2.4674 16.4917 2.15484 16.1792C1.84228 15.8666 1.66669 15.4427 1.66669 15.0007V10.0007M18.3334 10.0007L15.4584 4.25898C15.3204 3.98131 15.1077 3.74763 14.8441 3.58422C14.5806 3.42081 14.2768 3.33415 13.9667 3.33398H6.03335C5.72328 3.33415 5.41941 3.42081 5.15589 3.58422C4.89237 3.74763 4.67967 3.98131 4.54169 4.25898L1.66669 10.0007" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M18.3334 10.0007H13.3334L11.6667 12.5007H8.33335L6.66669 10.0007H1.66669M18.3334 10.0007V15.0007C18.3334 15.4427 18.1578 15.8666 17.8452 16.1792C17.5326 16.4917 17.1087 16.6673 16.6667 16.6673H3.33335C2.89133 16.6667 2.4674 16.4917 2.15484 16.1792C1.84228 15.8666 1.66669 15.4427 1.66669 15.0007V10.0007M18.3334 10.0007L15.4584 4.25898C15.3204 3.98131 15.1077 3.74763 14.8441 3.58422C14.5806 3.42081 14.2768 3.33415 13.9667 3.33398H6.03335C5.72328 3.33415 5.41941 3.42081 5.15589 3.58422C4.89237 3.74763 4.67967 3.98131 4.54169 4.25898L1.66669 10.0007" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
     permission: 'mails view'
   },
@@ -605,6 +772,14 @@ const main = ref([
       <path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
     permission: 'registry view'
+  },
+  {
+    name: "AGF Registry",
+    path: "/dashboard/agf-registry",
+    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`,
+    permission: 'agf registry view'
   },
   {
     name: "Workflow",
@@ -649,6 +824,27 @@ const main = ref([
 
 const admin = ref([
   {
+    name: "Governance & Structure Hub",
+    path: "/dashboard/governance-hub",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>`,
+    permission: 'access config view'
+  },
+  {
+    name: "Departmental Hub",
+    path: "/dashboard/directorates",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21h18"/>
+      <path d="M5 21V7l8-4v18"/>
+      <path d="M19 21V11l-6-4"/>
+      <path d="M9 9h1"/>
+      <path d="M9 13h1"/>
+      <path d="M9 17h1"/>
+    </svg>`,
+    permission: 'access config view'
+  },
+  {
     name: "Manage Users",
     path: "/dashboard/manage-users",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -657,52 +853,12 @@ const admin = ref([
     permission: 'manage users view'
   },
   {
-    name: "Branch Setup",
-    path: "/dashboard/branch-setup",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M17.5 4.16663C17.5 5.54734 14.1421 6.66663 10 6.66663C5.85786 6.66663 2.5 5.54734 2.5 4.16663M17.5 4.16663C17.5 2.78591 14.1421 1.66663 10 1.66663C5.85786 1.66663 2.5 2.78591 2.5 4.16663M17.5 4.16663V15.8333C17.5 17.2166 14.1667 18.3333 10 18.3333C5.83333 18.3333 2.5 17.2166 2.5 15.8333V4.16663M17.5 9.99996C17.5 11.3833 14.1667 12.5 10 12.5C5.83333 12.5 2.5 11.3833 2.5 9.99996" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`,
-    permission: 'branch setup view'
-  },
-  {
-    name: "Access Config",
-    path: "/dashboard/access-level",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7.84165 16.6666H5.41665C4.16665 16.6666 3.06665 16.2499 2.17498 15.3583C1.28331 14.4833 0.833313 13.4083 0.833313 12.1499C0.833313 11.0666 1.15831 10.0999 1.80831 9.24992C2.44216 8.41891 3.35271 7.84242 4.37498 7.62492C4.72498 6.34992 5.41665 5.31659 6.45831 4.52492C7.49998 3.74992 8.68331 3.33325 9.99998 3.33325C11.625 3.33325 13.0083 3.89992 14.1333 5.03325C15.2666 6.15825 15.8333 7.54158 15.8333 9.16658C16.7916 9.27492 17.5916 9.69159 18.2166 10.4166C18.75 11.0249 19.05 11.7166 19.1333 12.4999H17.4666C17.3833 12.0833 17.2 11.7416 16.8916 11.4416C16.4916 11.0333 16 10.8333 15.4166 10.8333H14.1666V9.16658C14.1666 8.01659 13.75 7.03325 12.95 6.21659C12.1416 5.41659 11.1583 4.99992 9.99998 4.99992C8.84998 4.99992 7.86665 5.41659 7.04998 6.21659C6.24998 7.03325 5.83331 8.01659 5.83331 9.16658H5.41665C4.60831 9.16658 3.92498 9.44992 3.35831 10.0249C2.78331 10.5916 2.49998 11.2749 2.49998 12.0833C2.49998 12.8916 2.78331 13.5833 3.35831 14.1666C3.92498 14.7249 4.60831 14.9999 5.41665 14.9999H7.49998C7.49998 15.5999 7.62498 16.1583 7.84165 16.6666ZM19.1666 14.1666V15.8333H17.5V17.4999H15.8333V15.8333H14C13.6666 16.8333 12.75 17.4999 11.6666 17.4999C10.25 17.4999 9.16665 16.4166 9.16665 14.9999C9.16665 13.5833 10.25 12.4999 11.6666 12.4999C12.75 12.4999 13.6666 13.1666 14 14.1666H19.1666ZM12.5 14.9999C12.5 14.5833 12.1666 14.1666 11.6666 14.1666C11.1666 14.1666 10.8333 14.5833 10.8333 14.9999C10.8333 15.4166 11.1666 15.8333 11.6666 15.8333C12.1666 15.8333 12.5 15.4166 12.5 14.9999Z" fill="#344054"/>
-</svg>`,
-    permission: 'access config view'
-  },
-  {
-    name: "Metadata Setup",
-    path: "/dashboard/metadata-setup",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_7456_3427)">
-<path d="M9.99998 12.4999C11.3807 12.4999 12.5 11.3806 12.5 9.99992C12.5 8.61921 11.3807 7.49992 9.99998 7.49992C8.61927 7.49992 7.49998 8.61921 7.49998 9.99992C7.49998 11.3806 8.61927 12.4999 9.99998 12.4999Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M16.1666 12.4999C16.0557 12.7513 16.0226 13.0301 16.0716 13.3004C16.1207 13.5707 16.2495 13.8202 16.4416 14.0166L16.4916 14.0666C16.6466 14.2214 16.7695 14.4052 16.8534 14.6075C16.9373 14.8098 16.9805 15.0267 16.9805 15.2458C16.9805 15.4648 16.9373 15.6817 16.8534 15.884C16.7695 16.0863 16.6466 16.2701 16.4916 16.4249C16.3369 16.5799 16.153 16.7028 15.9507 16.7867C15.7484 16.8706 15.5315 16.9137 15.3125 16.9137C15.0935 16.9137 14.8766 16.8706 14.6742 16.7867C14.4719 16.7028 14.2881 16.5799 14.1333 16.4249L14.0833 16.3749C13.8869 16.1828 13.6375 16.0539 13.3671 16.0049C13.0968 15.9559 12.818 15.989 12.5666 16.0999C12.3202 16.2056 12.11 16.381 11.9619 16.6045C11.8138 16.8281 11.7344 17.0901 11.7333 17.3583V17.4999C11.7333 17.9419 11.5577 18.3659 11.2452 18.6784C10.9326 18.991 10.5087 19.1666 10.0666 19.1666C9.62462 19.1666 9.2007 18.991 8.88813 18.6784C8.57557 18.3659 8.39998 17.9419 8.39998 17.4999V17.4249C8.39353 17.1491 8.30424 16.8816 8.14374 16.6572C7.98323 16.4328 7.75893 16.2618 7.49998 16.1666C7.24863 16.0557 6.96982 16.0226 6.69949 16.0716C6.42916 16.1206 6.17971 16.2495 5.98331 16.4416L5.93331 16.4916C5.77852 16.6465 5.59471 16.7695 5.39238 16.8533C5.19005 16.9372 4.97317 16.9804 4.75415 16.9804C4.53512 16.9804 4.31824 16.9372 4.11591 16.8533C3.91358 16.7695 3.72977 16.6465 3.57498 16.4916C3.42002 16.3368 3.29709 16.153 3.21321 15.9507C3.12934 15.7483 3.08617 15.5314 3.08617 15.3124C3.08617 15.0934 3.12934 14.8765 3.21321 14.6742C3.29709 14.4719 3.42002 14.288 3.57498 14.1332L3.62498 14.0833C3.81709 13.8869 3.94597 13.6374 3.99498 13.3671C4.044 13.0967 4.01091 12.8179 3.89998 12.5666C3.79434 12.3201 3.61894 12.1099 3.39537 11.9618C3.17179 11.8138 2.9098 11.7343 2.64165 11.7333H2.49998C2.05795 11.7333 1.63403 11.5577 1.32147 11.2451C1.00891 10.9325 0.833313 10.5086 0.833313 10.0666C0.833313 9.62456 1.00891 9.20063 1.32147 8.88807C1.63403 8.57551 2.05795 8.39992 2.49998 8.39992H2.57498C2.85081 8.39347 3.11832 8.30418 3.34273 8.14368C3.56714 7.98317 3.73808 7.75886 3.83331 7.49992C3.94424 7.24857 3.97733 6.96976 3.92832 6.69943C3.8793 6.4291 3.75043 6.17965 3.55831 5.98325L3.50831 5.93325C3.35335 5.77846 3.23042 5.59465 3.14655 5.39232C3.06267 5.18999 3.0195 4.97311 3.0195 4.75408C3.0195 4.53506 3.06267 4.31818 3.14655 4.11585C3.23042 3.91352 3.35335 3.72971 3.50831 3.57492C3.6631 3.41996 3.84692 3.29703 4.04925 3.21315C4.25158 3.12928 4.46845 3.08611 4.68748 3.08611C4.90651 3.08611 5.12338 3.12928 5.32571 3.21315C5.52804 3.29703 5.71186 3.41996 5.86665 3.57492L5.91665 3.62492C6.11305 3.81703 6.36249 3.94591 6.63282 3.99492C6.90315 4.04394 7.18197 4.01085 7.43331 3.89992H7.49998C7.74645 3.79428 7.95666 3.61888 8.10472 3.39531C8.25279 3.17173 8.33224 2.90974 8.33331 2.64159V2.49992C8.33331 2.05789 8.50891 1.63397 8.82147 1.32141C9.13403 1.00885 9.55795 0.833252 9.99998 0.833252C10.442 0.833252 10.8659 1.00885 11.1785 1.32141C11.4911 1.63397 11.6666 2.05789 11.6666 2.49992V2.57492C11.6677 2.84307 11.7472 3.10506 11.8952 3.32864C12.0433 3.55221 12.2535 3.72762 12.5 3.83325C12.7513 3.94418 13.0301 3.97727 13.3005 3.92826C13.5708 3.87924 13.8202 3.75037 14.0166 3.55825L14.0666 3.50825C14.2214 3.35329 14.4052 3.23036 14.6076 3.14649C14.8099 3.06261 15.0268 3.01944 15.2458 3.01944C15.4648 3.01944 15.6817 3.06261 15.884 3.14649C16.0864 3.23036 16.2702 3.35329 16.425 3.50825C16.5799 3.66304 16.7029 3.84685 16.7867 4.04918C16.8706 4.25151 16.9138 4.46839 16.9138 4.68742C16.9138 4.90644 16.8706 5.12332 16.7867 5.32565C16.7029 5.52798 16.5799 5.7118 16.425 5.86658L16.375 5.91658C16.1829 6.11298 16.054 6.36243 16.005 6.63276C15.956 6.90309 15.989 7.1819 16.1 7.43325V7.49992C16.2056 7.74639 16.381 7.9566 16.6046 8.10466C16.8282 8.25272 17.0902 8.33218 17.3583 8.33325H17.5C17.942 8.33325 18.3659 8.50885 18.6785 8.82141C18.991 9.13397 19.1666 9.55789 19.1666 9.99992C19.1666 10.4419 18.991 10.8659 18.6785 11.1784C18.3659 11.491 17.942 11.6666 17.5 11.6666H17.425C17.1568 11.6677 16.8948 11.7471 16.6713 11.8952C16.4477 12.0432 16.2723 12.2534 16.1666 12.4999Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
-<defs>
-<clipPath id="clip0_7456_3427">
-<rect width="20" height="20" fill="white"/>
-</clipPath>
-</defs>
-</svg>`,
-    permission: 'metadata setup view'
-  },
-  {
-    name: "Admin Registry",
-    path: "/dashboard/admin-registry",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`,
-    permission: 'admin registry view'
-  },
-  {
     name: "Audit Log",
     path: "/dashboard/audit-log",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66669 12.0833L10 16.25L18.3334 12.0833M10 3.75L1.66669 7.91667L10 12.0833L18.3334 7.91667L10 3.75Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
-    permission: 'audit log view'
+    permission: 'audit view'
   },
   {
     name: "Recycle Bin",
@@ -711,7 +867,7 @@ const admin = ref([
 <path d="M2.5 5.00008H4.16667M4.16667 5.00008H17.5M4.16667 5.00008V16.6667C4.16667 17.1088 4.34226 17.5327 4.65482 17.8453C4.96738 18.1578 5.39131 18.3334 5.83333 18.3334H14.1667C14.6087 18.3334 15.0326 18.1578 15.3452 17.8453C15.6577 17.5327 15.8333 17.1088 15.8333 16.6667V5.00008H4.16667ZM6.66667 5.00008V3.33341C6.66667 2.89139 6.84226 2.46746 7.15482 2.1549C7.46738 1.84234 7.89131 1.66675 8.33333 1.66675H11.6667C12.1087 1.66675 12.5326 1.84234 12.8452 2.1549C13.1577 2.46746 13.3333 2.89139 13.3333 3.33341V5.00008M8.33333 9.16675V14.1667M11.6667 9.16675V14.1667" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
     permission: 'recycle bin view'
-  },
+  }
 ]);
 
 const logOut = () => {

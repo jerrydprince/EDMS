@@ -4,81 +4,19 @@
       src="/src/templates/voucherTemplate.html"
       class="w-full h-[800px]"
     ></iframe> -->
-    <!-- Call to action based on the current role -->
-    <section>
-      <div class="flex justify-end pb-5" v-if="roles.includes('directors') && payment.status != 'paid'">
-        <a :href="`/finance-and-accounts?id=${payment.id}`"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-md">
-          <Icon icon="tabler:refresh" width="20" />
-          <p>Re-submit</p>
-      </a>
-      </div>
-      
-      <div class="flex justify-end pb-5 gap-3">
-        <button @click="ReSubmitRejectedPayment"
-         v-if="!roles.includes('directors') && payment.status =='due' && payment.assigned_by?.is_rejected && !roles.includes('advance section') && !roles.includes('other charges') && !roles.includes('checking')
-        && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account')"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="tabler:refresh" width="20" />
-          <p>Re-submit</p>
-      </button>
-
-        <button @click="rejectPaymentModal = true"
-         v-if="(!roles.includes('directors') && !roles.includes('advance section') && !roles.includes('other charges')  && payment.assigned_by && payment.assigned_by.status =='pending' &&
-          !roles.includes('checking') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive() && payment.status !=='paid' && payment.status !=='reverted') && (payment.assigned_by  && payment.assigned_by.is_rejected == 0)"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconoir:cancel" width="25" />
-          <p>Reject</p>
-        </button>
-        <!-- <button v-if="!roles.includes('directors')&& !roles.includes('advance section(HOS)') && !roles.includes('division heads') && !roles.includes('unit heads') && payment.assigned_to.length == 0 && roles.includes('advance section(HOS)')" @click="setAssignTaskModal"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Assign</p>
-        </button> -->
-        <button v-if="!roles.includes('directors') && !roles.includes('other charges') && !roles.includes('other charges(HOS)') &&  !roles.includes('advance section') && !roles.includes('advance section(HOS)')
-            && !roles.includes('checking') && !roles.includes('final account(HOS)') && !roles.includes('final account') && !roles.includes('CPO') && !roles.includes('internal audit') && !roles.includes('final account') && !isAcceptActive() && payment.assigned_by.status =='pending'" @click="acceptTask"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Accept</p>
-        </button>
-        <!-- the second accept is for HOS advance section -->
-        <button v-if="roles.includes('advance section(HOS)') && payment.assigned_by.status=='pending' && !roles.includes('final account(HOS)') && !roles.includes('final account') &&  !isAcceptActive() && payment.assigned_by.status =='pending'" @click="acceptTask"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Accept</p>
-        </button>
-
-        <!-- the second accept is for HOS other charges -->
-        <button v-if="!roles.includes('directors') && payment.assigned_by.status=='pending' && !roles.includes('final account(HOS)') && !roles.includes('final account') && isAssignedToCheckings == false && roles.includes('other charges(HOS)') && !isAcceptActive()" @click="acceptTask"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Accept</p>
-        </button>
-        <!-- the assign button is for HOS other charges -->
-        <div v-if="payment.assigned_to.length === 0 && payment.status === 'due'">
-          <button 
-            v-if="(!roles.includes('directors') && payment.assigned_by.status == 'pending' && (payment.assigned_by  && payment.assigned_by.is_rejected == 0) && !roles.includes('division heads') && !roles.includes('unit heads') && !roles.includes('advance section') && !roles.includes('other charges') && !roles.includes('CPO')) && (roles.includes('other charges(HOS)') || roles.includes('checking(HOS)') || roles.includes('CPO(HOS)') || roles.includes('internal audit(HOS)') || roles.includes('final account(HOS)'))" 
-            @click="setAssignTaskModal"
-            class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium"
-          >
-            <Icon icon="iconamoon:check" width="20" />
-            <p>Assign</p>
-          </button>
-        </div>
-        
-        <button v-if="!roles.includes('directors') && payment.assigned_to.length == 0 && roles.includes('final account(HOS)') && payment.status !=='paid' && payment.assigned_by.status =='pending'" @click="finalisePaymentModal = true"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Finalise</p>
-        </button>
-        <Link href="/finance-and-accounts/other-charges-task-submit" method="post" :data="{id: payment.assigned_by?.id, payment_id: payment.id}" 
-          v-if="(roles.includes('other charges') || roles.includes('advance section') || roles.includes('checking') || roles.includes('CPO')|| roles.includes('internal audit') || roles.includes('final account')) && payment.assigned_by.status == 'pending'"
-          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 shadow-xs font-medium">
-          <Icon icon="iconamoon:check" width="20" />
-          <p>Submit</p>
-      </Link>
-      </div>
-    </section>
+    <!-- EBEWE Action Panel replacing hardcoded role logic -->
+    <EbeweActionPanel 
+      :payment="payment" 
+      :roles="roles" 
+      :user="user"
+      @openParallelChecklist="() => {}"
+      @openDigitalStamp="digitalStampModal = true"
+      @reject="rejectPaymentModal = true"
+      @assign="setAssignTaskModal"
+      @accept="acceptTask"
+    />
+    <!-- Federal Treasury 7-Stage Milestone Progression Tracker -->
+    <PaymentMilestoneTracker :payment="payment" :auditQueries="auditQueries" />
     <section class="flex lg:flex-row flex-col-reverse items-start gap-10 w-full">
       <div class="bg-white w-full lg:w-[60%] rounded-lg p-5">
         <div class="pb-5 flex items-center justify-between">
@@ -102,44 +40,39 @@
 
         <div class="h-[800px] overflow-y-auto hide_scroll">
           <div>
-            <div class="bg-slate-50 p-5 w-full rounded-md">
-              <!-- <img src="../../assets/images/payment_document.svg" alt="" class="overflow-hidden rounded-md w-full" /> -->
-              <div v-if="currentDocument">
-                <template v-if="currentDocument.file_name">
-                  <div v-if="currentDocument.path && currentDocument.path.length > 0">
-                    <template v-for="(doc, index) in currentDocument.path" :key="index">
-                      <img v-if="/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(doc.path)"
-                        :src="doc.path" alt="Current Document"
-                        class="rounded-md w-full max-h-[600px] object-contain my-4 border-t border-white" />
-                      <iframe v-else-if="/\.pdf$/i.test(doc.path)" :src="doc.path"
-                        class="w-full h-[600px] rounded-md my-4" frameborder="0"></iframe>
-                      <div v-else class="text-gray-500 text-center py-10">
-                        File preview not available.
-                      </div>
-                  </template>
+            <div class="bg-slate-50 p-2 md:p-3 w-full rounded-xl">
+              <!-- DIGITAL STAMPS SECTION -->
+              <div v-if="ebewe_stamps && ebewe_stamps.length > 0" class="w-full flex gap-4 overflow-x-auto p-4 bg-white border border-slate-200 rounded-lg mb-4">
+                <div v-for="stamp in ebewe_stamps" :key="stamp.id" 
+                     :class="['relative flex-shrink-0 flex items-center justify-center p-4 border-2 rounded-lg rotate-[-2deg] opacity-90', stamp.color, stamp.color.replace('border-', 'text-')]">
+                  <div :class="['absolute inset-1 border border-dashed rounded', stamp.color]"></div>
+                  <div class="text-center relative z-10 bg-white/60 px-2 py-1 rounded">
+                    <h2 class="text-sm font-black uppercase tracking-wider mb-1">{{ stamp.label }}</h2>
+                    <p class="text-[8px] font-mono">ID: {{ stamp.applied_by }}-{{ String(stamp.id).padStart(4, '0') }}</p>
+                    <p class="text-[8px] font-mono mt-1">{{ new Date(stamp.created_at).toLocaleDateString() }}</p>
+                    <p class="text-[8px] font-bold mt-1 uppercase">{{ stamp.stamp_type }}</p>
                   </div>
-                </template>
+                </div>
+              </div>
 
-                <template v-else>
-                  <div v-if="currentDocument.path">
-                    
-                      <img v-if="/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(currentDocument.path)"
-                        :src="base+'/storage/'+currentDocument.path" alt="Current Document"
-                        class="rounded-md w-full max-h-[600px] object-contain my-4 border-t border-white" />
-                      <iframe v-else-if="/\.pdf$/i.test(currentDocument.path)" :src="base+'/storage/'+currentDocument.path"
-                        class="w-full h-[600px] rounded-md my-4" frameborder="0"></iframe>
-                      <div v-else class="text-gray-500 text-center py-10">
-                        File preview not available.
-                      </div>
-                 =
-                  </div>
-                </template>
+              <!-- UNIFIED PDF EDITOR (FOR VOUCHERS AND ATTACHED PDF DOCUMENTS) -->
+              <div v-if="activePreviewPdfUrl" class="w-full h-[760px] min-h-[700px] rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+                <PDFEditor ref="pdfEditorRef" :url="activePreviewPdfUrl" @save-pdf="handleSavePdf" />
               </div>
-              <div v-if="previewVoucher">
-                <iframe :src="base+'/'+selectedVoucher.path"
-                    class="w-full h-[600px] rounded-md" frameborder="0"></iframe>
+
+              <!-- IMAGE DOCUMENT PREVIEW -->
+              <div v-else-if="activePreviewImageUrl" class="w-full h-[760px] flex items-center justify-center bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <img :src="activePreviewImageUrl" alt="Document Preview" class="rounded-lg max-w-full max-h-[720px] object-contain shadow-sm" />
               </div>
-              <!-- <iframe src="/src/templates/voucherTemplate.html" class="w-full h-full"></iframe> -->
+
+              <!-- FALLBACK EMPTY STATE -->
+              <div v-else class="w-full h-[600px] flex flex-col items-center justify-center bg-white rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
+                  <Icon icon="lucide:file-text" class="w-8 h-8" />
+                </div>
+                <p class="text-gray-800 font-bold text-lg">No Document or Voucher Selected</p>
+                <p class="text-sm text-gray-500 mt-1 max-w-sm">Select an attached document from the list or click any appended voucher in the sidebar to preview.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -154,11 +87,24 @@
           <p class="text-base md:text-2xl text-gray-900">Vendor Contracts</p>
         </div>
         <div v-if="!sidemenu && !getActiveCustomSideMenu">
+          <!-- Universal Directorate Action Desk (F&A, Procurement, Administration) -->
+          <div class="p-3 border-b border-gray-100">
+            <UniversalDirectorateActionDesk 
+              :payment="payment" 
+              :user="user" 
+              :roles="roles" 
+              :permissions="permissions"
+              :activeQueries="auditQueries" 
+              @refresh="reloadPayment" 
+              @open-create-voucher="handleOpenCreateVoucher"
+              @open-charge-account="chargeAccountModal = true"
+            />
+          </div>
           <section>
             <!-- ACCESS LEVELS: ADVANCE SECTION -->
             <div class="px-2 pt-2">
               <!-- VIEW LEDGER ENTRY STARTS -->
-              <div  v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section')) && payment.ledger_count > 0" @click="viewLedgerEntryModal = true">
+              <div  v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section') || user?.section_id === 82) && payment.ledger_count > 0" @click="viewLedgerEntryModal = true">
                 <div class="flex justify-between bg-[#F3F5F7] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-gray-800 font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
@@ -173,7 +119,7 @@
               <!-- VIEW LEDGER ENTRY ENDS -->
 
               <!-- CREATE LEDGER ENTRY STARTS -->
-              <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section')) && payment.ledger_count == 0 && (!roles.includes('other charges(HOS)') || !roles.includes('other charges'))"  class="px-2 pt-2 cursor-pointer">
+              <div v-if="(roles.includes('advance section(HOS)') || roles.includes('advance section') || user?.section_id === 82) && payment.ledger_count == 0 && (!roles.includes('other charges(HOS)') && user?.section_id !== 81)"  class="px-2 pt-2 cursor-pointer">
                 <div class="flex justify-between bg-[#FFF9F5] bg-linear-to-r px-5 py-5 rounded-xl">
                   <div class="flex items-center gap-x-3 text-[#DC6803] font-medium">
                     <Icon icon="icon-park-outline:bookshelf" width="20" />
@@ -189,7 +135,7 @@
             </div>
 
             <!-- ACCESS LEVELS: OTHER CHARGES -->
-            <div v-if="roles.includes('other charges(HOS)') || roles.includes('other charges')">
+            <div v-if="roles.includes('other charges(HOS)') || roles.includes('other charges') || user?.section_id === 81">
               <!-- CREATE LEDGER ENTRY STARTS -->
               <div v-if="payment.vat_voucher.length == 0" class="px-2 pt-2 cursor-pointer" @click="chargeAccountModal = true">
                 <div class="flex justify-between bg-[#FFF9F5] bg-linear-to-r px-5 py-5 rounded-xl">
@@ -210,7 +156,7 @@
           <div class="flex flex-col items-start gap-y-3 p-7">
             <p class="text-sm text-gray-500">Task Title</p>
             <p class="text-gray-800 text-xl md:text-2xl">{{ payment.title }}</p>
-            <div class="bg-gray-100 rounded-2xl py-1 px-4 text-center text-sm" v-if="roles.includes('directors')">
+            <div class="bg-gray-100 rounded-2xl py-1 px-4 text-center text-sm" v-if="roles.includes('director')">
               <!-- STATUS VARIATIONS -->
               <p class="font-medium" :style="{
                 color:
@@ -244,7 +190,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-12 text-gray-900 bg-gray-50 px-6 mb-7 font-light" v-if="roles.includes('directors')">
+          <div class="flex items-center gap-12 text-gray-900 bg-gray-50 px-6 mb-7 font-light" v-if="roles.includes('director')">
             <p @click="toggleSidemenu('back')" :class="!progressMonitor
               ? 'border-primary'
               : 'text-gray-500 border-transparent'
@@ -311,7 +257,7 @@
                     <!-- <div @click="router.push(`/payment/edit-selection/${data.id}`)"
 
                     </div> -->
-                    <a :href="`/finance-and-accounts?id=${payment.id}`" v-if="roles.includes('directors')"
+                    <a :href="`/finance-and-accounts?id=${payment.id}`" v-if="roles.includes('director')"
                       class="flex items-center gap-3 text-gray-700 cursor-pointer">
                       <Icon :icon="'lucide:edit-3'" width="15" />
                       <p class="text-sm">Edit Selection</p>
@@ -380,40 +326,91 @@
                         />
                       </div>
                     </div>
-                    <div v-for="vou in vouchers" :class="previewVoucher? 'border-primary': 'border-transparent'" class="border-2 hover:border-primary rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
+                    <!-- MAIN PAYMENT VOUCHERS -->
+                    <div v-for="vou in vouchers" :key="'main-vou-' + (vou.id || vou.path)" 
+                         @click="viewVoucher(vou)"
+                         :class="[
+                           'border-2 rounded-xl p-3 flex items-center justify-between mb-3 bg-white cursor-pointer transition-all hover:shadow-sm',
+                           (previewVoucher && selectedVoucher && selectedVoucher.id === vou.id && !selectedVoucher.percentage) 
+                             ? 'border-emerald-600 bg-emerald-50/30 ring-1 ring-emerald-500' 
+                             : 'border-gray-200 hover:border-emerald-400'
+                         ]">
                       <div class="flex items-center gap-3">
-                        <div class="bg-white w-fit p-2 rounded-full">
-                          <Icon :icon="getFileIcon(vou.path)" width="25" />
+                        <div class="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex-shrink-0">
+                          <Icon icon="lucide:file-check" width="22" />
                         </div>
                         <div>
-                          <h1>{{ vou.path }}</h1>
-                          <p class="text-sm text-gray-400">
-                            {{ vou.size }}
+                          <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                              Main Voucher (TF1)
+                            </span>
+                            <span v-if="vou.voucher_number" class="text-xs font-mono text-gray-500 font-semibold">{{ vou.voucher_number }}</span>
+                          </div>
+                          <p class="text-xs font-semibold text-gray-800 mt-1">
+                            Payee: {{ payment.title || 'Contractor' }}
+                          </p>
+                          <p class="text-[11px] text-gray-500 font-mono mt-0.5">
+                            Dept No: {{ vou.deptal_no || 'PV/CAP/' + payment.id }} &bull; Gross: &#8358;{{ Number(vou.amount || payment.amount || 0).toLocaleString('en-NG', {minimumFractionDigits: 2}) }}
                           </p>
                         </div>
                       </div>
 
-                      <div class="flex items-center gap-3">
-                        <Icon class="cursor-pointer" @click="downloadVoucherPdf(vou)" icon="material-symbols-light:download" width="25" />
-                        <Icon class="cursor-pointer" @click="viewVoucher(vou)" icon="ph:eye-light" width="22" />
+                      <div class="flex items-center gap-2">
+                        <button @click.stop="downloadVoucherPdf(vou)" class="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition" title="Download Voucher">
+                          <Icon icon="material-symbols-light:download" width="20" />
+                        </button>
+                        <button @click.stop="viewVoucher(vou)" :class="['p-1.5 rounded-lg transition', (previewVoucher && selectedVoucher?.id === vou.id && !selectedVoucher.percentage) ? 'bg-emerald-600 text-white' : 'text-gray-500 hover:text-emerald-700 hover:bg-emerald-50']" title="Preview in PDF Viewer">
+                          <Icon icon="ph:eye-bold" width="18" />
+                        </button>
                       </div>
                     </div>
-                    <div v-for="(vou, index) in payment.vat_voucher" :key="index" :class="previewVoucher? 'border-primary': 'border-transparent'" class="border-2 hover:border-primary rounded-xl p-4 flex items-center justify-between mb-3 bg-white">
+
+                    <!-- DEDUCTION VOUCHERS (VAT, WHT, STAMP DUTY) -->
+                    <div v-for="(vou, index) in payment.vat_voucher" :key="'vat-' + (vou.id || index)"
+                         @click="viewVoucher(vou)"
+                         :class="[
+                           'border-2 rounded-xl p-3 flex items-center justify-between mb-3 bg-white cursor-pointer transition-all hover:shadow-sm',
+                           (previewVoucher && selectedVoucher && selectedVoucher.id === vou.id && selectedVoucher.percentage) 
+                             ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-500' 
+                             : 'border-gray-200 hover:border-blue-400'
+                         ]">
                       <div class="flex items-center gap-3">
-                        <div class="bg-white w-fit p-2 rounded-full">
-                          <Icon :icon="'material-icon-theme:pdf'" width="25" />
+                        <div :class="['p-2 rounded-xl border flex-shrink-0', 
+                                      vou.percentage === '7.5%' || (vou.path && vou.path.includes('vat')) ? 'bg-purple-50 text-purple-700 border-purple-100' : 
+                                      vou.percentage === '10%' || (vou.path && vou.path.includes('wht')) ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                                      'bg-teal-50 text-teal-700 border-teal-100']">
+                          <Icon icon="lucide:receipt" width="22" />
                         </div>
                         <div>
-                          <h1 v-if="vou.path">{{ vou.path.split('/').pop() }}</h1>
-                          <p class="text-sm text-gray-400">
-                            {{ file_sizes[index] }}
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span :class="['text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border',
+                                           vou.percentage === '7.5%' || (vou.path && vou.path.includes('vat')) ? 'bg-purple-100 text-purple-800 border-purple-200' : 
+                                           vou.percentage === '10%' || (vou.path && vou.path.includes('wht')) ? 'bg-amber-100 text-amber-800 border-amber-200' : 
+                                           'bg-teal-100 text-teal-800 border-teal-200']">
+                              {{ vou.percentage === '7.5%' || (vou.path && vou.path.includes('vat')) ? 'VAT Voucher (7.5%)' :
+                                 vou.percentage === '10%' || (vou.path && vou.path.includes('wht')) ? 'WHT Voucher (10%)' :
+                                 'Stamp Duty Voucher (1%)' }}
+                            </span>
+                            <span class="text-xs font-mono text-gray-500 font-semibold">{{ vou.voucher_number || 'DEDUCTION-VOU' }}</span>
+                          </div>
+                          <p class="text-xs font-semibold text-gray-800 mt-1">
+                            Payable to: {{ vou.percentage === '7.5%' || (vou.path && vou.path.includes('vat')) ? 'Federal Inland Revenue Service (FIRS)' :
+                                           vou.percentage === '10%' || (vou.path && vou.path.includes('wht')) ? 'Federal / State Tax Authority' :
+                                           'FIRS Stamp Duty Pool Account' }}
+                          </p>
+                          <p class="text-[11px] text-gray-500 font-mono mt-0.5">
+                            Deduction: &#8358;{{ Number(vou.deduction_amount || 0).toLocaleString('en-NG', {minimumFractionDigits: 2}) }}
                           </p>
                         </div>
                       </div>
 
-                      <div class="flex items-center gap-3">
-                        <Icon class="cursor-pointer" @click="downloadVoucherPdf(vou)" icon="material-symbols-light:download" width="25" />
-                        <Icon class="cursor-pointer" @click="viewVoucher(vou)" icon="ph:eye-light" width="22" />
+                      <div class="flex items-center gap-2">
+                        <button @click.stop="downloadVoucherPdf(vou)" class="p-1.5 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition" title="Download Deduction Voucher">
+                          <Icon icon="material-symbols-light:download" width="20" />
+                        </button>
+                        <button @click.stop="viewVoucher(vou)" :class="['p-1.5 rounded-lg transition', (previewVoucher && selectedVoucher?.id === vou.id && selectedVoucher.percentage) ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-700 hover:bg-blue-50']" title="Preview in PDF Viewer">
+                          <Icon icon="ph:eye-bold" width="18" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -625,7 +622,15 @@
   </main>
   <AcceptPayment v-if="acceptPaymentModal" :assignTask="assignTask" :payment="payment" :paymentId="payment.id" @cancelled="closeModal('acceptPayment')" />
   <RejectPayment v-if="rejectPaymentModal" :assigned_by="payment?.assigned_by?.assigned_by" :recipient_id="payment?.assigned_by?.recipient_id" :paymentId="payment.id" @cancelled="closeModal('rejectPayment')" />
-  <FinalisePayment v-if="finalisePaymentModal" :payment="payment" @confirmed="confirmed" @cancelled="closeModal('finalisePayment')" />
+  <FinalisePayment v-if="finalisePaymentModal" :paymentId="payment.id" @cancelled="closeModal('finalisePayment')" />
+  <DigitalStampPad 
+    :show="digitalStampModal" 
+    :paymentId="payment.id" 
+    :user="user" 
+    :roles="roles" 
+    @close="digitalStampModal = false" 
+    @stamped="() => { digitalStampModal = false; router.reload(); }" 
+  />
   <ViewLedgerEntry :paymentId="payment.id" @editLedgerEntry="editLedgerEntry" v-if="viewLedgerEntryModal" @cancelled="closeModal('viewLedger')" />
   <CreateVoucher v-if="createVoucherModal" :payment="payment" @refreshPayment="refreshPayment" :paymentId="payment.id" @cancelled="closeModal('createVoucher')" />
   <ChargeAccount v-if="chargeAccountModal" @refreshPayment="refreshPayment" :payment="payment" @cancelled="closeModal('chargeAccount')" />
@@ -645,22 +650,167 @@ import RejectPayment from "../../components/Modals/Payment/RejectPayment.vue";
 import FinalisePayment from "../../components/Modals/Payment/FinalisePayment.vue";
 import ViewLedgerEntry from "../../components/Modals/Ledger/ViewLedgerEntry.vue";
 import CreateVoucher from "../../components/Modals/Voucher/CreateVoucher.vue";
+import EbeweActionPanel from "../../components/EbeweActionPanel.vue";
+import DigitalStampPad from "../../components/DigitalStampPad.vue";
 import ChargeAccount from "../../components/Modals/Payment/ChargeAccount.vue";
 import PaymentReceipt from "../../components/Modals/VoteBook/PaymentReceipt.vue";
 import VoteBookImg from "../../assets/images/votebook.svg";
 import jenna from "../../assets/images/jenna.svg";
 import user_img from "../../assets/images/user.svg";
-//import Voucher from "../../components/Voucher.vue";
 import Voucher from "../../components/Voucher.vue";
 import NewLedgerEntry from "../../components/Modals/Ledger/NewLedgerEntry.vue";
+import PaymentMilestoneTracker from "../../components/Payment/PaymentMilestoneTracker.vue";
+import ChiefAccountantActionDesk from "../../components/Payment/ChiefAccountantActionDesk.vue";
+import UniversalDirectorateActionDesk from "../../components/UniversalDirectorateActionDesk.vue";
+import PDFEditor from "../../components/PDFViewer/PDFEditor.vue";
 import axios from "axios";
 
 const page = usePage();
 const roles = computed(() => page.props.roles);
+const permissions = computed(() => page.props.permissions || []);
 const base = computed(()=> page.props.base)
 const user = computed(()=> page.props.user)
 const sidemenu = ref(false);
-const props = defineProps(["payment"]);
+
+const pdfTimestamp = ref(Date.now());
+const isSavingPdf = ref(false);
+
+const getFullUrl = (rawPath, isStorage = false) => {
+  if (!rawPath || typeof rawPath !== 'string') return '';
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('blob:') || rawPath.startsWith('data:')) {
+    return rawPath;
+  }
+  const cleanBase = (base.value || '').replace(/\/+$/, '');
+  let cleanPath = rawPath.replace(/^\/+/, '');
+  
+  if (isStorage) {
+    if (!cleanPath.startsWith('storage/')) {
+      cleanPath = 'storage/' + cleanPath;
+    }
+  }
+  
+  return cleanBase ? `${cleanBase}/${cleanPath}` : `/${cleanPath}`;
+};
+
+const activePreviewPdfUrl = computed(() => {
+  if (previewVoucher.value && selectedVoucher.value?.path) {
+    const raw = selectedVoucher.value.path;
+    const url = getFullUrl(raw, false);
+    return url ? `${url}?t=${pdfTimestamp.value}` : null;
+  }
+  
+  if (!previewVoucher.value && currentDocument.value) {
+    let rawPath = '';
+    let isStorage = false;
+    
+    if (currentDocument.value.file_name) {
+      if (typeof currentDocument.value.path === 'string') {
+        rawPath = currentDocument.value.path;
+      } else if (Array.isArray(currentDocument.value.path) && currentDocument.value.path.length > 0) {
+        rawPath = currentDocument.value.path[0].path || currentDocument.value.path[0];
+      }
+      isStorage = false;
+    } else if (currentDocument.value.path) {
+      if (typeof currentDocument.value.path === 'string') {
+        rawPath = currentDocument.value.path;
+      } else if (Array.isArray(currentDocument.value.path) && currentDocument.value.path.length > 0) {
+        rawPath = currentDocument.value.path[0].path || currentDocument.value.path[0];
+      }
+      isStorage = true;
+    }
+    
+    if (rawPath && /\.pdf$/i.test(rawPath)) {
+      const url = getFullUrl(rawPath, isStorage);
+      return url ? `${url}?t=${pdfTimestamp.value}` : null;
+    }
+  }
+  
+  return null;
+});
+
+const activePreviewImageUrl = computed(() => {
+  if (previewVoucher.value) return null;
+  if (!currentDocument.value) return null;
+  
+  let rawPath = '';
+  let isStorage = false;
+  if (currentDocument.value.file_name) {
+    if (typeof currentDocument.value.path === 'string') {
+      rawPath = currentDocument.value.path;
+    } else if (Array.isArray(currentDocument.value.path) && currentDocument.value.path.length > 0) {
+      rawPath = currentDocument.value.path[0].path || currentDocument.value.path[0];
+    }
+    isStorage = false;
+  } else if (currentDocument.value.path) {
+    if (typeof currentDocument.value.path === 'string') {
+      rawPath = currentDocument.value.path;
+    } else if (Array.isArray(currentDocument.value.path) && currentDocument.value.path.length > 0) {
+      rawPath = currentDocument.value.path[0].path || currentDocument.value.path[0];
+    }
+    isStorage = true;
+  }
+  
+  if (rawPath && /\.(jpg|jpeg|png|gif|bmp|svg|webp)$/i.test(rawPath)) {
+    return getFullUrl(rawPath, isStorage);
+  }
+  return null;
+});
+
+const handleSavePdf = async ({ blob }) => {
+  if (!blob) return;
+  isSavingPdf.value = true;
+  try {
+    const target = previewVoucher.value 
+      ? selectedVoucher.value?.path 
+      : (typeof currentDocument.value?.path === 'string' ? currentDocument.value?.path : currentDocument.value?.path?.[0]?.path);
+      
+    const formData = new FormData();
+    formData.append('payment_id', props.payment.id);
+    formData.append('target_path', target || '');
+    const rawName = target ? target.split('/').pop().split('?')[0] : 'document.pdf';
+    formData.append('file', blob, 'modified_' + rawName);
+
+    const res = await axios.post('/finance-and-accounts/payment-save-modified-pdf', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    if (res.data.status === 'success') {
+      toast.add({
+        severity: "success",
+        summary: "Saved",
+        detail: "Document annotations and signatures saved successfully.",
+        life: 3000
+      });
+      pdfTimestamp.value = Date.now();
+      reloadPayment();
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: res.data.message || "Failed to save PDF",
+        life: 3000
+      });
+    }
+  } catch (e) {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: e.response?.data?.message || "Error saving PDF",
+      life: 3000
+    });
+  } finally {
+    isSavingPdf.value = false;
+  }
+};
+
+const props = defineProps({
+  payment: Object,
+  ebewe_instance: Object,
+  ebewe_stamps: {
+    type: Array,
+    default: () => []
+  }
+});
 const assignTask = ref(false)
 const comment = ref(false);
 const progressMonitor = ref(false);
@@ -671,10 +821,11 @@ const viewLedgerEntryModal = ref(false);
 const createVoucherModal = ref(false);
 const chargeAccountModal = ref(false);
 const paymentReceiptModal = ref(false);
+const digitalStampModal = ref(false);
 const isCreateNewLedgerEntry = ref(false);
 const toast = useToast();
 const currentIndex = ref(0);
-const currentDocument = ref(props.payment.files[0]);
+const currentDocument = ref(props.payment.files && props.payment.files.length > 0 ? props.payment.files[0] : null);
 const currentRole = ref("Advance section");
 const voucher_name = ref('')
 const voucher_size = ref('')
@@ -692,6 +843,34 @@ const comment_recipient = ref(null)
 const customComment = ref([])
 const customSideMenu = ref([])
 const store = useStore()
+const auditQueries = ref([]);
+
+const fetchAuditQueries = async () => {
+  if (!props.payment?.id) return;
+  try {
+    const res = await axios.get(`/finance-and-accounts/get-payment-audit-queries/${props.payment.id}`);
+    auditQueries.value = res.data;
+  } catch (e) {
+    console.error('Failed to load audit queries', e);
+  }
+};
+
+const reloadPayment = () => {
+  router.reload({
+    preserveScroll: true,
+    preserveState: false
+  });
+  fetchAuditQueries();
+};
+
+const handleOpenCreateVoucher = (payload) => {
+  if (payload && payload.type) {
+    if (!props.payment?.payment_type) {
+      props.payment.payment_type = payload.type;
+    }
+  }
+  createVoucherModal.value = true;
+};
 const new_comment =  computed(()=> store.getters.getNotifications)
 // DIFFERENT ROLES
 // Finance and Accounting
@@ -706,9 +885,9 @@ const new_comment =  computed(()=> store.getters.getNotifications)
 // Final Account
 
 const user_roles = {
-  //"directors": "Director of Finance",
-  "division heads": "Deputy Director Payment",
-  "unit heads": "Assistant Director Payment",
+  //"director": "Director of Finance",
+  "deputy director": "Deputy Director Payment",
+  "assistant director": "Assistant Director Payment",
   "advance section(HOS)": "Advance section",
   "other charges(HOS)": "Other charges",
   "checking(HOS)": "Checkings",
@@ -1024,7 +1203,9 @@ const setCurrentFile = (document, index) => {
   // Function to set the current index of the file being viewed
   currentIndex.value = index;
   currentDocument.value = document;
-  previewVoucher.value = false
+  selectedVoucher.value = null;
+  previewVoucher.value = false;
+  pdfTimestamp.value = Date.now();
 };
 
 const getFileName = (document) => {
@@ -1042,9 +1223,10 @@ const getFileName = (document) => {
 
 //view voucher
 const viewVoucher = (voucher)=>{
-  selectedVoucher.value = voucher
-  currentDocument.value = [];
-  previewVoucher.value = true
+  selectedVoucher.value = voucher;
+  currentDocument.value = null;
+  previewVoucher.value = true;
+  pdfTimestamp.value = Date.now();
 }
 
 // Comments
@@ -1121,16 +1303,16 @@ const toggleCustomSidemenu = (index, recipient)=>{
 }
 
 const isAcceptActive = ()=>{
-  if(roles.value.includes('division heads')){
+  if(roles.value.includes('deputy director')){
     if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
-      let found = props.payment.assigned_to.find((item)=>item.role == 'unit heads')
+      let found = props.payment.assigned_to.find((item)=>item.role == 'assistant director')
       if(found){
         return true
       }else{
         return false
       }
     }
-  }else if(roles.value.includes('unit heads')){
+  }else if(roles.value.includes('assistant director')){
     if(props.payment && props.payment.assigned_to && props.payment.assigned_to.length > 0){
       let found = props.payment.assigned_to.find((item)=>item.role == 'advance section(HOS)' || item.role == 'other charges(HOS)')
       if(found){
@@ -1410,7 +1592,8 @@ watch(new_comment, ()=>{
 }, {immediate: false})
 
 onMounted(()=>{
-  if(roles.value.includes('directors')){
+  fetchAuditQueries();
+  if(roles.value.includes('director')){
     getPaymentAssignments()
   }
 })

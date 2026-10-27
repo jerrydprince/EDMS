@@ -11,6 +11,16 @@ class Folder extends Model
 
     protected $table = 'folder';
 
+    protected $guarded = [];
+
+    /**
+     * Get the associated task by trace_id (tracking_id)
+     */
+    public function task()
+    {
+        return $this->belongsTo(Task::class, 'trace_id', 'tracking_id');
+    }
+
     /**
      * Get the department that owns the Folder
      *
@@ -59,6 +69,16 @@ class Folder extends Model
     public function subfolder()
     {
         return $this->hasMany(SubFolder::class);
+    }
+    
+    /**
+     * Get all of the archives for the Folder
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function archives()
+    {
+        return $this->hasMany(Archive::class, 'folder_id', 'id');
     }
     
 }

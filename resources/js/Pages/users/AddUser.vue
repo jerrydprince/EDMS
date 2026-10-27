@@ -1,262 +1,787 @@
 <template>
-  <main>
-    <div class="lg:px-7 px-5 flex items-center justify-between pt-5">
-      <div class="flex items-center gap-5">
-        <Link href="/dashboard/manage-users" class="border rounded-md p-3 py-4 cursor-pointer">
-          <Icon icon="formkit:arrowleft" width="30" />
+  <main class="min-h-screen bg-[#F9FAFB] pb-16">
+    <!-- Top Action Bar -->
+    <div class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20 shadow-sm flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <Link href="/dashboard/manage-users" class="border border-gray-300 rounded-lg p-2.5 hover:bg-gray-50 transition text-gray-700">
+          <Icon icon="formkit:arrowleft" width="22" />
         </Link>
         <div>
-          <p class="text-3xl text-[#1D2939]">Add New User</p>
-          <p class="text-gray-500 text-sm ">Setup User Accounts, Permissions and access levels</p>
+          <h1 class="text-2xl font-bold text-gray-900">{{ form.id ? 'Approve & Configure User' : 'Provision New Civil Service Officer' }}</h1>
+          <p class="text-xs text-gray-500">Configure hierarchy placement, functional desk, cadre grade level, and granular module permissions</p>
         </div>
       </div>
-      <div class="flex items-center gap-4">
-        <button class="flex gap-2 items-center text-[#3575DD] rounded-lg py-2 px-4" @click="cancelBtn">
-          <p>Cancel</p>
+      <div class="flex items-center gap-3">
+        <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition" @click="cancelBtn">
+          Reset Form
         </button>
-
         <button
-          class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4 hover:bg-blue-400 disabled:bg-blue-300"
-          :disabled="!isFormReady">
-
-          <p>{{ form.id? 'Approve Account': 'Create Account' }}</p>
+          type="button"
+          class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!isFormReady || form.processing"
+          @click="submitForm">
+          <Icon v-if="form.processing" icon="line-md:loading-loop" width="18" />
+          <Icon v-else icon="fluent:save-24-regular" width="18" />
+          <span>{{ form.id ? 'Approve Officer Account' : 'Create Officer Account' }}</span>
         </button>
-
       </div>
     </div>
-    <Divider class=" " />
 
-    <section class=" px-7 ">
-      <div class=" flex items-center justify-between">
-        <p class="  text-xl font-medium">Choose Access Level</p>
-        <!-- <button
-          class="flex gap-2 items-center text-[#344054] border border-solid font-semibold border-gray-300  rounded-lg py-2 px-4">
-          <Icon icon="mynaui:edit" width="20" />
-          <p>Edit Acces Level</p>
-        </button> -->
-      </div>
-      <div class="  grid grid-cols-4 gap-3 mt-5">
-        <div v-for=" (item, index) in props.roles" :key="index">
-          <div :style="{ borderColor: form.role.includes(item.name) ? '#3B82F6' : '#EAECF0' }"
-            class="flex items-center border p-3 gap-3 rounded-md h-full "
-            :class="{ 'bg-[#F8FBF9]': form.role.includes(item.name) }">
-            <Checkbox v-model="form.role" :value="item.name" />
-            <div>
-              <p class=" text-lg font-medium">{{ capitalize(item.name) }}</p>
-              <p class=" text-xs">{{ item.description }}</p>
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      
+      <!-- Section 1: Choose Access Level (Primary System Roles) -->
+      <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div>
+            <h2 class="text-lg font-bold text-gray-900">1. Primary Access Level & Roles</h2>
+            <p class="text-xs text-gray-500">Assign system authority clearance. Selecting roles will also activate standard baseline permissions.</p>
+          </div>
+          <span class="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+            {{ form.role.length }} Role(s) Selected
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
+          <div
+            v-for="(item, index) in props.roles"
+            :key="index"
+            class="flex items-start border p-3.5 gap-3 rounded-lg cursor-pointer transition-all hover:border-blue-400"
+            :class="form.role.includes(item.name) ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-gray-200 bg-white'"
+            @click="toggleRole(item.name)">
+            <input
+              type="checkbox"
+              :checked="form.role.includes(item.name)"
+              class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              @click.stop="toggleRole(item.name)" />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-gray-900 leading-snug">{{ capitalize(item.name) }}</p>
+              <p class="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{{ item.description || 'System access role definition.' }}</p>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-    <Divider class=" " />
+      </section>
 
-
-
-    <section class=" px-7 my-5 text-[#344054] pb-10">
-      <h3 class="text-xl font-medium text-black">Configure User Information</h3>
-
-      <div class=" flex items-center justify-between">
-        <div class=" w-[45%] mt-5">
-          <label for="First Name" class=" font-medium">First Name <span class="text-red-500">*</span></label>
-          <input type="text" v-model="form.first_name" placeholder="John" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-          <span class="text-red-400 text-sm my-2" v-if="form.errors.first_name">{{ form.errors.first_name }}</span>
-        </div>
-        <div class=" w-[45%] mt-5">
-          <label for="Last Name" class=" font-medium">Last Name <span class="text-red-500">*</span></label>
-          <input type="text" v-model="form.last_name" placeholder="Doe" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-          <span class="text-red-400 text-sm my-2" v-if="form.errors.last_name">{{ form.errors.last_name }}</span>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <div class=" w-[45%] mt-5">
-          <div>
-            <label for="gender" class="font-medium">Gender <span class="text-red-500">*</span></label>
-            <select name="gender" v-model="form.gender" id="gender"
-              class=" border border-gray-200 rounded-lg py-2 px-4 w-full focus:border-blue-500 focus:ring-blue-500">
-              <option value="" class=" text-gray-400">Select from dropdown</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="none">Prefer not to say</option>
-            </select>
-            <span class="text-red-400 text-sm my-2" v-if="form.errors.gender">{{ form.errors.gender }}</span>
-          </div>
-        </div>
-        <div class=" w-[45%] mt-5">
-          <div>
-            <label for="grade_level" class="font-medium">Grade Level <span class="text-red-500">*</span></label>
-            <select name="grade_level" v-model="form.grade_level" id="grade_level"
-              class=" border border-gray-200 rounded-lg py-2 px-4 w-full focus:border-blue-500 focus:ring-blue-500">
-              <option value="">Select from dropdown</option>
-              <option value="0">Grade Level 0 (Data Entry)</option>
-              <option value="1">Grade Level 1</option>
-              <option value="2">Grade Level 2</option>
-              <option value="3">Grade Level 3</option>
-              <option value="4">Grade Level 4</option>
-              <option value="5">Grade Level 5</option>
-              <option value="6">Grade Level 6</option>
-              <option value="7">Grade Level 7</option>
-              <option value="8">Grade Level 8</option>
-              <option value="9">Grade Level 9</option>
-              <option value="10">Grade Level 10</option>
-              <option value="11">Grade Level 11</option>
-              <option value="12">Grade Level 12</option>
-              <option value="13">Grade Level 13</option>
-              <option value="14">Grade Level 14</option>
-              <option value="15">Grade Level 15</option>
-              <option value="16">Grade Level 16</option>
-              <option value="17">Grade Level 17</option>
-              <option value="18">Grade Level 18</option>
-            </select>
-          </div>
-          <span class="text-red-400 text-sm my-2" v-if="form.errors.grade_level">{{ form.errors.grade_level }}</span>
-        </div>
-      </div>
-
-      <div class=" flex items-center justify-between">
-        <div class=" w-[45%] mt-5">
-          <label for="Email" class=" font-medium">Email <span class="text-red-500">*</span></label>
-          <input type="email" ref="email" @blur="checkMailExist" v-model="form.email" placeholder="John@mail.com" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-          <span class="text-red-400 text-sm my-2" v-if="email_msg">{{ email_msg }}</span>
-          <span class="text-red-400 text-sm my-2" v-if="form.errors.email">{{ form.errors.email }}</span>
+      <!-- Section 2: Officer Identity & Organizational Placement -->
+      <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div class="pb-4 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-gray-900">2. Officer Identity & Organizational Placement</h2>
+          <p class="text-xs text-gray-500">Specify personnel particulars and hierarchy placement across Department, Division, and Unit.</p>
         </div>
 
-        <div class=" w-[45%] mt-5">
-          <label for="phone" class=" font-medium">Phone</label>
-          <!-- <input type="number" ref="phone" v-model="form.phone" placeholder="phone number" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @blur="checkPhoneExist"> -->
-            <input type="number" ref="phone" v-model="form.phone" placeholder="phone number" required
-            class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-          <span class="text-red-400 text-sm my-2" v-if="phone_msg != ''">{{ phone_msg }}</span>
-          <span class="text-red-400 text-sm my-2" v-if="form.errors.phone">{{ form.errors.phone }}</span>
-        </div>
-      </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+          <!-- Left Column: Personal Data & Avatar -->
+          <div class="lg:col-span-7 space-y-5">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  v-model="form.first_name"
+                  placeholder="e.g. Aminu"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.first_name">{{ form.errors.first_name }}</span>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  v-model="form.last_name"
+                  placeholder="e.g. Ibrahim"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.last_name">{{ form.errors.last_name }}</span>
+              </div>
+            </div>
 
-      <div class="flex items-start justify-between mt-5">
-        <div class=" w-[47%]">
-          <div v-if="form.id === undefined">
-            <h1 class=" font-medium">Profile Image</h1>
-            <div class=" flex items-start gap-10 mt-3 ">
-              <img :src="previewUrl" alt="" class="w-[64px] h-[64px] rounded-full" />
-              <div
-                class=" flex flex-col items-center text-center justify-center border-gray-300 border p-3 rounded-lg relative h-full w-full ">
-                <div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Official Email Address <span class="text-red-500">*</span></label>
+                <input
+                  type="email"
+                  v-model="form.email"
+                  @blur="checkMailExist"
+                  placeholder="aminu.ibrahim@treasury.gov.ng"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <span class="text-red-500 text-xs mt-1 block" v-if="email_msg">{{ email_msg }}</span>
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.email">{{ form.errors.email }}</span>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+                <input
+                  type="tel"
+                  v-model="form.phone"
+                  placeholder="08012345678"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <span class="text-red-500 text-xs mt-1 block" v-if="phone_msg">{{ phone_msg }}</span>
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.phone">{{ form.errors.phone }}</span>
+              </div>
+            </div>
 
-                  <i class="pi pi-cloud-upload py-3 px-4 rounded-full text-4xl bg-[#F2F4F7]"></i>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Gender <span class="text-red-500">*</span></label>
+                <select
+                  v-model="form.gender"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                  <option value="" disabled>Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="none">Prefer not to say</option>
+                </select>
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.gender">{{ form.errors.gender }}</span>
+              </div>
 
-                  <h1 class="  mt-2"><span class=" text-[#2F68C5] font-medium">Click to upload </span> or drag and drop
-                  </h1>
-                  <p>SVG, PNG, JPG or GIF </p>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Civil Service Grade Level <span class="text-red-500">*</span></label>
+                <select
+                  v-model="form.grade_level"
+                  class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                  <option value="" disabled>Select Grade Level</option>
+                  <option value="0">Grade Level 0 (Intern / Entry)</option>
+                  <option v-for="gl in 20" :key="gl" :value="gl">
+                    Grade Level {{ gl }} {{ gl >= 17 ? '(Executive Management)' : gl >= 14 ? '(Senior Directorate)' : gl >= 8 ? '(Officer Cadre)' : '(Junior Cadre)' }}
+                  </option>
+                </select>
+                <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.grade_level">{{ form.errors.grade_level }}</span>
+              </div>
+            </div>
+
+            <!-- Profile Image Upload Box -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Official Passport Photo / Avatar</label>
+              <div class="flex items-center gap-5 p-3.5 border border-dashed border-gray-300 rounded-lg hover:border-blue-400 bg-gray-50/50 transition">
+                <div class="w-16 h-16 rounded-full bg-gray-200 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <img v-if="previewUrl" :src="previewUrl" class="w-full h-full object-cover" />
+                  <Icon v-else icon="fluent:person-24-filled" width="32" class="text-gray-400" />
                 </div>
-                <input type="file" class="opacity-0 absolute w-full h-full cursor-pointer" @change="handleFileChange" />
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <label class="cursor-pointer px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs font-semibold text-gray-700 hover:bg-gray-50 transition shadow-xs">
+                      Choose File
+                      <input type="file" accept="image/*" class="hidden" @change="handleFileChange" />
+                    </label>
+                    <span class="text-xs text-gray-400">JPG, PNG up to 2MB</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Clear passport photo for digital vouchers and workflow sign-off cards.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Dynamic Hierarchy Placement & Functional Designation -->
+          <div class="lg:col-span-5 bg-gray-50/70 p-5 rounded-xl border border-gray-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-gray-200">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Hierarchy & Placement Flow</h3>
+              <span class="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-medium">Dynamic Resolving</span>
+            </div>
+
+            <!-- Department -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Department</label>
+              <select
+                v-model="form.department"
+                @change="handleDepartmentChange"
+                class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                <option value="">Select Department (or Global Placement)</option>
+                <option v-for="dept in props.departments" :key="dept.id" :value="dept.id">{{ dept.title }}</option>
+              </select>
+              <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.department">{{ form.errors.department }}</span>
+            </div>
+
+            <!-- Division -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Division (Optional)</label>
+              <select
+                v-model="form.division"
+                @change="handleDivisionChange"
+                :disabled="!availableDivisions.length"
+                class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400">
+                <option value="">{{ availableDivisions.length ? 'Select Division' : 'No Divisions for Department' }}</option>
+                <option v-for="div in availableDivisions" :key="div.id" :value="div.id">{{ div.title }}</option>
+              </select>
+            </div>
+
+            <!-- Unit -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Unit (Optional)</label>
+              <select
+                v-model="form.unit"
+                @change="handleUnitChange"
+                :disabled="!availableUnits.length"
+                class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400">
+                <option value="">{{ availableUnits.length ? 'Select Unit' : 'No Units for Division' }}</option>
+                <option v-for="u in availableUnits" :key="u.id" :value="u.id">{{ u.title }}</option>
+              </select>
+            </div>
+
+            <!-- Section / Desk -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Section / Desk (Optional)</label>
+              <select
+                v-model="form.section"
+                @change="handleSectionChange"
+                :disabled="!availableSections.length"
+                class="w-full text-sm rounded-lg border border-gray-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400">
+                <option value="">{{ availableSections.length ? 'Select Section / Desk' : 'No Sections for Unit' }}</option>
+                <option v-for="s in availableSections" :key="s.id" :value="s.id">{{ s.title }}</option>
+              </select>
+            </div>
+
+            <!-- Functional Role Title / Designation -->
+            <div class="pt-2 border-t border-gray-200">
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-bold text-gray-800">Functional Desk / Designation <span class="text-red-500">*</span></label>
+                <span v-if="loadingDesignations" class="text-[11px] text-blue-600 flex items-center gap-1">
+                  <Icon icon="line-md:loading-loop" width="12" /> Filtering...
+                </span>
+              </div>
+              <select
+                v-model="form.designation_id"
+                @change="onDesignationSelected"
+                class="w-full text-sm rounded-lg border border-blue-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium text-gray-800 shadow-xs">
+                <option value="">Select Functional Desk / Role Title</option>
+                <option v-for="desig in dynamicDesignations" :key="desig.id" :value="desig.id">
+                  {{ desig.title }} (GL {{ desig.grade_level || 'N/A' }}) - {{ desig.cadre || 'General' }}
+                </option>
+              </select>
+              <p class="text-[11px] text-gray-500 mt-1">
+                Determines executive stamp authorities, registry clearance scopes, and pre-fills recommended permissions.
+              </p>
+              <span class="text-red-500 text-xs mt-1 block" v-if="form.errors.designation_id">{{ form.errors.designation_id }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Fine-Grained Permissions & Capability Matrix -->
+      <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-lg font-bold text-gray-900">3. Granular Capabilities & Permission Matrix</h2>
+              <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {{ totalEffectiveCount }} Total Active Capabilities
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">
+              Permissions govern operational authorities, approval thresholds, stamps, voucher actions, and registry handling.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+              @click="applyDesignationPresets">
+              Auto-Fill Desk Presets
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition"
+              @click="resetToRoleBaseline">
+              Align with Role Baseline
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              @click="clearAllPermissions">
+              Clear Overrides
+            </button>
+          </div>
+        </div>
+
+        <!-- Effective Authority Overview Card -->
+        <div class="mt-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 via-slate-50 to-blue-50/30 border border-gray-200">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-6">
+              <!-- Role Baseline summary -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                  <Icon icon="mdi:shield-check-outline" width="18" />
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-gray-900">{{ inheritedCount }}</span>
+                    <span class="text-xs text-gray-600 font-medium">Role Baseline</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500">
+                    From: <span class="font-semibold text-emerald-700">{{ form.role.length ? form.role.join(', ') : 'None' }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="h-8 w-px bg-gray-200 hidden sm:block"></div>
+
+              <!-- Desk Overrides summary -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700">
+                  <Icon icon="mdi:badge-account-outline" width="18" />
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-gray-900">{{ directOverrideCount }}</span>
+                    <span class="text-xs text-gray-600 font-medium">Desk Overrides</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500">Custom capabilities specific to this desk</p>
+                </div>
+              </div>
+
+              <div class="h-8 w-px bg-gray-200 hidden sm:block"></div>
+
+              <!-- Total Effective summary -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700">
+                  <Icon icon="mdi:check-decagram-outline" width="18" />
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-gray-900">{{ totalEffectiveCount }}</span>
+                    <span class="text-xs text-gray-600 font-medium">Total Effective</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500">Combined actionable permissions</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex items-center gap-3 text-[11px] text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Role Inherited
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> Desk Override
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-gray-300"></span> Inactive
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search / Filter Permissions -->
+        <div class="mt-4 mb-6">
+          <div class="relative max-w-md">
+            <Icon icon="fluent:search-24-regular" class="absolute left-3 top-2.5 text-gray-400" width="18" />
+            <input
+              type="text"
+              v-model="permSearch"
+              placeholder="Search capabilities (e.g. stamp, cashbook, audit, dispatch)..."
+              class="w-full text-xs rounded-lg border border-gray-300 pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+          </div>
+        </div>
+
+        <!-- Grouped Permissions Grid / Accordion -->
+        <div class="space-y-4">
+          <div
+            v-for="(perms, moduleName) in filteredPermissionGroups"
+            :key="moduleName"
+            class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50/40">
+            <!-- Module Card Header -->
+            <div class="px-4 py-3 bg-gray-100/70 border-b border-gray-200 flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="font-bold text-sm text-gray-800">{{ moduleName }}</span>
+                <span class="text-[11px] font-semibold text-gray-500 px-2 py-0.5 bg-white border border-gray-200 rounded-full">
+                  {{ countModuleSelected(perms) }} / {{ perms.length }} Active
+                </span>
+              </div>
+              <button
+                type="button"
+                class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition"
+                @click="toggleSelectModule(perms)">
+                Toggle Module Overrides
+              </button>
+            </div>
+
+            <!-- Permission Items -->
+            <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div
+                v-for="p in perms"
+                :key="p.id"
+                class="flex items-start p-2.5 rounded-lg border transition-all cursor-pointer relative"
+                :class="[
+                  isRoleInherited(p.name)
+                    ? 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50/60'
+                    : isDirectOverride(p.name)
+                      ? 'border-blue-400 bg-blue-50/50 hover:bg-blue-50/70 shadow-xs'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                ]"
+                @click="togglePermission(p.name)">
+                <input
+                  type="checkbox"
+                  :checked="isEffectiveActive(p.name)"
+                  :disabled="isRoleInherited(p.name)"
+                  class="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer"
+                  :class="isRoleInherited(p.name) ? 'text-emerald-600 focus:ring-emerald-500' : 'text-blue-600 focus:ring-blue-500'"
+                  @click.stop="togglePermission(p.name)" />
+                <div class="ml-2.5 flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <p class="text-xs font-bold text-gray-900 leading-snug truncate">{{ p.name }}</p>
+                    <span
+                      v-if="isRoleInherited(p.name)"
+                      class="shrink-0 px-1.5 py-0.2 text-[10px] font-semibold rounded bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      :title="'Granted via Role: ' + getInheritedRoleName(p.name)">
+                      Role
+                    </span>
+                    <span
+                      v-else-if="isDirectOverride(p.name)"
+                      class="shrink-0 px-1.5 py-0.2 text-[10px] font-semibold rounded bg-blue-100 text-blue-800 border border-blue-200"
+                      title="Direct desk capability override">
+                      Override
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{{ p.description }}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <div class=" w-[45%]">
-          <div :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('AGF record manager')}">
-            <label for="Department" class=" font-medium">Department</label>
-            <select class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md" @change="selectedDepartment"
-              v-model="form.department">
-              <option value="">Select a department</option>
-              <option v-for="department in props.departments" :value="department.id">{{ department.title }}</option>
-            </select>
-            <span class="text-red-400 text-sm my-2" v-if="form.errors.department">{{ form.errors.department }}</span>
-          </div>
-
-          <div class="mt-5 " :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors') || form.role.includes('AGF record manager')}">
-            <label for="Division" class=" font-medium">Division</label>
-            <select v-model="form.division" @change="selectedDivision"
-              class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-              <option value="">Select a division</option>
-              <option v-for="(item, index) in getDivision" :key="index" :value="item.id">{{ item.title }}</option>
-            </select>
-          </div>
-
-          <div class=" mt-5" :class="{'hidden': form.role.includes('super admin') || form.role.includes('admin') || form.role.includes('super users') || form.role.includes('directors') || form.role.includes('division heads') || form.role.includes('AGF record manager')}">
-            <label for="Unit" class=" font-medium">Unit</label>
-            <select v-model="form.unit" name="" id="" class=" w-full outline-none border-gray-300 border p-2 mt-2 rounded-md">
-              <option value="">Select from dropdown</option>
-              <option v-for="(item, index) in getUnit" :value="item.id" :key="index">{{ item.title }}</option>
-            </select>
-          </div>
+      <!-- Bottom Submission Footer -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500">Ensure all mandatory civil service credentials and designations are verified before approval.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition" @click="cancelBtn">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="!isFormReady || form.processing"
+            @click="submitForm">
+            <Icon v-if="form.processing" icon="line-md:loading-loop" width="18" />
+            <Icon v-else icon="fluent:save-24-regular" width="18" />
+            <span>{{ form.id ? 'Approve & Activate Account' : 'Provision User Account' }}</span>
+          </button>
         </div>
       </div>
-    </section>
 
-    <Divider class=" " />
-
-    <div class="lg:px-7 px-5 flex items-center justify-between pt-2 pb-4">
-      <div class="flex items-center gap-5">
-
-      </div>
-      <div class="flex items-center gap-4">
-        <button class="flex gap-2 items-center text-[#3575DD] rounded-lg py-2 px-4">
-          <p>Cancel</p>
-        </button>
-
-        <button @click="submitForm"
-          class="flex gap-2 items-center text-white bg-[#2F68C5] rounded-lg py-2 px-4 hover:bg-blue-400 disabled:bg-blue-300"
-          :disabled="!isFormReady">
-
-          <p>{{ form.id? 'Approve Account': 'Create Account' }}</p>
-        </button>
-
-      </div>
     </div>
-
-
-
   </main>
 </template>
 
 <script setup>
-import { ref, defineProps, computed, watch, onMounted } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { ref, computed, watch, onMounted } from "vue";
+import { useForm, Link } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
-import {Link} from "@inertiajs/vue3";
+import axios from "axios";
 
-const props = defineProps(['roles', 'departments','user']);
-const department = ref([]);
-const division = ref([]);
+const props = defineProps({
+  roles: { type: Array, default: () => [] },
+  departments: { type: Array, default: () => [] },
+  user: { type: Object, default: () => ({}) },
+  designations: { type: Array, default: () => [] },
+  all_permissions: { type: Object, default: () => ({}) },
+});
+
+const toast = useToast();
 const previewUrl = ref('');
 const isEmailExist = ref(false);
-const email_msg = ref(null)
-const isEmailValidated = ref(false)
-const isPhoneExist = ref(false);
-const phone_msg = ref('')
-const phone = ref(null);
-const email = ref(null)
-const toast = useToast();
-const form = useForm(
-  {
-    first_name: '',
-    last_name: '',
-    email: '',
-    department: '',
-    division: '',
-    unit: '',
-    image: '',
-    role: [],
-    file: [],
-    grade_level: '',
-    gender: '',
-    phone: '',
-    id:'',
-    is_approved: 0
+const email_msg = ref(null);
+const phone_msg = ref('');
+const permSearch = ref('');
+const loadingDesignations = ref(false);
+const dynamicDesignations = ref(props.designations || []);
+
+const form = useForm({
+  id: '',
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  gender: '',
+  grade_level: '',
+  department: '',
+  division: '',
+  unit: '',
+  section: '',
+  designation_id: '',
+  role: [],
+  permissions: [],
+  file: null,
+  is_approved: 1,
+});
+
+// Computed Hierarchy Sub-branches
+const availableDivisions = computed(() => {
+  if (!form.department) return [];
+  const dept = props.departments.find(d => d.id == form.department);
+  return dept?.division || [];
+});
+
+const availableUnits = computed(() => {
+  if (!form.division) return [];
+  const div = availableDivisions.value.find(d => d.id == form.division);
+  return div?.unit || [];
+});
+
+const availableSections = computed(() => {
+  if (!form.unit) return [];
+  const u = availableUnits.value.find(unit => unit.id == form.unit);
+  return u?.sections || [];
+});
+
+// Dynamic Available Designations Fetcher
+const fetchDesignations = async () => {
+  loadingDesignations.value = true;
+  try {
+    const res = await axios.get('/available-designations', {
+      params: {
+        department_id: form.department || null,
+        division_id: form.division || null,
+        unit_id: form.unit || null,
+        section_id: form.section || null,
+      }
+    });
+    if (res.data?.data) {
+      dynamicDesignations.value = res.data.data;
+    } else if (Array.isArray(res.data)) {
+      dynamicDesignations.value = res.data;
+    }
+  } catch (e) {
+    console.error("Failed to load available designations:", e);
+  } finally {
+    loadingDesignations.value = false;
+  }
+};
+
+const handleDepartmentChange = () => {
+  form.division = '';
+  form.unit = '';
+  form.section = '';
+  fetchDesignations();
+};
+
+const handleDivisionChange = () => {
+  form.unit = '';
+  form.section = '';
+  fetchDesignations();
+};
+
+const handleUnitChange = () => {
+  form.section = '';
+  fetchDesignations();
+};
+
+const handleSectionChange = () => {
+  fetchDesignations();
+};
+
+// When Designation is selected
+const onDesignationSelected = () => {
+  const selected = dynamicDesignations.value.find(d => d.id == form.designation_id);
+  if (selected) {
+    if (selected.grade_level && !form.grade_level) {
+      form.grade_level = selected.grade_level;
+    }
+    applyDesignationPresets();
+  }
+};
+
+// Role-Inherited Permissions Map (Permission Name -> Role Name)
+const roleGrantedPermsMap = computed(() => {
+  const map = new Map();
+  const rolesList = props.roles || [];
+  for (const r of rolesList) {
+    if (form.role.includes(r.name) && Array.isArray(r.permissions)) {
+      r.permissions.forEach(p => {
+        const pName = typeof p === 'string' ? p : p.name;
+        if (pName && !map.has(pName)) {
+          map.set(pName, r.name);
+        }
+      });
+    }
+  }
+  return map;
+});
+
+const isRoleInherited = (permName) => {
+  return roleGrantedPermsMap.value.has(permName);
+};
+
+const getInheritedRoleName = (permName) => {
+  return roleGrantedPermsMap.value.get(permName) || '';
+};
+
+const isDirectOverride = (permName) => {
+  return form.permissions.includes(permName) && !isRoleInherited(permName);
+};
+
+const isEffectiveActive = (permName) => {
+  return isRoleInherited(permName) || form.permissions.includes(permName);
+};
+
+const inheritedCount = computed(() => {
+  return roleGrantedPermsMap.value.size;
+});
+
+const directOverrideCount = computed(() => {
+  return form.permissions.filter(p => !isRoleInherited(p)).length;
+});
+
+const totalEffectiveCount = computed(() => {
+  const set = new Set(roleGrantedPermsMap.value.keys());
+  form.permissions.forEach(p => set.add(p));
+  return set.size;
+});
+
+const resetToRoleBaseline = () => {
+  form.permissions = [];
+  toast.add({
+    severity: "success",
+    summary: "Aligned to Role Baseline",
+    detail: "Direct desk overrides cleared. Officer permissions will strictly track assigned roles.",
+    life: 3000,
+  });
+};
+
+// Automatic Permission Presets based on Designation Title & Roles
+const applyDesignationPresets = () => {
+  const selected = dynamicDesignations.value.find(d => d.id == form.designation_id);
+  const title = (selected?.title || '').toLowerCase();
+  const permsToGrant = new Set(form.permissions);
+
+  if (title.includes('checking')) {
+    ['checking stamp', 'voucher update', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('audit')) {
+    ['audit stamp', 'audit query raise', 'audit query respond', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('cashier')) {
+    ['cashbook view', 'cashbook create', 'cashbook update', 'cashbook disburse', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('vote book') || title.includes('votebook')) {
+    ['votebook view', 'votebook create', 'votebook update', 'votebook edit', 'voucher create', 'voucher vat generate', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('final accounts') || title.includes('ledger')) {
+    ['ledger view', 'ledger create', 'ledger update', 'ledger post', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('advances')) {
+    ['advances view', 'advances create', 'advances retire', 'workflow minute'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('central registry')) {
+    ['admin registry view', 'registry view', 'registry create', 'registry update', 'registry dispatch', 'mails create', 'mails update', 'mails minute', 'mails dispatch'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('registry')) {
+    ['registry view', 'registry create', 'registry update', 'registry dispatch', 'mails create', 'mails update', 'mails minute', 'mails dispatch'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
+  } else if (title.includes('director') || title.includes('hod')) {
+    ['mails minute', 'mails dispatch', 'workflow minute', 'workflow approve', 'workflow return', 'payment approve', 'payment reject', 'voucher create', 'pms review', 'pms approve'].forEach(p => {
+      if (!isRoleInherited(p)) permsToGrant.add(p);
+    });
   }
 
-)
+  form.permissions = Array.from(permsToGrant);
+  toast.add({
+    severity: "info",
+    summary: "Presets Configured",
+    detail: "Recommended operational capabilities mapped for " + (selected?.title || "selected desk"),
+    life: 2500,
+  });
+};
 
+const clearAllPermissions = () => {
+  form.permissions = [];
+  toast.add({
+    severity: "info",
+    summary: "Overrides Cleared",
+    detail: "All custom desk overrides removed.",
+    life: 2000,
+  });
+};
+
+// Filtered Permission Groups by Search Input
+const filteredPermissionGroups = computed(() => {
+  const groups = props.all_permissions || {};
+  if (!permSearch.value.trim()) return groups;
+
+  const query = permSearch.value.toLowerCase().trim();
+  const filtered = {};
+
+  for (const [moduleName, perms] of Object.entries(groups)) {
+    const matchedPerms = perms.filter(p =>
+      p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
+    );
+    if (matchedPerms.length > 0) {
+      filtered[moduleName] = matchedPerms;
+    }
+  }
+
+  return filtered;
+});
+
+const countModuleSelected = (perms) => {
+  return perms.filter(p => isEffectiveActive(p.name)).length;
+};
+
+const toggleSelectModule = (perms) => {
+  const uninheritedPerms = perms.filter(p => !isRoleInherited(p.name));
+  if (!uninheritedPerms.length) {
+    toast.add({
+      severity: "info",
+      summary: "Role Protected",
+      detail: "All permissions in this module are already provided by assigned roles.",
+      life: 3000,
+    });
+    return;
+  }
+
+  const allDirectGranted = uninheritedPerms.every(p => form.permissions.includes(p.name));
+  const permSet = new Set(form.permissions);
+
+  if (allDirectGranted) {
+    uninheritedPerms.forEach(p => permSet.delete(p.name));
+  } else {
+    uninheritedPerms.forEach(p => permSet.add(p.name));
+  }
+  form.permissions = Array.from(permSet);
+};
+
+const togglePermission = (permName) => {
+  if (isRoleInherited(permName)) {
+    toast.add({
+      severity: "info",
+      summary: "Role Inherited",
+      detail: `"${permName}" is active from the "${getInheritedRoleName(permName)}" role. Manage role baselines in Access Level.`,
+      life: 3000,
+    });
+    return;
+  }
+
+  const index = form.permissions.indexOf(permName);
+  if (index > -1) {
+    form.permissions.splice(index, 1);
+  } else {
+    form.permissions.push(permName);
+  }
+};
+
+const toggleRole = (roleName) => {
+  const index = form.role.indexOf(roleName);
+  if (index > -1) {
+    form.role.splice(index, 1);
+  } else {
+    form.role.push(roleName);
+  }
+};
+
+const capitalize = (value) => {
+  if (!value) return '';
+  return value.replace(/\b\w/g, char => char.toUpperCase());
+};
 
 const handleFileChange = (event) => {
   const file = event.target.files[0];
-  form.file = file
+  form.file = file;
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -268,203 +793,91 @@ const handleFileChange = (event) => {
   }
 };
 
-const selectedDepartment = () => {
-  let dept = props.departments.filter((val) => {
-    return val.id == form.department
-  });
-  department.value = dept;
-}
-
-const selectedDivision = () => {
-
-  let div = getDivision.value.filter((val) => {
-    return val.id === form.division
-  });
-
-  division.value = div
-
-}
-
-const capitalize = (value) => {
-  if (!value) return '';
-  return value.replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  console.log(emailRegex.test(email))
-  if (emailRegex.test(email)) {
-    //email_msg.value = "Invalid email"
-    return true
-  } else {
-    // email_msg.value = ""
-    return false;
-  }
-}
-
-//check if email exist
 const checkMailExist = () => {
+  if (!form.email) return;
   axios.get('/auth-email-exist', { params: { email: form.email } }).then((response) => {
-
     if (response.data.error) {
-      console.log(response.data.error_msg)
-      email_msg.value = response.data.error_msg
+      email_msg.value = response.data.error_msg;
       isEmailExist.value = true;
-    }
-    if (response.data.success) {
+    } else {
       email_msg.value = null;
       isEmailExist.value = false;
-      form.error = ''
     }
-  })
-}
-
-const validatePhoneNumber = (phone) => {
-  const phoneRegex = /^\d{10}$/;
-  if (phoneRegex.test(phone)) {
-    return true
-  } else {
-    return false;
-  }
+  });
 };
 
-//check if phone number exist
-const checkPhoneExist = () => {
-  axios.get('/auth-phone-exist?user_id', { params: { phone: form.phone } }).then((response) => {
-    if (response.data.error) {
-      phone_msg.value = response.data.error_msg
-      isPhoneExist.value = true;
-    }
-    if (response.data.success) {
-      phone_msg.value = null;
-      isPhoneExist.value = false;
-      form.phone = ''
-    }
-  })
-}
-
-
-// const isFormReady = computed(() => {
-//   if (form.first_name == '') {
-//     return false
-//   } else
-//     if (form.last_name == '') {
-//       return false
-//     } else
-//       if (form.email == '') {
-//         return false
-//       }
-//       else
-//           if (form.grade_level == '') {
-//             return false
-//           } else
-//             if (form.gender == '') {
-//               return false
-//             } else
-//               if (form.role == '') {
-//                 return false
-//               } else {
-//                 return true;
-//               }
-
-// })
 const isFormReady = computed(() => {
-  const isFieldFilled = (field) => field !== undefined && field !== '';
-  
-  return isFieldFilled(form.first_name) &&
-         isFieldFilled(form.last_name) &&
-         isFieldFilled(form.email) &&
-         isFieldFilled(form.grade_level) &&
-         isFieldFilled(form.phone) &&
-         isFieldFilled(form.gender) &&
-         form.role.length > 0;
+  return Boolean(
+    form.first_name &&
+    form.last_name &&
+    form.email &&
+    form.grade_level !== '' &&
+    form.gender &&
+    form.role.length > 0 &&
+    !isEmailExist.value
+  );
 });
 
-
-
-const getDivision = computed(() => {
-  return department.value[0]?.division
-})
-
-const getUnit = computed(() => {
-  return division.value[0]?.unit;
-})
-
-const cancelBtn = ()=>{
-    form.first_name= '',
-    form.last_name= '',
-    form.email= '',
-    form.department= '',
-    form.division= '',
-    form.unit= '',
-    form.image= '',
-    form.role= [],
-    form.file= [],
-    form.grade_level= '',
-    form.gender= '',
-    form.phone= '',
-    form.id='',
-    form.is_approved= 0
-}
+const cancelBtn = () => {
+  form.reset();
+  previewUrl.value = '';
+  email_msg.value = null;
+  phone_msg.value = '';
+};
 
 const submitForm = () => {
-  if (!validateEmail(form.email)) {
-    validateEmail(form.email)
-    email.value.focus();
-    return false;
-  }
-  if (!validatePhoneNumber(form.phone)) {
-    phone.value.focus();
-    return false;
-  }
-
-  if(form.id == ''){
-    if (isEmailExist.value) {
-      email.value.focus();
-      return false
-    }
-
-    if (isPhoneExist.value) {
-      phone.value.focus();
-      return false;
-    }
+  if (isEmailExist.value) {
+    toast.add({ severity: "error", summary: "Validation Error", detail: "Email address already registered.", life: 3000 });
+    return;
   }
 
   form.post('/dashboard/user-registration', {
-    onSuccess: (response) => {
-      previewUrl.value = ''
-      let msg = form.id? 'approved': 'added';
+    onSuccess: () => {
+      previewUrl.value = '';
+      const action = form.id ? 'approved' : 'created';
       toast.add({
         severity: "success",
-        summary: "User "+msg,
-        detail: "You've successfully "+msg+" a new user.",
+        summary: "Account " + capitalize(action),
+        detail: "User account and module permissions successfully saved.",
         life: 3000,
       });
-
-      if(!form.id){
-        form.reset()
+      if (!form.id) {
+        form.reset();
       }
+    },
+    onError: (errors) => {
+      toast.add({
+        severity: "error",
+        summary: "Submission Failed",
+        detail: Object.values(errors)[0] || "Please verify the form fields.",
+        life: 4000,
+      });
     }
-  })
-}
-
-watch(() => form.email, () => {
-  validateEmail(form.email)
-})
+  });
+};
 
 onMounted(() => {
-    if(props.user){
-      form.first_name = props.user.first_name;
-      form.last_name = props.user.last_name;
-      form.email = props.user.email;
-      form.grade_level = props.user.grade_level;
-      form.gender = props.user.gender;
-      form.phone = props.user.phone;
-      form.id = props.user.id;
-      form.is_approved = 1;
-    }
-})
+  if (props.user && props.user.id) {
+    form.id = props.user.id;
+    form.first_name = props.user.first_name || '';
+    form.last_name = props.user.last_name || '';
+    form.email = props.user.email || '';
+    form.grade_level = props.user.grade_level ?? '';
+    form.gender = props.user.gender || '';
+    form.phone = props.user.phone || '';
+    form.department = props.user.department_id || '';
+    form.division = props.user.division_id || '';
+    form.unit = props.user.unit_id || '';
+    form.designation_id = props.user.designation_id || '';
+    form.is_approved = 1;
 
+    if (form.department) {
+      fetchDesignations();
+    }
+  }
+});
 </script>
 
-<style></style>
+<style scoped>
+/* Responsive scroll styling */
+</style>

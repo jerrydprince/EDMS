@@ -14,11 +14,13 @@
                 <p>Scan Files</p>
             </button> -->
             <button @click="TrackPackageModel = true"
-                class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
+                class="flex gap-2 items-center font-medium text-gray-700 bg-white shadow-sm border border-gray-200 rounded-full py-2 px-5 hover:bg-gray-50 hover:-translate-y-0.5 transition-all">
                 <p>Track File</p>
             </button>
 
-            <button class="flex gap-2 items-center text-white bg-primary rounded-lg py-2 px-4"
+            <button 
+                v-if="can('registry create') || hasRole('super admin')"
+                class="flex gap-2 items-center text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full py-2 px-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
                 @click="createEntry = true">
                 <Icon icon="material-symbols:add" width="20" />
                 <p>Create Entry</p>
@@ -27,19 +29,28 @@
     </div>
 
     <Divider class="" />
-    <div class="flex justify-between items-center gap-4 px-7">
-        <div class=" flex items-center gap-3">
-            <button class="  bg-gray-100 py-2 border border-gray-300 px-3 rounded-2xl text-xs text-gray-500 font-medium"
-                @click="activeButton('incoming')" :class="{ activeButton: buttonToggle === 1 }">Incoming</button>
-            <button class="  bg-gray-100 py-2 border border-gray-300 px-3 rounded-2xl text-xs text-gray-500 font-medium"
-                @click="activeButton('outgoing')" :class="{ activeButton: buttonToggle === 2 }">Outgoing</button>
+    <div class="flex justify-between items-center gap-4 px-7 py-2">
+        <div class="bg-white border border-gray-100 shadow-sm flex items-center rounded-full p-1.5 gap-1">
+            <button class="flex gap-1.5 items-center rounded-full py-1.5 px-5 whitespace-nowrap transition-all duration-300 font-medium cursor-pointer"
+                @click="activeButton('incoming')" :class="buttonToggle === 1 ? 'bg-blue-50 text-blue-600 shadow-sm font-bold' : 'text-gray-500 hover:bg-gray-50'">
+                Incoming Files
+            </button>
+            <button class="flex gap-1.5 items-center rounded-full py-1.5 px-5 whitespace-nowrap transition-all duration-300 font-medium cursor-pointer"
+                @click="activeButton('outgoing')" :class="buttonToggle === 2 ? 'bg-blue-50 text-blue-600 shadow-sm font-bold' : 'text-gray-500 hover:bg-gray-50'">
+                Outgoing Files
+            </button>
+            <button class="flex gap-1.5 items-center rounded-full py-1.5 px-5 whitespace-nowrap transition-all duration-300 font-medium cursor-pointer"
+                @click="activeButton('correspondence')" :class="buttonToggle === 3 ? 'bg-indigo-50 text-indigo-700 shadow-sm font-bold' : 'text-gray-500 hover:bg-gray-50'">
+                <Icon icon="lucide:mail-open" width="16" />
+                <span>Correspondence & Memos</span>
+            </button>
         </div>
-        <button class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4">
+        <button class="flex gap-2 items-center text-gray-700 bg-white shadow-sm border border-gray-200 rounded-full py-2 px-5 hover:bg-gray-50 hover:-translate-y-0.5 transition-all">
             <Icon icon="raphael:barchart" width="20" />
             <p>Generate Report</p>
         </button>
     </div>
-    <Divider />
+    <Divider class="-mt-2" />
     <div class="px-7">
         <!-- incoming  -->
         <div class=" mb-52" v-if="clickedButton == 'incoming' && incoming && incoming.data">
@@ -47,7 +58,7 @@
             <DataTable v-model:expandedRows="expandedRows" :value="incoming.data" dataKey="id"
                 @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem" :pt="{
                 root: {
-                    class: ' border rounded-md pb-10 overflow-hidden relative'
+                    class: 'bg-white/80 backdrop-blur border border-gray-100 shadow-sm rounded-xl pb-10 overflow-hidden relative'
                 },
                 paginator: {
                     class: 'pt-10'
@@ -63,7 +74,7 @@
                     </template>
                 </Column>
                 <!-- <Column field="Source" header="Source"> </Column> -->
-                <Column header="Status">
+                <Column header="Physical Status">
                     <template #body="slotProps">
                         <div class="flex items-center w-fit py-1.5 px-2 rounded-2xl text-xs" :class="{
                 'bg-green-400/10': slotProps.data.status === 'delivered',
@@ -94,6 +105,20 @@
                         </div>
                     </template>
                 </Column>
+                <Column header="Workflow State">
+                    <template #body="slotProps">
+                        <div v-if="slotProps.data.task">
+                            <span class="text-xs font-semibold px-2 py-1 bg-indigo-100 text-indigo-800 rounded-md">
+                                {{ slotProps.data.task.active_steps && slotProps.data.task.active_steps.length ? slotProps.data.task.active_steps[0].step.name : (slotProps.data.task.status === 'completed' ? 'Completed' : 'Pending') }}
+                            </span>
+                        </div>
+                        <div v-else>
+                            <span class="text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-500 rounded-md">
+                                N/A
+                            </span>
+                        </div>
+                    </template>
+                </Column>
                 <Column expander header="Actions" :pt="{
                 rowToggler: {
                     class: ' border border-gray-300 px-2.5 py-1.5 rounded-md',
@@ -106,24 +131,23 @@
                             <!-- <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' && slotProps.data.is_forwarded == 0"
                                 class="flex items-center gap-5"> -->
                             <div v-if="slotProps.data.status !== 'rejected' && slotProps.data.status !== 'delivered' "
-                                class="flex items-center gap-5 mb-4">
+                                class="flex items-center gap-3 mb-5">
                                 <button @click="rejectFileHandler(slotProps.data.id)"
-                                    class="flex gap-2 items-center font-semibold text-red-700 border-red-300 border-solid border rounded-lg py-2 px-3">
+                                    class="flex gap-2 items-center font-medium text-red-600 bg-red-50 hover:bg-red-100 border-red-200 border rounded-full py-1.5 px-4 transition-all">
                                     <Icon icon="iconoir:cancel" />
-                                    <p class=" text-xs ">Reject File</p>
+                                    <p class=" text-sm ">Reject</p>
                                 </button>
 
-                                <button @click="acceptFileHandler(slotProps.data.id)"
-                                    class="flex gap-2 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3">
+                                <button @click="acceptFileHandler(slotProps.data)"
+                                    class="flex gap-2 items-center font-medium text-green-700 bg-green-50 hover:bg-green-100 border-green-200 border rounded-full py-1.5 px-4 transition-all">
                                     <Icon icon="charm:tick" />
-                                    <p class=" text-xs ">Accept File</p>
+                                    <p class=" text-sm ">Accept</p>
                                 </button>
 
-                                <button class="flex gap-2 h-8 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3" @click="forwardFileHandler(slotProps.data)">
+                                <button class="flex gap-2 items-center font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200 border rounded-full py-1.5 px-4 transition-all" @click="forwardFileHandler(slotProps.data)">
                                     <Icon icon="charm:move" />
-                                    <p class=" text-xs ">Forward File</p>
+                                    <p class=" text-sm ">Forward</p>
                                 </button>
-
                             </div>
                             <div class="flex items-center">
                                 <div class="w-3 rounded-bl-md border border-r-0 border-t-0 h-14 border-gray-300"></div>
@@ -201,7 +225,7 @@
             <DataTable v-model:expandedRows="expandedRows" :value="outgoing.data" dataKey="id"
                 @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem" :pt="{
                 root: {
-                    class: ' border rounded-md pb-10 overflow-hidden relative'
+                    class: 'bg-white/80 backdrop-blur border border-gray-100 shadow-sm rounded-xl pb-10 overflow-hidden relative'
                 },
                 paginator: {
                     class: 'pt-10'
@@ -300,6 +324,9 @@
                             </div>
                             </div>
                             
+                            <button @click="openEditModal(slotProps.data)" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 text-sm font-medium flex items-center gap-2 h-10 ml-5 mt-5">
+                                <Icon icon="lucide:edit" width="16" /> Edit Entry
+                            </button>
                             <!-- <button v-if="!slotProps.data.is_forwarded" @click="forwardFileHandler(slotProps.data)"
                                 class="flex gap-2 h-8 items-center font-semibold text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3">
                                 <Icon icon="charm:move" />
@@ -341,6 +368,92 @@
 
             </DataTable>
         </div>
+
+        <!-- Correspondence & Memos (Option 1 Clean Solution) -->
+        <div class="mb-52" v-if="clickedButton == 'correspondence'">
+            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">External Correspondence & Inbound Letters</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Manage external letters, official memos, and inbound communications received into the registry.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-72">
+                            <Icon icon="ph:magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" />
+                            <input 
+                                type="text" 
+                                placeholder="Search letters, ref no..." 
+                                v-model="correspondenceSearch" 
+                                @input="searchCorrespondences" 
+                                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="correspondenceList.length > 0" class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-slate-50/80 text-gray-500 text-xs uppercase font-bold tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="py-3.5 px-4">Date</th>
+                                <th class="py-3.5 px-4">Subject / Title</th>
+                                <th class="py-3.5 px-4">Doc / Letter No</th>
+                                <th class="py-3.5 px-4">Description / Summary</th>
+                                <th class="py-3.5 px-4">Sender / Logged By</th>
+                                <th class="py-3.5 px-4">Attachments</th>
+                                <th class="py-3.5 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr v-for="c in correspondenceList" :key="c.id" class="hover:bg-indigo-50/20 transition-colors">
+                                <td class="py-3.5 px-4 whitespace-nowrap text-xs font-mono text-gray-500">
+                                    {{ formatDate(c.created_at) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-bold text-gray-900 max-w-xs">
+                                    {{ c.file_name || 'Untitled Document' }}
+                                </td>
+                                <td class="py-3.5 px-4 whitespace-nowrap text-xs">
+                                    <span v-if="c.document_number" class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold border border-blue-100 text-[11px]">
+                                        {{ c.document_number }}
+                                    </span>
+                                    <span v-else class="text-gray-400 italic text-[11px]">None</span>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs max-w-sm">
+                                    <p class="line-clamp-2 text-gray-600 leading-relaxed">
+                                        {{ c.description || 'No description provided.' }}
+                                    </p>
+                                </td>
+                                <td class="py-3.5 px-4 whitespace-nowrap text-xs">
+                                    <div class="flex items-center gap-2" v-if="c.sent_by">
+                                        <span class="font-medium text-gray-800">{{ c.sent_by.first_name }} {{ c.sent_by.last_name }}</span>
+                                    </div>
+                                    <span v-else class="text-gray-400 italic">Central Registry</span>
+                                </td>
+                                <td class="py-3.5 px-4 whitespace-nowrap text-xs">
+                                    <span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-semibold rounded-full text-[11px]">
+                                        {{ (c.correspondence_file || []).length }} Attached
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <Link :href="'/dashboard/correspondence/view-files/' + c.id" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:text-indigo-600 hover:border-indigo-200 rounded-lg text-xs font-semibold shadow-2xs transition-all">
+                                            <Icon icon="lucide:eye" width="14" />
+                                            <span>View Document</span>
+                                        </Link>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div v-else class="text-center py-16 text-gray-400">
+                    <Icon icon="lucide:mail-open" width="40" class="mx-auto text-gray-300 mb-2" />
+                    <p class="font-bold text-gray-700 text-base">No Correspondence Records Found</p>
+                    <p class="text-xs text-gray-500 mt-1">External incoming correspondence and memos registered will appear here.</p>
+                </div>
+            </div>
+        </div>
     </div>
     <RejectFileModal v-model="rejectFile" :data="fileId" @refresh="refreshPage" />
     <AddDestinationModal v-model="addDestination" :fileId="destFileId" @refresh="refreshPage" :branches="branches"
@@ -350,6 +463,7 @@
         :unit="props.unit" />
     <ScannedFiles v-model="scanModal" />
     <ScanFile v-model="openScan" @updateData="updateData" />
+    <EditEntryModal v-model="showEditEntry" :entry="selectedEntry" @refresh="getBranchFiles" :isAgf="false" />
 </template>
 <script setup>
 import { ref, onMounted, computed, defineProps, watchEffect, watch } from "vue";
@@ -358,13 +472,24 @@ import RejectFileModal from '../../components/Modals/RecordManager/RejectFile.vu
 import AddDestinationModal from '../../components/Modals/RecordManager/AdddDestination.vue';
 import TrackPackage from "../../components/Modals/Registry/TrackPackage.vue";
 import CreatEntryModal from '../../components/Modals/RecordManager/CreateEntry.vue'
-import { router, usePage } from "@inertiajs/vue3";
+import EditEntryModal from '../../components/Modals/RecordManager/EditEntry.vue'
+import { router, usePage, Link } from "@inertiajs/vue3";
 import ScannedFiles from '../../components/Modals/RecordManager/ScannedFiles.vue';
 import ScanFile from '../../components/Modals/RecordManager/ScanFile.vue';
+import axios from "axios";
+import { usePermissions } from "@/composables/usePermissions";
+
+const { can, hasRole } = usePermissions();
 
 const TrackPackageModel = ref(false);
 const addDestination = ref(false);
 const createEntry = ref(false)
+const showEditEntry = ref(false)
+const selectedEntry = ref(null)
+const openEditModal = (entry) => {
+    selectedEntry.value = entry;
+    showEditEntry.value = true;
+}
 const buttonToggle = ref(1);
 const clickedButton = ref("incoming");
 const files = ref([])
@@ -386,11 +511,49 @@ const hide = ref(false)
 const page = usePage()
 const branches = ref([]);
 const destBranchType = ref()
-const props = defineProps(['department', 'division', 'unit']);
+const props = defineProps(['department', 'division', 'unit', 'correspondences']);
 const selected_branch = ref()
 const raw_files = ref([])
 const incoming = ref([])
 const outgoing = ref([])
+
+const correspondenceList = ref(props.correspondences?.data || [])
+const correspondenceSearch = ref('')
+const correspondenceLoading = ref(false)
+
+const activeButton = (btn) => {
+    clickedButton.value = btn;
+    if (btn === 'incoming') buttonToggle.value = 1;
+    if (btn === 'outgoing') buttonToggle.value = 2;
+    if (btn === 'correspondence') {
+        buttonToggle.value = 3;
+        if (correspondenceList.value.length === 0) {
+            fetchCorrespondences();
+        }
+    }
+}
+
+const fetchCorrespondences = (search = '') => {
+    correspondenceLoading.value = true;
+    axios.get('/dashboard/registry/correspondences', { params: { search } })
+        .then((res) => {
+            correspondenceList.value = res.data?.data || [];
+        })
+        .catch((err) => {
+            console.error('Error fetching correspondences:', err);
+        })
+        .finally(() => {
+            correspondenceLoading.value = false;
+        });
+}
+
+let searchDebounceTimer = null;
+const searchCorrespondences = () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        fetchCorrespondences(correspondenceSearch.value);
+    }, 300);
+}
 
 const user_branch = computed(() => page.props.userBranch)
 
@@ -531,7 +694,11 @@ const refreshPage = () => {
     getBranchFiles()
 }
 onMounted(() => {
-    getBranchFiles()
+    getBranchFiles();
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'correspondence') {
+        activeButton('correspondence');
+    }
 })
 
 const getDestinationBranch = (data) => {
@@ -692,48 +859,49 @@ const displayedItems = computed(() => {
 });
 
 
-const activeButton = (event) => {
-    if (event === "incoming") {
-        buttonToggle.value = 1;
-    }
-    if (event === "outgoing") {
-        buttonToggle.value = 2;
-    }
 
-    clickedButton.value = event;
-};
 
 const toast = useToast();
 const expandedRows = ref([]);
 const onRowExpand = (event) => { };
 const onRowCollapse = (event) => { };
 
-const acceptFileHandler = (fileId) => {
-
-    router.post(`/dashboard/registry/updateFileStatus/${fileId}`, formData.value, {
-        onSuccess: page => {
-            toast.add({
-                severity: "success",
-                summary: 'File Accepted',
-                detail: "You can view and add new destinations for outgoing files.",
-                life: 3000,
+const acceptFileHandler = (file) => {
+    // If we have file movements, we acknowledge the latest one
+    if (file.file_movement && file.file_movement.length > 0) {
+        const movementId = file.file_movement[file.file_movement.length - 1].id;
+        axios.post(`/dashboard/registry/movements/${movementId}/acknowledge`)
+            .then(response => {
+                toast.add({
+                    severity: "success",
+                    summary: 'File Accepted',
+                    detail: "The physical file has been received and acknowledged.",
+                    life: 3000,
+                });
+                getBranchFiles();
+            })
+            .catch(error => {
+                toast.add({
+                    severity: "error",
+                    summary: 'Error',
+                    detail: error.response?.data?.message || "Failed to acknowledge file.",
+                    life: 3000,
+                });
             });
-            getBranchFiles()
-        }
-    })
-    // try {
-
-    //     const response = await axios.post(`/dashboard/registry/updateFileStatus/${fileId}`, formData.value);
-
-    //     toast.add({
-    //         severity: "success",
-    //         summary: 'File Accepted',
-    //         detail: "You can view and add new destinations for outgoing files.",
-    //         life: 3000,
-    //     });
-    // } catch (error) {
-    //     console.error('Error fetching data:', error.message);
-    // }
+    } else {
+        // Fallback for legacy items without a file_movement relation returned (if any)
+        router.post(`/dashboard/registry/updateFileStatus/${file.id}`, formData.value, {
+            onSuccess: page => {
+                toast.add({
+                    severity: "success",
+                    summary: 'File Accepted',
+                    detail: "You can view and add new destinations for outgoing files.",
+                    life: 3000,
+                });
+                getBranchFiles()
+            }
+        });
+    }
 }
 
 

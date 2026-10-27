@@ -1,26 +1,26 @@
 <template>
     <div class="px-5 md:px-7 py-5">
         <div class="flex items-center gap-3">
-            <div class="p-5 border rounded-full">
-                <Icon icon="carbon:analytics" width="30" />
+            <div class="p-5 border rounded-full dark:border-gray-700">
+                <Icon icon="carbon:analytics" width="30" class="dark:text-gray-300" />
             </div>
             <div>
                 <div class="flex items-center gap-5 mb-2">
                     <h1
-                        class="text-2xl md:text-3xl font-semibold text-[#1D2939]"
+                        class="text-2xl md:text-3xl font-semibold text-[#1D2939] dark:text-white"
                     >
                         Analytics
                     </h1>
                     <div class="text-sm flex items-center gap-5 mt-1 md:mt-4">
                         <div
-                            class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl"
+                            class="flex items-center gap-2 bg-primary/10 p-1 px-2 rounded-2xl dark:bg-primary/20"
                         >
-                            <Icon icon="mynaui:key" />
-                            <p class="text-sm md:text-base">Admin</p>
+                            <Icon icon="mynaui:key" class="dark:text-green-400" />
+                            <p class="text-sm md:text-base dark:text-green-400">Admin</p>
                         </div>
                     </div>
                 </div>
-                <p class="text-[#667085] text-sm md:text-base">
+                <p class="text-[#667085] text-sm md:text-base dark:text-gray-400">
                     This dashboard focuses on strategic metrics and overall
                     system performance.
                 </p>
@@ -28,24 +28,64 @@
         </div>
     </div>
 
-    <section class="bg-slate-50 pb-10 px-5 md:px-7 pt-5">
-        <system_analytics v-if="stat" :stat="stat" />
-        <!-- <Department_Metrics/>
-<div class=" md:flex items-center gap-5">
-  <div class=" md:w-[49%]">
-<workflowSummary/>
-</div>
-<div class=" md:w-[49%]">
-<CommunicationMetric/>
-</div>
-</div>
-<EmployeeProductivity/> -->
-        <AccessLevel v-if="roles" :roles="roles" />
-        <LoginActivity :logins="logins" />
-        <!-- <Backup /> -->
-        <!-- <ExecutiveSummary /> -->
-        <!-- <SystemUptime /> -->
-        <!-- <ResponseTime/> -->
+    <section class="bg-slate-50 dark:bg-gray-900 min-h-screen pb-10 px-5 md:px-7 pt-5">
+        
+        <!-- Admin Analytics -->
+        <div v-if="isAdmin">
+            <system_analytics v-if="stat" :stat="stat" />
+            
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+                <div class="xl:col-span-1 w-full">
+                    <AccessLevel v-if="roles" :roles="roles" />
+                </div>
+                <div class="xl:col-span-2 w-full overflow-hidden">
+                    <LoginActivity :logins="logins" />
+                </div>
+            </div>
+        </div>
+
+        <!-- AGF Analytics -->
+        <div v-if="isAGF && agfSummaryData">
+            <ExecutiveSummary :data="agfSummaryData.summary" />
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6 items-start">
+                <DepartmentTaskStatus :chartData="agfSummaryData.chart_data" />
+                <HighPriorityTracker :tasks="agfSummaryData.high_priority_tasks" />
+            </div>
+            
+            <!-- Other AGF components go here -->
+        </div>
+
+        <!-- Director Analytics -->
+        <div v-if="isDirector && directorSummaryData">
+            <ExecutiveSummary :data="directorSummaryData.summary" />
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6 items-start">
+                <DepartmentTaskStatus :chartData="directorSummaryData.chart_data" />
+                <HighPriorityTracker :tasks="directorSummaryData.high_priority_tasks" />
+            </div>
+        </div>
+
+        <!-- Division Analytics -->
+        <div v-if="isDivisionHead && divisionSummaryData">
+            <ExecutiveSummary :data="divisionSummaryData.summary" />
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6 items-start">
+                <DepartmentTaskStatus :chartData="divisionSummaryData.chart_data" />
+                <HighPriorityTracker :tasks="divisionSummaryData.high_priority_tasks" />
+            </div>
+        </div>
+
+        <!-- Unit Analytics -->
+        <div v-if="isUnitHead && unitSummaryData">
+            <ExecutiveSummary :data="unitSummaryData.summary" />
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6 items-start">
+                <DepartmentTaskStatus :chartData="unitSummaryData.chart_data" />
+                <HighPriorityTracker :tasks="unitSummaryData.high_priority_tasks" />
+            </div>
+        </div>
+
     </section>
 </template>
 
@@ -58,6 +98,8 @@ import Backup from "../../components/AdminAnalytics/BackupStatus.vue";
 import ExecutiveSummary from "../../components/ADF-Analytics/ExecutiveSummary.vue";
 import LoginActivity from "../../components/AdminAnalytics/LoginActivity.vue";
 import SystemUptime from "../../components/ADF-Analytics/SystemUptime.vue";
+import DepartmentTaskStatus from "../../components/ADF-Analytics/DepartmentTaskStatus.vue";
+import HighPriorityTracker from "../../components/ADF-Analytics/HighPriorityTracker.vue";
 import Department_Metrics from "../../components/Director-analysis/Department-metrics.vue";
 import workflowSummary from "../../components/Director-analysis/workflow-summary.vue";
 import CommunicationMetric from "../../components/Director-analysis/communication-metrics.vue";
@@ -119,11 +161,11 @@ const levels = {
     "Super Admin": 500,
     Admin: 192,
     "Records Manager": 64,
-    "Super Users": 11,
+    "super user": 11,
     Directors: 8,
     "Division Head": 64,
     "Unit Head": 11,
-    "Data Entry": 8,
+    "record manager": 8,
     Registrars: 8,
 };
 
@@ -167,10 +209,90 @@ const overviews = [
         percentage: "25%",
     },
 ];
+
+import { usePage } from '@inertiajs/vue3'
+const page = usePage()
+const userRoles = page.props.roles || [];
+
+const isAdmin = computed(() => {
+    return userRoles.includes('super admin') || userRoles.includes('admin');
+});
+const isAGF = computed(() => {
+    return userRoles.includes('Accountant-General') || userRoles.includes('super user') || userRoles.includes('agf');
+});
+const isDirector = computed(() => {
+    return userRoles.includes('director') || userRoles.includes('Directors') || userRoles.includes('deputy director') || userRoles.includes('assistant director');
+});
+const isDivisionHead = computed(() => {
+    return userRoles.includes('Division Head') || userRoles.includes('division head');
+});
+const isUnitHead = computed(() => {
+    return userRoles.includes('Unit Head') || userRoles.includes('unit head');
+});
+
+const agfSummaryData = ref(null);
+const directorSummaryData = ref(null);
+const divisionSummaryData = ref(null);
+const unitSummaryData = ref(null);
+
+const getAGFSummary = async () => {
+    if (!isAGF.value) return;
+    try {
+        const response = await axios.get("/dashboard/analytics/agf-summary");
+        agfSummaryData.value = response.data;
+    } catch (error) {
+        console.error("Error fetching AGF summary data:", error);
+    }
+};
+
+const getDirectorSummary = async () => {
+    if (!isDirector.value) return;
+    try {
+        const response = await axios.get("/dashboard/analytics/director-summary");
+        directorSummaryData.value = response.data;
+    } catch (error) {
+        console.error("Error fetching Director summary data:", error);
+    }
+};
+
+const getDivisionSummary = async () => {
+    if (!isDivisionHead.value) return;
+    try {
+        const response = await axios.get("/dashboard/analytics/division-summary");
+        divisionSummaryData.value = response.data;
+    } catch (error) {
+        console.error("Error fetching Division summary data:", error);
+    }
+};
+
+const getUnitSummary = async () => {
+    if (!isUnitHead.value) return;
+    try {
+        const response = await axios.get("/dashboard/analytics/unit-summary");
+        unitSummaryData.value = response.data;
+    } catch (error) {
+        console.error("Error fetching Unit summary data:", error);
+    }
+};
+
 onMounted(() => {
-    getStat();
-    getLogins();
-    getRoles();
+    if (isAdmin.value) {
+        getStat();
+        getLogins();
+        getRoles();
+    }
+    if (isAGF.value) {
+        getAGFSummary();
+    }
+    if (isDirector.value) {
+        getDirectorSummary();
+    }
+    if (isDivisionHead.value) {
+        getDivisionSummary();
+    }
+    if (isUnitHead.value) {
+        getUnitSummary();
+    }
 });
 </script>
 

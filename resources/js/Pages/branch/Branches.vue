@@ -111,7 +111,7 @@
 
         <div v-for="folder in department.folder" class="rounded-md flex   items-center justify-between hover:bg-gray-100 p-3" >
 
-          <Link href="/branches-folder">
+          <Link :href="'/edms/folder-view/department/' + folder.id">
             <div class=" border rounded-md  p-2 bg-gray-100 cursor-pointer  ">
               <img :src="folderIcon" alt="">
             </div>
@@ -119,7 +119,7 @@
           <div>
             <h1 class="text-lg font-medium ">{{folder.name}}</h1>
             <div class="flex items-center gap-3 mt-1">
-              <p>{{ folder?.file_count? folder.file_count: 0 }} File(s)</p>
+              <p>{{ folder?.archives_count ? folder.archives_count : 0 }} File(s)</p>
               <div class="w-fit py-1 px-2 rounded-2xl bg-green-200 text-xs text-green-800">
                 {{folder.is_open? "Open": "Closed"}}
               </div>
@@ -242,35 +242,17 @@
               class="mt-3 m-auto w-56 flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 cursor-pointer">
               <Icon icon="mynaui:cloud-upload" width="25" />
              
-              <Link href="/archiving">Upload Document</Link>
+              <Link :href="'/edms/archiving/department/' + folder.id">Upload Document</Link>
             </div>
             </EmptyState>
           </div>
         </div>
 
-        <!-- list view table -->
-        <div v-if="(files && files.length) > 0 && documentsGridView"
-          class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8 ">
-          <div v-for="file in files" class="bg-gray-200 p-2 rounded-md" >
-            <div class="flex items-center justify-between">
-              <div class="p-2 rounded-full bg-white w-fit">
-                <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
-              </div>
-              <h1 class="truncate">{{file.name}}</h1>
-              <div>
-                <Icon icon="majesticons:more-menu-vertical" width="30" />
-              </div>
-            </div>
-
-            <div class="mt-2">
-              <img class="w-full rounded-md" :src="page.props.base+'/storage'+file.path" alt="Document image" />
-            </div>
-          </div>
-        </div>
+        <!-- ListVue handles both list and grid views for documents natively now -->
 
           <ListVue :files="files" :documentsGridView="documentsGridView" @docs="SetselectedDocument" 
           @changeFormat="setFormatModal" @lock="setLock" @fileRename="setFileRename" @downloadFile="downloadFile"
-          @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails"/>
+          @selectedArchive="setSelectedArchive" @branchDetails="setBranchDetails" @checkOut="handleCheckOut" @checkIn="handleCheckIn" />
       </div>
     </section>
 
@@ -286,6 +268,8 @@
 </template>
 
 <script setup>
+import Swal from 'sweetalert2';
+
 import { ref, defineProps, computed } from "vue";
 import { Link, router, usePage } from '@inertiajs/vue3'
 import EmptyState from "../../components/EmptyState.vue";
@@ -405,42 +389,26 @@ const setLock =(data)=>{
 
 const downloadFile = async () => {
   try {
-    const response = await axios.get('/download-file', {
-      params: { id: selectedArchiveId.value },
-      responseType: 'blob'
-    });
-
-    // Extract the filename from the Content-Disposition header
-    const contentDisposition = response.headers['content-disposition'];
-    const fileName = contentDisposition.split('filename=')[1];
-
-    // Determine the content type based on the file extension
-    const contentType = fileName.endsWith('.pdf') ? 'application/pdf' :
-                        fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-                        fileName.endsWith('.png') ? 'image/png' :
-                        'application/octet-stream'; // Default to binary data
-
-    // Create a blob object from the binary data
-    const blob = new Blob([response.data], { type: contentType });
-
-    // Create a URL for the blob object
-    const url = window.URL.createObjectURL(blob);
-
-    // Create a link element and simulate a click to trigger the file download
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName); // Set the filename for the downloaded file
-    document.body.appendChild(link);
-    link.click();
-
-    // Cleanup by revoking the object URL
-    window.URL.revokeObjectURL(url);
+    window.location.href = (page.props.base || '') + '/download-file?id=' + selectedArchiveId.value;
   } catch (error) {
     console.error('Error downloading file:', error);
   }
 };
 
+const handleCheckOut = (data) => {
+  router.post('/checkout-document', { id: data.id }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      window.location.href = (page.props.base || '') + '/download-file?id=' + data.id;
+    }
+  });
+};
 
+const handleCheckIn = (data) => {
+  router.post('/checkin-document', { id: data.id }, {
+    preserveScroll: true
+  });
+};
 
 const toggle = (event) => {
   menu.value.toggle(event);
@@ -498,10 +466,21 @@ const formatDate =(inputDate)=> {
 }
 
 const deleteArchive = (data)=>{
-  let id = data.id
-  router.get('/delete-archive',{id:id, only: ['department']}, {onSuccess:page=>{
-    //console.log(page)
-  }, preserveScroll: (page) => console.log(page)})
+  Swal.fire({
+    title: 'Confirm',
+    text: "Are you sure you want to delete this document?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+    let id = data.id
+    router.get('/delete-archive',{id:id, only: ['department']}, {onSuccess:page=>{
+      //console.log(page)
+    }, preserveScroll: (page) => console.log(page)})
+  }
+  });
 }
 
 const files = computed(()=>{
@@ -509,6 +488,24 @@ const files = computed(()=>{
 
   if(props.department.archive){
     for(let file of props.department.archive){
+        let f_path = file?.file_path?.[0]?.path || file?.file_path?.[0]?.file_name || '';
+        let resultUrl = 'vscode-icons:default-file';
+        
+        if (f_path) {
+            const parts = f_path.split('.');
+            const extension = parts.pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'gif', 'png', 'webp', 'svg'].includes(extension)) {
+                resultUrl = 'vscode-icons:file-type-image';
+            } else if (extension === 'pdf') {
+                resultUrl = 'vscode-icons:file-type-pdf2';
+            } else if (['doc', 'docx'].includes(extension)) {
+                resultUrl = 'vscode-icons:file-type-word';
+            } else if (['xls', 'xlsx', 'csv'].includes(extension)) {
+                resultUrl = 'vscode-icons:file-type-excel';
+            }
+        }
+
       let arr = {
         name: file?.file_path[0]?.file_name,
         size: file?.file_path[0]?.file_size,
@@ -517,6 +514,7 @@ const files = computed(()=>{
         path: file?.file_path[0]?.thumbnails,
         id: file.id,
         files: file?.file_path,
+        icon_url: resultUrl
       }
       newarr.push(arr);
     }
@@ -546,3 +544,6 @@ const folders = computed(()=>{
   background: red;
 }
 </style>
+
+
+

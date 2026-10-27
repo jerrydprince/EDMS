@@ -13,139 +13,162 @@ use Jenssegers\Agent\Agent;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\LoginActivity;
 
 class UserEventSubscriber
 {
-      /**
+    /**
      * Handle user login events.
      */
     public function handleUserLogin(Login $event) {
+        $user = $event->user ?? auth()->user();
+        if (!$user) {
+            return;
+        }
+
         $request = request();
-        if(!auth()->user()->hasRole('super admin')){
-            if(!auth()->user()->is_approved){
+        if (!$user->hasRole('super admin')) {
+            if (!$user->is_approved) {
                 Auth::logout();
-                return back()->withErrors([
+                throw \Illuminate\Validation\ValidationException::withMessages([
                     'email' => 'Please wait while we approve your account',
-                ])->onlyInput('email');
+                ]);
             }
         }
 
-        //take the attendance
+        // take the attendance
         Attendance::updateOrCreate(
-            ['user_id' => auth()->user()->id, 'date'=>now()->toDateString()],
-            ['login_time' => Attendance::where('user_id', auth()->user()->id)
+            ['user_id' => $user->id, 'date' => now()->toDateString()],
+            ['login_time' => Attendance::where('user_id', $user->id)
                         ->where('date', now()->toDateString())
                         ->value('login_time') ?? now()]
         );
 
-        //user session
-        $collection = GeoLocation::lookup($request->ip());
-        $location = $collection? $collection->get('country').", ".$collection->get('city'): null;
+        // user session
+        $location = 'Unknown';
+        try {
+            $collection = GeoLocation::lookup($request->ip());
+            $country = $collection ? $collection->get('country') : null;
+            $city = $collection ? $collection->get('city') : null;
+            
+            if (!empty($country) && !empty($city)) {
+                $location = "$country, $city";
+            } elseif (!empty($country)) {
+                $location = $country;
+            } elseif (!empty($city)) {
+                $location = $city;
+            }
+        } catch (\Throwable $e) {
+            // Ignore geolocation error
+        }
 
         $agent = new Agent();
-        $browser = $agent->browser();
-        $request->session()->put('browser', $browser);
+        $browser = $agent->browser() ?: 'unknown';
 
-        session(['branch'=>$this->userBranchDetails($request)]);
-      
-         $browser = $agent->browser()? $agent->browser(): 'unknown';
-         session()->put(['browser'=>$browser, 'location' => $location]);
+        if ($request->hasSession()) {
+            $request->session()->put('browser', $browser);
+            $request->session()->put('location', $location);
+            if ($branch = $this->userBranchDetails($user)) {
+                $request->session()->put('branch', $branch);
+            }
+        }
 
-          // adds to the activity log
-          $user = new User();
-          activity()
-          ->performedOn($user)
-          ->causedBy(auth()->user()->id)
-          ->withProperties([
-              'archive' => '',
-              'ip' => request()->ip(),
-              'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-              'user_agent' => request()->userAgent(),
-              'event' => 'login',
-              'device' => $this->getDevice(),
-              'document_type' =>[],
-              'files' => [],
-              'department' =>auth()->user()->department,
-                'division' => auth()->user()->division,
-                'unit' => auth()->user()->unit
-              ])
-          ->log(auth()->user()->first_name.' '.auth()->user()->last_name." logged in");
+        LoginActivity::create([
+            'user_id' => $user->id,
+            'name' => $user->first_name . ' ' . $user->last_name,
+            'ip_address' => request()->ip(),
+            'browser' => $browser,
+            'location' => $location
+        ]);
+
+        // adds to the forensic activity log
+        \App\Services\AuditTrailService::logSecurity(
+            'login',
+            $user->first_name . ' ' . $user->last_name . " authenticated into the system",
+            [
+                'event' => 'login',
+                'browser' => $browser,
+                'location' => $location,
+                'department' => $user->department?->title ?? null,
+                'division' => $user->division?->title ?? null,
+                'unit' => $user->unit?->title ?? null
+            ],
+            $user,
+            \App\Services\AuditTrailService::SEVERITY_ROUTINE
+        );
     }
 
     public function getDevice(){
         $agent = new Agent();
 
-            $isMobile = $agent->isMobile();   // Returns true if the device is a mobile
-            $isTablet = $agent->isTablet();   // Returns true if the device is a tablet
-            $isDesktop = $agent->isDesktop(); // Returns true if the device is a desktop
-            $browser = $agent->browser();     // e.g., Chrome, Safari
-            $platform = $agent->platform();   // e.g., iOS, Android, Windows
+        $isMobile = $agent->isMobile();   // Returns true if the device is a mobile
+        $isTablet = $agent->isTablet();   // Returns true if the device is a tablet
+        $isDesktop = $agent->isDesktop(); // Returns true if the device is a desktop
+        $browser = $agent->browser();     // e.g., Chrome, Safari
+        $platform = $agent->platform();   // e.g., iOS, Android, Windows
 
-            $device = '';
+        $device = '';
 
-            // Example usage
-            if ($isMobile) {
-                $device = 'Mobile';
-            } elseif ($isTablet) {
-                $device = 'Tablet';
-            } else {
-                $device = 'Desktop';
-            }
+        // Example usage
+        if ($isMobile) {
+            $device = 'Mobile';
+        } elseif ($isTablet) {
+            $device = 'Tablet';
+        } else {
+            $device = 'Desktop';
+        }
         return $device;
     }
 
-    public function userBranchDetails($request){
-        if(auth()->check()){
-            if(auth()->user()->unit_id){
-             return [
-                    'branch' => 'unit',
-                    'branch_id' => auth()->user()->id,
-                    'branch_name' =>auth()->user()->unit->title
-             ];
-            }
+    public function userBranchDetails($user = null){
+        $user = $user ?? auth()->user();
+        if (!$user) return null;
 
-            if(auth()->user()->division_id){
-                return [
-                    'branch' => 'division',
-                    'branch_id' => auth()->user()->id,
-                    'branch_name' =>auth()->user()->division->title
-                ];
-            }
-
-            if(auth()->user()->department_id){
-                return [
-                    'branch' => 'department',
-                    'branch_id' => auth()->user()->id,
-                    'branch_name' =>auth()->user()->department->title
-                ];
-            }
+        if ($user->unit_id && $user->unit) {
+            return [
+                'branch' => 'unit',
+                'branch_id' => $user->unit_id,
+                'branch_name' => $user->unit->title
+            ];
         }
-        
+
+        if ($user->division_id && $user->division) {
+            return [
+                'branch' => 'division',
+                'branch_id' => $user->division_id,
+                'branch_name' => $user->division->title
+            ];
+        }
+
+        if ($user->department_id && $user->department) {
+            return [
+                'branch' => 'department',
+                'branch_id' => $user->department_id,
+                'branch_name' => $user->department->title
+            ];
+        }
+        return null;
     }
  
     /**
      * Handle user logout events.
      */
     public function handleUserLogout(Logout $event): void {
+        $user = $event->user ?? auth()->user();
+        if (!$user) return;
 
-        $user = new User();
-        activity()
-            ->performedOn($user)
-            ->causedBy(auth()->user()->id)
-            ->withProperties([
-                'archive' => '',
-                'ip' => request()->ip(),
-                'user' => auth()->user()->first_name.' '.auth()->user()->last_name,
-                'user_agent' => request()->userAgent(),
+        \App\Services\AuditTrailService::logSecurity(
+            'logout',
+            $user->first_name . ' ' . $user->last_name . " terminated session / logged out",
+            [
                 'event' => 'logout',
-                'device' => $this->getDevice(),
-                'document_type' =>[],
-                'files' => [],
-                'department' =>auth()->user()->department,
-                'division' => auth()->user()->division,
-                'unit' => auth()->user()->unit
-                ])
-            ->log(auth()->user()->first_name.' '.auth()->user()->last_name." logged out");
+                'department' => $user->department?->title ?? null,
+                'division' => $user->division?->title ?? null,
+                'unit' => $user->unit?->title ?? null
+            ],
+            $user,
+            \App\Services\AuditTrailService::SEVERITY_ROUTINE
+        );
     }
  
     /**

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payment_assignment', function (Blueprint $table) {
             $table->id();
             $table->dateTime('due_date');
-            $table->integer('recipient_id')->unsigned();
+            $table->unsignedBigInteger('recipient_id');
             $table->enum('status', ['pending', 'done', 'rejected', 'due', 'overdue'])->default('pending');
             $table->text('comments')->nullable();
             $table->foreign('recipient_id')->references('id')->on('users');

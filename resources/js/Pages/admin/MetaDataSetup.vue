@@ -27,10 +27,17 @@
       <p class="text-2xl md:text-3xl text-gray-800 font-semibold">
         Manage Metadata Fields
       </p>
-      <div @click="createMetadataDialog"
-        class="mt-4 md:mt-0 flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3 md:px-4 cursor-pointer">
-        <Icon icon="ion:add-outline" width="25" />
-        <p class="text-sm md:text-base">Create Custom Metadata</p>
+      <div class="mt-4 md:mt-0 flex items-center gap-3">
+        <Link href="/dashboard/governance-hub"
+          class="flex gap-2 items-center bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold rounded-lg py-2 px-3 md:px-4 shadow-2xs hover:bg-indigo-100 transition-all cursor-pointer">
+          <Icon icon="lucide:network" width="20" class="text-indigo-600" />
+          <p class="text-sm md:text-base">Governance Hub</p>
+        </Link>
+        <div @click="createMetadataDialog"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-3 md:px-4 cursor-pointer">
+          <Icon icon="ion:add-outline" width="25" />
+          <p class="text-sm md:text-base">Create Custom Metadata</p>
+        </div>
       </div>
     </section>
     <section class="mt-4">
@@ -207,6 +214,8 @@
   </main>
 </template>
 <script setup>
+import Swal from 'sweetalert2';
+
 import { ref, defineProps } from "vue";
 import CreateMetadataDialog from "../../components/Modals/CreateMetadataDialog.vue";
 import UpdateMetadataDialog from "../../components/Modals/UpdateMetadataDialog.vue";
@@ -241,9 +250,18 @@ const menuItems = ref([
      icon: "pi pi-trash",
       value: "delete",
       command: ()=>{
-        if (window.confirm("Do you want to delete this?")) {
+        Swal.fire({
+          title: 'Confirm',
+          text: "Do you want to delete this?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes',
+          cancelButtonText: 'No'
+        }).then((result) => {
+          if (result.isConfirmed) {
           router.post('/dashboard/delete-metadata',singleMetadata.value);
         }
+        });
       } 
   },
   { 

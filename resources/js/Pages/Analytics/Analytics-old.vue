@@ -117,11 +117,11 @@ const levels = {
     "Super Admin": 500,
     Admin: 192,
     "Records Manager": 64,
-    "Super Users": 11,
+    "super user": 11,
     Directors: 8,
     "Division Head": 64,
     "Unit Head": 11,
-    "Data Entry": 8,
+    "record manager": 8,
     Registrars: 8,
 };
 

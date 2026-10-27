@@ -20,4 +20,15 @@ class Share extends Model
     {
         return $this->hasMany(Archive::class, 'id', 'archive_id');
     }
+
+    public function sharedUser()
+    {
+        return $this->belongsTo(User::class, 'shared_id');
+    }
+
+    public function sharingUser()
+    {
+        return $this->belongsTo(User::class, 'sharing_id');
+    }
 }
+

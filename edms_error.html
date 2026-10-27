@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+   <link rel="icon" type="image/png" href="http://localhost/images/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EDMS Project</title>
+    
+    <script type="module" src="http://[::1]:5177/@vite/client"></script><link rel="stylesheet" href="http://[::1]:5177/resources/css/app.css" /><script type="module" src="http://[::1]:5177/resources/js/app.js"></script>    
+
+    <script>
+      (function() {
+        try {
+          var userTheme = "light";
+          var userFontSize = "16";
+
+          var theme = userTheme || localStorage.getItem('edms_theme');
+          if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          }
+          
+          var fontSize = userFontSize || localStorage.getItem('edms_fontSize');
+          if (fontSize) {
+            document.documentElement.style.fontSize = fontSize + 'px';
+          } else {
+            // Default font size fallback if none is stored
+            document.documentElement.style.fontSize = '16px';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    
+    <style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .hide_scroll::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .hide_scroll {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+   #app{
+    width:100%;
+   }
+    </style>
+  </head>
+  
+  <body class="min-h-screen flex items-center justify-start w-full">
+   
+  <div id="app" data-page="{&quot;component&quot;:&quot;Error&quot;,&quot;props&quot;:{&quot;errors&quot;:{},&quot;shared_departments&quot;:[{&quot;id&quot;:1,&quot;title&quot;:&quot;Funds&quot;,&quot;description&quot;:null,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2024-04-15T09:45:39.000000Z&quot;,&quot;updated_at&quot;:&quot;2024-04-15T09:45:39.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null},{&quot;id&quot;:2,&quot;title&quot;:&quot;Procurement&quot;,&quot;description&quot;:null,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2024-05-14T14:13:35.000000Z&quot;,&quot;updated_at&quot;:&quot;2024-05-14T14:13:35.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null},{&quot;id&quot;:3,&quot;title&quot;:&quot;Finance and Accounts&quot;,&quot;description&quot;:null,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2024-11-28T14:39:27.000000Z&quot;,&quot;updated_at&quot;:&quot;2024-11-28T14:39:27.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null},{&quot;id&quot;:4,&quot;title&quot;:&quot;Revenue and Investment&quot;,&quot;description&quot;:null,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2025-05-20T15:00:04.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-05-20T15:00:04.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null},{&quot;id&quot;:6,&quot;title&quot;:&quot;Information and Communications Technology&quot;,&quot;description&quot;:null,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2025-12-28T17:05:37.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-12-28T17:05:37.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null},{&quot;id&quot;:7,&quot;title&quot;:&quot;Administration&quot;,&quot;description&quot;:&quot;Administration Department&quot;,&quot;head&quot;:0,&quot;created_at&quot;:&quot;2026-09-19T21:48:28.000000Z&quot;,&quot;updated_at&quot;:&quot;2026-09-19T21:48:28.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;deleted_by&quot;:null}],&quot;base&quot;:&quot;http:\/\/localhost&quot;,&quot;userBranch&quot;:{&quot;id&quot;:39,&quot;first_name&quot;:&quot;AGF&quot;,&quot;last_name&quot;:&quot;Tester&quot;,&quot;gender&quot;:&quot;Female&quot;,&quot;grade_level&quot;:17,&quot;phone&quot;:1234567890,&quot;email&quot;:&quot;agf@oagf.gov.ng&quot;,&quot;email_verified_at&quot;:&quot;2026-09-19T21:48:30.000000Z&quot;,&quot;verification_code&quot;:null,&quot;digital_signature_path&quot;:null,&quot;is_verified&quot;:0,&quot;department_id&quot;:null,&quot;division_id&quot;:null,&quot;unit_id&quot;:null,&quot;created_at&quot;:&quot;2026-09-19T21:48:30.000000Z&quot;,&quot;updated_at&quot;:&quot;2026-09-19T22:41:54.000000Z&quot;,&quot;is_department_head&quot;:null,&quot;is_division_head&quot;:null,&quot;is_unit_head&quot;:null,&quot;profile_image&quot;:null,&quot;is_approved&quot;:0,&quot;is_online&quot;:0,&quot;deleted_at&quot;:null,&quot;is_on_leave&quot;:0,&quot;is_two_factor_enabled&quot;:0,&quot;deleted_by&quot;:null,&quot;email_password&quot;:null,&quot;last_email_fetch_at&quot;:null,&quot;two_factor_secret&quot;:null,&quot;two_factor_recovery_codes&quot;:null,&quot;two_factor_confirmed_at&quot;:null,&quot;theme&quot;:&quot;light&quot;,&quot;font_size&quot;:&quot;16&quot;,&quot;notification_settings&quot;:null,&quot;language&quot;:&quot;English&quot;,&quot;time_format&quot;:&quot;12 Hours&quot;,&quot;date_format&quot;:&quot;DD\/MM\/YYYY&quot;,&quot;section_id&quot;:null,&quot;is_section_head&quot;:0,&quot;department&quot;:null,&quot;division&quot;:null,&quot;unit&quot;:null,&quot;roles&quot;:[{&quot;id&quot;:12,&quot;name&quot;:&quot;Accountant-General&quot;,&quot;guard_name&quot;:&quot;web&quot;,&quot;created_at&quot;:&quot;2026-09-19T21:47:59.000000Z&quot;,&quot;updated_at&quot;:&quot;2026-09-19T21:47:59.000000Z&quot;,&quot;description&quot;:&quot;Full enterprise control over all modules, organizations, approvals, dashboards, financial authorizations, policy management, and executive analytics&quot;,&quot;status&quot;:1,&quot;role_type&quot;:&quot;regular&quot;,&quot;pivot&quot;:{&quot;model_type&quot;:&quot;App\\Models\\User&quot;,&quot;model_id&quot;:39,&quot;role_id&quot;:12},&quot;permissions&quot;:[]}],&quot;permissions&quot;:[]},&quot;user&quot;:{&quot;id&quot;:39,&quot;first_name&quot;:&quot;AGF&quot;,&quot;last_name&quot;:&quot;Tester&quot;,&quot;gender&quot;:&quot;Female&quot;,&quot;grade_level&quot;:17,&quot;phone&quot;:1234567890,&quot;email&quot;:&quot;agf@oagf.gov.ng&quot;,&quot;email_verified_at&quot;:&quot;2026-09-19T21:48:30.000000Z&quot;,&quot;verification_code&quot;:null,&quot;digital_signature_path&quot;:null,&quot;is_verified&quot;:0,&quot;department_id&quot;:null,&quot;division_id&quot;:null,&quot;unit_id&quot;:null,&quot;created_at&quot;:&quot;2026-09-19T21:48:30.000000Z&quot;,&quot;updated_at&quot;:&quot;2026-09-19T22:41:54.000000Z&quot;,&quot;is_department_head&quot;:null,&quot;is_division_head&quot;:null,&quot;is_unit_head&quot;:null,&quot;profile_image&quot;:null,&quot;is_approved&quot;:0,&quot;is_online&quot;:0,&quot;deleted_at&quot;:null,&quot;is_on_leave&quot;:0,&quot;is_two_factor_enabled&quot;:0,&quot;deleted_by&quot;:null,&quot;email_password&quot;:null,&quot;last_email_fetch_at&quot;:null,&quot;two_factor_secret&quot;:null,&quot;two_factor_recovery_codes&quot;:null,&quot;two_factor_confirmed_at&quot;:null,&quot;theme&quot;:&quot;light&quot;,&quot;font_size&quot;:&quot;16&quot;,&quot;notification_settings&quot;:null,&quot;language&quot;:&quot;English&quot;,&quot;time_format&quot;:&quot;12 Hours&quot;,&quot;date_format&quot;:&quot;DD\/MM\/YYYY&quot;,&quot;section_id&quot;:null,&quot;is_section_head&quot;:0,&quot;department&quot;:null,&quot;division&quot;:null,&quot;unit&quot;:null,&quot;roles&quot;:[{&quot;id&quot;:12,&quot;name&quot;:&quot;Accountant-General&quot;,&quot;guard_name&quot;:&quot;web&quot;,&quot;created_at&quot;:&quot;2026-09-19T21:47:59.000000Z&quot;,&quot;updated_at&quot;:&quot;2026-09-19T21:47:59.000000Z&quot;,&quot;description&quot;:&quot;Full enterprise control over all modules, organizations, approvals, dashboards, financial authorizations, policy management, and executive analytics&quot;,&quot;status&quot;:1,&quot;role_type&quot;:&quot;regular&quot;,&quot;pivot&quot;:{&quot;model_type&quot;:&quot;App\\Models\\User&quot;,&quot;model_id&quot;:39,&quot;role_id&quot;:12},&quot;permissions&quot;:[]}],&quot;permissions&quot;:[]},&quot;branch&quot;:&quot;department&quot;,&quot;branchName&quot;:&quot;department&quot;,&quot;roles&quot;:[&quot;Accountant-General&quot;],&quot;userDepartment&quot;:null,&quot;user_roles&quot;:[&quot;Accountant-General&quot;],&quot;notifications&quot;:[],&quot;unreadNotifications&quot;:[],&quot;total_task_notifications&quot;:0,&quot;flash&quot;:{&quot;success&quot;:null,&quot;error&quot;:null,&quot;warning&quot;:null,&quot;info&quot;:null,&quot;message&quot;:null},&quot;permissions&quot;:[],&quot;status&quot;:403},&quot;url&quot;:&quot;\/edms&quot;,&quot;version&quot;:&quot;207fd484b7c2ceeff7800b8c8a11b3b6&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>    <!-- <div id="app">
+
+    </div> -->
+    <!-- <script type="module" src="/src/main.js"></script> -->
+    
+  </body>
+</html>

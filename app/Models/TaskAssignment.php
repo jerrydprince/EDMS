@@ -14,6 +14,8 @@ class TaskAssignment extends Model
         'assigned_to',
         'assigned_by',
         'status',
+        'description',
+        'due_at',
         'created_at',
         'updated_at'
     ];
@@ -26,6 +28,14 @@ class TaskAssignment extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to', 'id');
+    }
+
+    /**
+     * Get the task that owns the TaskAssignment
+     */
+    public function task()
+    {
+        return $this->belongsTo(Task::class, 'task_id', 'id');
     }
 
     /**
@@ -44,6 +54,11 @@ class TaskAssignment extends Model
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function taskSubmissions()
+    {
+        return $this->hasMany(TaskSubmission::class, 'task_assignment_id', 'id');
+    }
+
+    public function task_submissions()
     {
         return $this->hasMany(TaskSubmission::class, 'task_assignment_id', 'id');
     }

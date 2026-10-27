@@ -321,7 +321,7 @@ const getTimeDifference = () => {
   let time1 = 0
    let time2 = 0
 
-   if(roles.value.includes('super users')){
+   if(roles.value.includes('super user')){
       time1 = props.task.assignments[0]?.created_at
       time2 = props.task?.assignments[0]?.task_submissions[0]?.created_at
     }else{

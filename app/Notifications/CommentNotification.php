@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class CommentNotification extends Notification
+class CommentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -19,11 +19,14 @@ class CommentNotification extends Notification
      protected $user;
      protected $comment;
      protected $comment_obj;
-    public function __construct($comment, $user, $comment_obj)
+     protected $task;
+
+    public function __construct($comment, $user, $comment_obj = null, $task = null)
     {
         $this->user = $user;
         $this->comment = $comment;
         $this->comment_obj = $comment_obj;
+        $this->task = $task;
     }
 
     /**
@@ -54,10 +57,15 @@ class CommentNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $taskId = $this->task ? $this->task->id : ($this->comment_obj && isset($this->comment_obj->taskAssignment) ? $this->comment_obj->taskAssignment->task_id : null);
+        $taskTitle = $this->task ? $this->task->title : ($this->comment_obj && isset($this->comment_obj->taskAssignment) && isset($this->comment_obj->taskAssignment->task) ? $this->comment_obj->taskAssignment->task->title : 'Task Discussion');
+
         return [
             'user' => $this->user,
-            'comment' =>$this->comment,
+            'comment' => $this->comment,
             'comment_obj' => $this->comment_obj,
+            'task_id' => $taskId,
+            'task_title' => $taskTitle,
         ];
     }
 
@@ -66,10 +74,15 @@ class CommentNotification extends Notification
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
+        $taskId = $this->task ? $this->task->id : ($this->comment_obj && isset($this->comment_obj->taskAssignment) ? $this->comment_obj->taskAssignment->task_id : null);
+        $taskTitle = $this->task ? $this->task->title : ($this->comment_obj && isset($this->comment_obj->taskAssignment) && isset($this->comment_obj->taskAssignment->task) ? $this->comment_obj->taskAssignment->task->title : 'Task Discussion');
+
         return new BroadcastMessage([
-           'comment' =>$this->comment,
-           'user'=> $this->user,
-         'comment_obj' => $this->comment_obj,
+            'comment' => $this->comment,
+            'user' => $this->user,
+            'comment_obj' => $this->comment_obj,
+            'task_id' => $taskId,
+            'task_title' => $taskTitle,
         ]);
     }
 }

@@ -4,11 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Division extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    protected $guarded = [];
+
+    public function getActivitylogOptions(): LogOptions { return LogOptions::defaults()->logAll()->logOnlyDirty(); }
 
     /**
      * Get the department that owns the Division
@@ -26,6 +32,11 @@ class Division extends Model
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function unit()
+    {
+        return $this->hasMany(Unit::class);
+    }
+
+    public function units()
     {
         return $this->hasMany(Unit::class);
     }
@@ -70,6 +81,11 @@ class Division extends Model
         return $this->hasMany(User::class);
     }
 
+    public function designations()
+    {
+        return $this->hasMany(Designation::class);
+    }
+
     /**
      * The fileType that belong to the Division
      *
@@ -112,7 +128,7 @@ class Division extends Model
 
     protected static function booted(){
         static::deleted(function($division){
-            $division->deleted_by = auth()->user()->id;
+            $division->deleted_by = auth()->id();
             $division->save();
         });
     }
@@ -127,3 +143,4 @@ class Division extends Model
        return $this->hasOne(User::class, 'id', 'deleted_by');
    }
 }
+

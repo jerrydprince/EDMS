@@ -56,5 +56,28 @@ class DocumentType extends Model
         return $this->belongsToMany(Unit::class, 'unit_document_types');
     }
 
-    
+    public function section()
+    {
+        return $this->belongsToMany(Section::class, 'section_document_types', 'document_type_id', 'section_id');
+    }
+
+    public function departments()
+    {
+        return $this->department();
+    }
+
+    public function divisions()
+    {
+        return $this->division();
+    }
+
+    public function units()
+    {
+        return $this->unit();
+    }
+
+    public function sections()
+    {
+        return $this->section();
+    }
 }

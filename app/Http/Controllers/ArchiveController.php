@@ -122,7 +122,7 @@ class ArchiveController extends Controller
         DB::transaction(function () use($request) {
             $folder2 = Folder::find($request->id);
 
-            // if(auth()->user()->hasRole('data entry')){
+            // if(auth()->user()->hasRole('record manager')){
             //     $department = auth()->user()->department_id;
             //     $division = auth()->user()->division_id;
             //     $unit = auth()->user()->unit_id;
@@ -146,13 +146,13 @@ class ArchiveController extends Controller
                 $baseDirectory = "storage/Archives";
                     $subfolders = [$department, $division, $unit, $request->name];
                     if (!is_dir($baseDirectory)) {
-                        mkdir($baseDirectory, 0777);
+                        mkdir($baseDirectory, 0777, true);
                     }
 
                     foreach ($subfolders as $folderName) {
                         $fullPath = $baseDirectory . "/" . $folderName;
                         if (!is_dir($fullPath)) {
-                            mkdir($fullPath, 0777);
+                            mkdir($fullPath, 0777, true);
                         }
                         $baseDirectory = $fullPath;
                     }
@@ -266,6 +266,106 @@ class ArchiveController extends Controller
             return 0; // Invalid unit
     }
 }
+
+    public function batchUploadFiles(Request $request) {
+        $folder = Folder::find($request->folder_id);
+        if ($folder && $folder->is_open == 0) {
+            return response()->json(['error' => 'This file is closed and documents can no longer be uploaded into it.'], 403);
+        }
+
+        $department = $folder ? $folder->department_id : null;
+        $division = $folder ? $folder->division_id : null;
+        $unit = $folder ? $folder->unit_id : null;
+
+        $documents = $request->input('documents'); // Contains metadata and doctype
+        $files = $request->file('documents'); // Contains the actual files
+
+        if (!$documents) {
+            return redirect()->back()->withErrors(['error' => 'No documents provided.']);
+        }
+
+        foreach ($documents as $index => $doc) {
+            // Create Archive
+            $archive = new Archive();
+            $archive->department_id = $department;
+            $archive->division_id = $division;
+            $archive->unit_id = $unit;
+            $archive->folder_id = $request->folder_id;
+            $archive->updated_by = auth()->user()->id;
+            $archive->save();
+
+            // Save Document Type ID inside Archive if possible (optional, but handled implicitly)
+            // If the system expects it elsewhere, we handle it. But the model doesn't have it natively except if via relation.
+
+            // Metadata
+            $doc_types = [];
+            if(isset($doc['input_obj']) && is_array($doc['input_obj'])) {
+                foreach($doc['input_obj'] as $values){
+                    // If JSON string
+                    if(is_string($values)) {
+                        $values = json_decode($values, true);
+                    }
+                    if(is_array($values)) {
+                        foreach($values as $key => $value){
+                            $arr = [
+                                'archive_keys' => $key,
+                                'archive_values' => $value,
+                                'archive_id' => $archive->id,
+                                'created_at' => \Carbon\Carbon::now()
+                            ];
+                            array_push($doc_types, $arr);
+                        }
+                    }
+                }
+                ArchiveDocs::insert($doc_types);
+            }
+
+            $this->logFileActivity($archive->id, "New file created by ".auth()->user()->first_name.' '.auth()->user()->last_name);
+
+            // File upload
+            if(isset($files[$index]['file'])) {
+                $file = $files[$index]['file'];
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                
+                $path = $folder->path.'/';
+                $thumbnail_path = $folder->path.'/thumbnails/';
+
+                $extension = strtolower($file->getClientOriginalExtension());
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $size = $this->formatSize(filesize($file));
+
+                if(!is_dir(public_path($thumbnail_path))){
+                    mkdir($thumbnail_path,0777,true);
+                }
+
+                $thumbnail = '';
+                if (in_array($extension, $allowedExtensions)) {
+                        $thumbnail = $this->createThumbnail($file, $thumbnail_path, 480, 520, $fileName);
+                }
+    
+                $file->move(public_path($path),$fileName);
+                
+                $path = str_replace('storage/', '', $path);
+                $thumbnail = str_replace('storage/','', $thumbnail);
+
+                $paths = [
+                    'path'=>'/'.$path.$fileName,
+                    'created_at'=>\Carbon\Carbon::now(), 
+                    'updated_at'=>\Carbon\Carbon::now(),
+                    'updated_by' =>auth()->user()->id,
+                    'updated_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
+                    'file_name' => $fileName,
+                    'file_size' => $size,
+                    'thumbnails' => '/'.$thumbnail
+                ];
+                
+                $filePathObj = FilePath::create($paths);
+                $archive->filePath()->attach($filePathObj->id);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Batch uploaded successfully');
+    }
 
     public function uploadFiles(Request $request){
         // $request->validate([
@@ -390,41 +490,20 @@ class ArchiveController extends Controller
     }
 
     public function ArchiveFiles(Request $request){
-        // $request->validate([
-        //     'description' => 'sometimes|required',
-        //     'text' => 'sometimes|required',
-        //     'date' => 'sometimes|required',
-        //     'number' => 'sometimes|required'
-        // ]);
         $user = auth()->user();
-        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user')){
-           
-            if($request->branch_type == 'department'){
-               $dept = Department::find($request->branch_id);
-               $department = $dept->id;
-               $division = null;
-               $unit = null;
-            }
-            if($request->branch_type == 'division'){
-                $div = Division::find($request->branch_id);
-                $dept = $div->department;
-                $department = $dept->id;
-                $division = $div->id;
-                $unit = null;
-             }
-             if($request->branch_type == 'unit'){
-                $unt = Unit::find($request->branch_id);
-                $div = $unt->division;
-                $dept = $div->department;
-                $department = $dept->id;
-                $division = $div->id;
-                $unit = $unt->id;
-             }
-        }else{
-            $department = auth()->user()->department_id;
-            $division = auth()->user()->division_id;
-            $unit = auth()->user()->unit_id;
+        $folder = Folder::find($request->folder_id);
+        
+        if (!$folder) {
+            return redirect()->back()->withErrors(['error' => 'The specified folder could not be found.']);
         }
+
+        if ($folder->is_open == 0) {
+            return redirect()->back()->withErrors(['error' => 'This file is closed and documents can no longer be uploaded into it.']);
+        }
+
+        $department = $folder->department_id;
+        $division = $folder->division_id;
+        $unit = $folder->unit_id;
 
         $archive = new Archive();
         $archive->department_id = $department;
@@ -464,21 +543,63 @@ class ArchiveController extends Controller
         $details = "New file created by ".auth()->user()->first_name.' '.auth()->user()->last_name;
 
         $this->logFileActivity($archive_id, $details);
+
+        $file_path_ids = [];
+
+        if($request->file('files')) {
+            $folder = Folder::find($request->folder_id);
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            $filepath = [];
+            $thumbnails = [];
+
+            try {
+                foreach ($request->file('files') as $index=>$file) {
+                    $path = $folder->path.'/';
+                    $thumbnail_path = $folder->path.'/thumbnails/';
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $size = $this->formatSize(filesize($file));
+
+                    if(!is_dir(public_path($thumbnail_path))){
+                        mkdir($thumbnail_path,0777,true);
+                    }
+
+                    $thumbnail = '';
+                    if (in_array($extension, $allowedExtensions)) {
+                         $thumbnail = $this->createThumbnail($file, $thumbnail_path, 480, 520, $fileName);
+                    }
         
-        $file_path_ids = $request->session()->get('ids');
+                    $file->move(public_path($path),$fileName);
+                   
+                    $path = str_replace('storage/', '', $path);
+                    $thumbnail = str_replace('storage/','', $thumbnail);
 
-        $archive->filePath()->attach($file_path_ids);
+                    $paths = [
+                        'path'=>'/'.$path.$fileName,
+                        'created_at'=>\Carbon\Carbon::now(), 
+                        'updated_at'=>\Carbon\Carbon::now(),
+                        'updated_by' =>auth()->user()->id,
+                        'updated_by_name' => auth()->user()->last_name." ".auth()->user()->first_name,
+                        'file_name' => $fileName,
+                        'file_size' => $size,
+                        'thumbnails' => '/'.$thumbnail
+                    ];
+                    array_push($filepath, $paths);
+                }
+                FilePath::insert($filepath);
+                $file_path = FilePath::latest()->get()->take(count($filepath));
+                $file_path_ids = $file_path->pluck('id');
+            } catch (\Exception $e) {
+                // Ignore failure
+            }
+        } else {
+            $file_path_ids = $request->session()->get('ids') ?? [];
+        }
 
-        //$file_size_byte = $request->session()->get('file_size');
-
-       // $folder = Folder::find($request->folder);
-
-       // $folder_size_byte = $this->convertToBytes($folder->folder_size);
-        //$folder_size = $this->formatSize(($folder_size_byte+$file_size_byte));
-
-        //$folder->file_count = $folder->file_count + 1;
-       // $folder->folder_size = $folder_size;
-        //$folder->save();
+        if (!empty($file_path_ids)) {
+            $archive->filePath()->attach($file_path_ids);
+        }
 
         $request->session()->forget('file_size');
 
@@ -497,7 +618,7 @@ class ArchiveController extends Controller
         //     $request->session()->forget('archives');
         // }
 
-        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user') || $user->hasRole('directors') || $user->hasRole('division heads') || $user->hasRole('unit heads')){
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasRole('super user') || $user->hasRole('director') || $user->hasRole('deputy director') || $user->hasRole('assistant director')){
             return redirect()->route('folder-view2',[$request->branch_type, $request->folder_id, $request->branch_id]);
         }
         return redirect()->route('folder-view',[$request->branch_type, $request->folder_id]);
@@ -545,9 +666,143 @@ class ArchiveController extends Controller
     }
 
     public function downloadFile(Request $request){
-         $archive = Archive::with('filePath')->find($request->id);
-        $path = Storage::path('public/'.$archive->filePath[0]->path);
-        return response()->download($path, $archive->filePath[0]->file_name);
+        $archive = Archive::with(['filePath'])->find($request->id);
+        if (!$archive || $archive->filePath->isEmpty()) {
+            abort(404, 'Archive or filePath not found.');
+        }
+        $this->authorize('view', $archive);
+
+        $archiveFile = $archive->file()->withoutGlobalScopes()->first();
+        
+        if ($archiveFile && $archiveFile->is_confidential && $archiveFile->created_by !== auth()->id()) {
+            abort(403, 'You are not authorized to view this confidential file.');
+        }
+
+        $targetFp = ($request->filled('file_path_id'))
+            ? ($archive->filePath->firstWhere('id', $request->file_path_id) ?? $archive->filePath[0])
+            : $archive->filePath[0];
+
+        $pathString = ltrim($targetFp->path, '/');
+        
+        // 1. Try public/storage/... (where the upload actually places it)
+        $path1 = public_path('storage/' . $pathString);
+        $path2 = public_path($pathString);
+        $path3 = Storage::path('public/' . $pathString);
+
+        \Log::info("Attempting to download file for Archive ID: {$request->id}, FilePath ID: {$targetFp->id}");
+        \Log::info("Path 1: {$path1} - Exists: " . (file_exists($path1) ? 'Yes' : 'No'));
+        \Log::info("Path 2: {$path2} - Exists: " . (file_exists($path2) ? 'Yes' : 'No'));
+        \Log::info("Path 3: {$path3} - Exists: " . (file_exists($path3) ? 'Yes' : 'No'));
+
+        $path = $path1;
+        if (!file_exists($path)) {
+            $path = $path2;
+            if(!file_exists($path)){
+                 $path = $path3;
+            }
+        }
+        
+        // If file not found, try stripping 'copied_' prefix in case the file copy logic failed to create physical copies
+        if (!file_exists($path) && str_contains($path, 'copied_')) {
+            $cleanPathString = str_replace('copied_', '', $pathString);
+            $cleanPath1 = public_path('storage/' . $cleanPathString);
+            $cleanPath2 = public_path($cleanPathString);
+            $cleanPath3 = Storage::path('public/' . $cleanPathString);
+            
+            if (file_exists($cleanPath1)) {
+                $path = $cleanPath1;
+            } elseif (file_exists($cleanPath2)) {
+                $path = $cleanPath2;
+            } elseif (file_exists($cleanPath3)) {
+                $path = $cleanPath3;
+            }
+        }
+
+        if (!file_exists($path)) {
+            abort(404, 'File not found on the server.');
+        }
+
+        $this->logFileActivity($archive->id, 'Downloaded file: ' . $targetFp->file_name);
+        return response()->download($path, $targetFp->file_name);
+    }
+
+    public function downloadFileVersion(Request $request){
+        $version = Version::with('file')->find($request->id);
+        if (!$version) {
+            abort(404, 'Version not found.');
+        }
+        $archive = Archive::where('file_id', $version->file_id)->first();
+        if ($archive) {
+            $this->authorize('view', $archive);
+        }
+
+        if (isset($version->file) && $version->file->is_confidential) {
+            $user = auth()->user();
+            if (!$user->hasRole('super admin') && !$user->hasRole('super user') && !$user->hasRole('super user')) {
+                if ($version->file->created_by !== $user->id) {
+                    abort(403, 'Unauthorized access to confidential file.');
+                }
+            }
+        }
+
+        $versionData = json_decode($version->versions, true);
+
+        if (!isset($versionData['file_path']) || empty($versionData['file_path'])) {
+            \Log::error("File path not found in version JSON data: " . json_encode($versionData));
+            abort(404, 'File not found in version.');
+        }
+
+        $pathString = ltrim($versionData['file_path'][0]['path'], '/');
+        $fileName = $versionData['file_path'][0]['file_name'];
+        
+        $path1 = public_path('storage/' . $pathString);
+        $path2 = public_path($pathString);
+        $path3 = storage_path('app/public/' . $pathString);
+
+        \Log::info("Attempting to download version ID: {$request->id}");
+        \Log::info("Version File Path 1: {$path1} - Exists: " . (file_exists($path1) ? 'Yes' : 'No'));
+        \Log::info("Version File Path 2: {$path2} - Exists: " . (file_exists($path2) ? 'Yes' : 'No'));
+        \Log::info("Version File Path 3: {$path3} - Exists: " . (file_exists($path3) ? 'Yes' : 'No'));
+
+        $path = $path1;
+        if (!file_exists($path)) {
+            $path = $path2;
+            if(!file_exists($path)){
+                 $path = $path3;
+            }
+        }
+        
+        if (!file_exists($path)) {
+            // If file not found, try stripping 'copied_' prefix
+            $originalFileName = str_replace('copied_', '', $fileName);
+            $originalPathString = str_replace($fileName, $originalFileName, $pathString);
+            
+            $path1 = public_path('storage/' . $originalPathString);
+            $path2 = public_path($originalPathString);
+            $path3 = storage_path('app/public/' . $originalPathString);
+            
+            \Log::info("Fallback Version Path 1: {$path1} - Exists: " . (file_exists($path1) ? 'Yes' : 'No'));
+            \Log::info("Fallback Version Path 2: {$path2} - Exists: " . (file_exists($path2) ? 'Yes' : 'No'));
+            \Log::info("Fallback Version Path 3: {$path3} - Exists: " . (file_exists($path3) ? 'Yes' : 'No'));
+
+            $path = $path1;
+            if (!file_exists($path)) {
+                $path = $path2;
+                if(!file_exists($path)){
+                    $path = $path3;
+                }
+            }
+        }
+        
+        if (!file_exists($path)) {
+            abort(404, 'File not found on the server.');
+        }
+        
+        if ($archive) {
+            $this->logFileActivity($archive->id, 'Downloaded version ' . $version->version);
+        }
+        
+        return response()->download($path, $fileName);
     }
 
     public function DuplicateFile(Request $request){
@@ -560,21 +815,18 @@ class ArchiveController extends Controller
             $file_path = $archive->filePath;
             $tempDocs = [];
             foreach($archiveDocs as $docs){
-                if($docs->archive_keys =='title'){
-                     $arr = [
-                        'archive_keys' => $docs->archive_keys,
-                        'archive_values' => $docs->archive_values.'_copy',
-                        'archive_id' => $new_archive->id,
-                        'created_at' => \Carbon\Carbon::now()
-                    ];
-                }else{
-                    $arr = [
-                        'archive_keys' => $docs->archive_keys,
-                        'archive_values' => $docs->archive_values,
-                        'archive_id' => $new_archive->id,
-                        'created_at' => \Carbon\Carbon::now()
-                    ];
+                $newValue = $docs->archive_values;
+                if (stripos($docs->archive_keys, 'title') !== false) {
+                    $newValue = $newValue . ' (Copy)';
                 }
+
+                $arr = [
+                    'archive_id' => $new_archive->id,
+                    'archive_keys' => $docs->archive_keys,
+                    'archive_values' => $newValue,
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
+                ];
                
                 array_push($tempDocs, $arr);
             }
@@ -753,6 +1005,7 @@ class ArchiveController extends Controller
                     return $arch;
                 }
             });
+            $old_name = $file_name->first() ? $file_name->first()->archive_values : 'Unknown';
             
             $archive = $archive->archiveDocs()->updateOrCreate(
                 ['id'=>$request->archive_docs_id], 
@@ -760,7 +1013,7 @@ class ArchiveController extends Controller
             );
       
                 $archive_id = $request->id;
-                $details = "File name changed from '{$file_name->first()->archive_values}' to '{$request->name}', 
+                $details = "File name changed from '{$old_name}' to '{$request->name}', 
                 action carried out by ".auth()->user()->first_name.' '.auth()->user()->last_name;
                 $this->logFileActivity($archive_id, $details) ;            
 
@@ -781,7 +1034,7 @@ class ArchiveController extends Controller
     public function isUserPermittedToViewDivision($branch_id){
         //check if the data entry user have access
         $user = auth()->user();
-        if(auth()->user()->hasRole('data entry') || $user->hasRole('division heads')){
+        if(auth()->user()->hasRole('record manager') || $user->hasRole('deputy director')){
             if($user->division_id && $user->division_id == $branch_id){
                 return true;
             }else{
@@ -790,17 +1043,17 @@ class ArchiveController extends Controller
         }
 
         //check if the unit head can access the said resources
-        if($user->hasRole('unit heads')){
+        if($user->hasRole('assistant director')){
            return false;
         }
 
         //suepr admin, super users and admin can always access any of these
-        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+        if($user->hasRole('super admin') || $user->hasRole('super user') || $user->hasRole('admin') || $user->hasPermissionTo('division view')){
             return true;
         }
 
         //check if directors/departmental heads can access this
-        if($user->hasRole('directors')){
+        if($user->hasRole('director')){
             $department_id = $user->department_id;
             $exists = Department::where('id', $department_id)
                         ->whereHas('division', function($query) use($branch_id){
@@ -814,7 +1067,7 @@ class ArchiveController extends Controller
         }
 
         //check if divisional head can access this
-        // if($user->hasRole('division heads')){
+        // if($user->hasRole('deputy director')){
         //     $division_id = $user->division_id;
 
         //     $exists = Division::where('id', $division_id)
@@ -833,7 +1086,7 @@ class ArchiveController extends Controller
     public function isUserPermittedToViewUnit($branch_id){
         //check if the data entry user have access
         $user = auth()->user();
-        if(auth()->user()->hasRole('data entry')){
+        if(auth()->user()->hasRole('record manager')){
             if($user->unit_id && $user->unit_id == $branch_id){
                 return true;
             }else{
@@ -842,7 +1095,7 @@ class ArchiveController extends Controller
         }
 
         //check if the unit head can access the said resources
-        if($user->hasRole('unit heads')){
+        if($user->hasRole('assistant director')){
             if($user->unit_id == $branch_id){
                 return true;
             }else{
@@ -851,12 +1104,12 @@ class ArchiveController extends Controller
         }
 
         //suepr admin, super users and admin can always access any of these
-        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+        if($user->hasRole('super admin') || $user->hasRole('super user') || $user->hasRole('admin') || $user->hasPermissionTo('unit view')){
             return true;
         }
 
         //check if directors/departmental heads can access this
-        if($user->hasRole('directors')){
+        if($user->hasRole('director')){
             $department_id = $user->department_id;
             $exists = Department::where('id', $department_id)
                         ->whereHas('division', function($query) use($branch_id){
@@ -870,7 +1123,7 @@ class ArchiveController extends Controller
         }
 
         //check if divisional head can access this
-        if($user->hasRole('division heads')){
+        if($user->hasRole('deputy director')){
             $division_id = $user->division_id;
             if($division_id  == $user->division_id){
                 return true;
@@ -883,7 +1136,7 @@ class ArchiveController extends Controller
     public function isUserPermittedToViewDepartment($branch_id){
         //check if the data entry user have access
         $user = auth()->user();
-        if(auth()->user()->hasRole('data entry')){
+        if(auth()->user()->hasRole('record manager')){
             if($user->department_id && $user->department_id == $branch_id){
                 return true;
             }else{
@@ -892,17 +1145,17 @@ class ArchiveController extends Controller
         }
 
         //check if the unit head can access the said resources
-        if($user->hasRole('unit heads')){
+        if($user->hasRole('assistant director')){
             return false;
         }
 
         //suepr admin, super users and admin can always access any of these
-        if($user->hasRole('super admin') || $user->hasRole('super users') || $user->hasRole('admin')){
+        if($user->hasRole('super admin') || $user->hasRole('super user') || $user->hasRole('admin') || $user->hasPermissionTo('department view')){
             return true;
         }
 
         //check if directors/departmental heads can access this
-        if($user->hasRole('directors')){
+        if($user->hasRole('director')){
            if($user->department_id == $branch_id){
             return true;
            }else{
@@ -911,7 +1164,7 @@ class ArchiveController extends Controller
         }
 
         //check if divisional head can access this
-        if($user->hasRole('division heads')){
+        if($user->hasRole('deputy director')){
            return false;
         }
     }
@@ -974,12 +1227,13 @@ class ArchiveController extends Controller
             if($search){
                 $folder->where('name', 'like', '%' . $search . '%')
                             ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhere('trace_id', 'like', '%' . $search . '%')
                             ->orWhereHas('fileType', function($query) use($search) {
                                 $query->where('name', 'like', '%' . $search . '%');
                             });
             }
           
-            $folder = $folder->latest()->paginate(20)->withQueryString();
+            $folder = $folder->withCount('archives')->latest()->paginate(20)->withQueryString();
            
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder', 'unitId', 'divId', 'deptId'));
           }
@@ -997,12 +1251,13 @@ class ArchiveController extends Controller
              if($search){
                 $folder->where('name', 'like', '%' . $search . '%')
                             ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhere('trace_id', 'like', '%' . $search . '%')
                             ->orWhereHas('fileType', function($query) use($search) {
                                 $query->where('name', 'like', '%' . $search . '%');
                             });
             }
 
-            $folder = $folder->latest()->paginate(20)->withQueryString();
+            $folder = $folder->withCount('archives')->latest()->paginate(20)->withQueryString();
 
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder', 'unitId', 'divId', 'deptId'));
           }
@@ -1021,6 +1276,7 @@ class ArchiveController extends Controller
            if($search){
                 $folder->where('name', 'like', '%' . $search . '%')
                             ->orWhere('number', 'like', '%' . $search . '%')
+                            ->orWhere('trace_id', 'like', '%' . $search . '%')
                             ->orWhereHas('fileType', function($query) use($search) {
                                 $query->where('name', 'like', '%' . $search . '%');
                             });
@@ -1029,7 +1285,7 @@ class ArchiveController extends Controller
             if(!isset($branch)){
                 return redirect()->to('/dashboard');
             }
-            $folder = $folder->latest()->paginate(20)->withQueryString();
+            $folder = $folder->withCount('archives')->latest()->paginate(20)->withQueryString();
            
             return inertia('dashboard/Branches', compact('branch', 'branch_name','folder' , 'unitId', 'divId', 'deptId'));
     
@@ -1134,6 +1390,11 @@ class ArchiveController extends Controller
         return redirect()->back();
     }
 
+    public function openFolder($id){
+        Folder::where('id', $id)->update(['is_open'=>1]);
+        return redirect()->back();
+    }
+
     public function deleteFolder($id){
         $folder = Folder::find($id);
         $folder->delete();
@@ -1176,7 +1437,19 @@ class ArchiveController extends Controller
     }
 
     public function updateBranchMetadatas(Request $request){
-        ArchiveDocs::upsert($request->form, ['id', 'archive_id']);
+        foreach($request->form as $form){
+            if (isset($form['id'])) {
+                ArchiveDocs::where('id', $form['id'])->update([
+                    'archive_values' => $form['archive_values']
+                ]);
+            } else {
+                ArchiveDocs::create([
+                    'archive_id' => $form['archive_id'],
+                    'archive_keys' => $form['archive_keys'],
+                    'archive_values' => $form['archive_values']
+                ]);
+            }
+        }
         return response()->json(['success'=>true]);
     }
 
@@ -1269,7 +1542,9 @@ class ArchiveController extends Controller
 
 
                 $this->createNewVersions($archive);
-               
+                $archive->is_checked_out = false;
+                $archive->checked_out_by = null;
+                $archive->save();
 
             } catch (Exception $e) {
                 //dd($e);
@@ -1354,6 +1629,30 @@ class ArchiveController extends Controller
         return redirect()->back()->with(['success'=>true]);
     }
 
+    public function checkOutDocument(Request $request){
+        $archive = Archive::find($request->id);
+        if ($archive->is_checked_out && $archive->checked_out_by !== auth()->id()) {
+            return redirect()->back()->withErrors(['error' => 'File is already checked out by someone else.']);
+        }
+        $archive->is_checked_out = true;
+        $archive->checked_out_by = auth()->id();
+        $archive->save();
+        $this->logFileActivity($archive->id, 'Checked out file');
+        return redirect()->back()->with(['success'=>true]);
+    }
+
+    public function checkInDocument(Request $request){
+        $archive = Archive::find($request->id);
+        if ($archive->is_checked_out && $archive->checked_out_by !== auth()->id()) {
+            return redirect()->back()->withErrors(['error' => 'You cannot check in a file checked out by someone else.']);
+        }
+        $archive->is_checked_out = false;
+        $archive->checked_out_by = null;
+        $archive->save();
+        $this->logFileActivity($archive->id, 'Checked in file');
+        return redirect()->back()->with(['success'=>true]);
+    }
+
     public function deleteFileVersion(Request $request){
         $version = Version::find($request->id);
         $version->delete();
@@ -1435,6 +1734,26 @@ class ArchiveController extends Controller
         return redirect()->back()->with(['success'=>true]);
     }
 
+    public function shareFolder(Request $request){
+        if($request->ids){
+            $data = [];
+
+            foreach($request->ids as $id){
+                $arr = [
+                    'sharing_id' => auth()->user()->id,
+                    'shared_id' => $id,
+                    'folder_id' => $request->folder_id,
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
+                ];
+                array_push($data, $arr);
+            }
+            \App\Models\ShareFolder::insert($data);
+        }
+
+        return redirect()->back()->with(['success'=>true]);
+    }
+
     public function folderSearch(Request $request) {
         $search = $request->search;
     
@@ -1459,26 +1778,107 @@ class ArchiveController extends Controller
     }
 
    public function sharedFiles(Request $request){
-    $search = $request->search;
+        $user = auth()->user();
+        $tab = $request->get('tab', 'shared_with_me');
+        if (!in_array($tab, ['shared_with_me', 'shared_by_me'])) {
+            $tab = 'shared_with_me';
+        }
+        $search = $request->search;
 
-    // $archive = Archive::with(['filePath', 'fileActivity', 'archiveDocs','department','division', 'unit', 'version' => function($query){
-    //     $query->latest();
-    // }]);
+        $sharedWithMeCount = Share::where('shared_id', $user->id)->count();
+        $sharedByMeCount = Share::where('sharing_id', $user->id)->count();
 
-        $shared = Share::with(['archive'=>function($query) use($search){
-            $query->with(['filePath', 'fileActivity', 'archiveDocs'])
-            ->whereHas('archiveDocs', function($q) use ($search) {
-                $q->where('archive_values', 'like', "%{$search}%");
-                // ->orWhere('amount', 'like', "%{$search}%")
-                // ->orWhere('description', 'like', "%{$search}%");
-            });
-        }])->where('shared_id', auth()->user()->id)->paginate(30);
+        $query = Share::with([
+            'archive' => function($query) use ($search) {
+                $query->with(['filePath', 'fileActivity', 'archiveDocs', 'department', 'division', 'unit']);
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->whereHas('archiveDocs', function($sub) use ($search) {
+                            $sub->where('archive_values', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('filePath', function($sub) use ($search) {
+                            $sub->where('file_name', 'like', "%{$search}%");
+                        });
+                    });
+                }
+            },
+            'sharingUser:id,first_name,last_name,email',
+            'sharedUser:id,first_name,last_name,email'
+        ]);
+
+        if ($tab === 'shared_by_me') {
+            $query->where('sharing_id', $user->id);
+        } else {
+            $query->where('shared_id', $user->id);
+        }
+
+        $shared = $query->latest()->paginate(30)->withQueryString();
         
-        $archives = $shared->getCollection()->flatMap(function($share){
-            return $share->archive;
+        $archives = $shared->getCollection()->flatMap(function($share) use ($tab) {
+            return $share->archive->map(function($arch) use ($share, $tab) {
+                $arch->share_info = [
+                    'id' => $share->id,
+                    'tab' => $tab,
+                    'sharing_user' => $share->sharingUser,
+                    'shared_user' => $share->sharedUser,
+                    'shared_at' => $share->created_at ? $share->created_at->format('M d, Y') : null,
+                ];
+                return $arch;
+            });
         });
 
-        return inertia('dashboard/sharedFiles', compact('shared', 'archives'));
+        return inertia('dashboard/sharedFiles', [
+            'shared' => $shared,
+            'archives' => $archives,
+            'activeTab' => $tab,
+            'sharedWithMeCount' => $sharedWithMeCount,
+            'sharedByMeCount' => $sharedByMeCount,
+            'filters' => [
+                'search' => $search,
+                'tab' => $tab,
+            ]
+        ]);
    }
+
+    public function documentManagementIndex(){
+        $user = auth()->user();
+        $branches = [];
+        if($user->hasRole('super admin') || $user->hasRole('admin') || $user->hasPermissionTo('department view') || $user->hasPermissionTo('division view') || $user->hasPermissionTo('unit view')){
+            $branches = Department::with(['division'=> function($query){
+                $query->with('unit');
+            }])->get();
+        }
+
+        if($user->hasRole('director')){
+            $department_id = $user->department_id;
+            $branches = Department::with(['division'=>function($query){
+                $query->with('unit');
+            }])->where('id', $department_id)->get();
+        }
+
+        if($user->hasRole('deputy director')){
+            $division_id = $user->division_id;
+            $department_id = $user->department_id;
+            
+            $branches = Department::with(['division' =>function($query) use ($division_id){
+                $query->with('unit')->where('id', $division_id);
+            }])->where('id', $department_id)->get();
+        }
+
+        if($user->hasRole('assistant director')){
+            $division_id = $user->division_id;
+            $department_id = $user->department_id;
+            $unit_id = $user->unit_id;
+
+            $branches = Department::with(['division' =>function($query) use ($division_id, $unit_id){
+                $query->with(['unit'=>function($q) use($unit_id){
+                    $q->where('id', $unit_id);
+                }])->where('id', $division_id);
+            }])->where('id', $department_id)->get();
+        }
+        
+        $role = $user->getRoleNames();
+        return inertia('DocumentManagement/Index', compact('branches', 'role'));
+    }
 
 }

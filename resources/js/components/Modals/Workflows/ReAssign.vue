@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:visible="visible" :closable="false" modal :pt="{
+  <Dialog :visible="props.modelValue" @update:visible="(v) => emit('update:modelValue', v)" :closable="false" modal :pt="{
     root: { class: 'bg-slate-50 max-h-[95vh] overflow-y-scroll hide_scroll px-5 rounded-md' },
     content: { class: 'px-0  pb-6' },
     header: { class: ' m-5' },
@@ -110,6 +110,7 @@ import image from "../../../assets/images/members/1.svg";
 import debounce from "lodash.debounce"
 import { usePage, router } from "@inertiajs/vue3"
 import { onClickOutside } from '@vueuse/core'
+import axios from 'axios';
 
 const toast = useToast()
 const props = defineProps(["modelValue", 'users', 'task_id', 'userType']);
@@ -305,10 +306,11 @@ const submit = () => {
     return;
   }
   
-  router.post('/dashboard/assign-task', {
-    users: selectedUsers.value, 
-    description: description.value, 
-    task_id: props.task_id
+  const assignedIds = selectedUsers.value.map(user => user.id);
+
+  router.post(`/dashboard/workflow/delegate/${props.task_id}`, {
+    assigned_to: assignedIds, 
+    comments: description.value, 
   }, {
     onSuccess: page => {
       emit("update:modelValue", false);
@@ -326,7 +328,13 @@ const submit = () => {
 };
 
 watch(() => props.users, (newUsers) => {
-  selectedUsers.value = newUsers ? [...newUsers] : [];
+  if (!newUsers) {
+    selectedUsers.value = [];
+  } else if (Array.isArray(newUsers)) {
+    selectedUsers.value = [...newUsers];
+  } else {
+    selectedUsers.value = [newUsers];
+  }
 }, { immediate: true });
 
 watch(() => props.modelValue, (newVal) => {

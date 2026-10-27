@@ -9,7 +9,7 @@ class TaskDoc extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['task_id', 'path'];
+    protected $fillable = ['task_id', 'path', 'file_name', 'size'];
 
     public $timestamps = true;
 

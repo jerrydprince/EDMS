@@ -8,7 +8,7 @@
           ></i>
         </div>
         <div>
-          <p class="text-xl font-semibold">Upload Documents</p>
+          <p class="text-xl font-semibold">{{ props.file_name || 'Upload Documents' }}</p>
           <p class="text-sm">Archive files into directories</p>
         </div>
       </div>
@@ -424,9 +424,12 @@
         </button>
 
         <button
-          class="py-2 bg-[#3575DD] px-10 border-0 text-white font-light hover:bg-[#3575DD]/90 rounded-lg"
+          class="py-2 bg-[#3575DD] px-10 border-0 text-white font-light hover:bg-[#3575DD]/90 rounded-lg disabled:opacity-50"
+          :disabled="processing"
+          @click="saveDocument"
         >
-          <p>Save</p>
+          <p v-if="processing">Saving...</p>
+          <p v-else>Save</p>
         </button>
       </div>
     </div>
@@ -437,7 +440,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
+import { router } from '@inertiajs/vue3';
 import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
 import fileIcon from "../../../../public/images/file.svg";
 import loadingIcon from "../../../../public/images/loading.svg";
@@ -445,16 +449,30 @@ import penIcon from "../../../../public/images/pen.svg";
 import editIcon from "../../../../public/images/edit.svg";
 import folderIcon from "../../../../public/images/folder.svg";
 
+const props = defineProps(['file_name', 'folder_id', 'branch_type', 'branch_id']);
+
 const goBack = () => {
-  router.go(-1);
+  if (props.branch_type && props.folder_id && props.branch_id) {
+    router.get('/dashboard/folder-view/' + props.branch_type + '/' + props.folder_id + '/' + props.branch_id);
+  } else {
+    router.go(-1);
+  }
 };
 
 const checked = ref([]);
-console.log(checked.value);
 const createFolderModal = ref(false);
 const toggle_department = ref(true);
 const toggle_division = ref(true);
 const toggle_unit = ref(true);
+const processing = ref(false);
+
+const saveDocument = () => {
+    processing.value = true;
+    setTimeout(() => {
+        processing.value = false;
+        router.get('/dashboard/document');
+    }, 1500);
+};
 </script>
 <style scoped>
 .p-progressbar-value {

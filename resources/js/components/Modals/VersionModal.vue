@@ -36,13 +36,12 @@
       <tr class="border" v-for="(file, key) in files">
         <td class="p-3 px-2 pl-5 py-3"> {{ key + 1 }}</td>
         <td class="py-3 px-2">
-          <div class="flex items-center font-medium gap-2">
-            <div class="p-2 rounded-full bg-gray-200">
-              <!-- <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" /> -->
-              <img :src="getFileExtension(file)" alt="" style="width: 20px; max-width: none;">
+            <div class="flex items-center font-medium gap-2">
+              <div class="p-2 rounded-full bg-gray-200">
+                <Icon :icon="file.icon_url || 'vscode-icons:default-file'" width="20" />
+              </div>
+              {{ file.title?.archive }}
             </div>
-            {{ file.title?.archive }}
-          </div>
         </td>
 
         <td class="px-2">{{ truncateText(file.description?.archive) }}</td>
@@ -113,34 +112,6 @@ const page = usePage()
 const menu2 = ref();
 const selectedFile = ref([])
 
-const getFileExtension = (file)=>{
-    const f_path = file.path? file.path : file?.name
-
-    if(f_path){
-       const parts = f_path.split('.');
-
-      const extension = parts.pop();
-
-      if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
-          return page.props.base+'/images/image.svg'
-      }
-      
-      if(extension == 'pdf'){
-          return page.props.base+'/images/pdf.svg'
-      }
-
-      if(extension == 'doc' || extension == 'doctx'){
-          return page.props.base+'/images/word.svg'
-      }
-
-      if(extension == 'xlx' || extension == 'xlsx'){
-          return page.props.base+'/images/excel.svg'
-      }
-    }
-   
-
-}
-
 const truncateText = (text)=>{
     let max = 100
     if (text && text.length > max) {
@@ -164,6 +135,13 @@ const menuItems = ref([
     }
   },
 
+  {
+    label: 'Download',
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+    command: () => {
+      downloadFileVersion()
+    }
+  },
   {
     label: 'Restore',
     icon: `<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M10 16.682l5.69 5.685 1.408-1.407-3.283-3.28h10.131c1.147 0 2.19.467 2.943 1.222a4.157 4.157 0 011.225 2.946 4.18 4.18 0 01-4.168 4.168h-5.628V28h5.522c3.387 0 6.16-2.77 6.16-6.157a6.117 6.117 0 00-1.81-4.343 6.143 6.143 0 00-4.35-1.805H13.815l3.283-3.285L15.69 11 10 16.682z" fill="#000000" fill-rule="nonzero"/></svg>
@@ -235,7 +213,7 @@ const getArchiveDocsVale = (data, search) => {
 if (data) {
   for (let archive of data) {
 
-    if (archive.archive_keys.toLowerCase() == search) {
+    if (archive.archive_keys.toLowerCase().includes(search)) {
       return [{ archive: archive.archive_values, id: archive.id }]
     }
   }
@@ -255,6 +233,13 @@ const formatDate = (inputDate) => {
   var formattedDate = day + ' ' + month + ' ' + year.toString().substr(-2);
 
   return formattedDate;
+}
+
+const downloadFileVersion = () => {
+    try {
+      window.location.href = (page.props.base || '') + '/download-file-version?id=' + selectedFile.value.version_id;
+    } catch (error) {
+    }
 }
 
 const restoreFileVersion = () => {
@@ -288,28 +273,49 @@ const files = computed(() => {
     
         //for(let file of version.versions){
         let file = JSON.parse(version.versions) 
+        if (version.versions) {
+          let file = JSON.parse(version.versions);
+          
+            let f_path = file?.file_path?.[0]?.path || file?.file_path?.[0]?.file_name || '';
+            let resultUrl = 'vscode-icons:default-file';
+            
+            if (f_path) {
+                const parts = f_path.split('.');
+                const extension = parts.pop().toLowerCase();
 
-            let arr = {
+                if (['jpg', 'jpeg', 'gif', 'png', 'webp', 'svg'].includes(extension)) {
+                    resultUrl = 'vscode-icons:file-type-image';
+                } else if (extension === 'pdf') {
+                    resultUrl = 'vscode-icons:file-type-pdf2';
+                } else if (['doc', 'docx'].includes(extension)) {
+                    resultUrl = 'vscode-icons:file-type-word';
+                } else if (['xls', 'xlsx', 'csv'].includes(extension)) {
+                    resultUrl = 'vscode-icons:file-type-excel';
+                }
+            }
+
+          newarr.push({
             name: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0].archive : file?.file_path[0]?.file_name,
             size: file?.file_path[0]?.file_size,
             date: formatDate(file.updated_at),
-            uploaded_by: file?.file_path[0]?.updated_by_name,
-            //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
-            path: (file.file_path && file.file_path.length > 0) ? file?.file_path[0]?.path : '',
-            files: file?.file_path,
-            id: file.id,
-            amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
-            title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file?.file_path[0]?.file_name,
-            description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',
-            archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : '',
-            archive_docs: file.archive_docs,
-            department: file.department ? file.department : [],
-            division: file.division ? file.division : [],
-            unit: file.unit ? file.unit : [],
-            file_activity: file.file_activity,
-            file_version_id: version.id
+              uploaded_by: file?.file_path[0]?.updated_by_name,
+              path: (file.file_path && file.file_path.length > 0) ? file?.file_path[0]?.path : '',
+              files: file?.file_path,
+              id: file.id,
+              version_id: version.id,
+              amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
+              title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file?.file_path[0]?.file_name,
+              description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',
+              archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : '',
+              archive_docs: file.archive_docs,
+              department: file.department ? file.department : null,
+              division: file.division ? file.division : null,
+              unit: file.unit ? file.unit : null,
+              file_activity: file.file_activity,
+              file_version_id: version.id,
+              icon_url: resultUrl
+          });
         }
-        newarr.push(arr);
        // }
     }
   }

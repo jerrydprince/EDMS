@@ -28,9 +28,11 @@ import TieredMenu from "primevue/tieredmenu";
 import Editor from 'primevue/editor'
 import Chart from 'primevue/chart';
 import VueApexCharts from "vue3-apexcharts";
+import Tooltip from 'primevue/tooltip';
 
 
 export function registerGlobalComponents(app) {
+  app.directive('tooltip', Tooltip);
   app.component("Button", Button);
   app.component("Panel", Panel);
   app.component("InputText", InputText);
@@ -54,8 +56,9 @@ export function registerGlobalComponents(app) {
   app.component("Checkbox", Checkbox);
   app.component("Sidebar", Sidebar);
   app.component('TieredMenu', TieredMenu);
-  app.component('Editor',Editor);
   app.component('Calendar', Calendar);
-  app.component('Chart',Chart);
-	app.component('Apexcharts',VueApexCharts)
+  // Heavy components removed from global registry to optimize bundle size:
+  // app.component('Editor',Editor);
+  // app.component('Chart',Chart);
+  // app.component('Apexcharts',VueApexCharts)
 }

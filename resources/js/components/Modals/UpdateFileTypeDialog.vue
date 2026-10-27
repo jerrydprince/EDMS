@@ -36,15 +36,30 @@
           />
           <div v-if="form.errors.name"><span class="text-red-500">{{ form.errors.name }}</span></div>
         </div>
-        <div class="mb-5">
+          <div class="mb-5">
           <p class="text-sm lg:text-base">File Type Description (Optional)</p>
           <Textarea
             v-model="form.description"
-            rows="5"
+            rows="3"
             cols="30"
             class="mt-1 w-full"
             placeholder="Provide a brief description..."
           />
+        </div>
+        <div class="mb-5">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm lg:text-base font-medium">Custom Columns</p>
+                <div @click="addColumn" class="cursor-pointer text-primary border border-primary px-2 py-1 rounded text-xs flex items-center gap-1">
+                    <Icon icon="ion:add-outline" width="16" /> Add Column
+                </div>
+            </div>
+            
+            <div v-for="(heading, index) in form.headings" :key="index" class="flex items-center gap-2 mb-3">
+                <InputText class="w-full" v-model="form.headings[index]" placeholder="e.g. Vendor Name" />
+                <div @click="removeColumn(index)" class="cursor-pointer text-red-500 p-2 border border-red-200 rounded hover:bg-red-50">
+                    <Icon icon="uiw:delete" width="16" />
+                </div>
+            </div>
         </div>
       </div>
       <Divider class="" />
@@ -80,9 +95,17 @@ const emit = defineEmits(["update:modelValue"]);
 const form = useForm({
   name: "",
   description: "",
+  headings: [],
   id:''
 })
 
+const addColumn = () => {
+  form.headings.push("");
+};
+
+const removeColumn = (index) => {
+  form.headings.splice(index, 1);
+};
   
 const visible = computed({
   get() {
@@ -107,15 +130,9 @@ const submitForm = () => {
 };
 
 onUpdated(()=>{
-  // let data = []
-  //   if(props.singleFileType && props.singleFileType.metadata){
-  //       for(let doc of props.singleFileType.metadata){
-  //       data.push(doc.id)
-  //   }
-  // }
-  //data = [...new Set([...data, ...selectedMetadata.value])];
   form.name = props.singleFileType.name
   form.description = props.singleFileType.description
+  form.headings = props.singleFileType.headings || ["Title", "Description", "Amount"]
   form.id = props.singleFileType.id
 })
 

@@ -1,12 +1,12 @@
 <template>
     <slot/>
-    <div v-for="item in props.selectedMetadata">
-                    <div v-html="item.metadata_value"></div>
-                </div>
+    <div v-for="(item, index) in props.selectedMetadata" :key="index">
+        <div v-html="item.metadata_value"></div>
+    </div>
 </template>
 
 <script setup>
-    import { defineProps, reactive, onMounted, watch, defineEmits } from 'vue'
+    import { defineProps, reactive, onMounted, watch, defineEmits, nextTick } from 'vue'
     import {useForm} from '@inertiajs/vue3'
 
     const props = defineProps(['selectedMetadata', 'archiveDocs', 'getFormValues']);
@@ -14,39 +14,48 @@
     const form = reactive({})
     const emits = defineEmits(['forms'])
 
-    onMounted(()=>{
-        //form.title = props.archiveDocs.title
-        for(let docs of props.archiveDocs){
-            let id = docs.archive_keys.toLowerCase()
-            if(id.includes(' ')){
-                id = id.split(' ').join('_')
-            }
-            if(document.getElementById(id)){
-               let element = document.getElementById(id);
-               element.value = docs.archive_values
-               element.setAttribute('data-id', docs.id)
+    const updateValues = () => {
+        let elements = document.getElementsByClassName('metadata-inputs');
+        for (let i = 0; i < elements.length; i++) {
+            let name = elements[i].getAttribute('name') || elements[i].getAttribute('id');
+            if (name) {
+                let doc = props.archiveDocs.find(d => d.archive_keys.toLowerCase() === name.toLowerCase());
+                if (doc) {
+                    elements[i].value = doc.archive_values;
+                    elements[i].setAttribute('data-id', doc.id);
+                }
             }
         }
+    }
+
+    onMounted(()=>{
+        updateValues()
     })
 
-    watch(()=>props.getFormValues, ()=>{
-        let form = []
-        for(let docs of props.archiveDocs){
-            if(document.getElementById(docs.archive_keys.toLowerCase())){
-               let element = document.getElementById(docs.archive_keys.toLowerCase());
-               let key = docs.archive_keys;
-               let value = element.value;
-               let id = docs.id;
-               let archive_id = docs.archive_id;
-                let archive_keys = docs.archive_keys
+    watch(() => props.archiveDocs, async () => {
+        await nextTick();
+        updateValues()
+    }, { deep: true })
 
-               let arr = {
-                archive_values: value,
-                id: id,
-                archive_id: archive_id,
-                archive_keys: archive_keys
-               }
-               form.push(arr);
+    watch(()=>props.getFormValues, ()=>{
+        if (!props.getFormValues) return;
+        
+        let form = []
+        let elements = document.getElementsByClassName('metadata-inputs');
+        
+        for (let i = 0; i < elements.length; i++) {
+            let name = elements[i].getAttribute('name') || elements[i].getAttribute('id');
+            if (name) {
+                let doc = props.archiveDocs.find(d => d.archive_keys.toLowerCase() === name.toLowerCase());
+                if (doc) {
+                    let arr = {
+                        archive_values: elements[i].value,
+                        id: doc.id,
+                        archive_id: doc.archive_id,
+                        archive_keys: doc.archive_keys
+                    }
+                    form.push(arr);
+                }
             }
         }
 

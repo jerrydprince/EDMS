@@ -21,14 +21,21 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
-            ChatEvent::class,
+        ],
+        \App\Events\WorkflowCompleted::class => [
+            \App\Listeners\ProcessPoolPostingCompletion::class,
         ],
         Login::class => [
             CheckDefaultPasswordOnLogin::class,
         ],
+        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
+            \SocialiteProviders\Dropbox\DropboxExtendSocialite::class.'@handle',
+            \SocialiteProviders\Graph\GraphExtendSocialite::class.'@handle',
+            \SocialiteProviders\Adobe\AdobeExtendSocialite::class.'@handle',
+        ],
     ];
 
-        /**
+    /**
      * The subscriber classes to register.
      *
      * @var array

@@ -66,8 +66,8 @@ const logoutAllOtherDevices = (data)=>{
     emit('refresh');
     toast.add({
       severity: "success",
-      summary: '',
-      detail: "",
+      summary: 'Sessions Cleared',
+      detail: "All other sessions have been logged out successfully.",
       life: 3000,
     });
   })

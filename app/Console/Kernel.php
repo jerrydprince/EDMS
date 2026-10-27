@@ -17,6 +17,15 @@ class Kernel extends ConsoleKernel
              ->everyThreeMinutes()
              ->withoutOverlapping()
              ->runInBackground();
+             
+        $schedule->command('workflow:monitor-slas')
+             ->everyFiveMinutes()
+             ->withoutOverlapping()
+             ->runInBackground();
+             
+        $schedule->command('backup:clean')->daily()->at('01:00');
+        $schedule->command('backup:run')->daily()->at('01:30');
+        $schedule->command('pms:sync-leave-status')->daily()->at('00:01')->runInBackground();
     }
 
     /**

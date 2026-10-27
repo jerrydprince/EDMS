@@ -21,16 +21,25 @@
                             <Column field="unit_count" header="Units">
                                
                             </Column>
-                            <Column field="folder_sum_file_count" header="No. of Documents">
-                                <!-- <template #body="slotProps">
-                                    {{ formatCurrency(slotProps.data.price) }}
-                                </template> -->
+                            <Column field="archive_count" header="No. of Documents">
+                                <template #body="slotProps">
+                                    {{ formatCurrency(slotProps.data.archive_count) }}
+                                </template>
                             </Column>
                             <Column field="users_count" header="No. of Users">
                                 <template #body="slotProps">
                                     <div class="flex items-center gap-3">
                                         <p>{{ slotProps.data.users_count }} users</p>
-                                        <img src="../../assets/Avatars.png" alt="" class="ml-2">
+                                          <div class="flex -space-x-2 overflow-hidden ml-2" v-if="slotProps.data.users && slotProps.data.users.length > 0">
+                                            <img v-for="usr in slotProps.data.users.slice(0, 3)" :key="usr.id"
+                                                 :src="usr.profile_image ? ($page.props.base + '/' + usr.profile_image) : ($page.props.base + '/images/user.svg')"
+                                                 alt=""
+                                                 class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover bg-white" />
+                                            <div v-if="slotProps.data.users_count > 3"
+                                                 class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-600">
+                                              +{{ slotProps.data.users_count - 3 }}
+                                            </div>
+                                          </div>
                                     </div>
                                 </template>
                             </Column>

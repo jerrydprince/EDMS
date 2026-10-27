@@ -18,9 +18,7 @@
     </template>
     <section class="bg-white  text-center mx-2 rounded-md p-5 flex items-center flex-col justify-center">
       <h1 class=" text-xl font-semibold">Confirm KPI Deletion</h1>
-      <p class=" w-[90%]">Are you sure you want to delete this Key Result Area (KPI)? This action will remove all
-        associated
-        Key Performance Indicators (KPIs) and cannot be undone.</p>
+      <p class=" w-[90%]">Are you sure you want to delete this Key Performance Indicator (KPI)? This action cannot be undone.</p>
     </section>
     <template #footer>
       <div class=" flex items-center  justify-end px-7">

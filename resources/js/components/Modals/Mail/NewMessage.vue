@@ -1,23 +1,25 @@
 <template>
-    <Dialog v-model:visible="visible" :closable="false" modal :pt="{
-        content: { class: 'px-0 bg-white pb-6' },
-    }" :style="{ width: '60rem', padding: '10px 0px' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-        class=".custom-dialog">
-        <div class="bg-gray-200 w-full flex items-center justify-between -mt-14 rounded-t-xl p-3">
-            <h1 class="font-semibold">New Message</h1>
+    <Dialog v-model:visible="visible" :closable="false" :modal="false" position="bottomright" :pt="{
+        content: { class: isMinimized ? 'px-0 bg-white' : 'px-0 bg-white pb-6' },
+        mask: { class: 'pointer-events-none' }
+    }" :style="isMaximized ? { width: '100vw', height: '100vh', margin: '0', maxHeight: '100vh' } : { width: '40rem', margin: '0 1rem 1rem 0' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        :class="['custom-dialog shadow-2xl overflow-hidden', isMaximized ? '' : 'rounded-t-xl']">
+        <div class="bg-gray-200 w-full flex items-center justify-between -mt-14 p-3 cursor-pointer" :class="isMaximized ? '' : 'rounded-t-xl'" @click.self="isMinimized = !isMinimized">
+            <h1 class="font-semibold pointer-events-none">New Message</h1>
             <div class="flex items-center gap-2">
-                <div class="bg-white text-[#101828] p-1 rounded-full">
+                <div class="bg-white text-[#101828] p-1 rounded-full cursor-pointer hover:bg-gray-100" @click="toggleMinimize">
                     <Icon icon="ic:baseline-minus" width="20" />
                 </div>
-                <div class="bg-white text-[#101828] p-1 rounded-full">
+                <div class="bg-white text-[#101828] p-1 rounded-full cursor-pointer hover:bg-gray-100" @click="toggleMaximize">
                     <Icon icon="tabler:arrows-diagonal" width="20" />
                 </div>
-                <div class="bg-white text-[#101828] p-1 rounded-full" @click="closeModal">
+                <div class="bg-white text-[#101828] p-1 rounded-full cursor-pointer hover:bg-gray-100" @click="closeModal">
                     <Icon icon="mdi:times" width="20" />
                 </div>
             </div>
         </div>
-        <section class="px-7">
+        <div v-show="!isMinimized" class="flex flex-col h-full" :style="isMaximized ? { height: 'calc(100vh - 50px)' } : {}">
+        <section class="px-7 flex-1 overflow-y-auto">
             <div class="my-2 flex items-center justify-between gap-2 border-b pb-2">
                 <div class="flex items-start">
                     <h1 class="mr-2">Recipient:</h1>
@@ -140,14 +142,15 @@
 
             <div>
                 <!-- <textarea  v-model="formData.body" name="" id="" cols="30" rows="10"></textarea> -->
-                <Editor v-model="form.body" editorStyle="height: 40vh" class=" border-0 mt-10"
+                <Editor v-model="form.body" :editorStyle="isMaximized ? 'height: calc(100vh - 350px)' : 'height: 300px'" class="border-0 mt-10"
                     placeholder="Type Message here..." required />
                 <input type="file" style="display: none;" ref="fileInput" multiple @change="handleFileChange" />
             </div>
         </section>
-        <Divider />
+        </div>
+        <Divider v-show="!isMinimized" />
         <template #footer>
-            <div class=" flex items-center w-full justify-between">
+            <div v-show="!isMinimized" class=" flex items-center w-full justify-between">
                 <!-- <Icon icon="material-symbols:delete-outline" width="25" class=" text-[#F97066] cursor-pointer"
                     @click="closeModal" /> -->
                     <div width="25" class=" text-[#F97066] cursor-pointer">
@@ -188,11 +191,29 @@ import axios from "axios";
 import image from '../../../assets/images/members/1.svg'
 import { useToast } from "primevue/usetoast";
 import { router, useForm } from '@inertiajs/vue3';
+import Editor from 'primevue/editor';
 
 const Message = ref('')
 const Bcc = ref(false)
 const Cc = ref(false)
 const fileInput = ref(null);
+
+const isMinimized = ref(false);
+const isMaximized = ref(false);
+
+const toggleMinimize = () => {
+    isMinimized.value = !isMinimized.value;
+    if (isMinimized.value) {
+        isMaximized.value = false;
+    }
+};
+
+const toggleMaximize = () => {
+    isMaximized.value = !isMaximized.value;
+    if (isMaximized.value) {
+        isMinimized.value = false;
+    }
+};
 
 const addLinkModal = ref(false)
 
@@ -416,27 +437,34 @@ const visible = computed({
 //     return true;
 // };
 const submitForm = async () => {
-  
-    //try {
-        // form.append("recipient", formData.value.recipient)
-        // form.append("body", formData.value.body)
-        // form.append("subject", formData.value.subject)
-        // form.append("cc", formData.value.cc)
-        // form.append("bcc", formData.value.bcc)
+    // If tags are selected, use them as recipients, otherwise use the raw input
+    if (Tags.value.length > 0) {
+        // If we want multiple recipients, we might need a backend change.
+        // Assuming backend handles single string for now.
+        form.recipient = Tags.value.map(tag => tag.email || tag.name).join(',');
+    }
+    if (BlindCarbonCopy.value.length > 0) {
+        form.bcc = BlindCarbonCopy.value.map(tag => tag.email || tag.name).join(',');
+    }
+    if (CarbonCopy.value.length > 0) {
+        form.cc = CarbonCopy.value.map(tag => tag.email || tag.name).join(',');
+    }
 
-        router.post('/dashboard/mails',form, {onSuccess: page =>{
+    form.post('/dashboard/mails', {
+        onSuccess: page => {
             toast.add({
                 severity: "success",
                 summary: "Message Sent",
                 detail: "Your message has been sent successfully.",
                 life: 3000,
             });
-            
             functionCalled.value = true;
             emit("update:modelValue", false);
-             emit('refresh');
-             form.reset()
-        }})
+            emit('refresh');
+            form.reset();
+            Tags.value = [];
+        }
+    });
 
     //     const response = await axios.post('/dashboard/mails', form,
     //         {
@@ -453,23 +481,17 @@ const submitForm = async () => {
 };
 const closeModal =  () => {
     try {
-
-       // if ( (formData.value.body !== ''|| formData.value.subject !== ''|| formData.value.recipient !== '')) {
-            const response =  axios.post('/dashboard/mails/drafts', formData.value);
-            console.log('Response:', response.data); // Log the response
-       // }
-       if(form.body !== '' || form.subject !== '' || form.recipient !== ''){
-        form.post('/dashboard/mails/drafts',{onSuccess: ()=>{
-            toast.add({
-            severity: "info",
-                summary: "Draft Saved",
-                detail: "Your message has been saved to drafts.",
-                life: 3000,
+        if(form.body !== '' || form.subject !== '' || form.recipient !== ''){
+            // Use axios for drafts because the backend returns JSON
+            axios.post('/dashboard/mails/drafts', form.data()).then(() => {
+                toast.add({
+                    severity: "info",
+                    summary: "Draft Saved",
+                    detail: "Your message has been saved to drafts.",
+                    life: 3000,
+                });
             });
-         }
-        });
-        
-       }
+        }
     } catch (error) {
         console.error('Error:', error.message);
     }

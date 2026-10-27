@@ -305,7 +305,7 @@ const togglePreviewState = () => {
 };
 
 const getLandingPage = ()=>{
-  if(page.props.roles.includes('data entry')){
+  if(page.props.roles.includes('record manager')){
     return 'edms';
   }else{
     return 'dashboard';
@@ -590,7 +590,7 @@ const getArchiveDocsVale = (data, search)=>{
    if(data){
     for(let archive of data){
        
-        if(archive.archive_keys.toLowerCase() == search){
+        if(archive.archive_keys.toLowerCase().includes(search)){
             return [{archive: archive.archive_values, id: archive.id}]
         }
     }

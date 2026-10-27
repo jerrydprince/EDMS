@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class TaskChangedNotification extends Notification
+class TaskChangedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

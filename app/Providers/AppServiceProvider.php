@@ -23,5 +23,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        try {
+            if (Schema::hasTable('system_configurations')) {
+                $configs = \App\Models\SystemConfiguration::all();
+                foreach ($configs as $config) {
+                    \Illuminate\Support\Facades\Config::set($config->key, $config->value);
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore if DB not ready
+        }
     }
 }

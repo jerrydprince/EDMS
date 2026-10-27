@@ -22,7 +22,17 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
-           SuperAdminSeeder::class
+            SuperAdminSeeder::class,
+            BranchSeeder::class,
+            Phase10AdministrationSeeder::class,
+            Phase11Adm001Seeder::class,
+            Phase12Adm002Seeder::class,
+            Phase13Adm004Seeder::class,
+            Phase14Adm003Seeder::class,
+            Phase15Adm005And006Seeder::class,
+            Phase16Adm007Seeder::class,
+            Phase17Adm008Seeder::class,
+            AdministrationSopRulesSeeder::class,
         ]);
     }
 }

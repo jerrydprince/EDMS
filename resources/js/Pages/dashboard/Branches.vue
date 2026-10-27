@@ -45,8 +45,9 @@
               <th class="py-5 pl-4">File Name</th>
               <th class="py-5">File Number</th>
               <th class="py-5">File Type</th>
-              <th class="py-5">Last Modified</th>
-              <th class="py-5">Actions</th>
+                <th class="py-5">Last Modified</th>
+                <th class="py-5">Documents</th>
+                <th class="py-5">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -57,40 +58,48 @@
 
               </td> -->
               <td class="py-3 pl-4">
-                <div class="flex items-center font-medium gap-2">
-                  <div class="p-2 rounded-full bg-gray-200">
-                    <template v-if="page.props.roles.includes('data entry')">
-                      <Link  :href="'/edms/folder-view/' + branch_name + '/' + folder.id">
-                        <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+                <div class="flex items-center font-medium gap-2.5">
+                  <div class="p-2 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">
+                    <template v-if="page.props.roles.includes('record manager')">
+                      <Link :href="'/edms/folder-view/' + branch_name + '/' + folder.id">
+                        <Icon icon="material-symbols-light:folder-outline" width="20" class="text-blue-600" />
                       </Link>
                     </template>
                     <template v-else>
-                       <Link  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">
-                      <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
+                      <Link :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">
+                        <Icon icon="material-symbols-light:folder-outline" width="20" class="text-blue-600" />
                       </Link>
                     </template>
-
                   </div>
-                  <Link v-if="page.props.roles.includes('data entry')" :href="'/edms/folder-view/' + branch_name + '/' + folder.id">{{ folder.name }}</Link>
-                  <Link v-else  :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id">{{ folder.name }}</Link>
+                  <div class="flex flex-col min-w-0">
+                    <Link v-if="page.props.roles.includes('record manager')" :href="'/edms/folder-view/' + branch_name + '/' + folder.id" class="text-gray-900 hover:text-blue-600 font-semibold truncate">{{ folder.name }}</Link>
+                    <Link v-else :href="'/dashboard/folder-view/' + branch_name + '/' + folder.id+'/'+props.branch.id" class="text-gray-900 hover:text-blue-600 font-semibold truncate">{{ folder.name }}</Link>
+                    <div v-if="folder.trace_id" class="flex items-center gap-1.5 mt-0.5">
+                      <span class="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200" title="Archived from Workflow Task">
+                        <Icon icon="fluent:document-arrow-right-20-regular" width="12" class="text-emerald-600" />
+                        Trace ID: {{ folder.trace_id }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </td>
-              <td class="py-3">{{ folder.number }}</td>
+              <td class="py-3 font-mono text-sm font-medium text-gray-700">{{ folder.number }}</td>
               <td>{{ folder.file_type }}</td>
               <td class="py-3">{{ folder.date }}</td>
+              <td class="py-3 font-semibold">{{ folder.archives_count || 0 }}</td>
               <td class="py-3">
-                <div class="card flex justify-content-center">
-                  <div @click="toggle($event, key)" aria-haspopup="true" aria-controls="overlay_menu"
-                    class="flex items-center font-normal h-full border border-gray-300 rounded-lg cursor-pointer">
-                    <div class="h-full">
-                      <Icon icon="majesticons:more-menu-vertical" width="30" />
+                <div class="card flex items-center justify-content-center gap-3">
+                  <div class="flex items-center gap-3">
+                     <div class="cursor-pointer text-blue-500 hover:text-blue-600" @click.stop.prevent="shareFolder(folder)" title="Share File">
+                      <Icon icon="material-symbols-light:share-outline" width="22" />
                     </div>
-                    <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+                    <div class="cursor-pointer" :class="folder.is_open ? 'text-gray-500 hover:text-gray-700' : 'text-red-500 hover:text-red-600'" @click.stop.prevent="toggleFolderState(folder)" v-if="admin && admin.length > 0" :title="folder.is_open ? 'Close File' : 'Open File'">
+                      <Icon :icon="folder.is_open ? 'material-symbols-light:lock-open-outline' : 'material-symbols-light:lock-outline'" width="22" />
+                    </div>
+                    <div class="cursor-pointer text-red-500 hover:text-red-600" @click.stop.prevent="deleteArchive(folder.id)" v-if="admin && admin.length > 0" title="Delete File">
+                       <Icon icon="mdi:delete-outline" width="22" />
+                     </div>
                   </div>
-                  <!-- <Link :href="'/edms/delete-folder/' + folder.id" class="px-3 text-red-500"
-                    v-if="admin && admin.length > 0">delete</Link> -->
-                    <div class="px-3 text-red-500 cursor-pointer" @click="deleteArchive(folder.id)"
-                    v-if="admin && admin.length > 0">delete</div>
                 </div>
 
               </td>
@@ -115,9 +124,12 @@
     <PreviewFile v-if="togglePreview" :togglePreviewFunction="togglePreviewState" :file="selectedArchive" />
     <RenameFileDialog v-model="FileRenameModal" :archive="selectedArchive" />
     <DeleteArchive v-model="isdelte_archive" :data="selectedArchiveId" :url="deleteUrl" />
+    <ShareFolderModal v-model="toggleShare" :folder="selectedArchive" />
   </main>
 </template>
 <script setup>
+import Swal from 'sweetalert2';
+
 import { ref, defineProps, computed, watch, watchEffect, onMounted } from 'vue';
 
 import CreateFolderDialog from "../../components/Modals/branches/CreateFolderDialog.vue";
@@ -134,6 +146,7 @@ import RenameFileDialog from "../../components/Modals/branches/RenameFileDialog.
 import pagination from './partials/pagination.vue';
 import  debounce  from 'lodash.debounce';
 import DeleteArchive from "../../components/DeleteArchive.vue";
+import ShareFolderModal from "../../components/Modals/branches/ShareFolder.vue";
 
 const folderGrid = ref(false)
 const selectedDocumentId = ref(null);
@@ -151,6 +164,7 @@ const togglePreview = ref(false);
 const FileRenameModal = ref(false);
 const deleteUrl = ref(null)
 const isdelte_archive = ref(false)
+const toggleShare = ref(false)
 
 const folderMenu = ref(false);
 
@@ -163,7 +177,7 @@ const selectedArchiveId = ref();
 const selectedArchive = ref();
 const menu2 = ref();
 const user = page.props.user;
-const admin = page.props.roles.filter((data) => data == 'super admin')
+const admin = page.props.roles ? page.props.roles.filter((data) => data == 'super admin') : [];
 //const allFolders = toRef(props, 'folder');
 
 const props = defineProps(['branch', 'branch_name', 'folder', 'divId', 'deptId', 'unitId']);
@@ -178,6 +192,49 @@ const deleteArchive = (id) => {
   isdelte_archive.value = true;
 }
 
+const shareFolder = (folder) => {
+  console.log("shareFolder clicked", folder);
+  selectedArchive.value = folder;
+  toggleShare.value = true;
+}
+
+const toggleFolderState = (folder) => {
+    if (folder.is_open) {
+      Swal.fire({
+        title: 'Confirm',
+        text: "Are you sure you want to close this file? Users won't be able to upload documents into it anymore.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+        router.post('/edms/close-folder/' + folder.id, {}, {
+          onSuccess: () => {
+            // toast could be added here
+          }
+        });
+      }
+      });
+    } else {
+      Swal.fire({
+        title: 'Confirm',
+        text: "Are you sure you want to open this file? Users will be able to upload documents into it again.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+        router.post('/edms/open-folder/' + folder.id, {}, {
+          onSuccess: () => {
+            // toast could be added here
+          }
+        });
+      }
+      });
+    }
+}
 
 const menu = ref();
 const items = ref([
@@ -245,36 +302,7 @@ const setLock = (data) => {
 
 const downloadFile = async () => {
   try {
-    const response = await axios.get('/download-file', {
-      params: { id: selectedArchiveId.value },
-      responseType: 'blob'
-    });
-
-    // Extract the filename from the Content-Disposition header
-    const contentDisposition = response.headers['content-disposition'];
-    const fileName = contentDisposition.split('filename=')[1];
-
-    // Determine the content type based on the file extension
-    const contentType = fileName.endsWith('.pdf') ? 'application/pdf' :
-      fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-        fileName.endsWith('.png') ? 'image/png' :
-          'application/octet-stream'; // Default to binary data
-
-    // Create a blob object from the binary data
-    const blob = new Blob([response.data], { type: contentType });
-
-    // Create a URL for the blob object
-    const url = window.URL.createObjectURL(blob);
-
-    // Create a link element and simulate a click to trigger the file download
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName); // Set the filename for the downloaded file
-    document.body.appendChild(link);
-    link.click();
-
-    // Cleanup by revoking the object URL
-    window.URL.revokeObjectURL(url);
+    window.location.href = (page.props.base || '') + '/download-file?id=' + selectedArchiveId.value;
   } catch (error) {
     console.error('Error downloading file:', error);
   }
@@ -550,7 +578,7 @@ const getArchiveDocsVale = (data, search) => {
   if (data) {
     for (let archive of data) {
       console.log(archive.archive_keys)
-      if (archive.archive_keys.toLowerCase() == search) {
+      if (archive.archive_keys.toLowerCase().includes(search)) {
         return archive.archive_values;
       }
     }
@@ -654,7 +682,7 @@ const fetchFolders = async () => {
       try {
         let url = '/edms/branches'
         //const response = await axios.get('/edms/branches', { params: { search: search.value } });
-        if(page.props.roles.includes('data entry')){
+        if(page.props.roles.includes('record manager')){
            url = '/edms/branches'
         }else{
            url = `/dashboard/branches/${props.branch_name}/${props.deptId}/${props.divId}/${props.unitId}`
@@ -668,6 +696,7 @@ const fetchFolders = async () => {
                 const newFolders = page.props.folder.data.map(folder => ({
                 name: folder.name,
                 number: folder.number,
+                trace_id: folder.trace_id,
                 date: formatDate(folder.updated_at),
                 f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
                 folder_size: folder.folder_size ? folder.folder_size : 0,
@@ -675,7 +704,8 @@ const fetchFolders = async () => {
                 id: folder.id,
                 is_sub_folder: folder.is_sub_folder,
                 sub_folder: folder.is_sub_folder ? folder.subfolder.path : [],
-                type: folder.type
+                type: folder.type,
+                is_open: folder.is_open,
               }));
 
               fetchedFolders.value = newFolders;
@@ -703,6 +733,7 @@ const fetchFolders = async () => {
         return props.folder.data.map(folder => ({
           name: folder.name,
           number: folder.number,
+          trace_id: folder.trace_id,
           date: formatDate(folder.updated_at),
           f_z: folder.folder_size ? folder.folder_size.split('')[0] : 0,
           folder_size: folder.folder_size ? folder.folder_size : 0,
@@ -710,7 +741,9 @@ const fetchFolders = async () => {
           id: folder.id,
           is_sub_folder: folder.is_sub_folder,
           sub_folder: folder.is_sub_folder ? folder.subfolder.path : [],
-          type: folder.type
+          type: folder.type,
+          is_open: folder.is_open,
+          archives_count: folder.archives_count
         }));
       } else {
         return fetchedFolders.value;

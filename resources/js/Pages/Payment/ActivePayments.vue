@@ -14,7 +14,7 @@
             <tr class="text-left">
               <th class="font-medium py-2 pl-7">Payment Title</th>
               <th class="font-medium py-2">Date Created</th>
-              <th class="font-medium py-2" v-if="!roles.includes('directors')">Assigned by</th>
+              <th class="font-medium py-2" v-if="!roles.includes('director')">Assigned by</th>
               <th class="font-medium py-2">Assigned to</th>
               <th class="font-medium py-2">Status</th>
               <th class="font-medium py-2">Actions</th>
@@ -35,7 +35,7 @@
               <td class="align-middle">
                 <p>{{ formatDate(item.created_at) }}</p>
               </td>
-              <td class="align-middle" v-if="!roles.includes('directors')">
+              <td class="align-middle" v-if="!roles.includes('director')">
                 <p class=" capitalize">
                   {{ item.assigned_by?.user?.last_name + " " + item.assigned_by?.user?.first_name || 'N/A' }}
                 </p>
@@ -45,7 +45,7 @@
                   {{ getAssignedTo(item) }}
                 </p>
               </td>
-              <td class="align-middle w-auto" v-if="!roles.includes('directors')">
+              <td class="align-middle w-auto" v-if="!roles.includes('director')">
                 <div class="flex">
                   <div class="bg-gray-100 rounded-2xl py-2 px-4 text-center">
                     <p class="font-medium" :style="{

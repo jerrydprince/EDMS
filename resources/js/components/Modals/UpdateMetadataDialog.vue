@@ -135,7 +135,7 @@
         {
         Number: `<div class="my-2">
                 <label for="text">Document Number</label>
-                <input type="number" v-model="number" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
+                <input type="number" name="number" v-model="number" class="metadata-inputs border border-gray-200 rounded-lg mt-2 focus:border-blue-400 block p-2 w-full" id="numbers">
             </div>`
         }
 ]

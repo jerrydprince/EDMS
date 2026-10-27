@@ -136,6 +136,11 @@
                                                 <option value="13">Grade Level  13</option>
                                                 <option value="14">Grade Level  14</option>
                                                 <option value="15">Grade Level  15</option>
+                                                <option value="16">Grade Level  16</option>
+                                                <option value="17">Grade Level  17</option>
+                                                <option value="18">Grade Level  18</option>
+                                                <option value="19">Grade Level  19</option>
+                                                <option value="20">Grade Level  20</option>
                                             </select>
                                         </div>
                                     </div>
@@ -214,12 +219,16 @@
                                     <div class="relative mt-4">
                                         <label for="password" class=" text-gray-600 block">Password </label>
                                         <div class="relative mt-1">
-                                            <input type="password" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" :placeholder="'Enter password (Min. of  '+props.passwordpolicy.number_of_characters+'  characters)'">
+                                            <input :type="showPassword ? 'text' : 'password'" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 pe-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" :placeholder="'Enter password (Min. of  '+props.passwordpolicy.number_of_characters+'  characters)'">
                                             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
                                                 </svg>
                                             </div>
+                                            <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 end-0 flex items-center pe-4 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                            </button>
                                         </div>
                                         <div class="mt-1 " v-if="form.password.trim() != ''">
                                             <span :class="!eightCharacters?'border-red-400 bg-red-50':'border-green-400 bg-green-50'" class="py-2 px-3 border border-dashed   my-2 inline-block rounded-3xl text-sm text-gray-500 mx-1">{{ props.passwordpolicy.number_of_characters }} characters minimum</span>
@@ -234,14 +243,23 @@
                                         
                                         </label>
                                         <div class="relative mt-1">
-                                            <input type="password" @keydown="!isPasswordMisMatch" v-model="form.password_confirmation" name="password_confirmation" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Confirm password">
+                                            <input :type="showPasswordConfirmation ? 'text' : 'password'" @keydown="!isPasswordMisMatch" v-model="form.password_confirmation" name="password_confirmation" class="peer py-3 px-4 ps-11 pe-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Confirm password">
                                             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
                                                 </svg>
                                             </div>
+                                            <button type="button" @click="showPasswordConfirmation = !showPasswordConfirmation" class="absolute inset-y-0 end-0 flex items-center pe-4 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                <svg v-if="!showPasswordConfirmation" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                            </button>
                                         </div>
                                         <span class="text-red-500 my-1 text-sm" v-if="!passwordMismatch">Password mismatch</span>
+                                    </div>
+                                    <div v-if="Object.keys(form.errors).length > 0" class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+                                        <ul class="list-disc pl-5">
+                                            <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
+                                        </ul>
                                     </div>
                                     <div class="mt-6">
                                         <button @click.prevent="submitForm" :disabled="!isPasswordMisMatch || !isPasswordValid||form.processing" class=" bg-blue-500 w-full text-white px-4 py-2 rounded-lg hover:bg-blue-400 disabled:bg-blue-200">Continue</button>
@@ -254,20 +272,20 @@
                                <!-- Form three: Email verification -->
 
                                <div v-if="form3">
-                                <div class="flex items-center">
-                                    <input type="text" v-model="emailForm.code1" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                <div class="flex items-center justify-center">
+                                    <input type="text" id="reg-code-1" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code1" @input="onRegisterCodeInput($event, 1)" @keydown="onRegisterCodeKeyDown($event, 1)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
 
-                                    <input type="text" v-model="emailForm.code2" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                    <input type="text" id="reg-code-2" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code2" @input="onRegisterCodeInput($event, 2)" @keydown="onRegisterCodeKeyDown($event, 2)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
 
-                                    <input type="text" v-model="emailForm.code3" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                    <input type="text" id="reg-code-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code3" @input="onRegisterCodeInput($event, 3)" @keydown="onRegisterCodeKeyDown($event, 3)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
 
-                                    <span class="border-t border-2 border-gray-300 block w-16 h-0"></span>
+                                    <span class="border-t border-2 border-gray-300 block w-8 h-0 mx-1"></span>
 
-                                    <input type="text" v-model="emailForm.code4" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                    <input type="text" id="reg-code-4" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code4" @input="onRegisterCodeInput($event, 4)" @keydown="onRegisterCodeKeyDown($event, 4)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
 
-                                    <input type="text" v-model="emailForm.code5" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                    <input type="text" id="reg-code-5" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code5" @input="onRegisterCodeInput($event, 5)" @keydown="onRegisterCodeKeyDown($event, 5)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
 
-                                    <input type="text" v-model="emailForm.code6" name="" id="" class=" border-gray-300 border-2 w-14 text-3xl text-center p-2 rounded-lg text-gray-300 focus:border-blue-500 focus:ring-blue-400 mx-3" placeholder="0">
+                                    <input type="text" id="reg-code-6" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" v-model="emailForm.code6" @input="onRegisterCodeInput($event, 6)" @keydown="onRegisterCodeKeyDown($event, 6)" @paste="onRegisterCodePaste($event)" class="border-gray-300 border-2 w-14 text-3xl font-bold font-mono text-center p-2 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-blue-400 mx-2" placeholder="0">
                                 </div>
                                 <div class="mt-10">
                                     <button @click.prevent="verifyEmail" class=" bg-blue-500 w-full text-white px-4 py-2 rounded-lg hover:bg-blue-400">Verify your account</button>
@@ -318,6 +336,10 @@
                     <div class="mt-10 grid w-1/2 mx-auto px-5 py-3 bg-orange-50 border-2 border-dashed border-orange-200 rounded-lg">
                         <span class="text-center">Your account is under verification, you would receive a response email when your account has been approved.</span>
                     </div>
+                    <div class="mt-8 text-center">
+                        <p class="text-gray-500 mb-4">Redirecting to login in <span id="countdown">5</span> seconds...</p>
+                        <a href="/login" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-400 inline-block">Return to Login</a>
+                    </div>
                 </div>
     </div>
 </template>
@@ -332,6 +354,8 @@
     const form2 = ref(false);
     const form3 = ref(false);
     const formSuccess = ref(false);
+    const showPassword = ref(false);
+    const showPasswordConfirmation = ref(false);
     const toast = useToast();
     const props = defineProps(['passwordpolicy'])
 
@@ -490,8 +514,21 @@
         form.post('/register',{onSuccess:()=>{
             form1.value = false
             form2.value = false
-            //.value = true
             formSuccess.value = true
+            
+            // Auto-redirect to login after 5 seconds
+            let seconds = 5;
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                const countdownElement = document.getElementById('countdown');
+                if (countdownElement) {
+                    countdownElement.innerText = seconds;
+                }
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = '/login';
+                }
+            }, 1000);
         }})
     }
 
@@ -531,6 +568,46 @@
             }
         })
     }
+
+    const onRegisterCodeInput = (event, index) => {
+        const raw = event.target.value.replace(/\D/g, '');
+        const digit = raw.slice(-1);
+        emailForm['code' + index] = digit;
+        event.target.value = digit;
+        if (digit && index < 6) {
+            const nextEl = document.getElementById('reg-code-' + (index + 1));
+            if (nextEl) {
+                nextEl.focus();
+                nextEl.select();
+            }
+        }
+    };
+
+    const onRegisterCodeKeyDown = (event, index) => {
+        if (event.key === 'Backspace' && !emailForm['code' + index] && index > 1) {
+            event.preventDefault();
+            emailForm['code' + (index - 1)] = '';
+            const prevEl = document.getElementById('reg-code-' + (index - 1));
+            if (prevEl) {
+                prevEl.focus();
+                prevEl.select();
+            }
+        }
+    };
+
+    const onRegisterCodePaste = (event) => {
+        event.preventDefault();
+        const text = (event.clipboardData || window.clipboardData).getData('text') || '';
+        const numbers = text.replace(/\D/g, '').slice(0, 6);
+        if (numbers) {
+            for (let i = 0; i < 6; i++) {
+                emailForm['code' + (i + 1)] = numbers[i] || '';
+            }
+            const focusTarget = Math.min(numbers.length + 1, 6);
+            const targetEl = document.getElementById('reg-code-' + focusTarget);
+            if (targetEl) targetEl.focus();
+        }
+    };
 
     //check if email exist
     const checkMailExist = ()=>{

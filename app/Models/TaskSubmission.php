@@ -19,6 +19,11 @@ class TaskSubmission extends Model
         return $this->hasMany(TaskSubmissionFiles::class, 'task_submissions_id');
     }
 
+    public function task_submission_files()
+    {
+        return $this->hasMany(TaskSubmissionFiles::class, 'task_submissions_id');
+    }
+
     /**
      * Get the user associated with the TaskSubmission
      *

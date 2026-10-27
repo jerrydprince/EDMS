@@ -141,6 +141,7 @@ class RegistrationController extends Controller
             $user->last_name = $request->last_name;
             $user->gender = $request->gender;
             $user->grade_level = $request->grade_level;
+            $user->designation_id = $request->designation_id;
             $user->email = $request->email;
            // $user->verification_code = $code;
            if(!$request->id){
@@ -150,8 +151,26 @@ class RegistrationController extends Controller
             $user->department_id = $request->department;
             $user->division_id = $request->division;
             $user->unit_id = $request->unit;
+            $user->section_id = $request->section ?: ($request->section_id ?: null);
             $user->phone = $request->phone;
             $user->is_approved = $request->is_approved;
+
+            // Automatically set head of office flags based on designation or hierarchy placement
+            if ($request->designation_id) {
+                $desig = \App\Models\Designation::find($request->designation_id);
+                if ($desig && $desig->is_head_of_office) {
+                    if ($user->section_id) {
+                        $user->is_section_head = 1;
+                    } elseif ($user->unit_id) {
+                        $user->is_unit_head = 1;
+                    } elseif ($user->division_id) {
+                        $user->is_division_head = 1;
+                    } elseif ($user->department_id) {
+                        $user->is_department_head = 1;
+                    }
+                }
+            }
+
             $user->save();
 
             if($request->file){
@@ -163,7 +182,49 @@ class RegistrationController extends Controller
             }
 
             if($request->role){
-                $user->assignRole($request->role);
+                $user->syncRoles($request->role);
+            }
+
+            if($request->has('permissions')){
+                // Compute role-level permissions to avoid polluting direct permissions table
+                $rolePermIds = \Spatie\Permission\Models\Permission::whereHas('roles', function($q) use ($user) {
+                    $q->whereIn('id', $user->roles->pluck('id'));
+                })->pluck('id')->toArray();
+
+                $incoming = collect($request->permissions)->flatten()->filter()->unique()->toArray();
+                if (!empty($incoming)) {
+                    $numericIds = array_values(array_filter($incoming, 'is_numeric'));
+                    $stringNames = array_values(array_filter($incoming, fn($v) => !is_numeric($v)));
+
+                    $perms = \Spatie\Permission\Models\Permission::where(function ($query) use ($numericIds, $stringNames) {
+                        if (!empty($numericIds) && !empty($stringNames)) {
+                            $query->whereIn('id', $numericIds)->orWhereIn('name', $stringNames);
+                        } elseif (!empty($numericIds)) {
+                            $query->whereIn('id', $numericIds);
+                        } elseif (!empty($stringNames)) {
+                            $query->whereIn('name', $stringNames);
+                        }
+                    })->get();
+
+                    $directOverrides = $perms->whereNotIn('id', $rolePermIds);
+                    $user->syncPermissions($directOverrides);
+                } else {
+                    $user->syncPermissions([]);
+                }
+            }
+
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+            \Illuminate\Support\Facades\Cache::flush();
+
+            if(!$request->id){
+                $data = $request->except('password', 'password_confirmation', 'file');
+                $user->notify(new \App\Notifications\Registration($data));
+            } else {
+                // If it's an existing user being approved/updated, mark their registration notification as read
+                DB::table('notifications')
+                    ->where('notifiable_id', $user->id)
+                    ->where('type', \App\Notifications\Registration::class)
+                    ->update(['read_at' => now()]);
             }
 
         });

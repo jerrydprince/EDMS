@@ -4,7 +4,7 @@
 		<div class=" flex justify-between items-center">
 			<div class=" flex justify-between gap-3 items-center">
 				<img :src="detailIcon" alt="">
-				<h1 class=" text-[#1D2939] font-semibold text-xl">Details</h1>
+				<h1 class=" text-[#1D2939] font-semibold text-xl">{{ props.file ? (props.file.title ? props.file.title.archive : props.file.name) : 'Details' }}</h1>
 			</div>
 			<button class="" @click=" visible = false">
 				<i class="pi pi-times" style="font-size: 1rem"></i>
@@ -82,9 +82,9 @@
 						<img src="/assets/images/user.png" alt="" class=" w-8">
 						<h1 class=" text-sm text-[#344054] font-semibold">Dave Miye</h1>
 					</div> -->
-					<template v-for="meta in file.archive_docs">
+					<template v-for="meta in uniqueMetadata" :key="meta.id">
 						<div class=" flex items-center justify-between py-2 border-b border-b-gray-200">
-							<span class="text-[#98A2B3] pr-2 uppercase">{{meta.archive_keys}}</span>
+							<span class="text-[#98A2B3] pr-2 uppercase">{{ meta.archive_keys.replace(/_/g, ' ') }}</span>
 							<span class=" text-[#344054] uppercase">{{ meta.archive_values}}</span>
 						</div>
 					</template>
@@ -95,14 +95,24 @@
 					<h1 class=" text-lg text-[#98A2B3] mt-5">Location</h1>
 
 					<div class=" flex items-center flex-wrap text-sm font-semibold gap-2 mt-2">
-						<h1 class="uppercase">{{file?.department?.title}} <span class="uppercase" v-if="file.department">Department</span> </h1>
-						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1 class="uppercase">{{file?.division?.title}} <span class="uppercase" v-if="file.division">Division</span></h1>
-						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1 class="uppercase">{{file?.unit?.title}} <span class="uppercase" v-if="file.unit">Unit</span> </h1>
-						<span><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
-						<h1 class="uppercase">{{props.folder?.name}} </h1>
+						<template v-if="file?.department">
+							<h1 class="uppercase">{{file.department.title}} <span class="uppercase">Department</span></h1>
+							<span v-if="file?.division || file?.unit || props.folder"><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
+						</template>
+						
+						<template v-if="file?.division">
+							<h1 class="uppercase">{{file.division.title}} <span class="uppercase">Division</span></h1>
+							<span v-if="file?.unit || props.folder"><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
+						</template>
 
+						<template v-if="file?.unit">
+							<h1 class="uppercase">{{file.unit.title}} <span class="uppercase">Unit</span></h1>
+							<span v-if="props.folder"><i class="pi pi-angle-right text-[#101828] text-lg"></i></span>
+						</template>
+						
+						<template v-if="props.folder">
+							<h1 class="uppercase">{{props.folder.name}}</h1>
+						</template>
 					</div>
 				</div>
 			</section>
@@ -177,6 +187,17 @@ const uploadDocument = ()=>{
 
 const active = ref(0);
 const expandedIndexes = ref([])
+
+const uniqueMetadata = computed(() => {
+	if (!props.file?.archive_docs) return [];
+	const map = new Map();
+	for (const doc of props.file.archive_docs) {
+		if (!doc.archive_keys || String(doc.archive_keys).toLowerCase() === 'null') continue;
+		map.set(doc.archive_keys.toLowerCase(), doc);
+	}
+	return Array.from(map.values());
+});
+
 const toggleExpandable = (index) => {
 	const indexPosition = expandedIndexes.value.indexOf(index);
 	if (indexPosition === -1) {

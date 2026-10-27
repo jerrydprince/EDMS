@@ -25,9 +25,7 @@
         <div
           class="grid grid-cols-[270px_270px_270px_270px] lg:grid-cols-4 overflow-x-scroll lg:overflow-hidden mt-4 gap-5 lg:gap-10"
         >
-          <div
-            class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full"
-          >
+          <Link href='/settings' class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
             <QuickActions1 class="absolute top-0 left-[6%]" />
             <QuickActions1_1 class="absolute top-20 z-[999] left-[12%]" />
             <div
@@ -35,10 +33,10 @@
             >
               <p class="text-xl font-semibold mb-2">Metadata Configuration</p>
               <p class="text-gray-500 text-sm">
-                Configure metadata settings for document categorization
+                <Link :href="'/dashboard/metadata-setup'">Configure metadata settings for document categorization</Link>
               </p>
             </div>
-          </div>
+          </Link>
           <div
             class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full"
           >
@@ -65,19 +63,17 @@
               </p>
             </div>
           </div>
-          <div
-            class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full"
-          >
-            <QuickActions4 class="top-0 left-0 w-full object-cover" />
-            <div
-              class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl"
-            >
-              <p class="text-xl font-semibold mb-2">Customize Interface.</p>
-              <p class="text-gray-500 text-sm">
-                Tailor the interface to match the organization's brand.
-              </p>
-            </div>
-          </div>
+          <Link href="/settings">
+              <div class="relative h-[270px] border border-solid border-gray-200 rounded-xl w-full">
+                  <QuickActions4 class="top-0 left-0 w-full object-cover" />
+                  <div class="z-[99] bg-white absolute bottom-0 h-[45%] pb-10 pt-7 px-5 rounded-xl">
+                      <p class="text-xl font-semibold mb-2">Customize Interface.</p>
+                      <p class="text-gray-500 text-sm">
+                          Tailor the interface to match the organisation's brand.
+                      </p>
+                  </div>
+              </div>
+          </Link>
         </div>
       </section> 
        <section class="mt-8">
@@ -109,7 +105,7 @@
               class="flex items-center text-xs lg:text-base gap-2 cursor-pointer"
             >
               <p>View All</p>
-              <Icon icon="carbon:arrow-right" width="20" />
+              <Link href="/dashboard/manage-users"><Icon icon="carbon:arrow-right" width="20" /></Link>
             </div>
           </div>
           <div class="flex flex-col lg:flex-row gap-4 mt-6">

@@ -64,10 +64,17 @@ div.td:first-child {
       <p class="text-3xl text-gray-800 font-semibold">
         Organisational Branches
       </p>
-      <div @click="departmentalModal = true"
-        class="mt-4 md:mt-0 flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 cursor-pointer">
-        <Icon icon="ion:add-outline" width="25" />
-        <p>Create Department</p>
+      <div class="mt-4 md:mt-0 flex items-center gap-3">
+        <Link href="/dashboard/governance-hub"
+          class="flex gap-2 items-center bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold rounded-lg py-2 px-4 shadow-2xs hover:bg-indigo-100 transition-all cursor-pointer">
+          <Icon icon="lucide:network" width="20" class="text-indigo-600" />
+          <p>Governance Hub</p>
+        </Link>
+        <div @click="departmentalModal = true"
+          class="flex gap-2 items-center text-gray-700 border-gray-300 border-solid border rounded-lg py-2 px-4 cursor-pointer">
+          <Icon icon="ion:add-outline" width="25" />
+          <p>Create Department</p>
+        </div>
       </div>
     </section>
     <section class="mt-10">
@@ -136,11 +143,11 @@ div.td:first-child {
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer p-2">
         <p class="text-2xl text-gray-800 font-semibold">Branches</p>
         <div class="mt-3 md:mt-0 text-sm md:text-base flex items-center gap-6">
-          <p class="py-2 px-3 bg-gray-50 rounded-lg font-semibold">
+          <p @click="activeTab = 'all'" :class="{'bg-gray-50 font-semibold': activeTab === 'all', 'hover:bg-gray-50': activeTab !== 'all'}" class="rounded-lg py-2 px-3 cursor-pointer transition-colors">
             All Departments
           </p>
-          <p class="hover:bg-gray-50 rounded-lg py-2 px-3">Pinned</p>
-          <p class="hover:bg-gray-50 rounded-lg py-2 px-3">Departments Only</p>
+          <p @click="activeTab = 'pinned'" :class="{'bg-gray-50 font-semibold': activeTab === 'pinned', 'hover:bg-gray-50': activeTab !== 'pinned'}" class="rounded-lg py-2 px-3 cursor-pointer transition-colors">Pinned</p>
+          <p @click="activeTab = 'departments_only'" :class="{'bg-gray-50 font-semibold': activeTab === 'departments_only', 'hover:bg-gray-50': activeTab !== 'departments_only'}" class="rounded-lg py-2 px-3 cursor-pointer transition-colors">Departments Only</p>
         </div>
       </div>
       <div class="border border-solid border-gray-300 rounded-lg mt-3">
@@ -150,25 +157,42 @@ div.td:first-child {
 
             <div class="relative overflow-x-auto">
 
-              <DataTable v-model="expandedRows" :value="props.departments" dataKey="id" tableStyle="min-width: 60rem">
+              <DataTable v-model:expandedRows="expandedRows" :value="filteredDepartments" dataKey="id" tableStyle="min-width: 60rem">
 
-              <Column field="title" header="Department"></Column>
+              <Column expander style="width: 3rem" v-if="activeTab !== 'departments_only'" />
+              <Column field="title" header="Department">
+                <template #body="slotProps">
+                  <div class="flex items-center gap-2">
+                    <span>{{ slotProps.data.title }}</span>
+                    <Icon v-if="pinnedDepartments.includes(slotProps.data.id)" icon="mdi:pin" class="text-blue-500" width="16" />
+                  </div>
+                </template>
+              </Column>
               <Column header="Last updated" field="updated_at_formatted"></Column>
               <Column field="division_count" header="Divisions">
                 <template #body="slotProps">
                   {{ slotProps.data.division_count }}
                 </template>
               </Column>
-              <Column field="folder_sum_file_count" header="No. of Documents">
+              <Column field="archive_count" header="No. of Documents">
                 <template #body="slotProps">
-                  {{ formatCurrency(slotProps.data.folder_sum_file_count) }}
+                  {{ slotProps.data.archive_count || 0 }}
                 </template>
               </Column>
               <Column field="user_count" header="No. of Users">
                 <template #body="slotProps">
                   <div class="flex items-center gap-3">
-                    <p>{{ slotProps.data.user_count }} users</p>
-                    <img src="../../assets/Avatars.png" alt="" class="ml-2">
+                    <p>{{ slotProps.data.user_count || 0 }} users</p>
+                    <div class="flex -space-x-2 overflow-hidden ml-2" v-if="slotProps.data.user && slotProps.data.user.length > 0">
+                      <img v-for="usr in slotProps.data.user.slice(0, 3)" :key="usr.id"
+                           :src="usr.profile_image ? ($page.props.base + '/' + usr.profile_image) : ($page.props.base + '/images/user.svg')"
+                           alt=""
+                           class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover bg-white" />
+                      <div v-if="slotProps.data.user_count > 3"
+                           class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-600">
+                        +{{ slotProps.data.user_count - 3 }}
+                      </div>
+                    </div>
                   </div>
                 </template>
               </Column>
@@ -193,11 +217,126 @@ div.td:first-child {
                         <Menu ref="menu"  id="overlay_menu" :model="menuItems" :popup="true" />
                       </div>
 
+                      </div>
                     </div>
+                  </template>
+                </Column>
+                <template #expansion="slotProps">
+                  <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg m-2">
+                    <h5 class="text-lg font-semibold mb-3 ml-2">Divisions for {{ slotProps.data.title }}</h5>
+                    <DataTable v-model:expandedRows="expandedDivisionRows" :value="slotProps.data.division" dataKey="id" class="p-datatable-sm">
+                      <Column expander style="width: 3rem" />
+                      <Column field="title" header="Division"></Column>
+                      <Column header="Last updated" field="updated_at_formatted"></Column>
+                      <Column field="unit_count" header="Units">
+                        <template #body="divSlot">
+                          {{ divSlot.data.unit_count || (divSlot.data.unit ? divSlot.data.unit.length : 0) }}
+                        </template>
+                      </Column>
+                      <Column field="archive_count" header="No. of Documents">
+                        <template #body="divSlot">
+                          {{ divSlot.data.archive_count || 0 }}
+                        </template>
+                      </Column>
+                      <Column field="users_count" header="No. of Users">
+                        <template #body="divSlot">
+                          <div class="flex items-center gap-3">
+                            <p>{{ divSlot.data.users_count || 0 }} users</p>
+                            <div class="flex -space-x-2 overflow-hidden ml-2" v-if="divSlot.data.users && divSlot.data.users.length > 0">
+                              <img v-for="usr in divSlot.data.users.slice(0, 3)" :key="usr.id"
+                                   :src="usr.profile_image ? ($page.props.base + '/' + usr.profile_image) : ($page.props.base + '/images/user.svg')"
+                                   alt=""
+                                   class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover bg-white" />
+                              <div v-if="divSlot.data.users_count > 3"
+                                   class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-600">
+                                +{{ divSlot.data.users_count - 3 }}
+                              </div>
+                            </div>
+                          </div>
+                        </template>
+                      </Column>
+                      <template #expansion="divSlotProps">
+                        <div class="p-3 bg-white border border-gray-100 rounded-lg m-2">
+                          <h6 class="text-md font-semibold mb-3 ml-2">Units for {{ divSlotProps.data.title }}</h6>
+                                                    <DataTable v-model:expandedRows="expandedUnitRows" :value="divSlotProps.data.unit" dataKey="id" class="p-datatable-sm">
+                            <Column expander style="width: 3rem" />
+                            <Column field="title" header="Unit"></Column>
+                            <Column header="Last updated" field="updated_at_formatted"></Column>
+                            <Column field="archive_count" header="No. of Documents">
+                              <template #body="unitSlot">
+                                {{ unitSlot.data.archive_count || 0 }}
+                              </template>
+                            </Column>
+                            <Column field="users_count" header="No. of Users">
+                              <template #body="unitSlot">
+                                <div class="flex items-center gap-3">
+                                  <p>{{ unitSlot.data.users_count || 0 }} users</p>
+                                  <div class="flex -space-x-2 overflow-hidden ml-2" v-if="unitSlot.data.users && unitSlot.data.users.length > 0">
+                                    <img v-for="usr in unitSlot.data.users.slice(0, 3)" :key="usr.id"
+                                         :src="usr.profile_image ? ($page.props.base + '/' + usr.profile_image) : ($page.props.base + '/images/user.svg')"
+                                         alt=""
+                                         class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover bg-white" />
+                                    <div v-if="unitSlot.data.users_count > 3"
+                                         class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-600">
+                                      +{{ unitSlot.data.users_count - 3 }}
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </Column>
+                            <template #expansion="unitSlotProps">
+                              <div class="p-3 bg-gray-50 border border-gray-100 rounded-lg m-2">
+                                <h6 class="text-sm font-semibold mb-3 ml-2">Sections for {{ unitSlotProps.data.title }}</h6>
+                                <DataTable :value="unitSlotProps.data.sections" dataKey="id" class="p-datatable-sm">
+                                  <Column field="title" header="Section"></Column>
+                                  <Column header="Last updated" field="updated_at_formatted"></Column>
+                                  <Column field="archive_count" header="No. of Documents">
+                                    <template #body="secSlot">
+                                      {{ secSlot.data.archive_count || 0 }}
+                                    </template>
+                                  </Column>
+                                  <Column field="users_count" header="No. of Users">
+                                    <template #body="secSlot">
+                                      <div class="flex items-center gap-3">
+                                        <p>{{ secSlot.data.users_count || 0 }} users</p>
+                                        <div class="flex -space-x-2 overflow-hidden ml-2" v-if="secSlot.data.users && secSlot.data.users.length > 0">
+                                          <img v-for="usr in secSlot.data.users.slice(0, 3)" :key="usr.id"
+                                               :src="usr.profile_image ? ($page.props.base + '/' + usr.profile_image) : ($page.props.base + '/images/user.svg')"
+                                               alt=""
+                                               class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover bg-white" />
+                                          <div v-if="secSlot.data.users_count > 3"
+                                               class="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-600">
+                                            +{{ secSlot.data.users_count - 3 }}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </template>
+                            </Column>
+                            <Column field="" header="">
+                              <template #body="{data}">
+                                <div class="flex items-center gap-3">
+                                  <div class="flex cursor-pointer">
+                                    <div @click="openAddSectionModal(data)"
+                                      class="flex gap-2 items-center pr-4 font-normal h-full border border-gray-300 rounded-lg px-2 py-1">
+                                      <div>
+                                        <Icon icon="ion:add-outline" width="25" />
+                                      </div>
+                                      <p class="font-medium">Add Section</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </Column>
+                          </DataTable>
+                        </div>
+                      </template>
+                    </DataTable>
+                        </div>
+                      </template>
+                    </DataTable>
                   </div>
                 </template>
-              </Column>
-            </DataTable>
+              </DataTable>
             <!-- <Toast /> -->
 
             </div>
@@ -221,11 +360,13 @@ div.td:first-child {
     <AddDivisionModal v-model="addDivision" :department ="singleDepartment" @close="addDivision = false"/>
     <EditDepartmentModal v-model="editDepartment" :department="singleDepartment" @close="editDepartment=false"/>
     <AddFileTypeModal v-model="addFileType"  :selectedFileType="selectedFileType" :branch="'department'" :branch_id="singleDepartment.id"/>
+  <ChangeLogModal v-model="changeLogModal" :data="currentChangeLogData" :type="currentChangeLogType" />
   </main>
 </template>
 
 <script setup>
-import { ref, defineProps, watch } from "vue";
+import { ref, defineProps, watch, computed, onMounted } from "vue";
+import { useForm, Link } from "@inertiajs/vue3";
 import EmptyState from "../../components/EmptyState.vue";
 import CreateDepartmentDialog from "../../components/Modals/CreateDepartmentDialog.vue";
 import ConfigureMetadataModal from "../../components/Modals/ConfigureMetadataModal.vue";
@@ -234,6 +375,7 @@ import AddDocumentTypesModal from "../../components/Modals/AddDocumentTypesModal
 import AddFileTypeModal from "../../components/Modals/AddFileTypeModal.vue";
 import AddDivisionModal from "../../components/Modals/AddDivisionModal.vue";
 import EditDepartmentModal from "../../components/Modals/EditDepartmentModal.vue";
+import ChangeLogModal from "../../components/Modals/ChangeLogModal.vue";
 import { router } from '@inertiajs/vue3'
 
 const departmentalModal = ref(false);
@@ -242,6 +384,32 @@ const step = ref(1);
 const props = defineProps(['department', 'division', 'unit', 'users', 'departments','documentTypes'])
 
 const users_data = ref(props.users);
+const activeTab = ref('all');
+const pinnedDepartments = ref([]);
+const expandedDivisionRows = ref([]);
+const expandedUnitRows = ref([]);
+
+onMounted(() => {
+  pinnedDepartments.value = JSON.parse(localStorage.getItem('pinned_departments') || '[]');
+});
+
+const togglePin = (deptId) => {
+  let index = pinnedDepartments.value.indexOf(deptId);
+  if(index > -1) {
+    pinnedDepartments.value.splice(index, 1);
+  } else {
+    pinnedDepartments.value.push(deptId);
+  }
+  localStorage.setItem('pinned_departments', JSON.stringify(pinnedDepartments.value));
+}
+
+const filteredDepartments = computed(() => {
+  if (activeTab.value === 'pinned') {
+    return props.departments.filter(dept => pinnedDepartments.value.includes(dept.id));
+  }
+  return props.departments;
+});
+
 const selectedMetadata = ref([]);
 const singleDocType = ref([]);
 const singleDepartment = ref([])
@@ -475,50 +643,57 @@ const updateModalStep = (value) => {
 //   },
 // ]);
 const menu = ref();
-const menuItems = ref([
-  {label: 'Add Division', icon: 'pi pi-plus', command: ()=>{
-    addDivision.value = true
-  }},
-  { label: "Divisions", icon: 'pi pi-eye', command: (event)=>{
-    //window.location.href = '/dashboard/get-divisions?id='+singleDepartment.value.id
-    window.open('/dashboard/get-divisions?id='+singleDepartment.value.id, "_blank");
-  }},
-  {
-    label: 'Add File Type',
-    icon: 'pi pi-file',
-    command: ()=>{
-      addFileType.value = true;
-    }
-  },
-  // { label: "Document types", icon: 'pi pi-eye', command: ()=>{
-  //   documentTypes.value = true;
-  // }},
-  { label: "Edit", icon: "pi pi-pencil", command: ()=>{
-      editDepartment.value = true;
-    }
-  },
-  // {
-  //   label: "Duplicate", icon: "pi pi-clone",
-  //   command: ()=>{
-  //     let data = {id: singleDepartment.value.id}
-  //     router.post('/dashboard/duplicate-department',data);
-  //   }
-  //  },
-  {
-    label: "Delete", icon: "pi pi-trash",
-    command: ()=>{
-      let data = {id: singleDepartment.value.id}
-      router.post('/dashboard/delete-department', data)
-    }
-   },
-  { label: "Change Log", icon: "pi pi-chart-pie" },
-]);
+const menuItems = ref([]);
 
-const toggle = (event,data) => {
-  menu.value.toggle(event);
-  singleDepartment.value = data
+const changeLogModal = ref(false);
+const currentChangeLogData = ref(null);
+const currentChangeLogType = ref('');
+
+const openChangeLog = (data, type) => {
+  currentChangeLogData.value = data;
+  currentChangeLogType.value = type;
+  changeLogModal.value = true;
 };
 
+const toggle = (event, data) => {
+  singleDepartment.value = data;
+  const isPinned = pinnedDepartments.value.includes(data.id);
+  
+  menuItems.value = [
+    {label: 'Add Division', icon: 'pi pi-plus', command: ()=>{ addDivision.value = true }},
+    { label: "Divisions", icon: 'pi pi-eye', command: (event)=>{ window.open('/dashboard/get-divisions?id='+data.id, "_blank"); }},
+    { label: 'Add File Type', icon: 'pi pi-file', command: ()=>{ addFileType.value = true; }},
+    { label: "Edit", icon: "pi pi-pencil", command: ()=>{ editDepartment.value = true; }},
+    { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? "pi pi-bookmark-fill" : "pi pi-bookmark", command: () => { togglePin(data.id); }},
+    { label: "Delete", icon: "pi pi-trash", command: ()=>{ let reqData = {id: data.id}; router.post('/dashboard/delete-department', reqData) }},
+    { label: "Change Log", icon: "pi pi-chart-pie", command: () => { openChangeLog(data, 'department'); } },
+  ];
+  
+  menu.value.toggle(event);
+};
+
+const addSectionModal = ref(false);
+const sectionForm = useForm({
+  title: '',
+  description: '',
+  unit_id: ''
+});
+
+const openAddSectionModal = (unit) => {
+  sectionForm.unit_id = unit.id;
+  sectionForm.title = '';
+  sectionForm.description = '';
+  addSectionModal.value = true;
+};
+
+const submitSection = () => {
+  sectionForm.post('/dashboard/add-section', {
+    preserveScroll: true,
+    onSuccess: () => {
+      addSectionModal.value = false;
+    }
+  });
+};
 const configureMetadata = ref(false);
 
 const SelectedMetadataOptions = (val) => {
@@ -622,3 +797,11 @@ watch(singleDepartment, ()=>{
   }
 })
 </script>
+
+
+
+
+
+
+
+

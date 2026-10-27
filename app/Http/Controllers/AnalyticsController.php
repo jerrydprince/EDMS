@@ -28,9 +28,9 @@ class AnalyticsController extends Controller
         if ($statuses->isEmpty()) {
             // No data available
             return response()->json([
-                'uptime_percentage' => '0.00',
-                'downtime_hours' => 0,
-                'downtime_minutes' => 0,
+                'uptime_percentage' => '100',
+                'downtime' => 'No downtime',
+                'is_online' => 'Online',
             ]);
         }
 
@@ -110,7 +110,7 @@ class AnalyticsController extends Controller
 
 
         $latestStatus = ServerStatus::orderBy('checked_at', 'desc')->first();
-        $isOnline = $latestStatus ? $latestStatus->is_online : false;
+        $isOnline = $latestStatus ? $latestStatus->is_online : true;
         return response()->json([
             'uptime_percentage' => $formattedUptime,
             'downtime' => $formattedDowntime,
@@ -119,8 +119,73 @@ class AnalyticsController extends Controller
     }
     public function getUserLogins()
     {
-        $logins = LoginActivity::all();
+        $logins = LoginActivity::orderBy('created_at', 'desc')->take(50)->get();
         return response()->json($logins);
+    }
+
+    public function getAGFSummary()
+    {
+        $totalDocuments = \App\Models\TaskDoc::count() + \App\Models\ArchiveDocs::count();
+        $activeUsers = \App\Models\User::where('is_approved', 1)->count();
+        $workflowsCompleted = \App\Models\Task::where('status', 'Completed')->count();
+        $totalDepartments = \App\Models\Department::count();
+        $totalDivisions = \App\Models\Division::count();
+        $totalUnits = \App\Models\Unit::count();
+
+        $departmentalStatus = \App\Models\Department::withCount([
+            'task as pending_tasks' => function ($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            },
+            'task as completed_tasks' => function ($query) {
+                $query->where('status', 'Completed')->orWhere('status', 'completed');
+            }
+        ])->get()->map(function($dept) {
+            return [
+                'department' => $dept->title,
+                'pending' => $dept->pending_tasks,
+                'completed' => $dept->completed_tasks
+            ];
+        });
+
+        $highPriorityTasks = \App\Models\Task::where('priority', 'High')
+            ->where(function($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            })
+            ->with(['assignedBy', 'workflowVersion'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'summary' => [
+                [
+                    'title' => "Total documents count",
+                    'count' => number_format($totalDocuments),
+                ],
+                [
+                    'title' => "Active users",
+                    'count' => number_format($activeUsers),
+                ],
+                [
+                    'title' => "Workflow completed",
+                    'count' => number_format($workflowsCompleted),
+                ],
+                [
+                    'title' => "Total Departments",
+                    'count' => number_format($totalDepartments),
+                ],
+                [
+                    'title' => "Total Divisions",
+                    'count' => number_format($totalDivisions),
+                ],
+                [
+                    'title' => "Total sections",
+                    'count' => number_format($totalUnits),
+                ]
+            ],
+            'chart_data' => $departmentalStatus,
+            'high_priority_tasks' => $highPriorityTasks
+        ]);
     }
     
     // {
@@ -153,4 +218,262 @@ class AnalyticsController extends Controller
     //         'downtime_minutes' => $downtimeMinutes,
     //     ]);
     // }
+
+    public function getDirectorSummary()
+    {
+        $user = auth()->user();
+        if (!$user->department_id) {
+            return response()->json([
+                'summary' => [],
+                'chart_data' => [],
+                'high_priority_tasks' => []
+            ]);
+        }
+
+        $deptId = $user->department_id;
+
+        $totalDocuments = \App\Models\TaskDoc::whereHas('task', function($query) use ($deptId) {
+            $query->where('assigned_by_department', $deptId)
+                  ->orWhereHas('departmentTask', function($q) use ($deptId) {
+                      $q->where('departments.id', $deptId);
+                  });
+        })->count();
+
+        $activeUsers = \App\Models\User::where('department_id', $deptId)->where('is_approved', 1)->count();
+        $workflowsCompleted = \App\Models\Task::where('status', 'Completed')
+            ->where(function($query) use ($deptId) {
+                $query->where('assigned_by_department', $deptId)
+                      ->orWhereHas('departmentTask', function($q) use ($deptId) {
+                          $q->where('departments.id', $deptId);
+                      });
+            })->count();
+
+        $totalDivisions = \App\Models\Division::where('department_id', $deptId)->count();
+        $totalUnits = \App\Models\Unit::whereHas('division', function($query) use ($deptId) {
+            $query->where('department_id', $deptId);
+        })->count();
+
+        $departmentalStatus = \App\Models\Department::where('id', $deptId)->withCount([
+            'task as pending_tasks' => function ($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            },
+            'task as completed_tasks' => function ($query) {
+                $query->where('status', 'Completed')->orWhere('status', 'completed');
+            }
+        ])->get()->map(function($dept) {
+            return [
+                'department' => $dept->title,
+                'pending' => $dept->pending_tasks,
+                'completed' => $dept->completed_tasks
+            ];
+        });
+
+        $highPriorityTasks = \App\Models\Task::where('priority', 'High')
+            ->where(function($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            })
+            ->where(function($query) use ($deptId) {
+                $query->where('assigned_by_department', $deptId)
+                      ->orWhereHas('departmentTask', function($q) use ($deptId) {
+                          $q->where('departments.id', $deptId);
+                      });
+            })
+            ->with(['assignedBy', 'workflowVersion'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'summary' => [
+                [
+                    'title' => "Department Documents",
+                    'count' => number_format($totalDocuments),
+                ],
+                [
+                    'title' => "Department Staff",
+                    'count' => number_format($activeUsers),
+                ],
+                [
+                    'title' => "Workflows Completed",
+                    'count' => number_format($workflowsCompleted),
+                ],
+                [
+                    'title' => "Total Divisions",
+                    'count' => number_format($totalDivisions),
+                ],
+                [
+                    'title' => "Total Units",
+                    'count' => number_format($totalUnits),
+                ]
+            ],
+            'chart_data' => $departmentalStatus,
+            'high_priority_tasks' => $highPriorityTasks
+        ]);
+    }
+
+    public function getDivisionSummary()
+    {
+        $user = auth()->user();
+        if (!$user->division_id) {
+            return response()->json([
+                'summary' => [],
+                'chart_data' => [],
+                'high_priority_tasks' => []
+            ]);
+        }
+
+        $divId = $user->division_id;
+
+        $totalDocuments = \App\Models\TaskDoc::whereHas('task', function($query) use ($divId) {
+            $query->where('assigned_by_division', $divId)
+                  ->orWhereHas('divisionTask', function($q) use ($divId) {
+                      $q->where('divisions.id', $divId);
+                  });
+        })->count();
+
+        $activeUsers = \App\Models\User::where('division_id', $divId)->where('is_approved', 1)->count();
+        $workflowsCompleted = \App\Models\Task::where('status', 'Completed')
+            ->where(function($query) use ($divId) {
+                $query->where('assigned_by_division', $divId)
+                      ->orWhereHas('divisionTask', function($q) use ($divId) {
+                          $q->where('divisions.id', $divId);
+                      });
+            })->count();
+
+        $totalUnits = \App\Models\Unit::where('division_id', $divId)->count();
+
+        // Division level doesn't need to break down by division, just show its own status
+        $divisionStatus = \App\Models\Division::where('id', $divId)->withCount([
+            'task as pending_tasks' => function ($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            },
+            'task as completed_tasks' => function ($query) {
+                $query->where('status', 'Completed')->orWhere('status', 'completed');
+            }
+        ])->get()->map(function($div) {
+            return [
+                'department' => $div->title, // Keep key 'department' for the UI component
+                'pending' => $div->pending_tasks,
+                'completed' => $div->completed_tasks
+            ];
+        });
+
+        $highPriorityTasks = \App\Models\Task::where('priority', 'High')
+            ->where(function($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            })
+            ->where(function($query) use ($divId) {
+                $query->where('assigned_by_division', $divId)
+                      ->orWhereHas('divisionTask', function($q) use ($divId) {
+                          $q->where('divisions.id', $divId);
+                      });
+            })
+            ->with(['assignedBy', 'workflowVersion'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'summary' => [
+                [
+                    'title' => "Division Documents",
+                    'count' => number_format($totalDocuments),
+                ],
+                [
+                    'title' => "Division Staff",
+                    'count' => number_format($activeUsers),
+                ],
+                [
+                    'title' => "Workflows Completed",
+                    'count' => number_format($workflowsCompleted),
+                ],
+                [
+                    'title' => "Total Units",
+                    'count' => number_format($totalUnits),
+                ]
+            ],
+            'chart_data' => $divisionStatus,
+            'high_priority_tasks' => $highPriorityTasks
+        ]);
+    }
+
+    public function getUnitSummary()
+    {
+        $user = auth()->user();
+        if (!$user->unit_id) {
+            return response()->json([
+                'summary' => [],
+                'chart_data' => [],
+                'high_priority_tasks' => []
+            ]);
+        }
+
+        $unitId = $user->unit_id;
+
+        $totalDocuments = \App\Models\TaskDoc::whereHas('task', function($query) use ($unitId) {
+            $query->where('assigned_by_unit', $unitId)
+                  ->orWhereHas('unitTask', function($q) use ($unitId) {
+                      $q->where('units.id', $unitId);
+                  });
+        })->count();
+
+        $activeUsers = \App\Models\User::where('unit_id', $unitId)->where('is_approved', 1)->count();
+        $workflowsCompleted = \App\Models\Task::where('status', 'Completed')
+            ->where(function($query) use ($unitId) {
+                $query->where('assigned_by_unit', $unitId)
+                      ->orWhereHas('unitTask', function($q) use ($unitId) {
+                          $q->where('units.id', $unitId);
+                      });
+            })->count();
+
+        // Unit level shows its own status
+        $unitStatus = \App\Models\Unit::where('id', $unitId)->withCount([
+            'task as pending_tasks' => function ($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            },
+            'task as completed_tasks' => function ($query) {
+                $query->where('status', 'Completed')->orWhere('status', 'completed');
+            }
+        ])->get()->map(function($unit) {
+            return [
+                'department' => $unit->title, // Keep key 'department' for the UI component
+                'pending' => $unit->pending_tasks,
+                'completed' => $unit->completed_tasks
+            ];
+        });
+
+        $highPriorityTasks = \App\Models\Task::where('priority', 'High')
+            ->where(function($query) {
+                $query->where('status', 'Pending')->orWhere('status', 'pending');
+            })
+            ->where(function($query) use ($unitId) {
+                $query->where('assigned_by_unit', $unitId)
+                      ->orWhereHas('unitTask', function($q) use ($unitId) {
+                          $q->where('units.id', $unitId);
+                      });
+            })
+            ->with(['assignedBy', 'workflowVersion'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'summary' => [
+                [
+                    'title' => "Unit Documents",
+                    'count' => number_format($totalDocuments),
+                ],
+                [
+                    'title' => "Unit Staff",
+                    'count' => number_format($activeUsers),
+                ],
+                [
+                    'title' => "Workflows Completed",
+                    'count' => number_format($workflowsCompleted),
+                ]
+            ],
+            'chart_data' => $unitStatus,
+            'high_priority_tasks' => $highPriorityTasks
+        ]);
+    }
 }

@@ -11,12 +11,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class DashboardController extends Controller
 {
     public function index(){
-       // if(auth()->user()->hasRole('data entry')){
+       // if(auth()->user()->hasRole('record manager')){
        $task = [];
-        $branch = [];
+        $branch = new LengthAwarePaginator([], 0, 10);
 
        if(auth()->user()->task()->exists()){
-        $task = auth()->user()->task;
+        $task = auth()->user()->task()->with(['workflowVersion'])->where('status', 'pending')->take(10)->get();
        }
     
         if(auth()->user()->unit_id){
@@ -56,8 +56,10 @@ class DashboardController extends Controller
         return inertia('dashboard/index', compact('branch', 'task'));
        }
     
-       
+       return inertia('dashboard/index', compact('branch', 'task'));
     }
+
+    public function agfDashboard() { return inertia('dashboard/AGFDashboard'); }
 
     public function BranchesOverview(){
     //    $branches = Department::with(['folder','division'=>function($query){

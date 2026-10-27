@@ -70,8 +70,12 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', $request->email)->first();
-            if ($user &&
-                Hash::check($request->password, $user->password)) {
+            if ($user && Hash::check($request->password, $user->password)) {
+                if (!$user->hasRole('super admin') && !$user->is_approved) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'email' => 'Please wait while we approve your account',
+                    ]);
+                }
                 return $user;
             }
         });

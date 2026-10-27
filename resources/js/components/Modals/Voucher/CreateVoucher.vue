@@ -20,12 +20,21 @@
       <!-- Step 1: Voucher form -->
       <section v-if="currentStep === 1" key="step1"
         class="max-h-[85vh] overflow-y-scroll hide_scroll flex flex-col items-center">
-        <div class="items-center justify-start flex border-b border-solid border-[#E6E6E6] w-full">
-          <div class="px-5 py-4">
-            <p class="text-lg font-semibold text-gray-700">
-              Voucher Payment Information
+        <div class="items-center justify-between flex border-b border-solid border-[#E6E6E6] w-full px-5 py-4">
+          <div>
+            <p class="text-lg font-semibold text-gray-800">
+              {{ props.payment?.payment_type === 'advances' ? 'Staff Advance Payment Voucher (TF1 / APV)' : 'Payment Voucher Information' }}
+            </p>
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ props.payment?.payment_type === 'advances' ? 'Civil Service Financial Regulation 1420 (0% Tax-Exempt)' : 'Capital / Overhead Statutory Expenditure' }}
             </p>
           </div>
+          <span v-if="props.payment?.payment_type === 'advances'" class="text-xs px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-bold">
+            Advances Desk (Section 82)
+          </span>
+          <span v-else class="text-xs px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-full font-bold">
+            Other Charges Desk (Section 81)
+          </span>
         </div>
         <!-- THE FORM GOES HERE -->
         <section class="flex flex-col md:flex-row items-start gap-5 px-6 w-full">
@@ -383,6 +392,7 @@ const form = useForm({
   s_head: "",
   data_type: "",
   address: "",
+  voucher_type: "standard",
   payment_id: null,
   id: null
 });
@@ -531,21 +541,31 @@ const voucherDetails = ref({
 });
 
 watch(()=>props.payment, ()=>{
-  if(props.payment && props.payment.voucher && props.payment.voucher.length > 0){
-    getPdfSize(props.payment.voucher[0].path);
-    let voucher = props.payment.voucher[0]
-    form.deptal_no = voucher.deptal_no || "";
-    form.source = voucher.source || "";
-    form.date = voucher.date || "";
-    form.head = headList.value.find((item)=>item.title == voucher.head) || "";
-    form.checked_and_passed = voucher.checked_and_passed || "";
-    form.amount = voucher.amount || "";
-    form.classification_code = classificationCodes.value.find((item)=>item.title == voucher.classification_code) || "";
-    form.s_head = subHeadList.value.find((item)=>item.title == voucher.s_head) || "";
-    form.data_type = dataTypes.value.find((item)=> item.title == voucher.data_type) || "";
-    form.address = voucher.address || "";
-    form.payment_id = voucher.payment_id || null;
-    form.id = voucher.id || null
+  if(props.payment){
+    if (props.payment.amount && !form.amount) {
+      form.amount = props.payment.amount;
+    }
+    if (props.payment.title && !form.address) {
+      form.address = props.payment.title;
+    }
+    form.voucher_type = props.payment.payment_type || "standard";
+    if(props.payment.voucher && props.payment.voucher.length > 0){
+      getPdfSize(props.payment.voucher[0].path);
+      let voucher = props.payment.voucher[0]
+      form.deptal_no = voucher.deptal_no || "";
+      form.source = voucher.source || "";
+      form.date = voucher.date || "";
+      form.head = headList.value.find((item)=>item.title == voucher.head) || "";
+      form.checked_and_passed = voucher.checked_and_passed || "";
+      form.amount = voucher.amount || "";
+      form.classification_code = classificationCodes.value.find((item)=>item.title == voucher.classification_code) || "";
+      form.s_head = subHeadList.value.find((item)=>item.title == voucher.s_head) || "";
+      form.data_type = dataTypes.value.find((item)=> item.title == voucher.data_type) || "";
+      form.address = voucher.address || "";
+      form.payment_id = voucher.payment_id || null;
+      form.id = voucher.id || null;
+      form.voucher_type = voucher.voucher_type || props.payment.payment_type || "standard";
+    }
   }
 },{immediate:true})
 </script>

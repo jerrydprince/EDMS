@@ -29,7 +29,7 @@ class Mail extends Model
 
     protected static function booted(){
         static::deleted(function($mail){
-            $mail->deleted_by = auth()->user()->id;
+            $mail->deleted_by = auth()->id();
             $mail->save();
         });
     }

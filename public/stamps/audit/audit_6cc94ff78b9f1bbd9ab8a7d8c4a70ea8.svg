@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+    <!-- Outer Dual Ring -->
+    <circle cx="100" cy="100" r="95" fill="#fff1f2" stroke="#991b1b" stroke-width="3" />
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#be123c" stroke-width="1.2" stroke-dasharray="3,3" />
+    <circle cx="100" cy="100" r="62" fill="none" stroke="#991b1b" stroke-width="1.5" />
+    
+    <!-- Top Text Arc path -->
+    <path id="topArc" d="M 22,100 A 78,78 0 0,1 178,100" fill="none" />
+    <text font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="900" fill="#881337" letter-spacing="1.2">
+        <textPath href="#topArc" startOffset="50%" text-anchor="middle">
+            OFFICE OF THE ACCOUNTANT-GENERAL
+        </textPath>
+    </text>
+
+    <!-- Bottom Text Arc path -->
+    <path id="bottomArc" d="M 178,100 A 78,78 0 0,1 22,100" fill="none" />
+    <text font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="900" fill="#881337" letter-spacing="1.2">
+        <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">
+            INTERNAL AUDIT CLEARANCE
+        </textPath>
+    </text>
+
+    <!-- Center Content -->
+    <text x="100" y="82" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#991b1b" text-anchor="middle">AUDITED &amp;</text>
+    <rect x="36" y="87" width="128" height="20" rx="3" fill="#991b1b" />
+    <text x="100" y="101" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">PASSED FOR PAYMENT</text>
+    <text x="100" y="122" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="bold" fill="#1e293b" text-anchor="middle">TOSIN ADE</text>
+    <text x="100" y="133" font-family="Arial, Helvetica, sans-serif" font-size="7.5" font-weight="600" fill="#475569" text-anchor="middle">17-Oct-2026 13:34</text>
+    <text x="100" y="145" font-family="Courier, monospace" font-size="8" font-weight="bold" fill="#991b1b" text-anchor="middle">AUD-F4E7F0B89C</text>
+</svg>

@@ -1,106 +1,69 @@
 <template>
-    <div class="md:flex items-center gap-2">
-      <div class="bg-white rounded-2xl w-full md:w-[30%] p-14">
-        <div
-          class="flex items-center justify-center flex-col whitespace-nowrap"
-          v-if="props.stat.is_online === 'Online'"
-        >
-          <div
-            class="w-fit text-green-500 p-5 rounded-full border-green-500 border-[5px]"
-          >
-            <Icon icon="eva:flash-fill" width="60" />
-          </div>
-          <h1 class="font-semibold text-2xl my-3">System operational!</h1>
-          <div
-            class="w-fit flex items-center gap-1 text-green-500 py-0.5 px-3 rounded-2xl bg-slate-50"
-          >
-            <Icon icon="oui:dot" />
-            <p>Online</p>
-          </div>
-        </div>
-
-        <div
-          class="flex items-center justify-center flex-col whitespace-nowrap"
-          v-else
-        >
-          <div
-            class="w-fit text-red-500 p-5 rounded-full border-red-500 border-[5px]"
-          >
-            <Icon icon="ion:cloud-offline-outline" width="60" />
-          </div>
-          <h1 class="font-semibold text-2xl my-3">System offline</h1>
-          <div
-            class="w-fit flex items-center gap-1 text-red-500 py-0.5 px-3 rounded-2xl bg-slate-50"
-          >
-            <Icon icon="oui:dot" />
-            <p>Offline</p>
-          </div>
-        </div>
-      </div>
-      <div
-        class="overflow-auto mt-5 md:mt-0 w-full md:w-[70%] pb-9 bg-white rounded-2xl p-5"
-      >
-        <div class="flex items-center w-full justify-between">
-          <div>
-            <div class="flex items-center justify-between text-sm">
-              <div
-                class="bg-gray-100 flex items-center rounded-md p-1 whitespace-nowrap"
-              >
-                <button
-                  class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
-                  @click="buttonToggle = 1"
-                  :class="{ activeButton: buttonToggle === 1 }"
-                >
-                  <p>System status</p>
-                </button>
-                <button
-                  class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
-                  @click="buttonToggle = 2"
-                  :class="{ activeButton: buttonToggle === 2 }"
-                >
-                  <p>Response time</p>
-                </button>
-              </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-6">
+        <!-- System Status Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300">
+            <div v-if="props.stat.is_online === 'Online'" class="flex flex-col items-center">
+                <div class="relative flex h-20 w-20 items-center justify-center mb-4">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-30"></span>
+                    <div class="relative h-16 w-16 rounded-full bg-green-100 text-green-500 flex items-center justify-center border-4 border-green-50 dark:border-green-900">
+                        <Icon icon="eva:flash-fill" width="32" />
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">System Operational</h2>
+                <span class="mt-3 px-4 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-sm font-semibold border border-green-200 dark:border-green-800 shadow-sm">
+                    <Icon icon="oui:dot" class="inline mr-1" /> Online
+                </span>
             </div>
-          </div>
-          <div>
-            <select
-              name=""
-              id=""
-              class="w-40 px-2 py-2 outline-none bg-slate-50 rounded-md"
-              v-if="buttonToggle === 1"
-            >
-              <option value="All Time" class="">All Time</option>
-              <option value="Today">Today</option>
-              <option value="Yesterday">Yesterday</option>
-              <option value="This Week">This Week</option>
-              <option value="10 days">10days</option>
-              <option value="30 days">30days</option>
-              <option value="60 days">60days</option>
-            </select>
-
-            <div class="flex items-center p-2 gap-2" v-else>
-              <h1 class="text-gray-500">Current response time</h1>
-              <p class="font-semibold">4.12 ms</p>
+            <div v-else class="flex flex-col items-center">
+                <div class="relative flex h-20 w-20 items-center justify-center mb-4">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-30"></span>
+                    <div class="relative h-16 w-16 rounded-full bg-red-100 text-red-500 flex items-center justify-center border-4 border-red-50 dark:border-red-900">
+                        <Icon icon="ion:cloud-offline-outline" width="32" />
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">System Offline</h2>
+                <span class="mt-3 px-4 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-semibold border border-red-200 dark:border-red-800 shadow-sm">
+                    <Icon icon="oui:dot" class="inline mr-1" /> Offline
+                </span>
             </div>
-          </div>
         </div>
 
-        <div>
-          <status />
+        <!-- Uptime Percentage Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center transition-transform hover:-translate-y-1 duration-300 relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 text-blue-50 dark:text-blue-900/20 opacity-50">
+                <Icon icon="lucide:activity" width="120" />
+            </div>
+            <div class="flex items-center gap-3 mb-4 text-gray-500 dark:text-gray-400 relative z-10">
+                <div class="p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-xl">
+                    <Icon icon="lucide:activity" width="20" />
+                </div>
+                <span class="font-medium">Uptime (24h)</span>
+            </div>
+            <div class="text-5xl font-extrabold text-gray-800 dark:text-white my-2 relative z-10 tracking-tight">{{ props.stat.uptime_percentage }}<span class="text-3xl text-gray-400">%</span></div>
+            <div class="flex items-center gap-2 mt-2 relative z-10">
+                <span class="text-sm font-medium text-green-500 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-md">+0.01%</span>
+                <p class="text-sm text-gray-400 font-medium">Target: 99.99% SLA</p>
+            </div>
         </div>
-      </div>
+
+        <!-- Downtime Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center transition-transform hover:-translate-y-1 duration-300 relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 text-orange-50 dark:text-orange-900/20 opacity-50">
+                <Icon icon="lucide:clock" width="120" />
+            </div>
+            <div class="flex items-center gap-3 mb-4 text-gray-500 dark:text-gray-400 relative z-10">
+                <div class="p-2.5 bg-orange-50 dark:bg-orange-900/30 text-orange-500 rounded-xl">
+                    <Icon icon="lucide:clock" width="20" />
+                </div>
+                <span class="font-medium">Total Downtime (24h)</span>
+            </div>
+            <div class="text-5xl font-extrabold text-gray-800 dark:text-white my-2 relative z-10 tracking-tight">{{ props.stat.downtime }}</div>
+            <p class="text-sm text-gray-400 font-medium mt-2 relative z-10">Total time spent offline</p>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { defineProps } from "vue";
 const props = defineProps(["stat"]);
-import status from "../../components/AdminAnalytics/Status.vue";
-const buttonToggle = ref(1);
-const system_status = ref("offline");
 </script>
-
-<style>
-
-</style>

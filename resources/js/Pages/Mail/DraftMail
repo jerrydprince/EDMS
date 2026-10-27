@@ -258,6 +258,7 @@ import { ref, onMounted, defineProps } from "vue";
 //import DeleteMailMessage from "../../components/modals/Mail/DeleteMailMessage.vue";
 import image from '../../assets/images/members/1.svg'
 import { usePage } from "@inertiajs/vue3";
+import Editor from 'primevue/editor';
 
 const props = defineProps(['id']);
 console.log(props);

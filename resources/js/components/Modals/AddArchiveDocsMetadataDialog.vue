@@ -82,8 +82,8 @@
                     <option :value="doc.id" v-for="doc in branchDocType">{{ doc.name }}</option>
                 </select>
             </div>
-            <div class=" my-4 px-12" v-if="selectedMetadata && selectedMetadata.length > 0">
-                <div v-for="item in selectedMetadata">
+            <div class=" my-4 px-12" v-if="selectedMetadata && selectedMetadata.length > 0" ref="metadataContainer">
+                <div v-for="(item, index) in selectedMetadata" :key="index">
                     <div v-html="item.metadata_value"></div>
                 </div>
             </div>
@@ -125,6 +125,7 @@ const isfileSubmit = ref(false)
 const filteredMetadata = ref([])
 const documentType = ref([])
 const selectedDoctype = ref('')
+const metadataContainer = ref(null)
 
 const form = reactive({
 })
@@ -145,10 +146,12 @@ const closeModal = () => {
 const submitForm = () => {
     isfileSubmit.value = true;
 
-    let elements = document.getElementsByClassName('metadata-inputs');
+    if(!metadataContainer.value) return;
+
+    let elements = metadataContainer.value.getElementsByClassName('metadata-inputs');
     let form = []
     for (let i = 0; i < elements.length; i++) {
-        let title = elements[i].getAttribute('name');
+        let title = elements[i].getAttribute('name') || elements[i].getAttribute('id');
         let value = elements[i].value;
         if (value == '') {
             elements[i].focus();
@@ -182,7 +185,11 @@ const allMetadatas = () => {
 }
 
 const getDocType = () => {
-    axios.get('/edms/branch-metdata').then((response) => {
+    let params = {};
+    if (props.file && props.file.id) {
+        params.archive_id = props.file.id;
+    }
+    axios.get('/edms/branch-metdata', { params }).then((response) => {
         branchDocType.value = response.data
     })
 }
@@ -225,13 +232,19 @@ watch(selectedDoctype, () => {
 })
 
 watch(() => props.file, () => {
+    if (props.file) {
+        getDocType();
+    }
     if (props.file && props.file.archive_docs) {
         let arr = []
         metadata.value.forEach((item) => {
-            let data = props.file.archive_docs.find(val => val.archive_keys.toLowerCase() == item.name.toLowerCase());
-            //    if(!data){
-            //     arr.push(item)
-            //    }
+            let data = props.file.archive_docs.find((val) => {
+                let formattedName = item.name.toLowerCase();
+                if(formattedName.includes(' ')){
+                    formattedName = formattedName.split(' ').join('_');
+                }
+                return formattedName === val.archive_keys.toLowerCase();
+            });
             if (data) {
                 arr.push(item)
             }

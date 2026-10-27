@@ -1,64 +1,102 @@
 <template>
-
-  <main class="bg-white  p-7 rounded-2xl mt-3 border border-gray-300">
-    <div class="flex items-center w-full justify-between">
-      <div class="flex items-center gap-5">
-        <h1 class="font-semibold text-2xl">Tasks Assigned</h1>
-        <button class="items-center flex gap-2 text-xs text-gray-500 bg-gray-100/75 p-1 px-2 rounded-xl">
-          <Icon icon="uil:padlock" />
-          <p>View only</p>
-        </button>
+  <main class="bg-white p-7 rounded-2xl mt-4 border border-gray-200 shadow-sm">
+    <div class="flex items-center w-full justify-between pb-4 border-b border-gray-100">
+      <div class="flex items-center gap-4">
+        <h2 class="font-bold text-xl text-gray-900">Task Execution Kanban</h2>
+        <span class="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
+          <Icon icon="lucide:check-square" width="14" />
+          <span>{{ totalTasksCount }} Total Tasks</span>
+        </span>
       </div>
-      <div class="flex items-center gap-5">
-        <div class="p-2 bg-slate-100 rounded-full cursor-pointer" @click="scroll(-50)">
-          <Icon icon="flowbite:angle-left-outline" />
-        </div>
-        <div class="p-2 bg-slate-100 rounded-full cursor-pointer" @click="scroll(50)">
-          <Icon icon="flowbite:angle-right-outline" />
-        </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="p-2 bg-slate-100 hover:bg-slate-200 text-gray-600 rounded-lg transition-colors cursor-pointer"
+          @click="scroll(-200)"
+          title="Scroll Left"
+        >
+          <Icon icon="lucide:chevron-left" width="18" />
+        </button>
+        <button
+          class="p-2 bg-slate-100 hover:bg-slate-200 text-gray-600 rounded-lg transition-colors cursor-pointer"
+          @click="scroll(200)"
+          title="Scroll Right"
+        >
+          <Icon icon="lucide:chevron-right" width="18" />
+        </button>
       </div>
     </div>
 
-    <div class=" my-10 overflow-x-scroll   w-full" ref="scrollContainer">
-      <div class=" flex mb-10  items-start gap-10">
-        <!-- ====== task  ====== -->
-        <div class=" bg-gray-100 rounded-md p-3 h-fit " v-for="(task, index) in workflows" :key="index"
-          @click="ArchiveDocumentModal = true">
-          <div class="flex items-center justify-between">
+    <!-- Kanban Board -->
+    <div class="my-6 overflow-x-auto w-full pb-4" ref="scrollContainer">
+      <div class="flex items-start gap-6 min-w-max">
+        <div
+          v-for="(taskGroup, index) in workflows"
+          :key="index"
+          class="bg-slate-50 border border-gray-200/80 rounded-2xl p-4 w-[340px] shrink-0"
+        >
+          <!-- Column Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-gray-200/60 mb-3">
             <div class="flex items-center gap-2">
-              <h1 class="font-semibold text-lg">{{ task.status }}</h1>
+              <span
+                class="w-2.5 h-2.5 rounded-full"
+                :class="getStatusDotClass(taskGroup.status)"
+              ></span>
+              <h3 class="font-bold text-sm text-gray-800">{{ taskGroup.status }}</h3>
             </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-600">
+              {{ filteredTask(taskGroup.status).length }}
+            </span>
           </div>
 
-          <div v-for="(item, index) in filteredTask(task.status)" :key="index">
-            <div class="bg-white rounded-md shadow-md mt-3 w-[400px]">
-              <div class="p-2 border-b">
-                <h1 class="font-semibold text-[#1D2939]">
-                  <!-- <Link :href="'/dashboard/view-task/'+item.id">{{ item.title }}</Link> -->
-                  {{ item.title }}
-                </h1>
-                <p class="font-semibold text-[#1D2939] opacity-70 text-sm">
-                  {{ item.description }}
-                </p>
+          <!-- Cards List -->
+          <div class="space-y-3">
+            <div
+              v-for="item in filteredTask(taskGroup.status)"
+              :key="item.id"
+              class="bg-white rounded-xl border border-gray-200/80 p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <Link
+                  :href="'/dashboard/view-task/' + item.id"
+                  class="font-bold text-sm text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-2 line-clamp-2"
+                >
+                  <Icon v-if="item.mail_id" icon="lucide:mail" class="text-blue-500 shrink-0" width="16" title="Mail Assignment" />
+                  <Icon v-else-if="item.file_id" icon="lucide:file-text" class="text-purple-500 shrink-0" width="16" title="Document File" />
+                  <span>{{ item.title }}</span>
+                </Link>
               </div>
-              <div class="p-2 flex items-center justify-between">
-                <img v-if="item.assigned_by && item.assigned_by.profile_image" width="50" :src="page.props.base+'/'+item.assigned_by.profile_image" alt="">
-                <img v-else :src="oneIcon" alt="" />
-                <div class="flex gap-3 items-center">
-                  <div class="flex items-center gap-1">
-                    <Icon icon="iconamoon:comment" width="13" />
-                    <span>{{ item?.comments_count }}</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <Icon icon="uil:calender" width="13" />
-                    <span class="capitalize">{{ getDays(item.created_at) }}</span>
-                  </div>
 
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                {{ item.description || 'No description provided.' }}
+              </p>
+
+              <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-600">
+                    {{ item.assigned_by ? (item.assigned_by.first_name + ' ' + item.assigned_by.last_name) : 'Supervisor' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-1">
+                    <Icon icon="lucide:message-square" width="13" />
+                    <span>{{ item.comments_count || 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-1 font-medium text-gray-500">
+                    <Icon icon="lucide:clock" width="13" />
+                    <span>{{ getDays(item.created_at) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
+            <!-- Empty Column State -->
+            <div
+              v-if="filteredTask(taskGroup.status).length === 0"
+              class="p-6 text-center text-xs text-gray-400 bg-white/40 border border-dashed border-gray-200 rounded-xl"
+            >
+              No {{ taskGroup.status.toLowerCase() }} tasks
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -66,182 +104,57 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, computed } from "vue"
 import moment from "moment"
-import {usePage, Link} from "@inertiajs/vue3"
-import oneIcon from "../../../public/images/members/1.svg"
+import { usePage, Link } from "@inertiajs/vue3"
 
 const props = defineProps(['task'])
-const scrollContainer = ref(null);
+const scrollContainer = ref(null)
 const page = usePage()
+
+const totalTasksCount = computed(() => {
+  return Array.isArray(props.task) ? props.task.length : 0
+})
+
 const scroll = (offset) => {
   if (scrollContainer.value) {
-    scrollContainer.value.scrollLeft += offset;
+    scrollContainer.value.scrollLeft += offset
   }
-};
-
-const filteredTask = (status)=>{
-  let filtered = props.task.filter((item)=>item.status.toLowerCase() == status.toLowerCase())
-  console.log(filtered)
-  return filtered
 }
 
-const getDays = (date)=>{
-  return moment(date).fromNow();
+const filteredTask = (status) => {
+  if (!props.task || !Array.isArray(props.task)) return []
+  return props.task.filter(
+    (item) => (item.status || '').toLowerCase() === status.toLowerCase()
+  )
+}
+
+const getDays = (date) => {
+  if (!date) return ''
+  return moment(date).fromNow()
+}
+
+const getStatusDotClass = (status) => {
+  switch (status.toLowerCase()) {
+    case 'completed':
+      return 'bg-emerald-500'
+    case 'in progress':
+      return 'bg-blue-500'
+    case 'under review':
+      return 'bg-purple-500'
+    case 'uncompleted':
+      return 'bg-red-500'
+    case 'pending':
+    default:
+      return 'bg-amber-500'
+  }
 }
 
 const workflows = ref([
-  {
-    status: 'Pending'
-  },
-  {
-    status: "In Progress",
-    // todo: [
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-
-
-
-
-    // ],
-  },
-
-
-
-  {
-    status: "Under Review",
-    // todo: [
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    // ],
-  },
-  {
-    status: "Completed",
-    // todo: [
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    // ],
-  },
-  {
-    status: "Uncompleted",
-    // todo: [
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    //   {
-    //     title: "Review and verify",
-    //     task: "Provide support and assistance to users regarding document archiving",
-    //   },
-    // ],
-  },
-]);
+  { status: 'Pending' },
+  { status: 'In Progress' },
+  { status: 'Under Review' },
+  { status: 'Completed' },
+  { status: 'Uncompleted' }
+])
 </script>
-
-<style></style>

@@ -11,6 +11,7 @@ class Groups extends Model
     protected $fillable = [
         'name',
         'category', // 'department', 'unit', or 'division'
+        'category_id',
     ];
     public function category()
     {

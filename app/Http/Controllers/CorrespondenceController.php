@@ -72,12 +72,12 @@ class CorrespondenceController extends Controller
             $newFile->description = $request->description;
             $newFile->created_by = auth()->user()->id;
            
-            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
                 $newFile->is_agf = true;
             }
             $newFile->save();
 
-            $superUsers = User::role('super users')->first();
+            $superUsers = User::role('super user')->first();
             if($superUsers){
                 $fm = new FileMovement();
                 $fm->sent_from = auth()->user()->id;
@@ -88,12 +88,30 @@ class CorrespondenceController extends Controller
                 $fm->sent_to_branch = 'agf registry';
             }
            
-            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry edit'])){
+            if(auth()->user()->hasAnyPermission(['agf registry view', 'agf registry create'])){
                 $fm->sent_to_agf = true;
             }
 
-    
             $fm->save();
+            
+            // Workflow Integration
+            if ($request->route_to_workflow && $request->workflow_version_id) {
+                try {
+                    $task = new \App\Models\Task();
+                    $task->title = 'Correspondence: ' . $newFile->name;
+                    $task->workflow_version_id = $request->workflow_version_id;
+                    $task->file_id = $newFile->id;
+                    $task->created_by = auth()->user()->id;
+                    $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+                    $task->save();
+
+                    $workflowService = app(\App\Services\GenericWorkflowService::class);
+                    // Assign to the initiator for them to act on it in their inbox
+                    $workflowService->start($task, auth()->user(), [auth()->user()->id]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Generic Workflow Start Error in Correspondence: ' . $e->getMessage());
+                }
+            }
     }
 
     public function getFileMovementUniqueId(){

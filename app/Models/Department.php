@@ -4,11 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Traits\HasPermissions;
+use Spatie\Permission\Traits\HasRoles;
 
 class Department extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity, HasPermissions, HasRoles;
+
+    protected $guard_name = 'web';
+
+    public function getActivitylogOptions(): LogOptions { return LogOptions::defaults()->logAll()->logOnlyDirty(); }
 
     /**
      * Get all of the division for the Department
@@ -38,6 +46,16 @@ class Department extends Model
     public function user()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function designations()
+    {
+        return $this->hasMany(Designation::class);
     }
 
     /**
@@ -108,7 +126,7 @@ class Department extends Model
 
     protected static function booted(){
         static::deleted(function($department){
-            $department->deleted_by = auth()->user()->id;
+            $department->deleted_by = auth()->id();
             $department->save();
         });
     }
@@ -124,3 +142,4 @@ class Department extends Model
    }
     
 }
+

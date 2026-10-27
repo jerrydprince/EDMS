@@ -1,35 +1,32 @@
 <template>
 
-  <table class="w-full text-left">
-    <thead class=" bg-gray-50">
-      <tr class="border text-[#667085]">
-        <th class="p-3 pl-5 w-[3%]">
-          #
-        </th>
-        <th class="w-[27%]">Title</th>
-        <th class="w-[50%]">Description</th>
-        <th class="w-[10%]">Amount</th>
-        <th class="w-[10%]">Actions</th>
+<div v-if="!documentsGridView">
+  <table class="w-full text-left table-auto">
+    <thead class="bg-gray-50 border-y border-gray-200">
+      <tr class="text-[#667085] text-sm">
+        <th class="p-4 pl-5 w-12 font-medium">#</th>
+        <th v-for="heading in fileTypeHeadings" :key="heading" class="p-4 font-medium">{{ heading }}</th>
+        <th class="w-32 p-4 font-medium text-right pr-6">Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="text-sm">
       <tr class="border" v-for="(file, key) in filteredFiles">
-        <td class="p-3 px-2 pl-5 py-3"> {{ continuousPageNumbering(key + 1) }}</td>
-        <td class="py-3 px-2">
-          <div class="flex items-center font-medium gap-2">
-            <div class="p-2 rounded-full bg-gray-200">
-              <!-- <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" /> -->
-              <img :src="getFileExtension(file)" alt="" style="width: 20px; max-width: none;">
+        <td class="p-4 pl-5"> {{ continuousPageNumbering(key + 1) }}</td>
+        
+        <td v-for="(heading, index) in fileTypeHeadings" :key="heading" class="p-4 truncate max-w-sm">
+            <div v-if="index === 0" class="flex items-center font-medium gap-2">
+                <div class="p-2 rounded-full bg-gray-100 flex-shrink-0">
+                  <Icon :icon="file.icon_url || 'vscode-icons:default-file'" width="20" />
+                </div>
+                <span class="truncate">{{ file.dynamic_data[heading]?.archive || file.dynamic_data[heading] || (index === 0 ? file.name : '') }}</span>
             </div>
-            {{ file.title?.archive }}
-          </div>
+            <div v-else class="truncate text-gray-600">
+                {{ truncateText(file.dynamic_data[heading]?.archive || file.dynamic_data[heading]) }}
+            </div>
         </td>
 
-        <td class="px-2">{{ truncateText(file.description?.archive) }}</td>
-        <td class="py-3 px-2">{{ file.amount?.archive }}</td>
-
-        <td class="py-3 px-2">
-          <div class="flex items-center gap-4">
+        <td class="p-4 pr-6 text-right">
+          <div class="flex items-center justify-end gap-4">
             <div @click="toggle2($event, file, key)" aria-haspopup="true" aria-controls="overlay_menu">
               <div class="flex items-center font-normal h-full border border-gray-300 rounded-lg">
                 <div>
@@ -64,6 +61,55 @@
       </tr>
     </tbody>
   </table>
+</div>
+
+<!-- Documents Grid View -->
+<div v-if="documentsGridView" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
+  <div v-for="(file, key) in filteredFiles" :key="key" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col relative group">
+    
+    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white rounded-md shadow-sm border border-gray-100">
+        <div class="p-1 cursor-pointer hover:bg-gray-50 rounded-md">
+            <div @click="toggle2($event, file, key)" aria-haspopup="true" aria-controls="overlay_menu">
+                <Icon icon="majesticons:more-menu-vertical" width="20" />
+            </div>
+            <TieredMenu ref="menu2" id="overlay_menu" :model="menuItems" popup>
+              <template #item="{ item, props, hasSubmenu }">
+                <a class="flex align-location-center" v-bind="props.action">
+                  <span v-html="item.icon"></span>
+                  <span class="ml-2" @click="handleItemClick(item)">{{ item.label }}</span>
+                  <i v-if="hasSubmenu" class="pi pi-angle-right ml-auto text-primary"></i>
+                </a>
+                <div v-if="hasSubmenu" class="submenu">
+                  <TieredMenu :model="item.submenuItems" :popup="true"></TieredMenu>
+                </div>
+              </template>
+            </TieredMenu>
+        </div>
+    </div>
+    
+    <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white rounded-md shadow-sm border border-gray-100">
+        <div @click="deleteArchive(file)" class="p-1.5 cursor-pointer hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-md transition-colors" title="Delete">
+            <Icon icon="uiw:delete" width="14" />
+        </div>
+    </div>
+
+    <div class="h-32 bg-gray-50 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
+        <Icon :icon="file.icon_url || 'vscode-icons:default-file'" width="64" class="opacity-80 group-hover:scale-110 transition-transform duration-300" />
+    </div>
+    
+    <div class="p-4 flex-1 flex flex-col gap-2">
+        <div v-for="(heading, index) in fileTypeHeadings" :key="heading">
+            <div v-if="index === 0" class="font-semibold text-gray-800 text-base truncate" :title="file.dynamic_data[heading]?.archive || file.dynamic_data[heading] || file.name">
+                {{ file.dynamic_data[heading]?.archive || file.dynamic_data[heading] || file.name }}
+            </div>
+            <div v-else class="text-sm text-gray-500 truncate" :title="heading">
+                <span class="text-xs font-medium text-gray-400 uppercase tracking-wider mr-1">{{ heading }}:</span>
+                {{ truncateText(file.dynamic_data[heading]?.archive || file.dynamic_data[heading]) }}
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
   <!-- <div class="w-full pt-8 pb-4">
     <div class="flex">
       <div class="flex pl-6" v-if="props.archives && props.archives?.first_page_url && props.archives.links[0].url">
@@ -105,6 +151,8 @@
 </template>
 
 <script setup>
+import Swal from 'sweetalert2';
+
 import { ref, defineProps, watch, defineEmits, computed } from "vue";
 import { router, usePage } from '@inertiajs/vue3';
 import PreviewFile from "../../../components/Modals/branches/PreviewFile.vue";
@@ -113,9 +161,9 @@ import pagination from "./pagination.vue";
 import debounce from "lodash.debounce";
 
 
-const props = defineProps(['files', 'documentsGridView', 'archives', 'search','sort', 'folder_id', 'branch_type','branch_id']);
+const props = defineProps(['files', 'documentsGridView', 'archives', 'search','sort', 'folder_id', 'branch_type','branch_id', 'fileType']);
 const emit = defineEmits(['docs', 'fileRename', 'lock', 'changeFormat', 'downloadFile', 'selectedArchive', 'branchDetails',
-'editMetadata', 'addMetadata', 'fileActivity', 'fileVersion', 'lockDocs', 'share', 'folder_id']);
+'editMetadata', 'addMetadata', 'fileActivity', 'fileVersion', 'lockDocs', 'share', 'folder_id', 'checkOut', 'checkIn']);
 const selectedDocument = ref()
 const menu2 = ref();
 const selectedArchiveId = ref();
@@ -129,6 +177,7 @@ const searchQuery = ref(props.search || '');
 
 const page = usePage();
 
+const fileTypeHeadings = computed(() => props.fileType?.headings || ["Title", "Description", "Amount"]);
 
 const togglePreviewState = () => {
   togglePreview.value = !togglePreview.value;
@@ -143,33 +192,7 @@ const continuousPageNumbering = (number)=>{
   }
 }
 
-const getFileExtension = (file)=>{
-    const f_path = file.path? file.path : file?.name
-    
-    if(f_path){
-       const parts = f_path.split('.');
-
-      const extension = parts.pop();
-
-      if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
-          return page.props.base+'/images/image.svg'
-      }
-      
-      if(extension == 'pdf'){
-          return page.props.base+'/images/pdf.svg'
-      }
-
-      if(extension == 'doc' || extension == 'doctx'){
-          return page.props.base+'/images/word.svg'
-      }
-
-      if(extension == 'xlx' || extension == 'xlsx'){
-          return page.props.base+'/images/excel.svg'
-      }
-    }
-   
-
-}
+// getFileExtension has been replaced by inline icon logic
 
 const truncateText = (text)=>{
     let max = 100
@@ -316,9 +339,34 @@ const menuItems = ref([
   },
 ]);
 
+const selectedFilePathId = ref();
+
 const toggle2 = (event, data, index) => {
   selectedArchiveId.value = data.id;
+  selectedFilePathId.value = data.file_path_id;
   selectedArchive.value = data
+  
+  // Remove existing Check In/Out if any
+  const checkOutIndex = menuItems.value.findIndex(i => i.label === 'Check Out');
+  if (checkOutIndex > -1) menuItems.value.splice(checkOutIndex, 1);
+  const checkInIndex = menuItems.value.findIndex(i => i.label === 'Check In');
+  if (checkInIndex > -1) menuItems.value.splice(checkInIndex, 1);
+  
+  // Conditionally add Check In or Check Out based on data
+  if (data.is_checked_out && data.checked_out_by === page.props.auth.user.id) {
+      menuItems.value.push({
+          label: 'Check In',
+          icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D2939" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><polyline points="9 9 12 12 15 9"/><line x1="12" y1="3" x2="12" y2="12"/></svg>`,
+          command: () => { emit('checkIn', data); }
+      });
+  } else if (!data.is_checked_out) {
+      menuItems.value.push({
+          label: 'Check Out',
+          icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D2939" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><polyline points="15 15 12 18 9 15"/><line x1="12" y1="21" x2="12" y2="12"/></svg>`,
+          command: () => { emit('checkOut', data); }
+      });
+  }
+
   menu2.value[index].toggle(event);
   emit('selectedArchive', selectedArchive);
 };
@@ -338,38 +386,11 @@ const handleItemClick = (item) => {
 
 const downloadFile = async () => {
   try {
-    const response = await axios.get('/download-file', {
-      params: { id: selectedArchiveId.value },
-      responseType: 'blob'
-    });
-
-    // Extract the filename from the Content-Disposition header
-    const contentDisposition = response.headers['content-disposition'];
-    const fileName = contentDisposition.split('filename=')[1].replace(/"/g, '').trim();
-
-    // Determine the content type based on the file extension
-    const contentType = fileName.endsWith('.pdf') ? 'application/pdf' :
-      fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-        fileName.endsWith('.png') ? 'image/png' :
-          'application/octet-stream'; // Default to binary data
-
-    // Create a blob object from the binary data
-    const blob = new Blob([response.data], { type: contentType });
-
-    // Create a URL for the blob object
-    const url = window.URL.createObjectURL(blob);
-
-    // Create a link element and simulate a click to trigger the file download
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName); // Set the filename for the downloaded file
-    //link.setAttribute('download', encodeURIComponent(fileName));
-
-    document.body.appendChild(link);
-    link.click();
-
-    // Cleanup by revoking the object URL
-    window.URL.revokeObjectURL(url);
+    let url = (page.props.base || '') + '/download-file?id=' + selectedArchiveId.value;
+    if (selectedFilePathId.value) {
+      url += '&file_path_id=' + selectedFilePathId.value;
+    }
+    window.location.href = url;
   } catch (error) {
     console.error('Error downloading file:', error);
   }
@@ -386,7 +407,7 @@ const links = computed(()=>{
 
 const searchFile = async () => {
   let url = '';
-  if(!page.props.roles.includes('data entry')){
+  if(!page.props.roles.includes('record manager')){
     url = `/dashboard/folder-view/${props.branch_type}/${props.folder_id}/${props.branch_id}`
   }else{
     url = `/edms/folder-view/${props.branch_type}/${props.folder_id}`
@@ -407,48 +428,34 @@ const searchFile = async () => {
     });
 
     const filteredFiles = computed(() => {
-      
-      if (!props.archives || !searchQuery.value) {
-        return props.files || [];
+      if (!props.files || props.files.length === 0) {
+        return [];
       }
 
-      const search = searchQuery.value.toLowerCase();
-      // return props.archives.data.filter(file => {
-      //   // return (
-      //   //   file.title.toLowerCase().includes(search) ||
-      //   //   file.amount.toLowerCase().includes(search) ||
-      //   //   file.description.toLowerCase().includes(search)
-      //   // );
-      // });
+      let result = [...props.files];
 
-      let newarr = []
-
-      for (let file of props.archives.data) {
-      let arr = {
-        name: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0].archive : file?.file_path[0]?.file_name,
-        size: file?.file_path[0]?.file_size,
-        date: formatDate(file.updated_at),
-        uploaded_by: file?.file_path[0]?.updated_by_name,
-        //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
-        path: (file.file_path && file.file_path.length > 0) ? file?.file_path[0]?.path : '',
-        files: file?.file_path,
-        id: file.id,
-        amount: getArchiveDocsVale(file.archive_docs, 'amount') ? getArchiveDocsVale(file.archive_docs, 'amount')[0] : '',
-        title: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : file?.file_path[0]?.file_name,
-        description: getArchiveDocsVale(file.archive_docs, 'description') ? getArchiveDocsVale(file.archive_docs, 'description')[0] : '',
-        archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title') ? getArchiveDocsVale(file.archive_docs, 'title')[0] : '',
-        archive_docs: file.archive_docs,
-        department: file.department ? file.department : [],
-        division: file.division ? file.division : [],
-        unit: file.unit ? file.unit : [],
-        file_activity: file.file_activity,
-        file_version: file.version,
-        is_locked: file.is_locked
+      if (searchQuery.value) {
+        const search = searchQuery.value.toLowerCase().trim();
+        result = result.filter(file => {
+          const nameMatch = (file.name || '').toLowerCase().includes(search);
+          const titleMatch = (file.title || '').toLowerCase().includes(search);
+          const descMatch = (file.description || '').toLowerCase().includes(search);
+          const uploaderMatch = (file.uploaded_by || '').toLowerCase().includes(search);
+          const dynamicMatch = file.dynamic_data ? Object.values(file.dynamic_data).some(val => {
+            const text = typeof val === 'object' && val !== null ? (val.archive || '') : String(val || '');
+            return text.toLowerCase().includes(search);
+          }) : false;
+          return nameMatch || titleMatch || descMatch || uploaderMatch || dynamicMatch;
+        });
       }
-      newarr.push(arr);
-    }
 
-    return newarr
+      if (props.sort === 'asc') {
+        result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      } else if (props.sort === 'desc') {
+        result.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+      }
+
+      return result;
     });
 
     const getArchiveDocsVale = (data, search) => {
@@ -456,7 +463,7 @@ const searchFile = async () => {
 if (data) {
   for (let archive of data) {
 
-    if (archive.archive_keys.toLowerCase() == search) {
+    if (archive.archive_keys.toLowerCase().includes(search)) {
       return [{ archive: archive.archive_values, id: archive.id }]
     }
   }
@@ -479,12 +486,23 @@ const formatDate = (inputDate) => {
 }
 
 const deleteArchive = (data) => {
-  let id = data.id
-  router.get('/delete-archive', { id: id, only: ['department'] }, {
-    onSuccess: page => {
-      //console.log(page)
-    }, preserveScroll: (page) => console.log(page)
-  })
+  Swal.fire({
+    title: 'Confirm',
+    text: "Are you sure you want to delete this document?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+    let id = data.id
+    router.get('/delete-archive', { id: id, only: ['department'] }, {
+      onSuccess: page => {
+        //console.log(page)
+      }, preserveScroll: (page) => console.log(page)
+    })
+  }
+  });
 }
 
 
@@ -492,12 +510,5 @@ watch(selectedDocument, () => {
   emit('docs', selectedDocument);
 })
 
-watch(()=>props.sort, (data)=>{
-  if(data == 'asc'){
-    filteredFiles.value.sort((a, b) => a.name.localeCompare(b.name));
-  }else{
-    filteredFiles.value.sort((a, b) => b.name.localeCompare(a.name));
-  }
-  
-})
+// Sorting is handled reactively inside filteredFiles computed property
 </script>

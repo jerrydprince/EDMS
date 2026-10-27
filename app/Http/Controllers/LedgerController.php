@@ -146,4 +146,62 @@ class LedgerController extends Controller
         $ledger = Ledger::where('payment_id', $id)->first();
         return response()->json($ledger);
     }
+
+    /**
+     * Automated General Ledger Double-Entry Posting (Task 3.2)
+     * Assistant Director (Final Accounts Unit) verifies and posts balanced IPSAS journal
+     */
+    public function postToGeneralLedger(Request $request)
+    {
+        $data = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+        ]);
+
+        $payment = Payment::with(['voucher', 'recipient', 'vatVoucher'])->findOrFail($data['payment_id']);
+
+        $glService = new \App\Services\GeneralLedgerPostingService();
+        $summary = $glService->postPaymentJournal($payment, auth()->id() ?? 1);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Balanced IPSAS Double-Entry General Ledger journal posted successfully.',
+                'data' => $summary
+            ]);
+        }
+
+        return to_route('view-payment', $payment->id)->with([
+            'message' => 'Balanced IPSAS Double-Entry General Ledger journal (' . $summary['journal_ref'] . ') posted successfully. Debits: ₦' . number_format($summary['total_debit'], 2) . ' = Credits: ₦' . number_format($summary['total_credit'], 2) . '.',
+            'gl_summary' => $summary
+        ]);
+    }
+
+    /**
+     * Post Advance Retirement Double-Entry Journal
+     */
+    public function postRetirementToGeneralLedger(Request $request)
+    {
+        $data = $request->validate([
+            'retirement_id' => 'required|exists:advances_retirements,id',
+        ]);
+
+        $retirement = \App\Models\AdvancesRetirement::with('ledger')->findOrFail($data['retirement_id']);
+
+        $glService = new \App\Services\GeneralLedgerPostingService();
+        $summary = $glService->postRetirementJournal($retirement, auth()->id() ?? 1);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Advance Retirement journal posted to General Ledger.',
+                'data' => $summary
+            ]);
+        }
+
+        return back()->with([
+            'message' => 'Advance Retirement journal (' . $summary['journal_ref'] . ') posted to General Ledger. Folio cleared to ₦0.',
+            'gl_summary' => $summary
+        ]);
+    }
 }
+

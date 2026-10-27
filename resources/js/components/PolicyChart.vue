@@ -4,7 +4,10 @@
       <div class="flex items-center justify-between w-full p-3">
         <h1 class="font-semibold text-lg">Policy & Procedure Adherence</h1>
         <button
-          class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300">
+          @click="generateReport"
+          class="p-2 rounded-md text-xs font-semibold text-gray-700 hover:bg-slate-50 border flex items-center gap-1 border-gray-300 transition-colors"
+          title="Download Report PDF"
+        >
           <Icon icon="pepicons-pop:file" />
           <p>Generate Report</p>
         </button>
@@ -46,7 +49,7 @@
             <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Fair (26%-45%)</span>
           </p>
           <p class=" text-[#FF3932] text-lg flex items-center gap-1">
-            <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Fair (26%-45%)</span>
+            <Icon icon="oui:dot" /> <span class=" text-sm text-gray-400">Needs Improvement (0%-25%)</span>
           </p>
         </div>
       </div>
@@ -67,11 +70,18 @@ const getChartPercentage = ()=>{
       }, 0);
     let total = props.chart.length;
     return Math.round(totalValue/total)
-
   }
- 
+  return 0
 }
-console.log(getChartPercentage())
+
+const generateReport = () => {
+  const match = window.location.pathname.match(/\/pms-user-profile\/(\d+)/);
+  if (match && match[1]) {
+    window.open(`/dashboard/pms/report/user/${match[1]}`, '_blank');
+  } else {
+    window.open('/dashboard/pms/report/department', '_blank');
+  }
+};
 </script>
 
 <style></style>

@@ -15,7 +15,7 @@ class Metadata extends Model
     protected function isDefault(): Attribute
     {
         return Attribute::make(
-            get: fn (boolean $value) => $value==1? "Default": "Variable",
+            get: fn (bool $value) => $value==1? "Default": "Variable",
         );
     }
 
@@ -26,7 +26,7 @@ class Metadata extends Model
 
     protected static function booted(){
         static::deleted(function($meta){
-            $meta->deleted_by = auth()->user()->id;
+            $meta->deleted_by = auth()->id();
             $meta->save();
         });
     }

@@ -7,6 +7,7 @@
     state () {
       return {
         notifications: [],
+        all_notifications: [],
         total_task_notifications: 0,
         new_chat: [],
       }
@@ -20,6 +21,9 @@
           return []
         }
       },
+      getAllNotifications(state){
+        return state.all_notifications || [];
+      },
       getTotalTaskNotifications(state){
         return state.total_task_notifications
       },
@@ -30,25 +34,18 @@
 
     mutations: {
       setNotifications (state, nots) {
-        //state.notifications.push(nots)
+        state.notifications = Array.isArray(nots) ? nots : [nots]
+      },
 
-        // // //state.notifications.push({task: nots})
-
-       // state.notifications.splice(0,1, nots)
-       state.notifications = Array.isArray(nots) ? nots : [nots]
-
-        // if (Array.isArray(nots)) {
-        //   state.notifications = nots; // Replace the notifications array with the new one
-        // } else {
-        //   state.notifications.push(nots); // Add a single notification if `nots` is not an array
-        // }
+      setAllNotifications(state, nots) {
+        state.all_notifications = nots || [];
       },
 
       addNotification(state, not) {
-      // Insert new notification at the top
-      state.notifications.unshift(not)
-    },
-
+        state.all_notifications.unshift(not);
+        state.notifications.unshift(not);
+        state.total_task_notifications++;
+      },
 
       setTotalTaskNotifications(state, counter){
         state.total_task_notifications = counter
@@ -62,15 +59,11 @@
     actions: {
       async fetchNotifications({commit}){
         await axios.get('/user-notifications').then((response)=>{
-          console.log('this is from the store ', response)
-          // notifications.value = response.data.notifications
-          // total_task_notifications.value = response.data.count
-          //if(response.data.notifications && response.data.notifications.length > 0){
-            commit('setNotifications', response.data.notifications)
-           // commit('addNotification', response.data.notifications)
-          //}
-          
+          commit('setNotifications', response.data.notifications)
+          commit('setAllNotifications', response.data.all_notifications || [])
           commit("setTotalTaskNotifications", response.data.count)
+        }).catch(err => {
+          console.error("Failed to fetch notifications:", err);
         })
       }
     }

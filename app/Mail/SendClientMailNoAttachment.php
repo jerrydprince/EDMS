@@ -56,7 +56,7 @@ class SendClientMailNoAttachment extends Mailable implements ShouldQueue
     public function content()
     {
         return new Content(
-            markdown: 'emails.mailBody',
+            view: 'emails.mailBody',
             with: [
                 'data' => $this->data
             ],

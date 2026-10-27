@@ -1,81 +1,122 @@
 <template>
-  <Dialog v-model:visible="visible" :closable="false" modal :pt="{
-    content: { class: 'px-0 bg-white pb-6' },
-  }" :style="{ width: '35rem', padding: '10px 0px' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-    class=".custom-dialog">
-    <section class="-mb-6 flex flex-col items-center">
-      <div class="bg-white p-7 -mt-12 relative">
-        <img src="../../../assets/images/grid.svg" alt="" />
+  <Dialog
+    v-model:visible="visible"
+    :closable="false"
+    modal
+    :pt="{
+      root: { class: 'border-0 rounded-2xl shadow-2xl overflow-hidden' },
+      content: { class: 'px-0 bg-white pb-6' },
+      header: { class: 'p-0 border-b-0' }
+    }"
+    :style="{ width: '34rem', maxWidth: '95vw' }"
+  >
+    <div class="p-6 bg-slate-900 text-white flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
+          <Icon icon="carbon:trash-can" width="22" />
+        </div>
+        <div>
+          <h2 class="text-lg font-bold">Empty Recycle Bin</h2>
+          <p class="text-xs text-slate-400">Irreversible statutory data destruction</p>
+        </div>
       </div>
-      <div class="border rounded-full p-3 absolute bg-[#F9FAFB] top-20">
-        <Icon icon="mi:delete" width="50" class="text-[#F04438]" />
-      </div>
+      <button @click="closeModal" class="text-slate-400 hover:text-white p-1 rounded">
+        <Icon icon="mdi:close" width="20" />
+      </button>
+    </div>
 
-      <div>
-        <div class="px-7">
-          <h1 class="font-semibold text-2xl text-center">
-            Confirm Clearing Bin
-          </h1>
-          <p class="text-[#667085] my-3 text-center">
-            Are you sure you want to clear the recycle bin completely? This action will permanently delete all items.
-          </p>
+    <div class="p-6 space-y-4">
+      <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-3">
+        <Icon icon="carbon:warning-filled" class="text-rose-600 mt-0.5 shrink-0" width="20" />
+        <div class="text-xs leading-relaxed">
+          <strong class="font-bold">Permanent Deletion Warning:</strong>
+          This operation will permanently purge soft-deleted records and unlinked physical storage files from the server. This action <strong>cannot be undone</strong>.
         </div>
       </div>
 
-      <Divider />
-    </section>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Select Purge Scope</label>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <label
+            class="p-3 border rounded-xl cursor-pointer flex flex-col gap-1 transition-all"
+            :class="scope === 'current' ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-bold' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+          >
+            <div class="flex items-center gap-2">
+              <input type="radio" v-model="scope" value="current" class="text-rose-600 focus:ring-rose-500" />
+              <span>Current Category</span>
+            </div>
+            <span class="text-[11px] font-normal text-slate-500 pl-5">Only purge items in '{{ currentType }}'</span>
+          </label>
+
+          <label
+            class="p-3 border rounded-xl cursor-pointer flex flex-col gap-1 transition-all"
+            :class="scope === 'all' ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-bold' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+          >
+            <div class="flex items-center gap-2">
+              <input type="radio" v-model="scope" value="all" class="text-rose-600 focus:ring-rose-500" />
+              <span>Entire Recycle Bin</span>
+            </div>
+            <span class="text-[11px] font-normal text-slate-500 pl-5">Purge all categories across EDMS</span>
+          </label>
+        </div>
+      </div>
+    </div>
 
     <template #footer>
-      <Button class="mr-4" :pt="{
-        root: {
-          class: 'py-2 px-8 border-gray-200 border border-solid rounded-lg',
-        },
-      }" @click="closeModal" label="Cancel" severity="secondary" outlined />
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 w-full">
+        <button
+          type="button"
+          @click="closeModal"
+          class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+        >
+          Cancel
+        </button>
 
-      <Button @click="submit" label="Confirm" class="" :pt="{
-        root: {
-          class:
-            'py-2 bg-[#F04438] px-10 border-0 text-white font-light  rounded-lg',
-        },
-      }" />
+        <button
+          type="button"
+          @click="confirmEmpty"
+          class="px-5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+        >
+          <Icon icon="carbon:trash-can" width="16" />
+          Empty Bin Permanently
+        </button>
+      </div>
     </template>
   </Dialog>
 </template>
 
 <script setup>
-import { defineEmits, defineProps, computed, ref } from "vue";
-import { useToast } from "primevue/usetoast";
+import { ref, computed } from "vue";
 
-const toast = useToast();
-const props = defineProps(["modelValue"]);
-const emit = defineEmits(["update:modelValue"]);
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  },
+  currentType: {
+    type: String,
+    default: 'Deleted Files'
+  }
+});
+
+const emit = defineEmits(["update:modelValue", "emptybin"]);
+const scope = ref("current");
 
 const visible = computed({
   get() {
     return props.modelValue;
   },
-  set(value) {
-    emit("update:modelValue", value);
-  },
+  set(val) {
+    emit("update:modelValue", val);
+  }
 });
 
 const closeModal = () => {
   emit("update:modelValue", false);
 };
 
-const submit = () => {
+const confirmEmpty = () => {
   emit("update:modelValue", false);
-  toast.add({
-    severity: "success",
-    summary: 'Recycle Bin Cleared',
-    detail: "The recycle bin has been cleared successfully.",
-    life: 3000,
-  });
+  emit("emptybin", scope.value === 'current' ? props.currentType : 'all');
 };
 </script>
-<style scoped>
-.custom-dialog .p-dialog-header {
-  display: none;
-  width: 20%;
-}
-</style>

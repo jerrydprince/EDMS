@@ -3,7 +3,9 @@
      <div class="flex items-center justify-between w-full p-3">
         <h1 class="font-semibold text-lg">Productivity Chart</h1>
         <button
-          class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300"
+          @click="generateReport"
+          class="p-2 rounded-md text-xs font-semibold text-gray-700 hover:bg-slate-50 border flex items-center gap-1 border-gray-300 transition-colors"
+          title="Download Report PDF"
         >
           <Icon icon="pepicons-pop:file" />
           <p>Generate Report</p>
@@ -131,6 +133,15 @@ const setChartOptions = () => {
       },
     },
   };
+};
+
+const generateReport = () => {
+  const match = window.location.pathname.match(/\/pms-user-profile\/(\d+)/);
+  if (match && match[1]) {
+    window.open(`/dashboard/pms/report/user/${match[1]}`, '_blank');
+  } else {
+    window.open('/dashboard/pms/report/department', '_blank');
+  }
 };
 </script>
 

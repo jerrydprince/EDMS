@@ -17,3 +17,25 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Scratch and Temporary Development Files
+/scratch/
+*.py
+*.txt
+*.sql
+*.log
+*.bak
+/public/documents/
+/vendor6/
+/*.php
+!/server.php
+/patch_*.js
+/test*.js
+/temp*
+/resources/js/create_locales.php
+/resources/js/patch.js
+*.zip
+
+
+
+

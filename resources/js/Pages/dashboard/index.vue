@@ -1,7 +1,7 @@
 <template>
   <main class="px-7">
     <div class="py-7">
-      <h1 class="font-semibold text-3xl text-[#1D2939]">
+      <h1 class="font-semibold text-3xl text-[#1D2939] dark:text-white">
         Get Started with Archiving.
       </h1>
       <p class="text-gray-500">
@@ -10,13 +10,16 @@
       </p>
     </div>
 
+    <!-- Injecting Metrics Overview Here -->
+    <MetricsOverview />
+
     <div class="flex justify-between">
       <div class="w-[47%] border border-solid rounded-lg">
         <div class="flex gap-5 items-center border-b px-5 py-3">
           <div class="p-2 border rounded-full">
             <Icon icon="mdi:cloud-key-outline" width="30" />
           </div>
-          <h1 class="font-semibold text-2xl text-[#1D2939]">
+          <h1 class="font-semibold text-2xl text-[#1D2939] dark:text-white">
             Archiving Steps:
           </h1>
         </div>
@@ -46,7 +49,7 @@
           <div class="p-2 border rounded-full">
             <Icon icon="charm:circle-tick" width="30" />
           </div>
-          <h1 class="font-semibold text-2xl text-[#1D2939]">
+          <h1 class="font-semibold text-2xl text-[#1D2939] dark:text-white">
             Your pending tasks
           </h1>
         </div>
@@ -54,8 +57,8 @@
         <div class=" px-5">
           <div class="flex items-center justify-between pt-5">
             <div>
-              <h1 class=" font-semibold text-4xl text-[#1D2939]">{{ props.task? props.task.length: '' }}</h1>
-              <p class=" font-semibold opacity-60 text-[#1D2939] mt-3">Pending Tasks</p>
+              <h1 class=" font-semibold text-4xl text-[#1D2939] dark:text-white">{{ props.task? props.task.length: '' }}</h1>
+              <p class=" font-semibold opacity-60 text-[#1D2939] dark:text-white mt-3">Pending Tasks</p>
             </div>
             <div class=" flex flex-col ">
               <button class=" bg-slate-200 p-2 rounded-full" @click="scroll(-20)">
@@ -101,10 +104,10 @@
 
     <div class=" mb-10">
       <div class=" flex items-center w-full justify-between">
-        <h1 class=" text-3xl  text-[#1D2939] mb-3">Recent Documents</h1>
+        <h1 class=" text-3xl  text-[#1D2939] dark:text-white mb-3">Recent Documents</h1>
         <div class="flex items-center gap-5 text-sm" v-if="files && files.length !== 0">
           <div class="bg-gray-100 flex items-center rounded-md p-1">
-            <button class="bg-white shadow-md border-gray-300 rounded-lg py-1 px-4">
+            <button class="bg-white dark:bg-gray-800 shadow-md border-gray-300 rounded-lg py-1 px-4">
               <p>All</p>
             </button>
             <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4">
@@ -152,13 +155,13 @@
           </div>
         </div>
         <div v-else>
-          <div class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8" v-if="branch">
-            <div v-for="dept in branch.data" class="bg-gray-200 p-2 rounded-md relative" :key="i">
+          <div class="grid xl:grid-cols-4 my-4 md:grid-cols-2 grid-cols-1 gap-8" v-if="branch && branch.data">
+            <div v-for="(dept, i) in branch.data" class="bg-gray-200 p-2 rounded-md relative" :key="dept.id || i">
               <div class="flex items-center justify-between">
-                <div class="p-2 rounded-full bg-white w-fit">
+                <div class="p-2 rounded-full bg-white dark:bg-gray-800 w-fit">
                   <Icon icon="material-symbols-light:folder-outline" width="20" color="blue" />
                 </div>
-                <h1 class="truncate">{{ dept.file_path[0].file_name }}</h1>
+                <h1 class="truncate">{{ (dept.file_path && dept.file_path.length > 0) ? dept.file_path[0].file_name : (dept.title || 'Archived Folder') }}</h1>
                 <div class="flex gap-3 items-center">
                   <div @click="toggleMenu(i)" class="p-2 border cursor-pointer rounded-md">
                     <Icon icon="simple-line-icons:options-vertical" class="" />
@@ -170,7 +173,7 @@
                   <div class="w-[417px] h-[420px] relative " @click.stop
                     :class="isPositionChanged ? '-top-20' : 'top-52'">
                     <div
-                      class="dropmenu w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute right-0 shadow-lg cursor-pointer">
+                      class="dropmenu w-52 border rounded-lg text-[#1D2939] dark:text-white border-gray-300 text-lg bg-white dark:bg-gray-800 absolute right-0 shadow-lg cursor-pointer">
                       <div class="flex justify-between items-center hover:bg-[#F9FAFB] px-3 my-2"
                         v-for="(item, index) in menuItem" :key="index" @click="handleMenuItem(item)">
                         <div class="flex items-center gap-2">
@@ -182,7 +185,7 @@
                     </div>
 
                     <div
-                      class="w-52 border rounded-lg text-[#1D2939] border-gray-300 text-lg bg-white absolute bottom-0 left-0 shadow-lg cursor-pointer"
+                      class="w-52 border rounded-lg text-[#1D2939] dark:text-white border-gray-300 text-lg bg-white dark:bg-gray-800 absolute bottom-0 left-0 shadow-lg cursor-pointer"
                       :class="{ ' bottom-28': isSecondPosition }"
                       :style="{ left: horizontalPosition ? '420px' : 'auto' }" v-if="submenu">
                       <div class="flex items-center gap-2 hover:bg-[#F9FAFB] px-3 my-2"
@@ -196,9 +199,11 @@
               </div>
 
               <div class="mt-2">
-                <!-- <img class="w-full rounded-md" :src="page.props.base + '/storage' + dept.file_path[0]?.path"
-                  alt="Document image" /> -->
-                  <img :src="getFileExtension(dept.file_path[0])" class="w-full rounded-md" alt="Document">
+                <img v-if="dept.file_path && dept.file_path.length > 0" :src="getFileExtension(dept.file_path[0])" class="w-full rounded-md" alt="Document">
+                <div v-else class="w-full h-32 bg-white/80 rounded-md flex flex-col items-center justify-center text-gray-400 gap-1 border border-gray-200">
+                  <Icon icon="material-symbols-light:folder-outline" width="32" class="text-blue-500" />
+                  <span class="text-xs font-medium">Empty Folder</span>
+                </div>
               </div>
             </div>
           </div>
@@ -217,6 +222,7 @@
 </template>
 
 <script setup>
+import MetricsOverview from './MetricsOverview.vue';
 import { ref, defineProps, computed, reactive, onMounted } from "vue";
 import EmptyState from "../../components/EmptyState.vue";
 import ResolveTask from "../../components/Modals/ResolveTask.vue";
@@ -511,7 +517,7 @@ const selectedDocument = ref([]);
 //    if(data){
 //     for(let archive of data){
 //         console.log(archive.archive_keys)
-//         if(archive.archive_keys.toLowerCase() == search){
+//         if(archive.archive_keys.toLowerCase().includes(search)){
 //             return archive.archive_values;
 //         }
 //     }
@@ -523,7 +529,7 @@ const getArchiveDocsVale = (data, search)=>{
    if(data){
     for(let archive of data){
        
-        if(archive.archive_keys.toLowerCase() == search){
+        if(archive.archive_keys.toLowerCase().includes(search)){
             return [{archive: archive.archive_values, id: archive.id}]
         }
     }
@@ -558,25 +564,25 @@ const getArchiveDocsVale = (data, search)=>{
 const files = computed(()=>{
   let newarr = [];
 
-  if(props.branch.data){
+  if(props.branch && props.branch.data){
     for(let file of props.branch.data){
+      const firstFile = (file?.file_path && file.file_path.length > 0) ? file.file_path[0] : null;
       let arr = {
-        name: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title')[0].archive: file?.file_path[0]?.file_name,
-        size: file?.file_path[0]?.file_size,
+        name: getArchiveDocsVale(file.archive_docs, 'title')?.[0]?.archive || firstFile?.file_name || file?.title || 'Document',
+        size: firstFile?.file_size || '-',
         date: formatDate(file.updated_at),
-        uploaded_by: file?.file_path[0]?.updated_by_name,
-        //path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.thumbnails : file?.file_path[0]?.path,
-        path: (file.file_path && file.file_path.length > 0)? file?.file_path[0]?.path: '',
-        files: file?.file_path,
+        uploaded_by: firstFile?.updated_by_name || 'Officer',
+        path: firstFile?.path || '',
+        files: file?.file_path || [],
         id: file.id,
-        amount: getArchiveDocsVale(file.archive_docs, 'amount')? getArchiveDocsVale(file.archive_docs, 'amount')[0]:'',
-        title: getArchiveDocsVale(file.archive_docs, 'title')?getArchiveDocsVale(file.archive_docs, 'title')[0]: file?.file_path[0]?.file_name,
-        description:getArchiveDocsVale(file.archive_docs, 'description')? getArchiveDocsVale(file.archive_docs, 'description')[0]: '',
-        archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title')? getArchiveDocsVale(file.archive_docs, 'title')[0]:'',
-        archive_docs: file.archive_docs,
-        department:file.department? file.department: [],
-        division: file.division? file.division: [],
-        unit: file.unit? file.unit: []
+        amount: getArchiveDocsVale(file.archive_docs, 'amount')?.[0] || '',
+        title: getArchiveDocsVale(file.archive_docs, 'title')?.[0] || firstFile?.file_name || file?.title || 'Document',
+        description: getArchiveDocsVale(file.archive_docs, 'description')?.[0] || '',
+        archive_docs_id: getArchiveDocsVale(file.archive_docs, 'title')?.[0] || '',
+        archive_docs: file.archive_docs || [],
+        department: file.department || [],
+        division: file.division || [],
+        unit: file.unit || []
       }
       newarr.push(arr);
     }
@@ -585,6 +591,7 @@ const files = computed(()=>{
 })
 
 const formatDate = (inputDate) => {
+  if (!inputDate) return '';
   var date = new Date(inputDate);
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -600,31 +607,29 @@ const formatDate = (inputDate) => {
 }
 
 const getFileExtension = (file)=>{
-    const f_path = file.path? file.path : file?.name
-    console.log('this is the path ', file.path)
+    if (!file) return (page.props.base || '') + '/images/pdf.svg';
+    const f_path = file.path ? file.path : file?.name;
     if(f_path){
        const parts = f_path.split('.');
-
-      const extension = parts.pop();
+       const extension = parts.pop()?.toLowerCase();
 
       if(extension == 'jpg' || extension == 'jpeg' || extension == 'gif' || extension == 'png'){
-        return page.props.base+'/storage'+file.path
+        return (page.props.base || '') + '/storage' + file.path;
       }
       
       if(extension == 'pdf'){
-          return page.props.base+'/images/pdf.svg'
+          return (page.props.base || '') + '/images/pdf.svg';
       }
 
-      if(extension == 'doc' || extension == 'doctx'){
-          return page.props.base+'/images/word.svg'
+      if(extension == 'doc' || extension == 'docx' || extension == 'doctx'){
+          return (page.props.base || '') + '/images/word.svg';
       }
 
-      if(extension == 'xlx' || extension == 'xlsx'){
-          return page.props.base+'/images/excel.svg'
+      if(extension == 'xls' || extension == 'xlsx' || extension == 'xlx'){
+          return (page.props.base || '') + '/images/excel.svg';
       }
     }
-   
-
+    return (page.props.base || '') + '/images/pdf.svg';
 }
 
 

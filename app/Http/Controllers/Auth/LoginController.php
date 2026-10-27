@@ -131,9 +131,6 @@ class LoginController extends Controller
                 return redirect()->to('2fa');
             }
           
-            if(auth()->user()->hasRole('data entry')){
-                return redirect()->intended('edms');
-            }
             return redirect()->intended('dashboard');
         }
  
@@ -167,6 +164,11 @@ class LoginController extends Controller
         ->first()  
         ?->update(['logout_time' => now()]); 
     
+        if (Auth::check()) {
+            $userId = Auth::id();
+            \Illuminate\Support\Facades\Cache::forget('user-is-online-' . $userId);
+            \Illuminate\Support\Facades\DB::table('users')->where('id', $userId)->update(['is_online' => 0]);
+        }
         Auth::logout();
     
         $request->session()->invalidate();

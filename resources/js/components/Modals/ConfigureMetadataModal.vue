@@ -153,11 +153,11 @@ onMounted(()=>{
 onUpdated(()=>{
   documentType.value = props.doctype
   let data = []
-  if(documentType && documentType.value.metadata){
+  if(documentType.value && Array.isArray(documentType.value.metadata)){
     for(let doc of documentType.value.metadata){
-   data.push(doc.id)
+      data.push(doc.id)
+    }
   }
-}
   selectedCategories.value = data
 })
 

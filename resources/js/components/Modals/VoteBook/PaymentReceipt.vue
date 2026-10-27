@@ -106,7 +106,7 @@
         <section class="w-[94%] m-auto py-5">
           <div v-if="receiptFileUrl">
             <div class="w-full h-64 rounded-2xl mt-4 p-5 pb-0 border-2 border-gray-200">
-              <iframe :src="receiptFileUrl" class="w-full h-[68%]"></iframe>
+              <div class="h-[68%]"><PDFEditor :url="receiptFileUrl" /></div>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3 bg-[#F2F4F7] w-full rounded-xl py-3 border-2 border-transparent">
                   <div class="bg-white w-fit p-2 rounded-full">

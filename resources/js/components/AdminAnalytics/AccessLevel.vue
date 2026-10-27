@@ -1,7 +1,7 @@
 <template>
-    <div class=" rounded-2xl bg-white mt-5 p-5 overflow-x-auto lg:overflow-hidden">
-        <h1 class=" bg-slate-50 p-2 rounded-3xl w-fit px-5 mb-3">Access level summary</h1>
-        <Chart type="bar" :data="chartData" :options="chartOptions" class=" w-full min-w-max" />
+    <div class=" rounded-2xl bg-white dark:bg-gray-800 mt-5 p-5 overflow-x-auto lg:overflow-hidden border border-gray-100 dark:border-gray-700">
+        <h1 class=" bg-slate-50 dark:bg-gray-900 dark:text-gray-300 p-2 rounded-3xl w-fit px-5 mb-3 border dark:border-gray-700">Access level summary</h1>
+        <Bar v-if="chartData && chartData.labels && chartData.labels.length > 0" :data="chartData" :options="chartOptions" class=" w-full min-w-max" />
     </div>
 </template>
 
@@ -20,14 +20,8 @@ watch(roles, () => {
 });
 const setChartData = () => {
     if (!roles.value) return { labels: [], datasets: [] };
-    // Create a map to count occurrences of each role
-    const roleCounts = roles.value.reduce((acc, role) => {
-        acc[role.name] = (acc[role.name] || 0) + 1; // Increment count
-        return acc;
-    }, {});
-    // Extract labels and counts from the aggregated data
-    const labels = Object.keys(roleCounts);
-    const dataCounts = Object.values(roleCounts);
+    const labels = roles.value.map(role => role.name);
+    const dataCounts = roles.value.map(role => role.users_count);
     return {
         labels: labels,
         datasets: [

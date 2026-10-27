@@ -1,379 +1,303 @@
 <template>
-    <Dialog v-model:visible="visible" :closable="false" modal :pt="{
-      root: { class: 'bg-white px-5 max-h-[97vh] hide_scroll overflow-y-auto  rounded-md overflow-hidden' },
-      content: { class: 'px-0  pb-0' },
-      header: { class: ' bg-slate-100 -mt-2 ' },
-  
-      footer: { class: 'bg-white' },
-    }" :style="{ width: '45rem', padding: '10px 0px' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-      class=".custom-dialog">
-      <template #header>
-        <div class="flex bg-slate-100 p-3 justify-end w-full">
-          <div class="flex gap-5 bg-slate-100 items-center px-5">
-            <Icon icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile"
-              class=" cursor-pointer" />
-            <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" />
-            <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
-              Create Task
-            </button>
-          </div>
-        </div>
-        <input type="file" name="" @change="handleFileUpload" id="fileUpload" multiple class=" opacity-0 absolute">
-      </template>
-      <button class="absolute -right-10 -top-10 bg-white p-2 rounded-full" @click="closeModal">
-        <Icon icon="ic:baseline-close" width="25" />
-      </button>
-      <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
-        <section class="bg-white p-5">
-          <input type="text" class=" w-full text-3xl outline-none" placeholder="Write a Task Name" v-model="form.title">
-          <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
-        </section>
-        <Divider class="-mt-0" />
-        <section class="p-5 text-gray-600">
-  
-          <div class="flex gap-3 pb-4 items-center justify-between text-sm">
-            <div class="bg-gray-100 flex items-center rounded-md p-1">
-              <button class="rounded-lg py-1 px-4" @click="activeButton('')"
-                :class="{ activeButton: buttonSwitch === 1 }">
-                <p>Document Upload + Text comment</p>
-              </button>
-              <div>
-                <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
-                  @click="activeButton('document_only')" :class="{ activeButton: buttonSwitch === 2 }">
-                  <p>Document Only</p>
-                </button>
-              </div>
-  
-              <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
-                @click="activeButton('text_only')" :class="{ activeButton: buttonSwitch === 3 }">
-                <p>Text Only</p>
-              </button>
-  
-            </div>
-          </div>
-  
-          <div>
-            <div class="flex items-center gap-14">
-              <div class="flex items-center gap-3">
-                <Icon icon="lucide:users" />
-                <p>Assign To</p>
-              </div>
-  
-              <!-- <div class="relative" v-if="toggleRecipient">
-              <input v-model="search" type="text"
-                class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-                placeholder="Search department / staff" @input="filterRecipients" />
-  
-              <div
-                class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                v-if="users && users.length > 0">
-                <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                  v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                  <div class=" flex items-center gap-3 " v-if="search_type =='unit'">
-                    <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
-                    <p class="text-sm w-fit text-black font-semibold">{{
-                    (suggestion.first_name + " " + suggestion.last_name).length > 15
-                      ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                      : suggestion.first_name + " " + suggestion.last_name
-                  }}</p>
-                  </div>
-  
-                  <div class=" flex items-center gap-3 " v-else>
-                    <img :src="page.props.base + '/'" alt="" class="w-8 h-8 rounded-full" />
-                    <p class="text-sm w-fit text-black font-semibold">
-                  {{ suggestion.title }}
-                  </p>
-                  </div>
-  
-                  <div>
-                    <p>{{ suggestion.email }}</p>
-                  </div>
-                </div>
-              </div>
-            </div> -->
-  
-              <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" v-if="!is_dropdown"
-                @click="setIsDropdown">
-                <p>Set assignee</p>
-                <Icon icon="lucide:plus" />
-              </div>
-  
-              <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
-                <div v-for="user in selectedUsers"
-                  class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
-                  <img :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
-                  <p class="text-xs w-fit" v-if="search_type == 'unit'">{{ user.first_name + ' ' + user.last_name }}</p>
-                  <p class="text-xs w-fit" v-else>{{ user.title }}</p>
-                  <div class="bg-white border rounded-full p-0.5 text-sm">
-                    <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
-                  </div>
-                </div>
-  
-                <div class="relative">
-                  <input v-model="search" type="text"
-                    class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-                    placeholder="Search department / staff" 
-                    @focus="clickOutside=false" @input="filterRecipients" />
-  
-                  <div ref="pop_up"
-                    class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                    v-if="users && users.length > 0 && !is_dropwdown_blur && !clickOutside">
-                    <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                      v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                      <div class=" flex items-center gap-3 ">
-                        <img v-if="search_type == 'unit'" :src="page.props.base + '/' + suggestion.profile_image" alt=""
-                          class="w-8 h-8 rounded-full" />
-                        <p v-if="search_type == 'unit'" class="text-sm w-fit text-black font-semibold">{{
-                        (suggestion.first_name + " " + suggestion.last_name).length > 15
-                          ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                          : suggestion.first_name + " " + suggestion.last_name
-                      }}</p>
-                        <p v-else class="text-sm w-fit text-black font-semibold">
-                          {{ suggestion.title }}
-                        </p>
-                      </div>
-  
-                      <div>
-                        <p>{{ suggestion.email }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-if="form.errors.users" class=" text-red-400">{{ form.errors.users }}</div>
-  
-  
-            <div class="flex items-center gap-14 mt-5">
-              <div class="flex items-center gap-3">
-                <Icon icon="lucide:calendar" />
-                <p>Due date</p>
-              </div>
-              <div class="relative" v-if="!form.due_date">
-                <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2">
-                  <p>Set deadline</p>
-                  <Icon icon="lucide:plus" />
-                </div>
-                <div class="absolute top-0 opacity-0">
-                  <Calendar v-model="form.due_date" />
-                </div>
-              </div>
-  
-              <div
-                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
-                v-else>
-                <p class="text-xs w-fit">{{ formattedDate }}</p>
-                <div class="bg-white border rounded-full p-0.5 text-sm">
-                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="form.due_date = null" />
-                </div>
-              </div>
-            </div>
-            <div v-if="form.errors.due_date" class=" text-red-400">{{ form.errors.due_date }}</div>
-  
-            <div class="flex items-center gap-24 mt-5">
-              <div class="flex items-center gap-3">
-                <Icon icon="lucide:calendar" />
-                <p>Priority</p>
-              </div>
-              <div class="relative" v-if="!priority">
-                <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" @click="select_Priority = true">
-                  <Icon icon="lucide:plus" />
-                  <p>Set Priority</p>
-                </div>
-  
-                <div class="z-50 absolute top-12 bg-white border flex items-center gap-5 p-5 rounded-xl shadow-lg"
-                  v-if="select_Priority">
-                  <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
-                    <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-      color:
-        priority === 'Low'
-          ? '#FFBC53'
-          : priority === 'High'
-            ? '#FF3737'
-            : priority === 'Medium'
-              ? '#F67E5A'
-              : 'black',
-    }">
-                      {{ priority }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-  
-              <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-      color:
-        priority === 'Low'
-          ? '#FFBC53'
-          : priority === 'High'
-            ? '#FF3737'
-            : priority === 'Medium'
-              ? '#F67E5A'
-              : 'black',
-    }" v-else>
-                <p class="text-xs w-fit">{{ priority }}</p>
-                <div class="">
-                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
-                </div>
-              </div>
-            </div>
-            <div v-if="form.errors.priority" class=" text-red-400">{{ form.errors.priority }}</div>
-  
-            <div class=" mt-5 " :class="{ 'hidden': buttonSwitch === 2 }">
-              <div class="flex items-center gap-3">
-                <Icon icon="lucide:file-text" />
-                <p>Task Description</p>
-              </div>
-  
-              <textarea v-model="form.description" id="" cols="30" rows="5"
-                class=" bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full ">
-          </textarea>
-            </div>
-  
-            <div class=" mt-5" :class="{ 'hidden': buttonSwitch === 3 }">
-              <div class=" flex items-center gap-3">
-                <Icon icon="grommet-icons:attachment" width="20" />
-                <p>Attached Document</p>
-              </div>
-
-              <div v-if="props.files && props.files.length > 0">
-                <div class="w-[70%] lg:w-[100%] mt-3 gap-4 flex items-center" v-for="file in props.files">
-                  <div class="border p-3 rounded-md">
-                    <div class="flex justify-between">
-                      <div class="flex items-center gap-1 justify-center">
-                        <img :src="getFileURLExt(file.path)" alt="" class="w-7" />
-                        <div class="">
-                          <h1 class="text-[#1D2939] pr-2">{{ getFileName(file) }}</h1>
-                          <div class="flex items-center gap-5">
-                            <p class="text-xs leading-7 text-[#667085]">
-                              {{ file.size }}
-                            </p>
-                          
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <i class="pi pi-times-circle cursor-pointer text-[#1D2939]" @click="removeImage(file.id)"></i>
-                      </div>
-                    </div>
-                  
-                  </div>
-                </div>
-              </div>
-  
-              <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
-  
-  
-                <div class=" w-1/3 border  p-2 rounded-md" v-for="(file, index) in files" :key="index">
-                  <!-- Uploading File Content -->
-                  <div class="mb-1 flex justify-between items-center">
-                    <div class="flex items-center gap-x-3">
-                      <span class="w-8 h-8 flex justify-center items-center text-gray-500">
-                        <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M31.6313 3.2207L38.934 10.8332V39.7817H11.6537V39.8762H39.0272V10.929L31.6313 3.2207Z" fill="#909090"/>
-                          <path d="M31.5407 3.125H11.5605V39.7805H38.934V10.8333L31.5407 3.125Z" fill="#F4F4F4"/>
-                          <path d="M11.3597 5.09375H2.97281V14.0542H29.3541V5.09375H11.3597Z" fill="#7A7B7C"/>
-                          <path d="M29.4945 13.9025H3.1434V4.93555H29.4945V13.9025Z" fill="#DD2025"/>
-                          <path d="M11.8807 6.44956H10.1652V12.7496H11.5145V10.6246L11.8124 10.6417C12.1019 10.6367 12.3887 10.5848 12.6616 10.4881C12.9009 10.4058 13.121 10.2759 13.3087 10.1062C13.4996 9.94451 13.6502 9.74047 13.7483 9.51031C13.88 9.12771 13.927 8.7211 13.8862 8.31856C13.878 8.031 13.8275 7.74621 13.7365 7.47331C13.6537 7.27631 13.5307 7.09872 13.3755 6.95185C13.2202 6.80497 13.0361 6.69202 12.8348 6.62019C12.6608 6.55718 12.481 6.51146 12.298 6.48369C12.1595 6.46231 12.0195 6.4509 11.8793 6.44956M11.6313 9.46044H11.5145V7.51794H11.7678C11.8796 7.50987 11.9918 7.52704 12.096 7.56816C12.2003 7.60927 12.294 7.6733 12.3702 7.7555C12.5281 7.96683 12.6125 8.22406 12.6104 8.48787C12.6104 8.81075 12.6104 9.10344 12.319 9.3095C12.1091 9.42495 11.8702 9.47825 11.6313 9.46044ZM16.4495 6.4325C16.3038 6.4325 16.162 6.443 16.0623 6.44694L15.7499 6.45481H14.7262V12.7548H15.931C16.3915 12.7674 16.8499 12.6894 17.2803 12.5251C17.6267 12.3877 17.9334 12.1663 18.1728 11.8807C18.4056 11.5925 18.5727 11.257 18.6623 10.8976C18.7655 10.4906 18.8158 10.0719 18.812 9.65206C18.8374 9.15614 18.7991 8.65901 18.6978 8.17287C18.6017 7.81504 18.4217 7.48524 18.1728 7.21081C17.9775 6.98921 17.7384 6.81046 17.4706 6.68581C17.2406 6.57939 16.9987 6.50095 16.75 6.45219C16.6511 6.43585 16.551 6.42838 16.4508 6.42987M16.2119 11.5972H16.0807V7.57569H16.0977C16.3683 7.54455 16.6421 7.59338 16.8852 7.71612C17.0633 7.8583 17.2084 8.03742 17.3105 8.24112C17.4207 8.4555 17.4842 8.69079 17.4968 8.9315C17.5087 9.22025 17.4968 9.4565 17.4968 9.65206C17.5022 9.87733 17.4877 10.1026 17.4535 10.3254C17.4131 10.554 17.3383 10.7753 17.2317 10.9816C17.1111 11.1735 16.9481 11.3351 16.7553 11.4541C16.5934 11.5589 16.4016 11.6077 16.2093 11.5932M22.8768 6.45481H19.6874V12.7548H21.0367V10.2558H22.7429V9.08506H21.0367V7.62556H22.8742V6.45481" fill="#464648"/>
-                          <path d="M28.5876 27.0852C28.5876 27.0852 32.7718 26.3266 32.7718 27.7559C32.7718 29.1852 30.1796 28.6038 28.5876 27.0852ZM25.494 27.1942C24.8292 27.341 24.1814 27.5561 23.5607 27.836L24.0857 26.6547C24.6107 25.4735 25.1554 23.863 25.1554 23.863C25.7819 24.9174 26.5108 25.9074 27.3315 26.8188C26.7126 26.9111 26.0991 27.0373 25.494 27.1968V27.1942ZM23.8376 18.6629C23.8376 17.4173 24.2406 17.0774 24.5543 17.0774C24.868 17.0774 25.221 17.2283 25.2328 18.3098C25.1306 19.3973 24.9029 20.4693 24.5543 21.5045C24.0767 20.6354 23.8295 19.6585 23.8363 18.6668L23.8376 18.6629ZM17.7358 32.4652C16.4522 31.6973 20.4278 29.3335 21.1483 29.2574C21.1444 29.2587 19.0798 33.2684 17.7358 32.4652ZM33.9938 27.9252C33.9806 27.794 33.8625 26.341 31.2769 26.4027C30.1992 26.3854 29.122 26.4613 28.0573 26.6298C27.0261 25.5908 26.138 24.4189 25.4166 23.1451C25.8711 21.8318 26.1461 20.4632 26.2343 19.0763C26.1962 17.5013 25.8195 16.5983 24.612 16.6115C23.4045 16.6246 23.2286 17.6812 23.3875 19.2535C23.543 20.3102 23.8365 21.3418 24.2603 22.3222C24.2603 22.3222 23.7025 24.0586 22.9648 25.7858C22.2272 27.5131 21.7232 28.4187 21.7232 28.4187C20.4405 28.8363 19.233 29.4566 18.1466 30.2562C17.0651 31.2629 16.6255 32.036 17.1951 32.809C17.686 33.4758 19.404 33.6267 20.9396 31.6147C21.7556 30.5754 22.501 29.4827 23.1709 28.3439C23.1709 28.3439 25.5124 27.7021 26.2408 27.5262C26.9693 27.3503 27.85 27.2112 27.85 27.2112C27.85 27.2112 29.988 29.3624 32.05 29.2863C34.1119 29.2102 34.0121 28.0538 33.999 27.9278" fill="#DD2025"/>
-                          <path d="M31.4397 3.22656V10.9349H38.833L31.4397 3.22656Z" fill="#909090"/>
-                          <path d="M31.5407 3.125V10.8333H38.934L31.5407 3.125Z" fill="#F4F4F4"/>
-                          <path d="M11.7796 6.34995H10.0642V12.65H11.4187V10.5263L11.718 10.5434C12.0075 10.5384 12.2942 10.4865 12.5671 10.3898C12.8064 10.3075 13.0265 10.1776 13.2142 10.0079C13.4037 9.84578 13.5529 9.64177 13.65 9.41201C13.7816 9.02942 13.8286 8.62281 13.7878 8.22026C13.7796 7.93271 13.7292 7.64791 13.6381 7.37501C13.5553 7.17802 13.4323 7.00043 13.2771 6.85355C13.1219 6.70667 12.9377 6.59372 12.7365 6.52189C12.5616 6.45827 12.3809 6.41211 12.197 6.38408C12.0585 6.3627 11.9185 6.35129 11.7783 6.34995M11.5303 9.36083H11.4135V7.41833H11.6681C11.7799 7.41026 11.8921 7.42743 11.9963 7.46855C12.1006 7.50967 12.1943 7.57369 12.2705 7.65589C12.4284 7.86722 12.5128 8.12446 12.5107 8.38826C12.5107 8.71114 12.5107 9.00383 12.2193 9.20989C12.0094 9.32534 11.7705 9.37732 11.5316 9.35951M16.3485 6.33289C16.2028 6.33289 16.061 6.34339 15.9613 6.34733L15.6528 6.3552H14.6291V12.6552H15.834C16.2944 12.6678 16.7529 12.5898 17.1832 12.4255C17.5296 12.2881 17.8363 12.0667 18.0757 11.7811C18.3085 11.4929 18.4756 11.1574 18.5653 10.798C18.6684 10.391 18.7187 9.97234 18.7149 9.55245C18.7404 9.05653 18.702 8.5594 18.6007 8.07326C18.5046 7.71543 18.3246 7.38564 18.0757 7.1112C17.8804 6.8896 17.6413 6.71085 17.3735 6.5862C17.1435 6.47978 16.9016 6.40134 16.653 6.35258C16.5541 6.33624 16.4539 6.32877 16.3537 6.33026M16.1148 11.4976H15.9836V7.47608H16.0006C16.2712 7.44494 16.545 7.49377 16.7881 7.61651C16.9662 7.75869 17.1113 7.93781 17.2134 8.14151C17.3236 8.35589 17.3871 8.59118 17.3998 8.83189C17.4116 9.12064 17.3998 9.35689 17.3998 9.55245C17.4051 9.77773 17.3906 10.003 17.3565 10.2258C17.316 10.4544 17.2412 10.6757 17.1346 10.882C17.014 11.0738 16.851 11.2355 16.6582 11.3545C16.4963 11.4592 16.3045 11.5081 16.1122 11.4936M22.7758 6.3552H19.5864V12.6552H20.9356V10.1562H22.6419V8.98545H20.9356V7.52595H22.7731V6.3552" fill="white"/>
-                          </svg> -->
-                        <div>
-                          <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview"
-                            style="max-width: 200px; max-height: 200px;" />
-                        </div>
-  
-                      </span>
-                      <div class="ml-2">
-                        <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
-      form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
-                        <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
-                          <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
-                            <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24"></line>
-                            <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24"></line>
-                            <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24">
-                            </line>
-                            <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round"
-                              stroke-linejoin="round" stroke-width="24"></line>
-                            <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24">
-                            </line>
-                            <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24"></line>
-                            <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24"></line>
-                            <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="24">
-                            </line>
-                          </svg>
-                          <span class="text-xs font-medium text-gray-500">Loading...</span>
-                        </div>
-                        </p>
-                      </div>
-                    </div>
-                    <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]"
-                      viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z"
-                        stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-  
-                  </div>
-                  <!-- End Uploading File Content -->
-  
-                  <progress v-if="form.progress" :value="form.progress.percentage" max="100"
-                    class="w-full rounded-lg h-2">
-                    {{ form.progress.percentage }}%
-                  </progress>
-                  <!-- End Progress Bar -->
-                </div>
-  
-  
-  
-                <div class=" p-7 border-dashed border-[3px] rounded-md cursor-pointer" @click="getFile">
-                  <Icon icon="lucide:plus" width="30" />
-                </div>
-              </div>
-  
-  
-            </div>
-  
-            <!-- <div class=" mt-5">
-                 <p>Submission Type</p>
-  
-                 <div  v-for="(item,index) in type" :key="index" class=" flex mt-3 items-center gap-5">
-                     <input type="radio" v-model="selectedType" :value="index">
-                     <p class=" text-black font-semibold">{{ item }}</p>
-                 </div>
-          </div> -->
-          </div>
-  
-        </section>
-      </section>
-      <div class="flex p-3 justify-end w-full">
-        <div class="flex gap-5 items-center px-5">
-          <!-- <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
-            <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" /> -->
-          <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
-            Create Task
-          </button>
+  <Dialog v-model:visible="visible" :closable="false" modal :pt="{
+    root: { class: 'bg-white rounded-2xl shadow-2xl overflow-hidden' },
+    content: { class: 'p-8 max-h-[80vh] overflow-auto hide_scroll' },
+    header: { class: 'bg-white px-8 py-5 border-b' },
+    footer: { class: 'bg-gray-50 px-8 py-4 border-t rounded-b-2xl' },
+  }" :style="{ width: '60rem' }" :breakpoints="{ '1199px': '75vw', '575px': '95vw' }"
+    class="custom-dialog">
+    <template #header>
+      <div class="flex items-center justify-between w-full">
+        <h2 class="text-2xl font-bold text-gray-800 tracking-tight">Assign Task</h2>
+        <div class="flex gap-4 items-center">
+          <Icon icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="20" @click="getFile" class="cursor-pointer text-gray-400 hover:text-gray-700 transition-colors" />
+          <Icon icon="mingcute:close-line" width="24" @click="closeModal" class="cursor-pointer text-gray-400 hover:text-red-500 transition-colors" />
         </div>
       </div>
-    </Dialog>
-  </template>
-  
+      <input type="file" name="" @change="handleFileUpload" id="fileUpload" multiple class="hidden">
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-3 w-full">
+        <button class="px-5 py-2 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-colors cursor-pointer" @click="closeModal">Cancel</button>
+        <button class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200 cursor-pointer" @click="submit">
+          Assign Task
+        </button>
+      </div>
+    </template>
+
+    <section class="flex flex-col gap-6">
+      <div class="flex flex-col">
+        <input type="text" id="task_title" class="w-full text-4xl font-semibold text-gray-800 outline-none placeholder-gray-300 tracking-tight" placeholder="Task Title..." v-model="form.title">
+        <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">{{ form.errors.title }}</div>
+      </div>
+
+      <div class="bg-gray-100 flex items-center rounded-xl p-1 w-fit border border-gray-200">
+        <button class="rounded-lg py-2 px-5 text-sm font-medium transition-colors cursor-pointer" @click="activeButton('')" :class="buttonSwitch === 1 ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-200'">
+          Document + Instruction
+        </button>
+        <button class="rounded-lg py-2 px-5 text-sm font-medium transition-colors cursor-pointer" @click="activeButton('document_only')" :class="buttonSwitch === 2 ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-200'">
+          Document Only
+        </button>
+        <button class="rounded-lg py-2 px-5 text-sm font-medium transition-colors cursor-pointer" @click="activeButton('text_only')" :class="buttonSwitch === 3 ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-200'">
+          Instruction Only
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-2">
+        <!-- Main Form Area -->
+        <div class="col-span-1 lg:col-span-2 flex flex-col gap-8">
+          
+          <div class="flex flex-col gap-3" :class="{ 'hidden': buttonSwitch === 2 }">
+            <div class="flex items-center gap-3 text-gray-700 font-semibold text-lg">
+              <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                <Icon icon="lucide:align-left" width="16" />
+              </div>
+              <h3>Task Description</h3>
+            </div>
+            <textarea v-model="form.description" cols="30" rows="5" placeholder="Add detailed instructions for this task..."
+              class="bg-gray-50 border border-gray-200 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all outline-none resize-y p-5 rounded-2xl w-full text-gray-700 shadow-inner min-h-[150px]">
+            </textarea>
+            <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">{{ form.errors.description }}</div>
+          </div>
+
+          <div class="flex flex-col gap-4 mt-2" :class="{ 'hidden': buttonSwitch === 3 }">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+               <div class="flex items-center gap-3 text-gray-700 font-semibold text-lg">
+                  <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <Icon icon="lucide:paperclip" width="16" />
+                  </div>
+                  <h3>Attached Documents</h3>
+               </div>
+            </div>
+
+            <!-- Existing Correspondence Mail Attachments -->
+            <div v-if="props.files && props.files.length > 0" class="w-full flex flex-col gap-3 mt-2">
+              <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">From Mail</h4>
+              <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center gap-4 bg-white border border-gray-200 p-3 rounded-xl shadow-sm relative group" v-for="file in props.files" :key="file.id">
+                  <div class="shrink-0 w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden p-1.5">
+                    <img :src="getFileURLExt(file.path)" class="max-w-full max-h-full object-contain" alt="File Preview" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 truncate pr-6" :title="getFileName(file)">{{ getFileName(file) }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ file.size || 'Unknown size' }}</p>
+                  </div>
+                  <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-50 hover:bg-red-50 flex items-center justify-center cursor-pointer transition-colors opacity-0 group-hover:opacity-100" @click="removeImage(file.id)">
+                    <Icon icon="lucide:x" width="14" class="text-gray-400 hover:text-red-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Newly Uploaded Files -->
+            <div class="w-full flex flex-col gap-3 mt-4" v-if="files && files.length > 0">
+               <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">New Attachments</h4>
+               <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div class="flex items-center gap-4 bg-white border border-gray-200 p-3 rounded-xl shadow-sm relative group" v-for="(file, index) in files" :key="index">
+                   <div class="shrink-0 w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
+                     <img :src="getFileURL(file)" class="w-full h-full object-cover" alt="File Preview" />
+                   </div>
+                   <div class="flex-1 min-w-0">
+                     <p class="text-sm font-semibold text-gray-800 truncate pr-6">{{ file.name }}</p>
+                     <div class="text-xs text-gray-500 mt-1 flex items-center gap-2" v-if="form.progress">
+                       <span class="font-medium text-indigo-600">{{ Math.round(form.progress.loaded / 1024) }} KB</span> of {{ formatSize(file.size) }}
+                       <div aria-label="Loading..." role="status" class="flex items-center gap-1.5 ml-2 bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
+                         <Icon icon="lucide:loader" class="animate-spin" width="12" />
+                         <span class="text-[10px] font-semibold uppercase tracking-wider">Loading</span>
+                       </div>
+                     </div>
+                   </div>
+                   <div v-if="form.progress" class="w-full bg-gray-100 rounded-full h-1 mt-3 overflow-hidden relative col-span-2 absolute bottom-0 left-0">
+                     <div class="bg-indigo-500 h-1 rounded-full transition-all duration-300" :style="{ width: form.progress.percentage + '%' }"></div>
+                   </div>
+                   <div class="absolute top-2 right-2 flex gap-1 group-hover:opacity-100 opacity-0 transition-opacity">
+                     <div class="w-6 h-6 rounded-full bg-gray-50 hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors shadow-sm" @click.stop="openPreview(file)" title="Preview">
+                       <Icon icon="ph:eye" width="14" class="text-gray-400 hover:text-blue-500" />
+                     </div>
+                     <div class="w-6 h-6 rounded-full bg-gray-50 hover:bg-green-50 flex items-center justify-center cursor-pointer transition-colors shadow-sm" @click.stop="downloadAttachedFile(file)" title="Download">
+                       <Icon icon="material-symbols-light:download" width="14" class="text-gray-400 hover:text-green-500" />
+                     </div>
+                     <div class="w-6 h-6 rounded-full bg-gray-50 hover:bg-red-50 flex items-center justify-center cursor-pointer transition-colors shadow-sm" @click.stop="removeFile(index)" title="Remove">
+                       <Icon icon="lucide:x" width="14" class="text-gray-400 hover:text-red-500" />
+                     </div>
+                   </div>
+                 </div>
+               </div>
+            </div>
+
+            <!-- Attachment Buttons -->
+            <div class="flex flex-wrap gap-4 mt-2">
+              <div class="flex flex-col items-center justify-center p-4 border-dashed border-[2px] border-gray-300 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors flex-1 min-w-[120px] max-w-[160px] text-center group shadow-sm" @click="getFile">
+                <Icon icon="lucide:monitor-up" width="24" class="text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" />
+                <p class="text-xs font-semibold text-gray-600 group-hover:text-indigo-700">From System</p>
+              </div>
+              
+              <div class="flex flex-col items-center justify-center p-4 border-dashed border-[2px] border-gray-300 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors flex-1 min-w-[120px] max-w-[160px] text-center group shadow-sm" @click="scanDocument">
+                <Icon icon="lucide:scanner" width="24" class="text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" />
+                <p class="text-xs font-semibold text-gray-600 group-hover:text-indigo-700">Scan Document</p>
+              </div>
+              
+              <div class="flex flex-col items-center justify-center p-4 border-dashed border-[2px] border-gray-300 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors flex-1 min-w-[120px] max-w-[160px] text-center group shadow-sm" @click="openEDMSModal">
+                <Icon icon="lucide:folder-search" width="24" class="text-gray-400 group-hover:text-indigo-500 mb-2 transition-colors" />
+                <p class="text-xs font-semibold text-gray-600 group-hover:text-indigo-700">From Registry</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        
+        <!-- Sidebar Container -->
+        <div class="col-span-1 flex flex-col gap-6">
+            <!-- Assignment Type Toggle -->
+            <div class="flex flex-col gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100 h-fit">
+               <h3 class="font-semibold text-gray-800 text-lg border-b border-gray-200 pb-3">Assignment Type</h3>
+               <div class="flex bg-gray-200 p-1 rounded-xl">
+                 <button class="flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer" @click="assignmentType = 'simple'" :class="assignmentType === 'simple' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'">Simple Task</button>
+                 <button class="flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer" @click="assignmentType = 'workflow'" :class="assignmentType === 'workflow' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'">Workflow Template</button>
+               </div>
+            </div>
+
+            <div class="flex flex-col gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100 h-fit" v-if="assignmentType === 'simple'">
+               <h3 class="font-semibold text-gray-800 text-lg border-b border-gray-200 pb-3">Task Settings</h3>
+               
+               <!-- Assignee Field -->
+               <div class="flex flex-col gap-2">
+                  <label class="text-gray-700 font-medium text-sm flex items-center gap-2">
+                     <Icon icon="lucide:users" class="text-blue-500" width="16" /> Assign To <span class="text-gray-400 font-normal text-xs">(required)</span>
+                  </label>
+                  <MultiSelect
+                     v-model="selectedUsers"
+                     :options="usersList"
+                     optionLabel="display_name"
+                     placeholder="Search department / staff"
+                     :filter="true"
+                     display="chip"
+                     :pt="{
+                        root: { class: 'w-full text-left bg-white border border-gray-200 rounded-xl hover:border-indigo-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all outline-none flex items-center justify-between shadow-sm' },
+                        label: { class: 'py-2 px-3 text-sm flex-1' },
+                        trigger: { class: 'w-10 flex items-center justify-center text-gray-400' },
+                        panel: { class: 'bg-white shadow-xl rounded-xl border border-gray-100 mt-2 p-1 overflow-hidden' },
+                        header: { class: 'p-2 border-b border-gray-100 flex items-center justify-between gap-2' },
+                        headerCheckboxContainer: { class: 'flex items-center justify-center mr-2' },
+                        headerCheckbox: { class: 'w-4 h-4 border border-gray-300 rounded cursor-pointer flex items-center justify-center' },
+                        closeButton: { class: 'w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors' },
+                        filterContainer: { class: 'relative w-full flex items-center' },
+                        filterInput: { class: 'w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none' },
+                        filterIcon: { class: 'text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none' },
+                        wrapper: { class: 'max-h-[250px] overflow-auto py-1' },
+                        item: ({ context }) => ({ class: ['px-3 py-2.5 hover:bg-gray-50 transition-colors flex flex-row items-center gap-3 rounded-lg mx-1 cursor-pointer whitespace-nowrap', context.selected ? 'bg-indigo-50/50' : ''] }),
+                        itemCheckbox: { class: 'w-4 h-4 border border-gray-300 rounded cursor-pointer flex-shrink-0 flex items-center justify-center' }
+                     }"
+                     @change="updateUsersMultiSelect"
+                   >
+                     <template #option="slotProps">
+                       <div class="flex items-center gap-3">
+                         <img :src="getImageForGroup(slotProps.option)" class="w-6 h-6 rounded-full object-cover" />
+                         <p class="text-sm font-semibold">{{ slotProps.option.display_name }}</p>
+                       </div>
+                     </template>
+                  </MultiSelect>
+                  <div v-if="form.errors.users" class="text-red-500 text-xs mt-1">{{ form.errors.users }}</div>
+               </div>
+               
+               <!-- Due Date Field -->
+               <div class="flex flex-col gap-2">
+                  <label class="text-gray-700 font-medium text-sm flex items-center gap-2">
+                     <Icon icon="lucide:calendar" class="text-purple-500" width="16" /> Due Date
+                  </label>
+                  <div class="w-full" v-if="!form.due_date">
+                    <Calendar v-model="form.due_date" dateFormat="yy-mm-dd" showIcon :pt="{
+                      root: { class: 'bg-white border border-gray-200 rounded-xl flex items-center overflow-hidden hover:border-indigo-400 focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm' },
+                      input: { class: 'bg-transparent py-2 pl-3 border-none outline-none w-full text-sm cursor-pointer text-gray-700' },
+                      dropdownButton: { root: { class: 'bg-transparent py-2 pr-3 border-none text-gray-500 cursor-pointer' } }
+                    }" />
+                  </div>
+                  <div class="flex items-center gap-2 h-fit bg-white p-2 py-1.5 rounded-xl border border-gray-200 justify-between w-full shadow-sm" v-else>
+                    <p class="text-sm font-semibold text-gray-700 px-2">{{ formattedDate }}</p>
+                    <div class="bg-gray-50 border border-gray-100 rounded-full p-1.5 text-sm hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer" @click="form.due_date = null">
+                      <Icon icon="clarity:times-line" class="text-gray-400 hover:text-red-500 transition-colors" width="14" />
+                    </div>
+                  </div>
+                  <div v-if="form.errors.due_date" class="text-red-500 text-xs mt-1">{{ form.errors.due_date }}</div>
+               </div>
+               
+               <!-- Priority Field -->
+               <div class="flex flex-col gap-2">
+                  <label class="text-gray-700 font-medium text-sm flex items-center gap-2">
+                     <Icon icon="lucide:flag" class="text-orange-500" width="16" /> Priority
+                  </label>
+                  <div class="grid grid-cols-3 gap-2 w-full">
+                     <button v-for="p in Priorities" :key="p" @click="updatePriority(p)" class="py-2 text-sm font-semibold rounded-xl border transition-all text-center cursor-pointer shadow-sm" 
+                        :class="priority === p ? 
+                          (p === 'High' ? 'bg-red-50 border-red-300 text-red-600 ring-2 ring-red-100' : 
+                           p === 'Medium' ? 'bg-orange-50 border-orange-300 text-orange-600 ring-2 ring-orange-100' : 
+                           'bg-yellow-50 border-yellow-300 text-yellow-600 ring-2 ring-yellow-100') 
+                          : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'">
+                        {{ p }}
+                     </button>
+                  </div>
+                  <div v-if="form.errors.priority" class="text-red-500 text-xs mt-1">{{ form.errors.priority }}</div>
+               </div>
+               
+            </div>
+
+            <div class="flex flex-col gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100 h-fit" v-if="assignmentType === 'workflow'">
+               <h3 class="font-semibold text-gray-800 text-lg border-b border-gray-200 pb-3">Select Workflow</h3>
+               <div class="flex flex-col gap-2">
+                  <label class="text-gray-700 font-medium text-sm flex items-center gap-2">
+                     <Icon icon="lucide:git-merge" class="text-indigo-500" width="16" /> Workflow Template <span class="text-gray-400 font-normal text-xs">(required)</span>
+                  </label>
+                  <select v-model="form.workflow_version_id" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all text-sm">
+                    <option value="" disabled>Select a workflow</option>
+                    <option v-for="wf in workflowsList" :key="wf.id" :value="wf.id">{{ wf.workflow ? wf.workflow.title : 'Workflow' }} (v{{ wf.version_number }})</option>
+                  </select>
+               </div>
+            </div>
+            
+            <!-- PIN Signature -->
+            <div class="mt-6 flex flex-col items-center justify-center border border-amber-200 bg-amber-50 rounded-xl p-5 shadow-sm col-span-1 xl:col-span-2 w-full">
+                <div class="flex items-center gap-2 mb-3 text-amber-700 font-semibold">
+                    <Icon icon="lucide:pen-tool" width="20" />
+                    <p>Digital Signature Approval</p>
+                </div>
+                <p class="text-sm text-gray-600 text-center mb-4">Enter your PIN to digitally sign and initialize this task.</p>
+                <div class="w-48">
+                    <InputText id="approval_pin" v-model="form.approval_pin" type="password"
+                        placeholder="****" class="w-full text-center tracking-widest text-2xl font-bold bg-white" />
+                </div>
+                <div v-if="form.errors.approval_pin" class="text-red-400 text-sm mt-2 text-center font-medium">{{ form.errors.approval_pin }}</div>
+            </div>
+
+        </div>
+      </div>
+
+    </section>
+  </Dialog>
+  <!-- Document Preview Modal -->
+  <Dialog v-model:visible="previewVisible" header="Document Preview" modal :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg min-h-[400px]">
+      <img v-if="previewFile && isImage(previewFile)" :src="previewFileUrl" class="max-w-full max-h-[600px] object-contain shadow-md rounded" />
+      <object v-else-if="previewFile && isPDF(previewFile)" :data="previewFileUrl" type="application/pdf" width="100%" height="600px" class="rounded shadow-md">
+        <p>PDF preview is not available in your browser. <a :href="previewFileUrl" target="_blank" class="text-primary">Download it here</a>.</p>
+      </object>
+      <div v-else class="text-center text-gray-500">
+        <Icon icon="ph:file-x" width="64" class="mx-auto mb-4 text-gray-300" />
+        <p>Preview is not available for this file type.</p>
+        <p class="text-sm mt-2">{{ previewFile?.name }}</p>
+      </div>
+    </div>
+  </Dialog>
+</template>
   <script setup>
-  import { defineEmits, defineProps, computed, ref } from "vue";
+  import { defineEmits, defineProps, computed, ref, onMounted } from "vue";
   import image from "../../../assets/images/members/1.svg";
   import { useToast } from "primevue/usetoast";
   import { useForm, usePage, router } from "@inertiajs/vue3";
   import debounce from 'lodash.debounce'
   import { onClickOutside } from '@vueuse/core'
+  import MultiSelect from 'primevue/multiselect';
   
   const selectedType = ref(null);
   const select_Priority = ref(false);
@@ -386,6 +310,8 @@
   const toast = useToast()
   
   const users = ref([]);
+  const assignmentType = ref('simple');
+  const workflowsList = ref([]);
   const Assigned_by = ref("");
   const buttonSwitch = ref(1);
   const clickedButton = ref("");
@@ -409,16 +335,63 @@
     is_dropwdown_blur = false
   }
   
-  const form = useForm({
+  
+const previewVisible = ref(false);
+const previewFile = ref(null);
+const previewFileUrl = ref('');
+
+const openPreview = (file) => {
+  previewFile.value = file;
+  if (file.type) {
+    previewFileUrl.value = URL.createObjectURL(file);
+  } else {
+    const extension = file.name.split('.').pop();
+    const mimeTypes = {
+      'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif',
+      'pdf': 'application/pdf'
+    };
+    previewFileUrl.value = URL.createObjectURL(new Blob([file], { type: mimeTypes[extension] || 'application/octet-stream' }));
+  }
+  previewVisible.value = true;
+};
+
+const isImage = (file) => {
+  const t = file.type || '';
+  if (t.startsWith('image/')) return true;
+  const ext = file.name.split('.').pop().toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif'].includes(ext);
+};
+
+const isPDF = (file) => {
+  const t = file.type || '';
+  if (t === 'application/pdf') return true;
+  const ext = file.name.split('.').pop().toLowerCase();
+  return ext === 'pdf';
+};
+
+const downloadAttachedFile = (file) => {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const form = useForm({
     files: [],
     title: '',
     due_date: '',
     priority: '',
     description: '',
     users: [],
+    workflow_version_id: '',
     extra_files: [],
     is_from_correspondece: true,
-    correspondence_id: props.correspondence_id
+    correspondence_id: props.correspondence_id,
+    approval_pin: ''
   })
 
   const getFileURLExt = (url) => {
@@ -450,6 +423,26 @@
     let file = document.getElementById('fileUpload');
     file.click();
   }
+
+  const scanDocument = () => {
+    toast.add({
+      severity: "info",
+      summary: "Scanner Connection",
+      detail: "Attempting to connect to local scanner hardware...",
+      life: 4000,
+    });
+  }
+
+  const edmsModalVisible = ref(false);
+  const openEDMSModal = () => {
+    toast.add({
+      severity: "info",
+      summary: "Document Management",
+      detail: "Opening EDMS file registry...",
+      life: 3000,
+    });
+    edmsModalVisible.value = true;
+  }
   
   const formatSize = (size) => {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -465,6 +458,11 @@
     files.value = Array.from(event.target.files);
     form.files = Array.from(event.target.files);
     //uploadFiles()
+  }
+
+  const removeFile = (index) => {
+    files.value.splice(index, 1);
+    form.files.splice(index, 1);
   }
   
   
@@ -534,47 +532,59 @@
   }
   
   
-  const searchUsers = debounce(() => {
-    axios.get('/dashboard/search-users', { params: { search: search.value } }).then((response) => {
-      users.value = response.data.data
-      search_type.value = response.data.type
+  const usersList = ref([]);
+
+  
+  const fetchWorkflows = () => {
+    axios.get('/dashboard/workflows').then((response) => {
+      workflowsList.value = response.data.data;
+    });
+  };
+
+  const fetchRecipients = () => {
+    axios.get('/dashboard/search-users', { params: { search: '' } }).then((response) => {
+      search_type.value = response.data.type;
+      usersList.value = response.data.data.map(item => {
+         item.display_name = item.title || (item.first_name + ' ' + item.last_name);
+         return item;
+      });
     })
-  }, 500)
-  
-  
-  const filterRecipients = () => {
-    // const searchTerm = Users.value.toLowerCase();
-    // Suggestions.value = Recipients.value.filter((recipient) =>
-    //   recipient.name.toLowerCase().includes(searchTerm)
-    // );
-    searchUsers()
   };
-  const updateUsers = (suggestion) => {
-    Assigned_by.value = suggestion.first_name + " " + suggestion.last_name;
-    assigned_by_img.value = suggestion.profile_image
-    user_ids.value = suggestion.id
-    toggleRecipient.value = false;
-    selectedUsers.value.push(suggestion)
-    form.users.push(suggestion.id)
-  
-    let index = users.value.findIndex((item) => item.id == suggestion.id)
-    users.value.splice(index, 1);
-    // Suggestions.value = [];
+
+  onMounted(() => {
+    fetchRecipients();
+    fetchWorkflows();
+  });
+
+  const updateUsersMultiSelect = (e) => {
+    form.users = e.value.map(user => {
+       if (user.user && user.user.length >= 0) {
+           user.users = user.user;
+       }
+       return user.id;
+    });
   };
-  
-  const removeUser = (user) => {
-    users.value.push(user)
-    let index = selectedUsers.value.findIndex((item) => item.id == user.id)
-    selectedUsers.value.splice(index, 1)
-    
-    let index2 = form.users.findIndex((item)=>item.id == user.id);
-    if(index2){
-      form.users.splice(index,1)
+
+  function getImageForGroup(user) {
+    if(search_type.value == 'unit'){
+      return page.props.base + "/images/unit_active.svg";
+    }else if(search_type.value == 'division'){
+      return page.props.base + "/images/division_active.svg";
+    }else if(search_type.value == 'department'){
+       return page.props.base + "/images/department_active.svg";
+    }else{
+       if(user.profile_image){
+        return page.props.base + "/" + user.profile_image;
+       }else{
+        return page.props.base + "/images/user.svg";
+       }
     }
   }
-  
+
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");

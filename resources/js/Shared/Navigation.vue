@@ -2,246 +2,287 @@
 
 <template>
   <section
-    class="hide_scroll hidden 2xl:block border-r border-solid border-gray-200 sticky top-0 h-screen px-5 py-5 overflow-y-auto transition-all duration-300"
+    class="hide_scroll hidden xl:block border-r border-solid border-gray-200 dark:border-slate-800 dark:bg-slate-900 sticky top-0 h-screen px-4 py-5 overflow-y-auto transition-all duration-300"
     :class="[
-      sidebarVisible ? 'w-1/5' : 'w-0 px-0 overflow-hidden',
-      '2xl:!w-1/5 2xl:!px-5 2xl:!overflow-y-auto'
+      sidebarVisible ? 'w-64 min-w-[16rem]' : 'w-0 px-0 overflow-hidden',
+      'xl:!w-64 2xl:!w-72 xl:!px-4 xl:!overflow-y-auto'
     ]">
     <div v-if="sidebarVisible || isDesktop2xl" class="w-full">
       <div class="text-xl font-semibold flex items-center gap-4 border-b border-dashed border-gray-200 pb-3 px-3">
         <img src="../../../public/images/default-logo.png" alt="Logo">
       </div>
 
-      <div class="border-b border-dashed pb-4">
-        <p class="text-gray-500 mt-4 mb-2 px-3">Main</p>
+      <!-- 1. WORKFLOW & OPERATIONS -->
+      <div class="border-b border-dashed py-3">
+        <button type="button" @click="toggleExecutive" class="w-full flex items-center justify-between text-xs font-bold tracking-wider text-gray-400 uppercase mb-2 px-3 hover:text-gray-600 transition-colors">
+          <span>Workflow & Operations</span>
+          <Icon icon="lucide:chevron-down" width="16" class="transition-transform duration-200" :class="{ '-rotate-90': !executiveOpen }" />
+        </button>
         
-        <section>
-          <div v-for="(item, index) in main" :key="index" class="mb-1">
-            <div v-if="checkPermission(item)">
-              <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
-                ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-                : 'px-3'
-              "
-              class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+        <section v-show="executiveOpen">
+          <template v-for="(item, index) in main" :key="index">
+            <div v-if="checkPermission(item) && userHasPermission(item.permission)" class="mb-1">
+              <Link :href="item.path" :class="isActive(item.path)
+                ? 'px-3 py-2.5 flex gap-3 items-center justify-between text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+                : 'px-3 py-2.5 flex gap-3 items-center justify-between text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+              ">
+                <div class="flex items-center gap-3">
+                  <span v-html="item.icon"></span>
+                  <p class="text-base">{{ item.name }}</p>
+                </div>
+                <span v-if="item.name === 'Notifications' && unreadNotificationCount > 0" class="flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-primary text-xs font-bold text-white shadow-xs">
+                  {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+                </span>
+                <span v-else-if="item.name === 'Workflow' && pendingWorkflowCount > 0" class="flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-amber-500 text-xs font-bold text-white shadow-xs" title="Pending tasks awaiting your action">
+                  {{ pendingWorkflowCount > 99 ? '99+' : pendingWorkflowCount }}
+                </span>
+              </Link>
+            </div>
+          </template>
+        </section>
+      </div>
+
+      <!-- 2. RECORDS & DOCUMENT MANAGEMENT -->
+      <div class="border-b border-dashed py-3" v-if="canViewDocumentManagement">
+        <button type="button" @click="toggleRecords" class="w-full flex items-center justify-between text-xs font-bold tracking-wider text-gray-400 uppercase mb-2 px-3 hover:text-gray-600 transition-colors">
+          <span>Records & Documents</span>
+          <Icon icon="lucide:chevron-down" width="16" class="transition-transform duration-200" :class="{ '-rotate-90': !recordsOpen }" />
+        </button>
+
+        <section v-show="recordsOpen">
+          <!-- Document Management -->
+          <div class="mb-1" v-if="userHasPermission('document management view')">
+            <Link href="/dashboard/document-management" :class="(isActive('/dashboard/document-management') || $page.url.startsWith('/dashboard/branches'))
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="octicon:git-branch-24" width="20" />
+              <p class="text-base">Document Management</p>
+            </Link>
+          </div>
+
+          <!-- Shared Files -->
+          <div class="mb-1" v-if="userHasPermission('shared files view')">
+            <Link href="/dashboard/shared-files" :class="isActive('/dashboard/shared-files')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M7.926 10.898 15 7.727m-7.074 5.39L15 16.29M8 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm12 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0-11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+              </svg>
+              <p class="text-base">Shared Files</p>
+            </Link>
+          </div>
+
+          <!-- File & Docket Tracking -->
+          <div class="mb-1" v-if="userHasPermission('admin registry view')">
+            <Link href="/dashboard/admin-registry" :class="isActive('/dashboard/admin-registry')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p class="text-base">Docket Tracking</p>
+            </Link>
+          </div>
+
+          <!-- My Branch Items -->
+          <div v-if="branches && branches.length > 0 && userHasPermission('branch setup view')" class="mt-2 pt-2 border-t border-gray-100">
+            <p class="text-xs text-gray-400 px-3 mb-1">My Branch</p>
+            <div v-for="(item, index) in branches" :key="index" class="mb-1">
+              <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="isActive(item.path)
+                ? 'px-3 py-2.5 flex justify-between items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+                : 'px-3 py-2.5 flex justify-between items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+              ">
+                <div class="flex items-center gap-3">
+                  <div class="h-3 w-3 rounded-full border border-gray-300" :class="{ 'bg-primary': isActive(item.path) }"></div>
+                  <p class="text-base">{{ item.name }}</p>
+                </div>
                 <span v-html="item.icon"></span>
-                <p class="text-lg">{{ item.name }}</p>
               </Link>
             </div>
           </div>
         </section>
+      </div>
 
-        <section v-if="userDepartment && userDepartment.title && userDepartment.title === 'Finance and Accounts' || (role.includes('super admin') || role.includes('admin'))">
-          <div class="mb-1">
-            <Link href="/finance-and-accounts" :class="page.url === '/finance-and-accounts'
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'px-3'
-            "
-            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-              <Icon icon="ri:exchange-funds-fill" width="25" />
-              <p class="text-lg">Payment</p>
+      <!-- 3. FINANCE & ACCOUNTS -->
+      <div class="border-b border-dashed py-3" v-if="userHasPermission('payment view') || userHasPermission('ledger view') || userHasPermission('votebook view') || userHasPermission('cashbook view')">
+        <button type="button" @click="toggleFinance" class="w-full flex items-center justify-between text-xs font-bold tracking-wider text-gray-400 uppercase mb-2 px-3 hover:text-gray-600 transition-colors">
+          <span>Finance & Accounts</span>
+          <Icon icon="lucide:chevron-down" width="16" class="transition-transform duration-200" :class="{ '-rotate-90': !financeOpen }" />
+        </button>
+
+        <section v-show="financeOpen">
+          <div class="mb-1" v-if="userHasPermission('payment view')">
+            <Link href="/finance-and-accounts" :class="isActive('/finance-and-accounts')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="ri:exchange-funds-fill" width="20" />
+              <p class="text-base">Payment</p>
             </Link>
           </div>
 
-          <div class="mb-1">
-            <Link href="/finance-and-accounts/ledger" :class="page.url.startsWith('/finance-and-accounts/ledger')
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'px-3'
-            "
-            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-              <Icon icon="icon-park-outline:bookshelf" width="25" />
-              <p class="text-lg">Ledger</p>
+          <div class="mb-1" v-if="userHasPermission('ledger view')">
+            <Link href="/finance-and-accounts/ledger" :class="isActive('/finance-and-accounts/ledger')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="icon-park-outline:bookshelf" width="20" />
+              <p class="text-base">Ledger</p>
             </Link>
           </div>
 
-          <div class="mb-1" v-if="role.includes('other charges(HOS)') || role.includes('other charges')">
-            <Link href="/finance-and-accounts/vote-book" :class="page.url.startsWith('/finance-and-accounts/vote-book')
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'px-3'
-            "
-            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-              <Icon icon="ri:coupon-2-line" width="25" />
-              <p class="text-lg">Vote</p>
+          <div class="mb-1" v-if="userHasPermission('votebook view')">
+            <Link href="/finance-and-accounts/vote-book" :class="isActive('/finance-and-accounts/vote-book')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="ri:coupon-2-line" width="20" />
+              <p class="text-base">Vote Book</p>
             </Link>
           </div>
 
-          <div class="mb-1">
-            <Link href="/finance-and-accounts/cashbook" :class="page.url.startsWith('/finance-and-accounts/cashbook')
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'px-3'
-            "
-            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-              <Icon icon="ri:wallet-line" width="25" />
-              <p class="text-lg">CashBook</p>
+          <div class="mb-1" v-if="userHasPermission('cashbook view')">
+            <Link href="/finance-and-accounts/cashbook" :class="isActive('/finance-and-accounts/cashbook')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="ri:wallet-line" width="20" />
+              <p class="text-base">CashBook</p>
             </Link>
           </div>
         </section>
       </div>
 
-      <div v-if="(!userBranch.department || (userBranch.department && userBranch.department.title && userBranch.department.title !== 'Finance and Accounts')) && (role.includes('super admin') || role.includes('admin'))" class="border-b border-dashed pb-4">
-        <p class="text-gray-500 mt-4 mb-2 px-3">Admin</p>
-        <section>
+      <!-- 4. ADMINISTRATION & HR (CIVIL SERVICE OPERATIONS) -->
+      <div v-if="canViewAdminOperations" class="border-b border-dashed py-3">
+        <button type="button" @click="toggleAdminOperations" class="w-full flex items-center justify-between text-xs font-bold tracking-wider text-gray-400 uppercase mb-2 px-3 hover:text-gray-600 transition-colors">
+          <span>Administration & HR</span>
+          <Icon icon="lucide:chevron-down" width="16" class="transition-transform duration-200" :class="{ '-rotate-90': !adminOpsOpen }" />
+        </button>
+
+        <section v-show="adminOpsOpen">
+          <!-- National Pool Management (Census & Postings) -->
+          <div class="mb-1" v-if="userHasPermission('pool view')">
+            <Link href="/dashboard/administration/pool" :class="isActive('/dashboard/administration/pool')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:globe" width="20" />
+              <p class="text-base">National Pool</p>
+            </Link>
+          </div>
+
+          <!-- Appointments & 24-Month Confirmations (PSR 020301) -->
+          <div class="mb-1" v-if="userHasPermission('appointment view')">
+            <Link href="/dashboard/administration/confirmations" :class="isActive('/dashboard/administration/confirmations')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:user-check" width="20" />
+              <p class="text-base">Confirmations</p>
+            </Link>
+          </div>
+
+          <!-- APER & Promotions (Appendix D) -->
+          <div class="mb-1" v-if="userHasPermission('promotion view')">
+            <Link href="/dashboard/administration/aper" :class="isActive('/dashboard/administration/aper')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:award" width="20" />
+              <p class="text-base">Promotions & APER</p>
+            </Link>
+          </div>
+
+          <!-- Training Needs (TNA) & Welfare Grants -->
+          <div class="mb-1" v-if="userHasPermission('training view') || userHasPermission('welfare view')">
+            <Link href="/dashboard/administration/welfare" :class="isActive('/dashboard/administration/welfare')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:heart-handshake" width="20" />
+              <p class="text-base">Training & Welfare</p>
+            </Link>
+          </div>
+
+          <!-- Sub-Registry & File Movement Cards (Appendix A) -->
+          <div class="mb-1" v-if="userHasPermission('admin registry view')">
+            <Link href="/dashboard/administration/movement-cards" :class="isActive('/dashboard/administration/movement-cards')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:folder-git-2" width="20" />
+              <p class="text-base">Sub-Registry Cards</p>
+            </Link>
+          </div>
+
+          <!-- Departmental Nominal Roll -->
+          <div class="mb-1" v-if="userHasPermission('nominal_roll_mgt') || userHasPermission('appointment view')">
+            <Link href="/dashboard/administration/nominal-roll" :class="isActive('/dashboard/administration/nominal-roll')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:users" width="20" />
+              <p class="text-base">Nominal Roll</p>
+            </Link>
+          </div>
+
+          <!-- Leave Applications & Approvals -->
+          <div class="mb-1" v-if="userHasPermission('leave_administration') || userHasPermission('appointment view')">
+            <Link href="/dashboard/administration/leaves" :class="isActive('/dashboard/administration/leaves')
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
+              <Icon icon="lucide:calendar-clock" width="20" />
+              <p class="text-base">Leave Applications</p>
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      <!-- 5. GOVERNANCE & SETUP -->
+      <div v-if="admin.some(item => userHasPermission(item.permission))" class="border-b border-dashed py-3">
+        <button type="button" @click="toggleAdmin" class="w-full flex items-center justify-between text-xs font-bold tracking-wider text-gray-400 uppercase mb-2 px-3 hover:text-gray-600 transition-colors">
+          <span>Governance & Setup</span>
+          <Icon icon="lucide:chevron-down" width="16" class="transition-transform duration-200" :class="{ '-rotate-90': !adminOpen }" />
+        </button>
+
+        <section v-show="adminOpen">
           <div v-for="(item, index) in admin" :key="index" class="mb-1">
-            <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'hover:border-0 px-3'
-            "
-            class="py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
+            <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="isActive(item.path)
+              ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+              : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+            ">
               <span v-html="item.icon"></span>
-              <p class="text-lg">{{ item.name }}</p>
+              <p class="text-base">{{ item.name }}</p>
             </Link>
           </div>
         </section>
       </div>
 
-      <div class="pb-4" v-if="branches && branches.length > 0 && role.includes('data entry')">
-        <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3">
-          <div class="flex items-center gap-2">
-            <Icon icon="ic:round-greater-than" width="20" />
-            <p>Branches</p>
-          </div>
-          <Icon icon="line-md:grid-3-filled" width="20" />
+      <!-- 6. SUPPORT & SETTINGS -->
+      <div class="pt-3 pb-6" v-if="userHasPermission('support view') || userHasPermission('settings view')">
+        <div class="mb-1" v-if="userHasPermission('support view')">
+          <Link href="/dashboard/support" :class="isActive('/dashboard/support')
+            ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+            : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+          ">
+            <Icon icon="system-uicons:support" width="22" />
+            <p class="text-base">Support</p>
+          </Link>
         </div>
-        <section>
-          <div v-for="(item, index) in branches" :key="index" class="mb-1">
-            <Link :href="item.path" v-if="userHasPermission(item.permission)" :class="$page.url === item.path
-              ? 'px-3 border bg-gray-25 text-primary bg-[#F9FAFB]'
-              : 'px-3'
-            "
-            class="py-3 flex justify-between items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-              <div class="flex items-center gap-3">
-                <div class="h-4 w-4 rounded-full border border-gray-300" :class="{ 'bg-primary': $page.url === item.path }"></div>
-                <p class="text-lg">{{ item.name }}</p>
-              </div>
-              <span v-html="item.icon"></span>
-            </Link>
-          </div>
-        </section>
-      </div>
-
-      <div class="pb-4" v-if="branches && branches.length > 0 && role.includes('super users')">
-        <Link :href="'/dashboard/correspondence'" :class="$page.url === '/dashboard/correspondence'
-          ? 'border bg-gray-25 text-primary bg-[#F9FAFB]'
-          : ''
-        "
-        class="px-4 py-3 mx-3 mt-4 flex justify-between items-center text-gray-700 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <div class="flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24">
-              <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                <rect width="8" height="8" x="3" y="3" rx="2"></rect>
-                <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
-                <rect width="8" height="8" x="13" y="13" rx="2"></rect>
-              </g>
-            </svg>
-            <span class="text-lg">Correspondence</span>
-          </div>
-        </Link>
-      </div>
-
-      <div class="pb-4 mb-10" v-if="role.includes('super admin') || role.includes('super users') || role.includes('admin') || role.includes('directors') || role.includes('division heads') || role.includes('unit heads')">
-        <div class="text-gray-500 mt-4 mb-2 flex items-center justify-between px-3 cursor-pointer" @click="branchesOpen = !branchesOpen">
-          <div class="flex items-center gap-3">
-            <Icon icon="octicon:git-branch-24" width="25" />
-            <p>Branches</p>
-          </div>
-          <Icon :class="!branchesOpen ? '-rotate-90' : ''" icon="ep:arrow-down" width="19" />
+        <div class="mb-1" v-if="userHasPermission('settings view')">
+          <Link href="/settings" :class="isActive('/settings')
+            ? 'px-3 py-2.5 flex gap-3 items-center text-primary bg-primary/10 border-l-4 border-primary rounded-r-xl font-medium transition-all'
+            : 'px-3 py-2.5 flex gap-3 items-center text-gray-700 hover:bg-gray-100 hover:text-primary rounded-xl font-normal transition-all'
+          ">
+            <Icon icon="uiw:setting-o" width="20" />
+            <p class="text-base">Settings</p>
+          </Link>
         </div>
-        
-        <section v-if="branchesOpen" class="ml-1">
-          <div v-for="(department, deptIndex) in roleBranches" :key="'dept-' + deptIndex" class="mb-1 ml-2 mb-3">
-            <Link :href="isDepartmentRole(department)" class="cursor-pointer">
-              <div class="py-2 flex justify-between items-center text-gray-700 border-solid border-transparent hover:border-gray-200 rounded-lg hover:text-primary font-normal transition-all px-3 border">
-                <div class="flex items-center gap-3">
-                  <p class="text-[14px] text-gray-700">
-                    {{ department.title }}
-                  </p>
-                </div>
-                <Icon 
-                  @click.prevent="toggleDepartment(deptIndex)" 
-                  class="border-[1px] border-solid border-gray-200 rounded-md p-1 pr-2 cursor-pointer transition-transform duration-200" 
-                  :class="expandedDepartments[deptIndex] ? 'rotate-90' : 'rotate-0'"
-                  icon="fluent:ios-arrow-right-24-regular" 
-                  width="25" 
-                />
-              </div>
-            </Link>
-
-            <div v-if="expandedDepartments[deptIndex] && department.division && department.division.length > 0" class="ml-3 pl-2 mt-1 border-l border-gray-200">
-              <div v-for="(division, divIndex) in department.division" :key="'div-' + divIndex" class="mb-2 mt-1">
-                <Link :href="isDivisionRole(division, department)" class="cursor-pointer">
-                  <div class="py-2 flex justify-between items-center text-gray-700 border-solid hover:border-gray-200 border-transparent rounded-lg hover:text-primary font-normal transition-all px-3 border">
-                    <p class="text-[14px] text-gray-700">
-                      {{ division.title }}
-                    </p>
-                    <Icon 
-                      @click.prevent="toggleDivision(deptIndex, divIndex)" 
-                      class="border-[1px] border-solid border-gray-200 rounded-md p-1 pr-2 cursor-pointer transition-transform duration-200" 
-                      :class="expandedDivisions[`${deptIndex}-${divIndex}`] ? 'rotate-90' : 'rotate-0'"
-                      icon="fluent:ios-arrow-right-24-regular" 
-                      width="25" 
-                    />
-                  </div>
-                </Link>
-
-                <div v-if="expandedDivisions[`${deptIndex}-${divIndex}`] && division.unit && division.unit.length > 0" class="ml-3 pl-2 mt-1 border-l border-gray-200">
-                  <section>
-                    <Link :href="isUnitRole(unit, department)" v-for="(unit, unitIndex) in division.unit" :key="unitIndex" class="mb-3 mt-2">
-                      <div class="py-2 flex justify-between items-center text-gray-700 border-solid hover:border-gray-200 border-transparent rounded-lg hover:text-primary font-normal transition-all px-3 border">
-                        <p class="text-[14px] text-gray-700">
-                          {{ unit.title }}
-                        </p>
-                      </div>
-                    </Link>
-                  </section>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- More branches -->
-        <div class="cursor-pointer ml-4 bg-gray-100 text-gray-600 rounded-xl w-[30px] mt-2">
-          <Icon class="m-auto w-full" icon="solar:menu-dots-bold" width="17" />
-        </div>
-
-        <Link href="/dashboard/shared-files" :class="$page.url === '/dashboard/shared-files'
-          ? 'border bg-gray-25 text-primary bg-[#F9FAFB]'
-          : ''
-        "
-        class="px-4 py-3 mt-4 mx-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all">
-          <span>
-            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M7.926 10.898 15 7.727m-7.074 5.39L15 16.29M8 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm12 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0-11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
-            </svg>
-          </span>
-          <p class="text-lg">Shared Files</p>
-        </Link>
-      </div>
-
-      <div class="border-t border-dashed pt-2 pb-4">
-        <section>
-          <div class="mb-1">
-            <Link href="/dashboard/support"
-              class="px-3 py-3 flex gap-3 items-center text-gray-700 border-solid border-gray-200 rounded-xl hover:bg-gray-25 hover:text-primary font-normal transition-all"
-              :class="$page.url === '/dashboard/support'
-                ? 'border bg-gray-25 text-primary bg-[#F9FAFB]'
-                : ''
-              ">
-              <Icon icon="system-uicons:support" width="30" />
-              <p class="text-lg">Support</p>
-            </Link>
-          </div>
-          <div class="mb-1">
-            <Link href="/settings"
-              class="px-3 py-3 flex gap-3 items-center text-[#344054] rounded-xl hover:text-primary font-normal transition-all"
-              :class="$page.url === '/settings'
-                ? 'border bg-gray-25 text-primary bg-[#F9FAFB]'
-                : ''
-              ">
-              <Icon icon="uiw:setting-o" width="25" />
-              <p class="text-lg">Settings</p>
-            </Link>
-          </div>
-        </section>
       </div>
     </div>
   </section>
@@ -250,19 +291,49 @@
 <script setup>
 import { ref, watch, onMounted, computed } from "vue";
 import { usePage, Link } from '@inertiajs/vue3';
+import { useStore } from 'vuex';
 import logo from "../assets/logo.vue";
+
+const store = useStore();
+const unreadNotificationCount = computed(() => store ? store.getters.getTotalTaskNotifications : 0);
+const pendingWorkflowCount = computed(() => page.props.pending_workflow_count || 0);
 
 defineProps(['sidebarVisible']);
 
 const page = usePage();
 const departments = computed(() => page.props.shared_departments);
 const permissions = computed(() => page.props.permissions);
-const role = computed(() => page.props.user_roles);
+const role = computed(() => {
+  const r = page.props.user_roles;
+  if (!r) return [];
+  if (Array.isArray(r)) return r;
+  return [r];
+});
 const branches = ref([]);
 const roleBranches = ref([]);
 const userBranchName = computed(() => page.props.branchName);
 const userBranch = computed(() => page.props.userBranch);
 const userDepartment = computed(() => page.props.userDepartment);
+
+const executiveOpen = ref(true);
+const recordsOpen = ref(true);
+const financeOpen = ref(true);
+const adminOpsOpen = ref(true);
+const adminOpen = ref(true);
+
+const toggleExecutive = () => { executiveOpen.value = !executiveOpen.value; };
+const toggleRecords = () => { recordsOpen.value = !recordsOpen.value; };
+const toggleFinance = () => { financeOpen.value = !financeOpen.value; };
+const toggleAdminOperations = () => { adminOpsOpen.value = !adminOpsOpen.value; };
+const toggleAdmin = () => { adminOpen.value = !adminOpen.value; };
+
+const isActive = (path) => {
+  if (!path) return false;
+  if (path === '/dashboard') {
+    return page.url === '/dashboard';
+  }
+  return page.url === path || page.url.startsWith(path + '?') || page.url.startsWith(path + '/');
+};
 
 const branchesOpen = ref(false);
 const expandedDepartments = ref({});
@@ -278,75 +349,81 @@ const toggleDivision = (deptIndex, divIndex) => {
   expandedDivisions.value[key] = !expandedDivisions.value[key];
 };
 
+const hasNavRole = (targetRole) => {
+  if (!targetRole) return false;
+  const target = targetRole.toLowerCase().trim();
+  return role.value.some(r => {
+    const name = (typeof r === 'string' ? r : (r?.name || '')).toLowerCase().trim();
+    return name === target || name === target + 's' || name + 's' === target;
+  });
+};
+
 const checkPermission = (item) => {
-  if (role.value.includes('record manager')) {
-    if (item.name == 'Dashboard') {
-      return false;
-    } else {
-      return true;
-    }
-  } else {
-    return true;
-  }
+  return true;
 };
 
 const userHasPermission = (permit) => {
-  if (permit == '') {
+  if (!permit || permit === '') {
     return true;
   }
-  if (role.value.includes('super admin')) {
+  // Super admin global enterprise bypass; all other roles strictly evaluate against active capability-bounded permissions
+  if (hasNavRole('super admin')) {
     return true;
-  } else {
-    let index = permissions.value.findIndex(permission => permission.name == permit);
-    return index != -1;
   }
+  // All other users: strictly evaluate against assigned active permissions from Civil Service User Permissions Matrix
+  if (permissions.value && permissions.value.length > 0) {
+    const permitNormalized = permit.toLowerCase().trim();
+    if (typeof permissions.value[0] === 'string') {
+      return permissions.value.some(p => typeof p === 'string' && p.toLowerCase().trim() === permitNormalized);
+    } else {
+      return permissions.value.some(p => p && p.name && p.name.toLowerCase().trim() === permitNormalized);
+    }
+  }
+  return false;
 };
 
 const isDepartmentRole = (item) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors')) {
-    return `/dashboard/branches/department/${item.id}/0/0`;
-  } else {
-    return '#';
-  }
+  return `/dashboard/branches/department/${item.id}/0/0`;
 };
 
 const isDivisionRole = (item, department) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads')) {
-    let department_id = department.id;
-    return `/dashboard/branches/division/${department_id}/${item.id}/0`;
-  } else {
-    return '#';
-  }
+  let department_id = department.id;
+  return `/dashboard/branches/division/${department_id}/${item.id}/0`;
 };
 
 const isUnitRole = (item, department) => {
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads') || role.value.includes('unit heads')) {
-    let department_id = department.id;
-    let division = department.division && department.division.length > 0 ? department.division[0].id : 0;
-    return `/dashboard/branches/unit/${department_id}/${division}/${item.id}`;
-  } else {
-    return '#';
-  }
+  let department_id = department.id;
+  let division = department.division && department.division.length > 0 ? department.division[0].id : 0;
+  return `/dashboard/branches/unit/${department_id}/${division}/${item.id}`;
 };
 
-const setDepartments = () => {
-  if (role.value.includes('super users')) {
-    for (let dept of departments.value) {
-      let data = {
-        name: dept.title,
-        path: "/dashboard/branches/department/" + dept.id,
-        icon: `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="9" height="9" rx="4.5" stroke="#344054"/>
-        </svg>`,
-        permission: 'edms view'
-      };
-      branches.value.push(data);
-    }
-  } else {
-    const branchType = userBranchName.value;
-    const branchData = userBranch.value[branchType];
+const canViewDocumentManagement = computed(() => {
+  return userHasPermission('document management view') || 
+         userHasPermission('shared files view') || 
+         userHasPermission('admin registry view') || 
+         userHasPermission('branch setup view') || 
+         userHasPermission('department view') || 
+         userHasPermission('division view') || 
+         userHasPermission('unit view') || 
+         userHasPermission('archiving view');
+});
 
-    if (branchData && (role.value.includes('directors') || role.value.includes('unit heads') || role.value.includes('division heads') || role.value.includes('admin') || role.value.includes('super users'))) {
+const canViewAdminOperations = computed(() => {
+  return userHasPermission('pool view') || 
+         userHasPermission('appointment view') || 
+         userHasPermission('promotion view') || 
+         userHasPermission('training view') || 
+         userHasPermission('welfare view') || 
+         userHasPermission('admin registry view') || 
+         userHasPermission('leave_administration') || 
+         userHasPermission('nominal_roll_mgt');
+});
+
+const setDepartments = () => {
+  const branchType = userBranchName.value;
+  const branchData = userBranch.value[branchType];
+
+  if (branchData && userHasPermission('edms view')) {
       let data = {
         name: branchData.title,
         path: `/dashboard/branches/${branchType}/${branchData.id}`,
@@ -356,7 +433,6 @@ const setDepartments = () => {
         permission: 'edms view'
       };
       branches.value.push(data);
-    }
   }
 };
 
@@ -367,12 +443,12 @@ const getBranchesByRole = () => {
 };
 
 const checkScreenSize = () => {
-  isDesktop2xl.value = window.innerWidth >= 1536;
+  isDesktop2xl.value = window.innerWidth >= 1280;
 };
 
 onMounted(() => {
   setDepartments();
-  if (role.value.includes('super admin') || role.value.includes('admin') || role.value.includes('super users') || role.value.includes('directors') || role.value.includes('division heads') || role.value.includes('unit heads')) {
+  if (userHasPermission('branch setup view')) {
     getBranchesByRole();
   }
   checkScreenSize();
@@ -387,6 +463,15 @@ const main = ref([
       <path d="M7.5 18.3327V9.99935H12.5V18.3327M2.5 7.49935L10 1.66602L17.5 7.49935V16.666C17.5 17.108 17.3244 17.532 17.0118 17.8445C16.6993 18.1571 16.2754 18.3327 15.8333 18.3327H4.16667C3.72464 18.3327 3.30072 18.1571 2.98816 17.8445C2.67559 17.532 2.5 17.108 2.5 16.666V7.49935Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
     permission: ''
+  },
+  {
+    name: "Notifications",
+    path: "/dashboard/notifications",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>`,
+    permission: 'notifications view'
   },
   {
     name: "Analytics",
@@ -461,9 +546,49 @@ const main = ref([
       </svg>`,
     permission: 'pms view'
   },
+  {
+    name: "Staff Queries",
+    path: "/dashboard/queries",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>`,
+    permission: 'queries view'
+  },
+  {
+    name: "SERVICOM",
+    path: "/dashboard/servicom",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      <path d="m9 12 2 2 4-4"></path>
+    </svg>`,
+    permission: 'servicom view'
+  },
 ]);
 
 const admin = ref([
+  {
+    name: "Governance & Structure Hub",
+    path: "/dashboard/governance-hub",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>`,
+    permission: 'access config view'
+  },
+  {
+    name: "Departmental Hub",
+    path: "/dashboard/directorates",
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21h18"/>
+      <path d="M5 21V7l8-4v18"/>
+      <path d="M19 21V11l-6-4"/>
+      <path d="M9 9h1"/>
+      <path d="M9 13h1"/>
+      <path d="M9 17h1"/>
+    </svg>`,
+    permission: 'access config view'
+  },
   {
     name: "Manage Users",
     path: "/dashboard/manage-users",
@@ -473,52 +598,12 @@ const admin = ref([
     permission: 'manage users view'
   },
   {
-    name: "Branch Setup",
-    path: "/dashboard/branch-setup",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M17.5 4.16663C17.5 5.54734 14.1421 6.66663 10 6.66663C5.85786 6.66663 2.5 5.54734 2.5 4.16663M17.5 4.16663C17.5 2.78591 14.1421 1.66663 10 1.66663C5.85786 1.66663 2.5 2.78591 2.5 4.16663M17.5 4.16663V15.8333C17.5 17.2166 14.1667 18.3333 10 18.3333C5.83333 18.3333 2.5 17.2166 2.5 15.8333V4.16663M17.5 9.99996C17.5 11.3833 14.1667 12.5 10 12.5C5.83333 12.5 2.5 11.3833 2.5 9.99996" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`,
-    permission: 'branch setup view'
-  },
-  {
-    name: "Access Config",
-    path: "/dashboard/access-level",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7.84165 16.6666H5.41665C4.16665 16.6666 3.06665 16.2499 2.17498 15.3583C1.28331 14.4833 0.833313 13.4083 0.833313 12.1499C0.833313 11.0666 1.15831 10.0999 1.80831 9.24992C2.44216 8.41891 3.35271 7.84242 4.37498 7.62492C4.72498 6.34992 5.41665 5.31659 6.45831 4.52492C7.49998 3.74992 8.68331 3.33325 9.99998 3.33325C11.625 3.33325 13.0083 3.89992 14.1333 5.03325C15.2666 6.15825 15.8333 7.54158 15.8333 9.16658C16.7916 9.27492 17.5916 9.69159 18.2166 10.4166C18.75 11.0249 19.05 11.7166 19.1333 12.4999H17.4666C17.3833 12.0833 17.2 11.7416 16.8916 11.4416C16.4916 11.0333 16 10.8333 15.4166 10.8333H14.1666V9.16658C14.1666 8.01659 13.75 7.03325 12.95 6.21659C12.1416 5.41659 11.1583 4.99992 9.99998 4.99992C8.84998 4.99992 7.86665 5.41659 7.04998 6.21659C6.24998 7.03325 5.83331 8.01659 5.83331 9.16658H5.41665C4.60831 9.16658 3.92498 9.44992 3.35831 10.0249C2.78331 10.5916 2.49998 11.2749 2.49998 12.0833C2.49998 12.8916 2.78331 13.5833 3.35831 14.1666C3.92498 14.7249 4.60831 14.9999 5.41665 14.9999H7.49998C7.49998 15.5999 7.62498 16.1583 7.84165 16.6666ZM19.1666 14.1666V15.8333H17.5V17.4999H15.8333V15.8333H14C13.6666 16.8333 12.75 17.4999 11.6666 17.4999C10.25 17.4999 9.16665 16.4166 9.16665 14.9999C9.16665 13.5833 10.25 12.4999 11.6666 12.4999C12.75 12.4999 13.6666 13.1666 14 14.1666H19.1666ZM12.5 14.9999C12.5 14.5833 12.1666 14.1666 11.6666 14.1666C11.1666 14.1666 10.8333 14.5833 10.8333 14.9999C10.8333 15.4166 11.1666 15.8333 11.6666 15.8333C12.1666 15.8333 12.5 15.4166 12.5 14.9999Z" fill="#344054"/>
-</svg>`,
-    permission: 'access config view'
-  },
-  {
-    name: "Metadata Setup",
-    path: "/dashboard/metadata-setup",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_7456_3427)">
-<path d="M9.99998 12.4999C11.3807 12.4999 12.5 11.3806 12.5 9.99992C12.5 8.61921 11.3807 7.49992 9.99998 7.49992C8.61927 7.49992 7.49998 8.61921 7.49998 9.99992C7.49998 11.3806 8.61927 12.4999 9.99998 12.4999Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M16.1666 12.4999C16.0557 12.7513 16.0226 13.0301 16.0716 13.3004C16.1207 13.5707 16.2495 13.8202 16.4416 14.0166L16.4916 14.0666C16.6466 14.2214 16.7695 14.4052 16.8534 14.6075C16.9373 14.8098 16.9805 15.0267 16.9805 15.2458C16.9805 15.4648 16.9373 15.6817 16.8534 15.884C16.7695 16.0863 16.6466 16.2701 16.4916 16.4249C16.3369 16.5799 16.153 16.7028 15.9507 16.7867C15.7484 16.8706 15.5315 16.9137 15.3125 16.9137C15.0935 16.9137 14.8766 16.8706 14.6742 16.7867C14.4719 16.7028 14.2881 16.5799 14.1333 16.4249L14.0833 16.3749C13.8869 16.1828 13.6375 16.0539 13.3671 16.0049C13.0968 15.9559 12.818 15.989 12.5666 16.0999C12.3202 16.2056 12.11 16.381 11.9619 16.6045C11.8138 16.8281 11.7344 17.0901 11.7333 17.3583V17.4999C11.7333 17.9419 11.5577 18.3659 11.2452 18.6784C10.9326 18.991 10.5087 19.1666 10.0666 19.1666C9.62462 19.1666 9.2007 18.991 8.88813 18.6784C8.57557 18.3659 8.39998 17.9419 8.39998 17.4999V17.4249C8.39353 17.1491 8.30424 16.8816 8.14374 16.6572C7.98323 16.4328 7.75893 16.2618 7.49998 16.1666C7.24863 16.0557 6.96982 16.0226 6.69949 16.0716C6.42916 16.1206 6.17971 16.2495 5.98331 16.4416L5.93331 16.4916C5.77852 16.6465 5.59471 16.7695 5.39238 16.8533C5.19005 16.9372 4.97317 16.9804 4.75415 16.9804C4.53512 16.9804 4.31824 16.9372 4.11591 16.8533C3.91358 16.7695 3.72977 16.6465 3.57498 16.4916C3.42002 16.3368 3.29709 16.153 3.21321 15.9507C3.12934 15.7483 3.08617 15.5314 3.08617 15.3124C3.08617 15.0934 3.12934 14.8765 3.21321 14.6742C3.29709 14.4719 3.42002 14.288 3.57498 14.1332L3.62498 14.0833C3.81709 13.8869 3.94597 13.6374 3.99498 13.3671C4.044 13.0967 4.01091 12.8179 3.89998 12.5666C3.79434 12.3201 3.61894 12.1099 3.39537 11.9618C3.17179 11.8138 2.9098 11.7343 2.64165 11.7333H2.49998C2.05795 11.7333 1.63403 11.5577 1.32147 11.2451C1.00891 10.9325 0.833313 10.5086 0.833313 10.0666C0.833313 9.62456 1.00891 9.20063 1.32147 8.88807C1.63403 8.57551 2.05795 8.39992 2.49998 8.39992H2.57498C2.85081 8.39347 3.11832 8.30418 3.34273 8.14368C3.56714 7.98317 3.73808 7.75886 3.83331 7.49992C3.94424 7.24857 3.97733 6.96976 3.92832 6.69943C3.8793 6.4291 3.75043 6.17965 3.55831 5.98325L3.50831 5.93325C3.35335 5.77846 3.23042 5.59465 3.14655 5.39232C3.06267 5.18999 3.0195 4.97311 3.0195 4.75408C3.0195 4.53506 3.06267 4.31818 3.14655 4.11585C3.23042 3.91352 3.35335 3.72971 3.50831 3.57492C3.6631 3.41996 3.84692 3.29703 4.04925 3.21315C4.25158 3.12928 4.46845 3.08611 4.68748 3.08611C4.90651 3.08611 5.12338 3.12928 5.32571 3.21315C5.52804 3.29703 5.71186 3.41996 5.86665 3.57492L5.91665 3.62492C6.11305 3.81703 6.36249 3.94591 6.63282 3.99492C6.90315 4.04394 7.18197 4.01085 7.43331 3.89992H7.49998C7.74645 3.79428 7.95666 3.61888 8.10472 3.39531C8.25279 3.17173 8.33224 2.90974 8.33331 2.64159V2.49992C8.33331 2.05789 8.50891 1.63397 8.82147 1.32141C9.13403 1.00885 9.55795 0.833252 9.99998 0.833252C10.442 0.833252 10.8659 1.00885 11.1785 1.32141C11.4911 1.63397 11.6666 2.05789 11.6666 2.49992V2.57492C11.6677 2.84307 11.7472 3.10506 11.8952 3.32864C12.0433 3.55221 12.2535 3.72762 12.5 3.83325C12.7513 3.94418 13.0301 3.97727 13.3005 3.92826C13.5708 3.87924 13.8202 3.75037 14.0166 3.55825L14.0666 3.50825C14.2214 3.35329 14.4052 3.23036 14.6076 3.14649C14.8099 3.06261 15.0268 3.01944 15.2458 3.01944C15.4648 3.01944 15.6817 3.06261 15.884 3.14649C16.0864 3.23036 16.2702 3.35329 16.425 3.50825C16.5799 3.66304 16.7029 3.84685 16.7867 4.04918C16.8706 4.25151 16.9138 4.46839 16.9138 4.68742C16.9138 4.90644 16.8706 5.12332 16.7867 5.32565C16.7029 5.52798 16.5799 5.7118 16.425 5.86658L16.375 5.91658C16.1829 6.11298 16.054 6.36243 16.005 6.63276C15.956 6.90309 15.989 7.1819 16.1 7.43325V7.49992C16.2056 7.74639 16.381 7.9566 16.6046 8.10466C16.8282 8.25272 17.0902 8.33218 17.3583 8.33325H17.5C17.942 8.33325 18.3659 8.50885 18.6785 8.82141C18.991 9.13397 19.1666 9.55789 19.1666 9.99992C19.1666 10.4419 18.991 10.8659 18.6785 11.1784C18.3659 11.491 17.942 11.6666 17.5 11.6666H17.425C17.1568 11.6677 16.8948 11.7471 16.6713 11.8952C16.4477 12.0432 16.2723 12.2534 16.1666 12.4999Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
-<defs>
-<clipPath id="clip0_7456_3427">
-<rect width="20" height="20" fill="white"/>
-</clipPath>
-</defs>
-</svg>`,
-    permission: 'metadata setup view'
-  },
-  {
-    name: "Admin Registry",
-    path: "/dashboard/admin-registry",
-    icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M10.75 2.5H5.5C5.10218 2.5 4.72064 2.65804 4.43934 2.93934C4.15804 3.22064 4 3.60218 4 4V16C4 16.3978 4.15804 16.7794 4.43934 17.0607C4.72064 17.342 5.10218 17.5 5.5 17.5H14.5C14.8978 17.5 15.2794 17.342 15.5607 17.0607C15.842 16.7794 16 16.3978 16 16V7.75M10.75 2.5L16 7.75M10.75 2.5V7.75H16" stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`,
-    permission: 'admin registry view'
-  },
-  {
     name: "Audit Log",
     path: "/dashboard/audit-log",
     icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.66669 12.0833L10 16.25L18.3334 12.0833M10 3.75L1.66669 7.91667L10 12.0833L18.3334 7.91667L10 3.75Z" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
-    permission: 'audit log view'
+    permission: 'audit view'
   },
   {
     name: "Recycle Bin",
@@ -527,7 +612,7 @@ const admin = ref([
 <path d="M2.5 5.00008H4.16667M4.16667 5.00008H17.5M4.16667 5.00008V16.6667C4.16667 17.1088 4.34226 17.5327 4.65482 17.8453C4.96738 18.1578 5.39131 18.3334 5.83333 18.3334H14.1667C14.6087 18.3334 15.0326 18.1578 15.3452 17.8453C15.6577 17.5327 15.8333 17.1088 15.8333 16.6667V5.00008H4.16667ZM6.66667 5.00008V3.33341C6.66667 2.89139 6.84226 2.46746 7.15482 2.1549C7.46738 1.84234 7.89131 1.66675 8.33333 1.66675H11.6667C12.1087 1.66675 12.5326 1.84234 12.8452 2.1549C13.1577 2.46746 13.3333 2.89139 13.3333 3.33341V5.00008M8.33333 9.16675V14.1667M11.6667 9.16675V14.1667" stroke="#344054" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
     permission: 'recycle bin view'
-  },
+  }
 ]);
 </script>
 

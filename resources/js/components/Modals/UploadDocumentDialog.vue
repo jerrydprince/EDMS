@@ -66,7 +66,7 @@
   
             </div>
             <div>
-              <p class="mb-1 font-medium text-lg">Upload new Document</p>
+              <p class="mb-1 font-medium text-lg">{{ props.file ? (props.file.title ? props.file.title.archive : props.file.name) : 'Upload new Document' }}</p>
              
             </div>
           </div>
@@ -158,8 +158,8 @@
       }
 
       watch(()=>props.file, ()=>{
-        form.document_id = props.file.id;
-        form.folder_id = props.folder.id;
+        if (props.file) form.document_id = props.file.id;
+        if (props.folder) form.folder_id = props.folder.id;
       })
   
     </script>

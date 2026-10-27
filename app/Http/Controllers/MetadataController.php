@@ -7,6 +7,7 @@ use App\Models\Metadata;
 use App\Models\Unit;
 use App\Models\Division;
 use App\Models\Department;
+use App\Models\DocumentType;
 
 class MetadataController extends Controller
 {
@@ -85,6 +86,8 @@ class MetadataController extends Controller
             $query->with('metadata');
         }])->find(auth()->user()->department_id);
         $metadata = isset($deparment->documentType)? $deparment->documentType: [];
+    }else{
+        $metadata = DocumentType::with('metadata')->get();
     }
 
     return response()->json($metadata);

@@ -14,7 +14,32 @@ class ChatMessage extends Model
         'sender_id',
         'recipient_id',
         'message',
+        'reply_to_id',
+        'is_pinned',
+        'is_starred',
+        'is_deleted',
+        'is_read',
+        'read_at',
+        'reactions',
+        'is_edited',
+        'edited_at',
     ];
+
+    protected $casts = [
+        'reactions' => 'array',
+        'is_pinned' => 'boolean',
+        'is_starred' => 'boolean',
+        'is_deleted' => 'boolean',
+        'is_read' => 'boolean',
+        'read_at' => 'datetime',
+        'is_edited' => 'boolean',
+        'edited_at' => 'datetime',
+    ];
+
+    public function replyTo()
+    {
+        return $this->belongsTo(ChatMessage::class, 'reply_to_id')->with('sender');
+    }
 
     public function sender()
     {
@@ -24,6 +49,11 @@ class ChatMessage extends Model
     public function recipient()
     {
         return $this->belongsTo(User::class, 'recipient_id');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(ChatAttachment::class, 'chat_message_id');
     }
     // use HasFactory;
     // protected $fillable = ['chat_user_id', 'chat_group_id', 'message', 'parent_id','doc'];

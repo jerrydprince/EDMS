@@ -27,19 +27,19 @@ class TaskEvent
         if($user->hasRole('super admin')){
             return 'super_admin';
         }
-        if($user->hasRole('super users')){
+        if($user->hasRole('super user')){
             return 'super_users';
         }
         if($user->hasRole('admin')){
             return 'admin';
         }
-        if($user->hasRole('directors')){
-            return 'directors';
+        if($user->hasRole('director')){
+            return 'director';
         }
-        if($user->hasRole('division heads')){
+        if($user->hasRole('deputy director')){
             return 'division_heads';
         }
-        if($user->hasRole('unit heads')){
+        if($user->hasRole('assistant director')){
             return 'unit_heads';
         }else{
             return 'users';

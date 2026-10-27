@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     use HasFactory;
+    use \App\Traits\HasEbeweWorkflow;
+
+    protected $guarded = [];
 
     /**
      * The files that belong to the Payment
@@ -59,6 +62,31 @@ class Payment extends Model
     {
         return $this->hasOne(Ledger::class, 'payment_id');
     }
+
+    /**
+     * Get the advances ledger record associated with the Payment
+     */
+    public function advancesLedger()
+    {
+        return $this->hasOne(AdvancesLedger::class, 'payment_id');
+    }
+
+    /**
+     * Get the audit queries associated with the Payment
+     */
+    public function auditQueries()
+    {
+        return $this->hasMany(PaymentAuditQuery::class, 'payment_id');
+    }
+
+    /**
+     * Current section handling this payment
+     */
+    public function currentSection()
+    {
+        return $this->belongsTo(Section::class, 'current_section_id');
+    }
+
 
     /**
      * Get the voucher associated with the Payment

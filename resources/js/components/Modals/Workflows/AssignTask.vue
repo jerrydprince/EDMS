@@ -1,595 +1,1685 @@
 <template>
-  <Dialog v-model:visible="visible" :closable="false" modal :pt="{
-    root: { class: 'bg-white px-5 max-h-[97vh] hide_scroll overflow-y-auto  rounded-md overflow-hidden' },
-    content: { class: 'px-0  pb-0' },
-    header: { class: ' bg-slate-100 -mt-2 ' },
-
-    footer: { class: 'bg-white' },
-  }" :style="{ width: '45rem', padding: '10px 0px' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-    class=".custom-dialog">
-    <template #header>
-      <div class="flex bg-slate-100 p-3 justify-end w-full">
-        <div class="flex gap-5 bg-slate-100 items-center px-5">
-          <Icon icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile"
-            class=" cursor-pointer" />
-          <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" />
-          <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
-            Create Task
-          </button>
+  <Dialog
+    v-model:visible="visible"
+    :closable="false"
+    modal
+    :pt="{
+      root: { class: 'bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 font-sans' },
+      content: { class: 'p-0 max-h-[85vh] overflow-y-auto' },
+      header: { class: 'hidden' },
+      footer: { class: 'hidden' },
+    }"
+    :style="{ width: '72rem', maxWidth: '96vw' }"
+    :breakpoints="{ '1280px': '85vw', '960px': '92vw', '640px': '98vw' }"
+    class="custom-dialog-redesign"
+  >
+    <!-- 1. EXECUTIVE MODAL HEADER -->
+    <div class="px-7 py-5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between border-b border-slate-700/60 sticky top-0 z-30 shadow-sm">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-inner"
+             :class="assignmentType === 'workflow' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'">
+          <Icon :icon="assignmentType === 'workflow' ? 'lucide:file-text' : 'lucide:file-plus-2'" width="22" />
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-bold tracking-tight text-white">
+              {{ assignmentType === 'workflow' ? 'Official Application & Staff Request' : 'Administrative Directive / Task Delegation' }}
+            </h2>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs"
+                  :class="assignmentType === 'workflow' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'">
+              {{ assignmentType === 'workflow' ? 'Civil Service Protocol' : 'Internal Memo' }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5">
+            {{ assignmentType === 'workflow' ? 'Submit an official statutory request (Leave, DTA, Welfare) along the approved clearance pathway' : 'Direct operational task assignment and directive issuance to specific desk officers' }}
+          </p>
         </div>
       </div>
-      <input type="file" name="" @change="handleFileUpload" id="fileUpload" multiple class=" opacity-0 absolute">
-    </template>
-    <button class="absolute -right-10 -top-10 bg-white p-2 rounded-full" @click="closeModal">
-      <Icon icon="ic:baseline-close" width="25" />
-    </button>
-    <section class="max-h-[70vh] hide_scroll overflow-y-scroll">
-      <section class="bg-white p-5">
-        <input type="text" id="task_title" class="w-full text-3xl outline-none" placeholder="Write a Task Name"
-          v-model="form.title">
-        <div v-if="form.errors.title" class=" text-red-400">{{ form.errors.title }}</div>
-      </section>
-      <Divider class="-mt-0" />
-      <section class="p-5 text-gray-600">
 
-        <div class="flex gap-3 pb-4 items-center justify-between text-sm">
-          <div class="bg-gray-100 flex items-center rounded-md p-1">
-            <button class="rounded-lg py-1 px-4" @click="activeButton('')"
-              :class="{ activeButton: buttonSwitch === 1 }">
-              <p>Document Upload + Text comment</p>
-            </button>
-            <div>
-              <button class="flex gap-2 items-center text-gray-400 rounded-lg py-1 px-4"
-                @click="activeButton('document_only')" :class="{ activeButton: buttonSwitch === 2 }">
-                <p>Document Only</p>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          @click="getFile"
+          :class="{ 'opacity-50 pointer-events-none': buttonSwitch === 3 }"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
+          title="Quick Attach File"
+        >
+          <Icon icon="lucide:paperclip" width="15" />
+          <span class="hidden sm:inline">Attach</span>
+          <span v-if="files.length > 0" class="ml-0.5 bg-emerald-500 text-slate-950 font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+            {{ files.length }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          @click="closeModal"
+          class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+        >
+          <Icon icon="mingcute:close-line" width="20" />
+        </button>
+      </div>
+
+      <input type="file" @change="handleFileUpload" id="fileUpload" multiple class="hidden" />
+    </div>
+
+    <!-- 2. TOP PRIMARY NAVIGATION TABS (APPLICATION vs DIRECTIVE) -->
+    <div v-if="workflowsList && workflowsList.length > 0" class="px-7 pt-4 pb-2 bg-slate-50 border-b border-gray-200/80">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+        <button
+          type="button"
+          @click="assignmentType = 'workflow'"
+          class="flex items-center gap-3 p-3 rounded-2xl border text-left transition-all cursor-pointer relative"
+          :class="assignmentType === 'workflow' 
+            ? 'bg-white border-emerald-500 shadow-sm ring-2 ring-emerald-500/20' 
+            : 'bg-white/60 border-gray-200 text-gray-500 hover:bg-white hover:border-gray-300'"
+        >
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+               :class="assignmentType === 'workflow' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'">
+            <Icon icon="lucide:file-text" width="18" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold" :class="assignmentType === 'workflow' ? 'text-gray-900' : 'text-gray-600'">
+                Official Application / Request
+              </span>
+              <span v-if="assignmentType === 'workflow'" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            </div>
+            <p class="text-[11px] text-gray-400 truncate">Leave, DTA, welfare, training & statutory requests</p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          @click="assignmentType = 'custom'; form.workflow_version_id = ''"
+          class="flex items-center gap-3 p-3 rounded-2xl border text-left transition-all cursor-pointer relative"
+          :class="assignmentType === 'custom' 
+            ? 'bg-white border-blue-500 shadow-sm ring-2 ring-blue-500/20' 
+            : 'bg-white/60 border-gray-200 text-gray-500 hover:bg-white hover:border-gray-300'"
+        >
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+               :class="assignmentType === 'custom' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'">
+            <Icon icon="lucide:check-square" width="18" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold" :class="assignmentType === 'custom' ? 'text-gray-900' : 'text-gray-600'">
+                Directive / Assigned Task
+              </span>
+              <span v-if="assignmentType === 'custom'" class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            </div>
+            <p class="text-[11px] text-gray-400 truncate">Direct assignments issued to specific officers</p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. MAIN FORM BODY (TWO-COLUMN ARCHITECTURE) -->
+    <div class="p-7 space-y-6">
+      
+      <!-- HERO SUBJECT / TITLE CARD -->
+      <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs hover:border-gray-300 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <label for="task_title" class="text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+                 :class="assignmentType === 'workflow' ? 'text-emerald-800' : 'text-blue-800'">
+            <Icon :icon="assignmentType === 'workflow' ? 'lucide:scroll-text' : 'lucide:file-edit'" width="15" />
+            <span>{{ assignmentType === 'workflow' ? 'Application Subject / Docket Title' : 'Task / Directive Title' }}</span>
+            <span class="text-rose-500">*</span>
+          </label>
+          <span class="text-[11px] text-gray-400 font-mono">
+            {{ form.title ? form.title.length : 0 }} chars
+          </span>
+        </div>
+
+        <input
+          type="text"
+          id="task_title"
+          v-model="form.title"
+          class="w-full text-lg sm:text-xl font-bold text-gray-900 placeholder:text-gray-300 outline-none bg-transparent transition-all border-b border-gray-100 pb-2 focus:border-emerald-500 focus:pb-2.5"
+          :placeholder="assignmentType === 'workflow' ? 'e.g., Application for 3 Days Casual Leave – J. Osepo' : 'e.g., Directive: Reconcile First Quarter Vote Book Ledger'"
+        />
+        <div v-if="form.errors.title" class="text-rose-500 text-xs font-medium mt-1.5 flex items-center gap-1">
+          <Icon icon="lucide:alert-circle" width="13" />
+          <span>{{ form.errors.title }}</span>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT: LEFT CONTENT & RIGHT GOVERNANCE ROUTING -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+        
+        <!-- LEFT COLUMN (7 COLS): JUSTIFICATION, QUICK MINUTING, ATTACHMENTS -->
+        <div class="lg:col-span-7 space-y-6">
+
+          <!-- CONTENT FORMAT SUB-SWITCHER -->
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Submission Content</span>
+            <div class="bg-gray-100 p-1 rounded-xl flex items-center gap-1 border border-gray-200/80">
+              <button
+                type="button"
+                @click="activeButton('')"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                :class="buttonSwitch === 1 ? 'bg-white shadow-2xs text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-700'"
+              >
+                <Icon icon="lucide:layers" width="13" />
+                <span>Memo + Attachments</span>
+              </button>
+              <button
+                type="button"
+                @click="activeButton('text_only')"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                :class="buttonSwitch === 3 ? 'bg-white shadow-2xs text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-700'"
+              >
+                <Icon icon="lucide:file-text" width="13" />
+                <span>Memo Only</span>
+              </button>
+              <button
+                type="button"
+                @click="activeButton('document_only')"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                :class="buttonSwitch === 2 ? 'bg-white shadow-2xs text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-700'"
+              >
+                <Icon icon="lucide:paperclip" width="13" />
+                <span>Documents Only</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION: MEMO / PARTICULARS & JUSTIFICATION -->
+          <div v-show="buttonSwitch !== 2" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-gray-800 font-bold text-sm">
+                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <Icon :icon="assignmentType === 'workflow' ? 'lucide:feather' : 'lucide:message-square'" width="15" />
+                </div>
+                <h3>{{ assignmentType === 'workflow' ? 'Particulars & Statutory Justification' : 'Directive Details & Instructions' }}</h3>
+              </div>
+              <span class="text-[11px] text-gray-400">Civil Service standard minuting</span>
+            </div>
+
+            <!-- QUICK MINUTING PRESETS -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <Icon icon="lucide:sparkles" class="text-amber-500" width="13" />
+                <span>Quick Standard Minuting Assist (click to insert):</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  v-for="(preset, i) in (assignmentType === 'workflow' ? applicationMemos : assignmentDirectives)"
+                  :key="i"
+                  @click="applyDirectivePreset(preset)"
+                  class="text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer text-left font-medium flex items-center gap-1.5"
+                  :class="form.description.includes(preset)
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold shadow-2xs'
+                    : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600 hover:border-gray-300'"
+                >
+                  <Icon :icon="form.description.includes(preset) ? 'lucide:check' : 'lucide:plus'" width="12" class="shrink-0" />
+                  <span class="truncate max-w-[280px]">{{ preset }}</span>
+                </button>
+              </div>
+            </div>
+
+            <textarea
+              v-model="form.description"
+              rows="6"
+              :placeholder="assignmentType === 'workflow' ? 'State the grounds, justification, handover particulars, and official remarks for this application...' : 'State the full scope, reference numbers, and instructions for this directive...'"
+              class="w-full p-4 text-sm text-gray-800 bg-gray-50/80 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all resize-y shadow-inner leading-relaxed font-sans"
+            ></textarea>
+            <div v-if="form.errors.description" class="text-rose-500 text-xs font-medium">{{ form.errors.description }}</div>
+          </div>
+
+          <!-- SECTION: ATTACHED DOCUMENTS & STATUTORY EVIDENCE -->
+          <div v-show="buttonSwitch !== 3" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-4">
+            
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-gray-800 font-bold text-sm">
+                <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                  <Icon icon="lucide:paperclip" width="15" />
+                </div>
+                <h3>Attached Documents & Statutory Evidence</h3>
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">
+                  {{ allAttachedDocs.length }} {{ allAttachedDocs.length === 1 ? 'file' : 'files' }}
+                </span>
+              </div>
+
+              <!-- Extra upload trigger button if in template mode -->
+              <button
+                v-if="assignmentType === 'workflow' && attachedTemplate && docSourceMode === 'template'"
+                type="button"
+                @click="getFile"
+                class="flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-slate-300"
+              >
+                <Icon icon="lucide:paperclip" width="13" />
+                <span>+ Upload Extra File</span>
+              </button>
+              <button
+                v-else
+                type="button"
+                @click="getFile"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-all cursor-pointer border border-indigo-200/60"
+              >
+                <Icon icon="lucide:plus" width="14" />
+                <span>Upload Document</span>
               </button>
             </div>
 
-            <button class="flex gap-1 items-center text-gray-400 rounded-lg py-1 px-4"
-              @click="activeButton('text_only')" :class="{ activeButton: buttonSwitch === 3 }">
-              <p>Text Only</p>
-            </button>
+            <!-- OPTION SWITCHER: USE TEMPLATE VS UPLOAD DOCUMENT (When template is attached) -->
+            <div v-if="assignmentType === 'workflow' && attachedTemplate" class="p-1 bg-slate-100/90 rounded-xl flex items-center gap-1 border border-slate-200/90">
+              <button
+                type="button"
+                @click="docSourceMode = 'template'"
+                class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                :class="docSourceMode === 'template'
+                  ? 'bg-white text-emerald-800 shadow-2xs border border-emerald-300 font-extrabold'
+                  : 'text-slate-600 hover:text-slate-800'"
+              >
+                <Icon icon="lucide:stamp" class="text-emerald-600" width="15" />
+                <span>Use Official Template</span>
+                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Attached</span>
+              </button>
+              <button
+                type="button"
+                @click="docSourceMode = 'upload'"
+                class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                :class="docSourceMode === 'upload'
+                  ? 'bg-white text-indigo-800 shadow-2xs border border-indigo-300 font-extrabold'
+                  : 'text-slate-600 hover:text-slate-800'"
+              >
+                <Icon icon="lucide:upload-cloud" class="text-indigo-600" width="15" />
+                <span>Upload Document</span>
+              </button>
+            </div>
+
+            <!-- MODE 1: OFFICIAL TEMPLATE PRESENTATION -->
+            <div v-if="assignmentType === 'workflow' && attachedTemplate && docSourceMode === 'template'" class="space-y-3">
+              
+              <!-- State A: Form not generated yet -->
+              <div v-if="!generatedTemplateDoc" class="bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50 border border-emerald-200/90 rounded-2xl p-5 shadow-2xs space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-emerald-600/20 shadow-sm shrink-0">
+                      <Icon icon="lucide:file-signature" width="20" />
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-xs font-bold text-gray-900 leading-snug">{{ attachedTemplate.title }}</h4>
+                        <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded uppercase">Statutory Form</span>
+                      </div>
+                      <p class="text-[11px] text-gray-500 mt-0.5">Civil Service standardized form pre-configured for this application.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white/95 rounded-xl border border-emerald-100 text-xs text-gray-600 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <Icon icon="lucide:sparkles" class="text-amber-500 shrink-0" width="14" />
+                    <span>Auto-populates with your officer name, service file number, and directorate.</span>
+                  </div>
+                  <span class="text-[10px] text-emerald-700 font-semibold shrink-0">Ready to complete</span>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    @click="openTemplateFillModal"
+                    class="flex-1 py-2 px-4 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Icon icon="lucide:pencil-line" width="14" />
+                    <span>Fill & Attach Official Form</span>
+                  </button>
+                  <button
+                    type="button"
+                    @click="openBlankTemplatePreview"
+                    class="py-2 px-3 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-xl border border-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Icon icon="lucide:eye" width="14" />
+                    <span>Preview Template</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- State B: Form has been generated and attached -->
+              <div v-else class="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-400/80 rounded-2xl p-4 shadow-2xs space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <Icon icon="lucide:check-circle-2" width="19" />
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-extrabold text-emerald-950 truncate">{{ generatedTemplateDoc.original_name }}</span>
+                        <span class="text-[9px] bg-emerald-200/80 text-emerald-900 font-bold px-1.5 py-0.2 rounded shrink-0">Attached Form</span>
+                      </div>
+                      <p class="text-[11px] text-emerald-700">Official statutory docket generated ({{ generatedTemplateDoc.size }})</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      @click="openGeneratedPreview"
+                      class="px-2.5 py-1.5 text-xs font-bold bg-white text-emerald-700 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                    >
+                      <Icon icon="lucide:eye" width="13" />
+                      <span>Preview</span>
+                    </button>
+                    <button
+                      type="button"
+                      @click="openTemplateFillModal"
+                      class="px-2.5 py-1.5 text-xs font-bold bg-white text-gray-700 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                    >
+                      <Icon icon="lucide:edit-3" width="13" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      @click="removeGeneratedTemplateDoc"
+                      class="w-7 h-7 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                      title="Remove Form"
+                    >
+                      <Icon icon="lucide:trash-2" width="14" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- MODE 2: UPLOAD DROPZONE -->
+            <div
+              v-if="!(assignmentType === 'workflow' && attachedTemplate && docSourceMode === 'template')"
+              @click="getFile"
+              class="border-2 border-dashed border-gray-200 hover:border-indigo-400 bg-slate-50/60 hover:bg-indigo-50/30 rounded-2xl p-6 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
+            >
+              <div class="w-11 h-11 rounded-2xl bg-white shadow-xs border border-gray-200/80 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform mb-2">
+                <Icon icon="lucide:upload-cloud" width="22" />
+              </div>
+              <p class="text-xs font-bold text-gray-700">Click to upload or drag & drop documents</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">Supports PDF, DOCX, Scanned JPG/PNG up to 10MB per file</p>
+            </div>
+
+            <!-- UNIFIED ATTACHED DOCUMENTS LIST -->
+            <div v-if="allAttachedDocs.length > 0" class="space-y-2 pt-1">
+              <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Dockets & Files in Submission Dossier ({{ allAttachedDocs.length }}):</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                  v-for="(file, index) in allAttachedDocs"
+                  :key="index"
+                  class="border rounded-xl p-3 flex items-center justify-between gap-3 group transition-all shadow-2xs"
+                  :class="file.is_template_generated ? 'bg-emerald-50/50 border-emerald-200 hover:bg-white hover:border-emerald-300' : 'bg-gray-50 border-gray-200/80 hover:border-indigo-300 hover:bg-white'"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                      <Icon v-if="file.is_template_generated" icon="lucide:file-signature" class="text-emerald-600" width="22" />
+                      <img v-else-if="isImage(file)" :src="getFileURL(file)" class="w-full h-full object-cover" />
+                      <Icon v-else-if="isPDF(file)" icon="vscode-icons:file-type-pdf2" width="22" />
+                      <Icon v-else icon="lucide:file-text" class="text-indigo-600" width="20" />
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-bold text-gray-800 truncate" :title="file.original_name || file.name || file.file_name">
+                          {{ file.original_name || file.name || file.file_name }}
+                        </p>
+                      </div>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <span v-if="file.is_template_generated" class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1 py-0.2 rounded">
+                          Official Form
+                        </span>
+                        <span v-else class="text-[9px] bg-indigo-50 text-indigo-700 font-medium px-1 py-0.2 rounded">
+                          Uploaded
+                        </span>
+                        <span class="text-[10px] text-gray-400">{{ formatSize(file.size) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      @click.stop="openPreview(file)"
+                      class="w-7 h-7 rounded-lg hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
+                      title="Preview Document"
+                    >
+                      <Icon icon="lucide:eye" width="14" />
+                    </button>
+                    <button
+                      type="button"
+                      @click.stop="removeAttachedDoc(file, index)"
+                      class="w-7 h-7 rounded-lg hover:bg-rose-50 text-gray-400 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+                      title="Remove File"
+                    >
+                      <Icon icon="lucide:trash-2" width="14" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center gap-14">
-            <div class="flex items-center gap-3">
-              <Icon icon="lucide:users" />
-              <p>Assign To (optional)</p>
-            </div>
-
-            <!-- <div class="relative" v-if="toggleRecipient">
-            <input v-model="search" type="text"
-              class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-              placeholder="Search department / staff" @input="filterRecipients" />
-
-            <div
-              class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-              v-if="users && users.length > 0">
-              <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                <div class=" flex items-center gap-3 " v-if="search_type =='unit'">
-                  <img :src="page.props.base + '/' + suggestion.profile_image" alt="" class="w-8 h-8 rounded-full" />
-                  <p class="text-sm w-fit text-black font-semibold">{{
-                  (suggestion.first_name + " " + suggestion.last_name).length > 15
-                    ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                    : suggestion.first_name + " " + suggestion.last_name
-                }}</p>
-                </div>
-
-                <div class=" flex items-center gap-3 " v-else>
-                  <img :src="page.props.base + '/'" alt="" class="w-8 h-8 rounded-full" />
-                  <p class="text-sm w-fit text-black font-semibold">
-                {{ suggestion.title }}
-                </p>
-                </div>
-
-                <div>
-                  <p>{{ suggestion.email }}</p>
-                </div>
+        <!-- RIGHT COLUMN (5 COLS): GOVERNANCE, ROUTING & SECURITY SEAL -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <div class="bg-gradient-to-b from-slate-50 to-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
+            
+            <div class="flex items-center justify-between border-b border-gray-200/80 pb-3">
+              <div class="flex items-center gap-2">
+                <Icon icon="lucide:shield-check" class="text-emerald-600" width="18" />
+                <h3 class="font-bold text-gray-900 text-sm">
+                  {{ assignmentType === 'workflow' ? 'Institutional Routing & Lifecycle' : 'Directive Delegation Parameters' }}
+                </h3>
               </div>
-            </div>
-          </div> -->
-
-            <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" v-if="!is_dropdown"
-              @click="setIsDropdown">
-              <p>Set assignee</p>
-              <Icon icon="lucide:plus" />
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase"
+                    :class="assignmentType === 'workflow' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'">
+                {{ assignmentType === 'workflow' ? 'Statutory' : 'Directive' }}
+              </span>
             </div>
 
-            <div v-if="is_dropdown" class="flex items-center flex-wrap gap-2">
-              <div v-for="user in selectedUsers"
-                class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300">
-                <img v-if="!search_type" :src="page.props.base + '/' + user.profile_image" alt="" class="w-5 h-5 rounded-full" />
-                <img v-else :src="getImageForGroup(user)" alt="" class="w-5 h-5 rounded-full" />
-                <p class="text-xs w-fit" v-if="!search_type">{{ user.first_name + ' ' + user.last_name }}</p>
-                <p class="text-xs w-fit" v-else>{{ user.title }}</p>
-                <div class="bg-white border rounded-full p-0.5 text-sm">
-                  <Icon icon="clarity:times-line" class="cursor-pointer" @click="removeUser(user)" />
+            <!-- 1. OFFICIAL APPLICATION / REQUEST SELECTION -->
+            <div v-if="assignmentType === 'workflow'" class="space-y-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon icon="lucide:file-text" class="text-emerald-600" width="14" />
+                  <span>Application / Request Type</span>
+                  <span class="text-rose-500">*</span>
+                </label>
+
+                <div class="relative">
+                  <select
+                    v-model="form.workflow_version_id"
+                    class="w-full bg-white border border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-gray-800 outline-none transition-all shadow-2xs appearance-none pr-9 cursor-pointer"
+                  >
+                    <option value="" disabled>Select request type (Leave, DTA, Welfare, Confirmation)...</option>
+                    <option v-for="wf in workflowsList" :key="wf.id" :value="wf.id">
+                      {{ formatApplicationOption(wf) }}
+                    </option>
+                  </select>
+                  <Icon icon="lucide:chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" width="16" />
                 </div>
               </div>
 
-              <div class="relative">
-                <input v-model="search" type="text"
-                  class="border border-primary px-4 py-2 rounded-md outline-none text-gray-700"
-                  placeholder="Search department / staff" @focus="clickOutside = false" @input="filterRecipients" />
+              <!-- APPLICATION REVIEW & CLEARANCE PATHWAY -->
+              <div v-if="workflowSteps && workflowSteps.length > 0" class="bg-white rounded-xl border border-emerald-200/80 p-3.5 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1">
+                    <Icon icon="lucide:git-commit" width="14" class="text-emerald-600" />
+                    <span>Application Clearance Pathway ({{ workflowSteps.length }} Stages)</span>
+                  </span>
+                  <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200/60">
+                    Official Channel
+                  </span>
+                </div>
 
-                <div ref="pop_up"
-                  class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                  v-if="branch && branch.length > 0 && !is_dropwdown_blur && !clickOutside && search_type">
-                  <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                    v-for="(suggestion, index) in branch" :key="index" @click="updateUsers(suggestion)">
-                    <div class=" flex items-center gap-3 ">
-                      <img  :src="getImageForGroup(suggestion)" alt=""
-                        class="w-8 h-8 rounded-full" />
-                      <p class="text-sm w-fit text-black font-semibold">
-                        {{ suggestion.title }}
+                <div class="relative pl-4 space-y-2.5 before:content-[''] before:absolute before:left-1.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-200">
+                  <div
+                    v-for="(step, idx) in workflowSteps"
+                    :key="step.id"
+                    class="relative flex items-start gap-2.5 text-left"
+                  >
+                    <div
+                      class="w-3.5 h-3.5 rounded-full border-2 bg-white flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+                      :class="idx === 0 ? 'border-emerald-600 bg-emerald-600 ring-2 ring-emerald-100' : 'border-gray-300'"
+                    >
+                      <div v-if="idx === 0" class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <p class="text-xs font-bold leading-tight" :class="idx === 0 ? 'text-emerald-900' : 'text-gray-700'">
+                          {{ step.name }}
+                        </p>
+                        <span v-if="idx === 0" class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
+                          You (Applicant / Initiator)
+                        </span>
+                      </div>
+                      <p v-if="step.role_required" class="text-[10px] text-gray-400 capitalize">
+                        Clearing Authority: {{ step.role_required }}
                       </p>
                     </div>
-
-                    <div>
-                      <!-- <p>{{ suggestion.email }}</p> -->
-                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div ref="pop_up"
-                  class="border border-solid py-3 bg-white max-h-[300px] overflow-y-auto rounded-md absolute z-50 w-[300px] shadow-xl mt-2"
-                  v-if="users && users.length > 0 && !is_dropwdown_blur && !clickOutside && !search_type">
-                  <div class="flex items-center p-2 px-3  justify-between hover:bg-[#f8f8f9]"
-                    v-for="(suggestion, index) in users" :key="index" @click="updateUsers(suggestion)">
-                    <div class=" flex items-center gap-3 ">
-                      <img  :src="page.props.base + '/' + suggestion.profile_image" alt=""
-                        class="w-8 h-8 rounded-full" />
-                      <p class="text-sm w-fit text-black font-semibold">{{
-                        (suggestion.first_name + " " + suggestion.last_name).length > 15
-                          ? `${(suggestion.first_name + " " + suggestion.last_name).substring(0, 15)}..`
-                          : suggestion.first_name + " " + suggestion.last_name
-                        }}</p>
-                      
-                    </div>
-
-                    <div>
-                      <p>{{ suggestion.email }}</p>
-                    </div>
-                  </div>
+              <!-- PROTOCOL ASSURANCE BADGE -->
+              <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/90 rounded-xl p-3.5 flex items-start gap-3">
+                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                  <Icon icon="lucide:shield-check" width="16" />
                 </div>
-
-              </div>
-            </div>
-          </div>
-          <div v-if="form.errors.users" class=" text-red-400">{{ form.errors.users }}</div>
-
-
-          <div class="flex items-center gap-14 mt-5">
-            <div class="flex items-center gap-3">
-              <Icon icon="lucide:calendar" />
-              <p>Due date</p>
-            </div>
-            <div class="relative" v-if="!form.due_date">
-              <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2">
-                <p>Set deadline</p>
-                <Icon icon="lucide:plus" />
-              </div>
-              <div class="absolute top-0 opacity-0">
-                <Calendar v-model="form.due_date" :minDate="minDate" dateFormat="yy-mm-dd" showIcon />
-              </div>
-            </div>
-
-            <div
-              class="flex items-center gap-2 h-fit bg-[#f8f8f9] p-2 py-1 rounded-3xl border border-solid border-gray-300"
-              v-else>
-              <p class="text-xs w-fit">{{ formattedDate }}</p>
-              <div class="bg-white border rounded-full p-0.5 text-sm">
-                <Icon icon="clarity:times-line" class="cursor-pointer" @click="form.due_date = null" />
-              </div>
-            </div>
-          </div>
-          <div v-if="form.errors.due_date" class=" text-red-400">{{ form.errors.due_date }}</div>
-
-          <div class="flex items-center gap-24 mt-5">
-            <div class="flex items-center gap-3">
-              <Icon icon="lucide:calendar" />
-              <p>Priority</p>
-            </div>
-            <div class="relative" v-if="!priority">
-              <div class="flex bg-slate-50 py-1.5 px-3 rounded-2xl items-center gap-2" @click="select_Priority = true">
-                <Icon icon="lucide:plus" />
-                <p>Set Priority</p>
-              </div>
-
-              <div class="z-50 absolute top-12 bg-white border flex items-center gap-5 p-5 rounded-xl shadow-lg"
-                v-if="select_Priority">
-                <div v-for="(priority, index) in Priorities" :key="index" class=" " @click="updatePriority(priority)">
-                  <p class="bg-[#FEFBF6] px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-                    color:
-                      priority === 'Low'
-                        ? '#FFBC53'
-                        : priority === 'High'
-                          ? '#FF3737'
-                          : priority === 'Medium'
-                            ? '#F67E5A'
-                            : 'black',
-                  }">
-                    {{ priority }}
+                <div class="text-xs text-emerald-950 leading-relaxed">
+                  <p class="font-bold">Official Civil Service Protocol</p>
+                  <p class="text-[11px] text-emerald-800 mt-0.5">
+                    Upon entering your digital signature PIN, this application is transmitted directly along the clearance pathway to your <strong>Departmental Director</strong> for official review & recommendation. No downward assignment needed.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div class="bg-[#FEFBF6]  flex items-center gap-3 px-5 py-1.5 rounded-3xl cursor-pointer" :style="{
-              color:
-                priority === 'Low'
-                  ? '#FFBC53'
-                  : priority === 'High'
-                    ? '#FF3737'
-                    : priority === 'Medium'
-                      ? '#F67E5A'
-                      : 'black',
-            }" v-else>
-              <p class="text-xs w-fit">{{ priority }}</p>
-              <div class="">
-                <Icon icon="clarity:times-line" class="cursor-pointer" @click="priority = ''" />
-              </div>
-            </div>
-          </div>
-          <div v-if="form.errors.priority" class=" text-red-400">{{ form.errors.priority }}</div>
+            <!-- 2. DIRECTIVE ASSIGNEES (IF CUSTOM DIRECTIVE) -->
+            <div v-else class="space-y-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon icon="lucide:users" class="text-blue-600" width="14" />
+                  <span>Assign To Desk Officers / Staff</span>
+                  <span class="text-gray-400 font-normal text-[11px]">(optional)</span>
+                </label>
 
-          <div class=" mt-5 " :class="{ 'hidden': buttonSwitch === 2 }">
-            <div class="flex items-center gap-3">
-              <Icon icon="lucide:file-text" />
-              <p>Task Description</p>
-            </div>
-
-            <textarea v-model="form.description" id="" cols="30" rows="5"
-              class=" bg-slate-50 outline-none mt-5 resize-none p-5 rounded-md w-full ">
-        </textarea>
-          </div>
-
-          <div class=" mt-5" :class="{ 'hidden': buttonSwitch === 3 }">
-            <div class=" flex items-center gap-3">
-              <Icon icon="grommet-icons:attachment" width="20" />
-              <p>Attached Document</p>
-            </div>
-
-            <div class="w-[70%] lg:w-[100%] mt-3  gap-4 flex items-center flex-wrap ">
-
-
-              <!-- <div class="border  p-3 rounded-md">
-              <div class="flex justify-between">
-                <div class="flex items-center gap-1 justify-center">
-                  <img :src="'../../../assets/images/file.svg'" alt="" class="w-7" />
-                  <div class="">
-                    <h1 class="text-[#1D2939]">Dmiye.pdf</h1>
-                    <div class="flex items-center gap-5">
-                      <p class="text-xs leading-7 text-[#667085]">60 KB of 120 KB.</p>
-                      <span class="flex items-center text-xs gap-1">
-                        <img :src="'../../../assets/images/loading.svg'" alt="" /> Uploading...
+                <MultiSelect
+                  v-model="selectedUsers"
+                  :options="usersList"
+                  optionLabel="display_name"
+                  placeholder="Search desk officers by name, role or unit..."
+                  :filter="true"
+                  display="chip"
+                  :pt="{
+                    root: { class: 'w-full text-left bg-white border border-gray-300 rounded-xl hover:border-blue-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all outline-none flex items-center justify-between p-1' },
+                    label: { class: 'py-1.5 px-2 text-xs flex-1' },
+                    trigger: { class: 'w-8 flex items-center justify-center text-gray-400' },
+                    panel: { class: 'bg-white shadow-2xl rounded-2xl border border-gray-200 mt-2 p-1 overflow-hidden z-50' },
+                    header: { class: 'p-2 border-b border-gray-100 flex items-center justify-between gap-2' },
+                    filterInput: { class: 'w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-blue-400 outline-none' },
+                    wrapper: { class: 'max-h-[220px] overflow-auto py-1' },
+                    item: ({ context }) => ({ class: ['px-3 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2.5 rounded-lg mx-1 cursor-pointer text-xs', context.selected ? 'bg-blue-50 text-blue-900 font-semibold' : ''] }),
+                  }"
+                  @change="updateUsersMultiSelect"
+                >
+                  <template #option="slotProps">
+                    <div class="flex items-center justify-between w-full gap-2">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <img :src="getImageForGroup(slotProps.option)" class="w-6 h-6 rounded-full object-cover shrink-0" />
+                        <div class="min-w-0">
+                          <p class="font-bold truncate text-gray-800">{{ slotProps.option.display_name }}</p>
+                          <p v-if="slotProps.option.email" class="text-[10px] text-gray-400 truncate">{{ slotProps.option.email }}</p>
+                        </div>
+                      </div>
+                      <span v-if="slotProps.option.is_on_leave == 1" class="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                        On Leave
                       </span>
                     </div>
-                  </div>
-                </div>
-                <div>
-                  <i class="pi pi-times-circle cursor-pointer text-[#1D2939]"></i>
-                </div>
-              </div>
-              
-
-              <div class="w-full h-2 bg-slate-200 mt-2 rounded-md overflow-hidden">
-                <div class="w-[50%] h-[100%] bg-primary"></div>
-              </div>
-            </div> -->
-
-
-              <div class=" w-1/3 border  p-2 rounded-md" v-for="(file, index) in files" :key="index">
-                <!-- Uploading File Content -->
-                <div class="mb-1 flex justify-between items-center">
-                  <div class="flex items-center gap-x-3">
-                    <span class="w-8 h-8 flex justify-center items-center text-gray-500">
-                      <!-- <svg width="42" height="43" viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M31.6313 3.2207L38.934 10.8332V39.7817H11.6537V39.8762H39.0272V10.929L31.6313 3.2207Z" fill="#909090"/>
-                        <path d="M31.5407 3.125H11.5605V39.7805H38.934V10.8333L31.5407 3.125Z" fill="#F4F4F4"/>
-                        <path d="M11.3597 5.09375H2.97281V14.0542H29.3541V5.09375H11.3597Z" fill="#7A7B7C"/>
-                        <path d="M29.4945 13.9025H3.1434V4.93555H29.4945V13.9025Z" fill="#DD2025"/>
-                        <path d="M11.8807 6.44956H10.1652V12.7496H11.5145V10.6246L11.8124 10.6417C12.1019 10.6367 12.3887 10.5848 12.6616 10.4881C12.9009 10.4058 13.121 10.2759 13.3087 10.1062C13.4996 9.94451 13.6502 9.74047 13.7483 9.51031C13.88 9.12771 13.927 8.7211 13.8862 8.31856C13.878 8.031 13.8275 7.74621 13.7365 7.47331C13.6537 7.27631 13.5307 7.09872 13.3755 6.95185C13.2202 6.80497 13.0361 6.69202 12.8348 6.62019C12.6608 6.55718 12.481 6.51146 12.298 6.48369C12.1595 6.46231 12.0195 6.4509 11.8793 6.44956M11.6313 9.46044H11.5145V7.51794H11.7678C11.8796 7.50987 11.9918 7.52704 12.096 7.56816C12.2003 7.60927 12.294 7.6733 12.3702 7.7555C12.5281 7.96683 12.6125 8.22406 12.6104 8.48787C12.6104 8.81075 12.6104 9.10344 12.319 9.3095C12.1091 9.42495 11.8702 9.47825 11.6313 9.46044ZM16.4495 6.4325C16.3038 6.4325 16.162 6.443 16.0623 6.44694L15.7499 6.45481H14.7262V12.7548H15.931C16.3915 12.7674 16.8499 12.6894 17.2803 12.5251C17.6267 12.3877 17.9334 12.1663 18.1728 11.8807C18.4056 11.5925 18.5727 11.257 18.6623 10.8976C18.7655 10.4906 18.8158 10.0719 18.812 9.65206C18.8374 9.15614 18.7991 8.65901 18.6978 8.17287C18.6017 7.81504 18.4217 7.48524 18.1728 7.21081C17.9775 6.98921 17.7384 6.81046 17.4706 6.68581C17.2406 6.57939 16.9987 6.50095 16.75 6.45219C16.6511 6.43585 16.551 6.42838 16.4508 6.42987M16.2119 11.5972H16.0807V7.57569H16.0977C16.3683 7.54455 16.6421 7.59338 16.8852 7.71612C17.0633 7.8583 17.2084 8.03742 17.3105 8.24112C17.4207 8.4555 17.4842 8.69079 17.4968 8.9315C17.5087 9.22025 17.4968 9.4565 17.4968 9.65206C17.5022 9.87733 17.4877 10.1026 17.4535 10.3254C17.4131 10.554 17.3383 10.7753 17.2317 10.9816C17.1111 11.1735 16.9481 11.3351 16.7553 11.4541C16.5934 11.5589 16.4016 11.6077 16.2093 11.5932M22.8768 6.45481H19.6874V12.7548H21.0367V10.2558H22.7429V9.08506H21.0367V7.62556H22.8742V6.45481" fill="#464648"/>
-                        <path d="M28.5876 27.0852C28.5876 27.0852 32.7718 26.3266 32.7718 27.7559C32.7718 29.1852 30.1796 28.6038 28.5876 27.0852ZM25.494 27.1942C24.8292 27.341 24.1814 27.5561 23.5607 27.836L24.0857 26.6547C24.6107 25.4735 25.1554 23.863 25.1554 23.863C25.7819 24.9174 26.5108 25.9074 27.3315 26.8188C26.7126 26.9111 26.0991 27.0373 25.494 27.1968V27.1942ZM23.8376 18.6629C23.8376 17.4173 24.2406 17.0774 24.5543 17.0774C24.868 17.0774 25.221 17.2283 25.2328 18.3098C25.1306 19.3973 24.9029 20.4693 24.5543 21.5045C24.0767 20.6354 23.8295 19.6585 23.8363 18.6668L23.8376 18.6629ZM17.7358 32.4652C16.4522 31.6973 20.4278 29.3335 21.1483 29.2574C21.1444 29.2587 19.0798 33.2684 17.7358 32.4652ZM33.9938 27.9252C33.9806 27.794 33.8625 26.341 31.2769 26.4027C30.1992 26.3854 29.122 26.4613 28.0573 26.6298C27.0261 25.5908 26.138 24.4189 25.4166 23.1451C25.8711 21.8318 26.1461 20.4632 26.2343 19.0763C26.1962 17.5013 25.8195 16.5983 24.612 16.6115C23.4045 16.6246 23.2286 17.6812 23.3875 19.2535C23.543 20.3102 23.8365 21.3418 24.2603 22.3222C24.2603 22.3222 23.7025 24.0586 22.9648 25.7858C22.2272 27.5131 21.7232 28.4187 21.7232 28.4187C20.4405 28.8363 19.233 29.4566 18.1466 30.2562C17.0651 31.2629 16.6255 32.036 17.1951 32.809C17.686 33.4758 19.404 33.6267 20.9396 31.6147C21.7556 30.5754 22.501 29.4827 23.1709 28.3439C23.1709 28.3439 25.5124 27.7021 26.2408 27.5262C26.9693 27.3503 27.85 27.2112 27.85 27.2112C27.85 27.2112 29.988 29.3624 32.05 29.2863C34.1119 29.2102 34.0121 28.0538 33.999 27.9278" fill="#DD2025"/>
-                        <path d="M31.4397 3.22656V10.9349H38.833L31.4397 3.22656Z" fill="#909090"/>
-                        <path d="M31.5407 3.125V10.8333H38.934L31.5407 3.125Z" fill="#F4F4F4"/>
-                        <path d="M11.7796 6.34995H10.0642V12.65H11.4187V10.5263L11.718 10.5434C12.0075 10.5384 12.2942 10.4865 12.5671 10.3898C12.8064 10.3075 13.0265 10.1776 13.2142 10.0079C13.4037 9.84578 13.5529 9.64177 13.65 9.41201C13.7816 9.02942 13.8286 8.62281 13.7878 8.22026C13.7796 7.93271 13.7292 7.64791 13.6381 7.37501C13.5553 7.17802 13.4323 7.00043 13.2771 6.85355C13.1219 6.70667 12.9377 6.59372 12.7365 6.52189C12.5616 6.45827 12.3809 6.41211 12.197 6.38408C12.0585 6.3627 11.9185 6.35129 11.7783 6.34995M11.5303 9.36083H11.4135V7.41833H11.6681C11.7799 7.41026 11.8921 7.42743 11.9963 7.46855C12.1006 7.50967 12.1943 7.57369 12.2705 7.65589C12.4284 7.86722 12.5128 8.12446 12.5107 8.38826C12.5107 8.71114 12.5107 9.00383 12.2193 9.20989C12.0094 9.32534 11.7705 9.37732 11.5316 9.35951M16.3485 6.33289C16.2028 6.33289 16.061 6.34339 15.9613 6.34733L15.6528 6.3552H14.6291V12.6552H15.834C16.2944 12.6678 16.7529 12.5898 17.1832 12.4255C17.5296 12.2881 17.8363 12.0667 18.0757 11.7811C18.3085 11.4929 18.4756 11.1574 18.5653 10.798C18.6684 10.391 18.7187 9.97234 18.7149 9.55245C18.7404 9.05653 18.702 8.5594 18.6007 8.07326C18.5046 7.71543 18.3246 7.38564 18.0757 7.1112C17.8804 6.8896 17.6413 6.71085 17.3735 6.5862C17.1435 6.47978 16.9016 6.40134 16.653 6.35258C16.5541 6.33624 16.4539 6.32877 16.3537 6.33026M16.1148 11.4976H15.9836V7.47608H16.0006C16.2712 7.44494 16.545 7.49377 16.7881 7.61651C16.9662 7.75869 17.1113 7.93781 17.2134 8.14151C17.3236 8.35589 17.3871 8.59118 17.3998 8.83189C17.4116 9.12064 17.3998 9.35689 17.3998 9.55245C17.4051 9.77773 17.3906 10.003 17.3565 10.2258C17.316 10.4544 17.2412 10.6757 17.1346 10.882C17.014 11.0738 16.851 11.2355 16.6582 11.3545C16.4963 11.4592 16.3045 11.5081 16.1122 11.4936M22.7758 6.3552H19.5864V12.6552H20.9356V10.1562H22.6419V8.98545H20.9356V7.52595H22.7731V6.3552" fill="white"/>
-                        </svg> -->
-                      <div>
-                        <img :src="getFileURL(file)" class=" h-[42px] w-[43px] ml-3" alt="File Preview"
-                          style="max-width: 200px; max-height: 200px;" />
-                      </div>
-
-                    </span>
-                    <div class="ml-2">
-                      <p class="text-sm font-medium text-gray-800 dark:text-white">{{ file.name }}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-500 flex mt-1" v-if="form.progress">{{
-                        form.progress.loaded / 1024 }} KB of {{ formatSize(file.size) }}
-                      <div aria-label="Loading..." role="status" class="flex items-center space-x-2 ml-3">
-                        <svg class=" h-5 w-5 animate-spin stroke-gray-500" viewBox="0 0 256 256">
-                          <line x1="128" y1="32" x2="128" y2="64" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24"></line>
-                          <line x1="195.9" y1="60.1" x2="173.3" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24"></line>
-                          <line x1="224" y1="128" x2="192" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24">
-                          </line>
-                          <line x1="195.9" y1="195.9" x2="173.3" y2="173.3" stroke-linecap="round"
-                            stroke-linejoin="round" stroke-width="24"></line>
-                          <line x1="128" y1="224" x2="128" y2="192" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24">
-                          </line>
-                          <line x1="60.1" y1="195.9" x2="82.7" y2="173.3" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24"></line>
-                          <line x1="32" y1="128" x2="64" y2="128" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24"></line>
-                          <line x1="60.1" y1="60.1" x2="82.7" y2="82.7" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="24">
-                          </line>
-                        </svg>
-                        <span class="text-xs font-medium text-gray-500">Loading...</span>
-                      </div>
-                      </p>
-                    </div>
-                  </div>
-                  <svg v-if="form.progress" class=" absolute top-1 right-1 cursor-pointer h-[18px] w-[18px]"
-                    viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M11.25 6.75L6.75 11.25M6.75 6.75L11.25 11.25M16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z"
-                      stroke="#475467" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-
-                </div>
-                <!-- End Uploading File Content -->
-
-                <progress v-if="form.progress" :value="form.progress.percentage" max="100"
-                  class="w-full rounded-lg h-2">
-                  {{ form.progress.percentage }}%
-                </progress>
-                <!-- End Progress Bar -->
+                  </template>
+                </MultiSelect>
+                <div v-if="form.errors.users" class="text-rose-500 text-xs">{{ form.errors.users }}</div>
               </div>
 
-
-
-              <div class=" p-7 border-dashed border-[3px] rounded-md cursor-pointer" @click="getFile">
-                <Icon icon="lucide:plus" width="30" />
+              <!-- Parallel Step Splitting Option -->
+              <div
+                @click="form.allow_step_splitting = !form.allow_step_splitting"
+                class="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all cursor-pointer shadow-2xs"
+              >
+                <input
+                  type="checkbox"
+                  v-model="form.allow_step_splitting"
+                  class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                />
+                <div class="text-xs">
+                  <p class="font-bold text-gray-800">Allow Parallel Desk Splitting</p>
+                  <p class="text-[11px] text-gray-400">Multiple officers may treat in parallel dockets</p>
+                </div>
               </div>
             </div>
 
+            <!-- 3. DATE & PRIORITY CONTROLS -->
+            <div class="space-y-3 pt-1">
+              <!-- Effective / Due Date Executive Card -->
+              <div class="bg-white p-4 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Icon icon="lucide:calendar-clock" class="text-purple-600" width="16" />
+                    <span>{{ assignmentType === 'workflow' ? 'Effective Date / Handover' : 'Target Due Date' }}</span>
+                    <span class="text-rose-500">*</span>
+                  </label>
+                  <span v-if="humanFormattedDate" class="text-[11px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/70 flex items-center gap-1">
+                    <Icon icon="lucide:check-circle-2" width="12" class="text-purple-600" />
+                    {{ humanFormattedDate }}
+                  </span>
+                </div>
+
+                <div class="relative flex items-center">
+                  <div class="absolute left-3.5 text-gray-400 pointer-events-none flex items-center">
+                    <Icon icon="lucide:calendar" width="16" />
+                  </div>
+                  <input
+                    type="date"
+                    v-model="form.due_date"
+                    :min="todayIsoString"
+                    class="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-gray-800 outline-none transition-all cursor-pointer shadow-2xs"
+                  />
+                  <button
+                    v-if="form.due_date"
+                    type="button"
+                    @click="form.due_date = ''"
+                    class="absolute right-3 text-gray-400 hover:text-rose-500 transition-colors p-1 cursor-pointer"
+                    title="Clear date"
+                  >
+                    <Icon icon="lucide:x" width="14" />
+                  </button>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Quick Select:</span>
+                  <button
+                    type="button"
+                    @click="setQuickDate(0)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border"
+                    :class="form.due_date === todayIsoString ? 'bg-purple-600 text-white border-purple-600 shadow-2xs' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    @click="setQuickDate(3)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border"
+                    :class="form.due_date && form.due_date !== todayIsoString ? 'bg-purple-100 text-purple-800 border-purple-300 shadow-2xs' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
+                  >
+                    +3 Days (Casual Leave)
+                  </button>
+                  <button
+                    type="button"
+                    @click="setQuickDate(7)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                  >
+                    +1 Week
+                  </button>
+                  <button
+                    type="button"
+                    @click="setQuickDate(14)"
+                    class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                  >
+                    +2 Weeks
+                  </button>
+                </div>
+
+                <div v-if="form.errors.due_date" class="text-rose-500 text-xs font-semibold mt-1">
+                  {{ form.errors.due_date }}
+                </div>
+              </div>
+
+              <!-- Priority / Urgency Level Card -->
+              <div class="bg-white p-4 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Icon icon="lucide:flag" class="text-orange-500" width="15" />
+                    <span>Urgency / Priority Level</span>
+                  </label>
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded"
+                    :class="priority === 'High' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (priority === 'Medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 text-slate-700 border border-slate-200')">
+                    {{ priority }} Priority
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1.5 bg-gray-100/90 p-1 rounded-xl border border-gray-200/80">
+                  <button
+                    v-for="p in Priorities"
+                    :key="p"
+                    type="button"
+                    @click="updatePriority(p)"
+                    class="py-1.5 text-xs font-bold rounded-lg transition-all text-center cursor-pointer"
+                    :class="priority === p
+                      ? (p === 'High' ? 'bg-white text-rose-700 shadow-2xs border border-rose-200 font-extrabold' :
+                         p === 'Medium' ? 'bg-white text-amber-700 shadow-2xs border border-amber-200 font-extrabold' :
+                         'bg-white text-slate-800 shadow-2xs border border-slate-200 font-extrabold')
+                      : 'text-gray-500 hover:text-gray-800'"
+                  >
+                    {{ p }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. OFFICIAL DIGITAL SIGNATURE PIN SEAL -->
+            <div class="mt-2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 border border-slate-700/80 shadow-md relative overflow-hidden">
+              <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+
+              <div class="flex items-center gap-2.5 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:lock" width="15" />
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold tracking-tight text-white uppercase">
+                    {{ assignmentType === 'workflow' ? "Applicant's Digital Signature Seal" : "Supervisor's Digital Signature Seal" }}
+                  </h4>
+                  <p class="text-[10px] text-slate-300">Enter your 4-digit security PIN to seal and authorize</p>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-col items-center">
+                <div class="relative w-44">
+                  <input
+                    id="approval_pin"
+                    v-model="form.approval_pin"
+                    type="password"
+                    maxlength="4"
+                    placeholder="••••"
+                    autocomplete="off"
+                    class="w-full text-center tracking-[0.5em] text-xl font-bold bg-slate-800/90 text-emerald-300 border border-slate-600 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 rounded-xl py-2 outline-none transition-all placeholder:text-slate-500"
+                  />
+                  <Icon icon="lucide:shield-check" class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" width="16" />
+                </div>
+
+                <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1">
+                  <Icon icon="lucide:check-circle-2" class="text-emerald-400" width="12" />
+                  <span>Enforces Public Service cryptographic non-repudiation</span>
+                </p>
+                <div v-if="form.errors.approval_pin" class="text-rose-400 text-xs font-semibold mt-1">
+                  {{ form.errors.approval_pin }}
+                </div>
+              </div>
+            </div>
 
           </div>
 
-          <!-- <div class=" mt-5">
-               <p>Submission Type</p>
-
-               <div  v-for="(item,index) in type" :key="index" class=" flex mt-3 items-center gap-5">
-                   <input type="radio" v-model="selectedType" :value="index">
-                   <p class=" text-black font-semibold">{{ item }}</p>
-               </div>
-        </div> -->
         </div>
 
-      </section>
-    </section>
-    <div class="flex p-3 justify-end w-full">
-      <div class="flex gap-5 items-center px-5">
-        <!-- <Icon  icon="grommet-icons:attachment" :class="{ 'hidden': buttonSwitch === 3 }" width="25" @click="getFile" class=" cursor-pointer" />
-          <Icon icon="mingcute:delete-2-line" width="25" @click="closeModal" /> -->
-        <button class="p-2 border-[2px] border-solid rounded-md bg-white" @click="submit">
-          Create Task
+      </div>
+
+    </div>
+
+    <!-- 4. EXECUTIVE MODAL FOOTER -->
+    <div class="px-7 py-4 bg-slate-50 border-t border-gray-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-30">
+      <div class="flex items-center gap-2 text-xs text-gray-500">
+        <span class="w-2 h-2 rounded-full" :class="form.title && form.approval_pin ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'"></span>
+        <span v-if="assignmentType === 'workflow'">
+          {{ form.title && form.approval_pin ? 'Application ready for transmission along official chain of command' : 'Fill in subject & enter your signature PIN to submit' }}
+        </span>
+        <span v-else>
+          {{ form.title && form.approval_pin ? 'Directive ready for issuance' : 'Fill in title & signature PIN to issue directive' }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <button
+          type="button"
+          @click="closeModal"
+          :disabled="form.processing"
+          class="px-5 py-2.5 text-xs font-bold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all cursor-pointer disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          @click="submit"
+          :disabled="form.processing"
+          class="px-6 py-2.5 font-bold text-xs text-white rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          :class="assignmentType === 'workflow' 
+            ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-emerald-700/20' 
+            : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-blue-700/20'"
+        >
+          <Icon v-if="form.processing" icon="line-md:loading-twotone-loop" width="16" />
+          <Icon v-else :icon="assignmentType === 'workflow' ? 'lucide:send' : 'lucide:check-circle-2'" width="16" />
+          <span>
+            {{ form.processing 
+                ? (assignmentType === 'workflow' ? 'Transmitting Upward...' : 'Issuing Directive...') 
+                : (assignmentType === 'workflow' ? 'Submit Application Upward' : 'Issue Directive / Task') 
+            }}
+          </span>
         </button>
       </div>
+    </div>
+
+  </Dialog>
+
+  <!-- Document Preview Modal -->
+  <Dialog
+    v-model:visible="previewVisible"
+    header="Document Evidence Preview"
+    modal
+    :style="{ width: '52rem' }"
+    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+  >
+    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-2xl min-h-[420px]">
+      <img v-if="previewFile && isImage(previewFile)" :src="previewFileUrl" class="max-w-full max-h-[600px] object-contain shadow-md rounded-xl" />
+      <object v-else-if="previewFile && isPDF(previewFile)" :data="previewFileUrl" type="application/pdf" width="100%" height="600px" class="rounded-xl shadow-md">
+        <p class="text-sm text-gray-600">PDF preview is not available in your browser. <a :href="previewFileUrl" target="_blank" class="text-primary font-bold">Download it here</a>.</p>
+      </object>
+      <div v-else class="text-center text-gray-500">
+        <Icon icon="ph:file-x" width="64" class="mx-auto mb-4 text-gray-300" />
+        <p class="font-medium text-sm">Preview is not available for this file type.</p>
+        <p class="text-xs text-gray-400 mt-1">{{ previewFile?.name }}</p>
+      </div>
+    </div>
+  </Dialog>
+
+  <!-- Fill & Generate Official Template Dialog -->
+  <Dialog
+    v-model:visible="templateDialogVisible"
+    header="Fill Official Application Form"
+    modal
+    :style="{ width: '68rem' }"
+    :breakpoints="{ '1280px': '85vw', '960px': '92vw', '640px': '96vw' }"
+  >
+    <div class="space-y-4 p-1">
+      
+      <!-- Sub-header bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+            <Icon icon="lucide:stamp" width="16" />
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-gray-900">{{ attachedTemplate?.title }}</h4>
+            <p class="text-[10px] text-gray-500">PSR Standard Format • Civil Service Statutory Docket</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider self-start sm:self-auto">
+          Official Government Form
+        </span>
+      </div>
+
+      <!-- Split: Form Inputs on Left, Live Document Preview on Right -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- Left: Form Input Particulars (6 cols) -->
+        <div class="lg:col-span-6 space-y-3.5 max-h-[580px] overflow-y-auto pr-1">
+          
+          <!-- Officer Pre-filled Credentials -->
+          <div class="bg-gray-50/90 p-3.5 rounded-xl border border-gray-200/90 space-y-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+              <Icon icon="lucide:user-check" class="text-emerald-600" width="13" />
+              <span>Officer Particulars (Pre-filled from Profile)</span>
+            </span>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-white p-2 rounded-lg border border-gray-200/80">
+                <span class="text-[10px] text-gray-400 block font-medium">Applicant:</span>
+                <span class="font-bold text-gray-800 text-[11px] truncate block">{{ currentUserName }}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border border-gray-200/80">
+                <span class="text-[10px] text-gray-400 block font-medium">Service / IPPIS No:</span>
+                <span class="font-bold text-gray-800 text-[11px] truncate block">{{ templateFormFields.file_number }}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border border-gray-200/80">
+                <span class="text-[10px] text-gray-400 block font-medium">Directorate:</span>
+                <span class="font-bold text-gray-800 text-[11px] truncate block">{{ templateFormFields.department_name }}</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border border-gray-200/80">
+                <span class="text-[10px] text-gray-400 block font-medium">Designation / GL:</span>
+                <span class="font-bold text-gray-800 text-[11px] truncate block">{{ templateFormFields.designation }} (GL {{ templateFormFields.grade_level }})</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leave Application Specific Inputs -->
+          <div v-if="isLeaveApplication" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">
+                  {{ isAnnualLeave ? 'Leave Entitlement (Calendar Days)' : 'Duration (Working Days)' }}
+                </label>
+                <input
+                  v-model="templateFormFields.number_of_days"
+                  type="text"
+                  placeholder="e.g. 3"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Relieving Officer</label>
+                <input
+                  v-model="templateFormFields.relieving_officer"
+                  type="text"
+                  placeholder="e.g. Mr. Audu Yakubu (GL 10)"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Start / Departure Date</label>
+                <input
+                  v-model="templateFormFields.start_date"
+                  type="date"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Resumption / End Date</label>
+                <input
+                  v-model="templateFormFields.end_date"
+                  type="date"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Grounds / Reason for Leave</label>
+              <textarea
+                v-model="templateFormFields.grounds"
+                rows="3"
+                placeholder="State the official grounds and justification for this leave application..."
+                class="w-full p-3 text-xs bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 resize-y"
+              ></textarea>
+            </div>
+
+            <div v-if="isAnnualLeave">
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Leave Address & Contact Phone</label>
+              <input
+                v-model="templateFormFields.contact_address"
+                type="text"
+                placeholder="e.g. Plot 14, Gwarinpa Estate, Abuja / 0803 123 4567"
+                class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+              />
+            </div>
+          </div>
+
+          <!-- DTA Application Specific Inputs -->
+          <div v-else-if="isDtaApplication" class="space-y-3">
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Destination / Duty Station</label>
+              <input
+                v-model="templateFormFields.destination"
+                type="text"
+                placeholder="e.g. Lagos State Treasury Liaison Office, Marina"
+                class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Departure Date</label>
+                <input
+                  v-model="templateFormFields.departure_date"
+                  type="date"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Return Date</label>
+                <input
+                  v-model="templateFormFields.return_date"
+                  type="date"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Number of Tour Days</label>
+                <input
+                  v-model="templateFormFields.number_of_days"
+                  type="text"
+                  placeholder="e.g. 4"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Estimated DTA Amount (₦)</label>
+                <input
+                  v-model="templateFormFields.total_dta_amount"
+                  type="text"
+                  placeholder="e.g. ₦185,000.00"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Purpose of Official Tour</label>
+              <textarea
+                v-model="templateFormFields.purpose_of_tour"
+                rows="3"
+                placeholder="State the official mission, terms of reference, and expected deliverables..."
+                class="w-full p-3 text-xs bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Vehicle Requisition Specific Inputs -->
+          <div v-else-if="isVehicleApplication" class="space-y-3">
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Destination / Route</label>
+              <input
+                v-model="templateFormFields.destination"
+                type="text"
+                placeholder="e.g. Federal Ministry of Finance / National Assembly Complex"
+                class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Departure Time</label>
+                <input
+                  v-model="templateFormFields.departure_time"
+                  type="text"
+                  placeholder="e.g. 09:30 AM"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-gray-700 block mb-1">Expected Return</label>
+                <input
+                  v-model="templateFormFields.expected_return"
+                  type="text"
+                  placeholder="e.g. 02:00 PM"
+                  class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Number of Passengers / Officials</label>
+              <input
+                v-model="templateFormFields.number_of_passengers"
+                type="text"
+                placeholder="e.g. 3 Officers"
+                class="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50"
+              />
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Official Purpose</label>
+              <textarea
+                v-model="templateFormFields.official_purpose"
+                rows="3"
+                placeholder="Specify the official assignment requiring vehicle dispatch..."
+                class="w-full p-3 text-xs bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Generic Fallback Inputs -->
+          <div v-else class="space-y-3">
+            <div>
+              <label class="text-[11px] font-bold text-gray-700 block mb-1">Grounds & Remarks</label>
+              <textarea
+                v-model="templateFormFields.grounds"
+                rows="4"
+                placeholder="State the remarks and particulars for this document..."
+                class="w-full p-3 text-xs bg-white border border-gray-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Live Hydrated Document Preview (6 cols) -->
+        <div class="lg:col-span-6 space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-gray-500 px-1">
+            <span class="flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+              <Icon icon="lucide:eye" class="text-emerald-600" width="13" />
+              <span>Live Statutory Document Preview</span>
+            </span>
+            <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+              Updates in real-time
+            </span>
+          </div>
+
+          <div class="bg-slate-100 p-3 rounded-2xl border border-slate-300/80 shadow-inner max-h-[580px] overflow-y-auto">
+            <div class="bg-white p-5 rounded-xl shadow border border-gray-200/90 text-slate-800 text-xs font-sans leading-relaxed scale-[0.98] origin-top" v-html="hydratedLiveHtml"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex items-center justify-between pt-3 border-t border-gray-200 mt-2">
+        <button
+          type="button"
+          @click="templateDialogVisible = false"
+          class="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          @click="generateTemplatePdf"
+          :disabled="isGeneratingPdf"
+          class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+        >
+          <Icon v-if="isGeneratingPdf" icon="line-md:loading-twotone-loop" width="16" />
+          <Icon v-else icon="lucide:check-circle-2" width="16" />
+          <span>{{ isGeneratingPdf ? 'Generating Official PDF...' : 'Attach Generated Form to Application' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </Dialog>
+
+  <!-- Blank Template Preview Modal -->
+  <Dialog
+    v-model:visible="templatePreviewVisible"
+    header="Official Template Format"
+    modal
+    :style="{ width: '50rem' }"
+    :breakpoints="{ '1199px': '75vw', '575px': '92vw' }"
+  >
+    <div class="p-3 bg-slate-100 rounded-2xl max-h-[600px] overflow-y-auto">
+      <div class="bg-white p-6 rounded-xl shadow border border-gray-200 text-slate-800" v-html="hydratedLiveHtml"></div>
     </div>
   </Dialog>
 </template>
 
 <script setup>
-import { defineEmits, defineProps, computed, ref, watch } from "vue";
-import image from "../../../assets/images/members/1.svg";
+import { computed, ref, watch, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useForm, usePage } from "@inertiajs/vue3";
-import debounce from 'lodash.debounce'
-import { onClickOutside } from '@vueuse/core'
-
-const selectedType = ref(null);
-const select_Priority = ref(false);
-const toggleRecipient = ref(false);
-const date = ref();
-// minimum selectable date for Calendar (today)
-const minDate = ref(new Date());
-const uses = ref([])
-const files = ref([])
-const page = usePage()
-const assigned_by_img = ref(null);
-const toast = useToast()
-
-const users = ref([]);
-const Assigned_by = ref("");
-const buttonSwitch = ref(1);
-const clickedButton = ref("");
-const search = ref('')
-const user_ids = ref([]);
-const selectedUsers = ref([])
-const is_dropdown = ref(false)
-let is_dropwdown_blur = ref(false)
-const search_type = ref('')
-const pop_up = ref(null)
-const clickOutside = ref(false)
-const branch = ref([])
+import MultiSelect from 'primevue/multiselect';
+import Calendar from 'primevue/calendar';
 
 const props = defineProps(["modelValue"]);
+const emit = defineEmits(["update:modelValue"]);
 
-onClickOutside(pop_up, () => {
-  clickOutside.value = true;
-})
+const page = usePage();
+const toast = useToast();
 
-const setIsDropdown = () => {
-  is_dropdown.value = true
-  is_dropwdown_blur = false
-}
+const files = ref([]);
+const buttonSwitch = ref(1); // 1: both, 2: doc only, 3: text only
+const clickedButton = ref("");
+const search_type = ref("");
+const usersList = ref([]);
+const selectedUsers = ref([]);
+const assignmentType = ref("workflow");
+const workflowsList = ref([]);
+const minDate = ref(new Date());
+
+const previewVisible = ref(false);
+const previewFile = ref(null);
+const previewFileUrl = ref("");
+
+const docSourceMode = ref("template"); // 'template' | 'upload'
+const templateDialogVisible = ref(false);
+const templatePreviewVisible = ref(false);
+const isGeneratingPdf = ref(false);
+const generatedTemplateDoc = ref(null);
+
+const templateFormFields = ref({
+  applicant_name: "",
+  file_number: "",
+  department_name: "",
+  designation: "",
+  grade_level: "",
+  number_of_days: "3",
+  annual_leave_days: "30",
+  start_date: "",
+  end_date: "",
+  resumption_date: "",
+  relieving_officer: "",
+  grounds: "",
+  contact_address: "",
+  destination: "",
+  departure_date: "",
+  return_date: "",
+  total_dta_amount: "",
+  purpose_of_tour: "",
+  departure_time: "",
+  expected_return: "",
+  number_of_passengers: "",
+  official_purpose: ""
+});
 
 const form = useForm({
   files: [],
-  title: '',
-  due_date: '',
-  priority: '',
-  description: '',
-  users: []
-})
+  extra_files: [],
+  title: "",
+  due_date: "",
+  priority: 2,
+  description: "",
+  users: [],
+  allow_step_splitting: false,
+  approval_pin: "",
+  workflow_version_id: ""
+});
+
+const applicationMemos = [
+  "Submitted for Director's kind consideration and recommendation.",
+  "Forwarded in line with Public Service Rules for necessary processing.",
+  "Particulars attached and desk handover minuted; submitted for approval.",
+  "Submitted for official review and transmission to Director Administration."
+];
+
+const assignmentDirectives = [
+  "For your necessary action and report back (FNA).",
+  "Please study, verify against ledger, and advise.",
+  "Approved as recommended. Prepare response/draft.",
+  "Urgent: Treat with priority and submit today.",
+  "For information and records (FIAR)."
+];
+
+const selectedWorkflow = computed(() => {
+  if (!form.workflow_version_id || !workflowsList.value) return null;
+  return workflowsList.value.find(w => w.id === form.workflow_version_id);
+});
+
+const attachedTemplate = computed(() => {
+  return selectedWorkflow.value?.workflow?.document_template || null;
+});
+
+const isLeaveApplication = computed(() => {
+  const t = (selectedWorkflow.value?.workflow?.title || "").toLowerCase();
+  return t.includes("leave");
+});
+
+const isAnnualLeave = computed(() => {
+  const t = (selectedWorkflow.value?.workflow?.title || "").toLowerCase();
+  return t.includes("annual");
+});
+
+const isDtaApplication = computed(() => {
+  const t = (selectedWorkflow.value?.workflow?.title || "").toLowerCase();
+  return t.includes("dta") || t.includes("tour") || t.includes("allowance");
+});
+
+const isVehicleApplication = computed(() => {
+  const t = (selectedWorkflow.value?.workflow?.title || "").toLowerCase();
+  return t.includes("vehicle") || t.includes("pool");
+});
+
+const allAttachedDocs = computed(() => {
+  const list = [...files.value];
+  if (generatedTemplateDoc.value) {
+    list.unshift(generatedTemplateDoc.value);
+  }
+  return list;
+});
+
+const hydratedLiveHtml = computed(() => {
+  if (!attachedTemplate.value || !attachedTemplate.value.content_html) return '';
+  let html = attachedTemplate.value.content_html;
+  const applicantName = currentUserName.value;
+  const fileNum = currentUser.value?.ippis_no || currentUser.value?.staff_number || `FTH/EST/${currentUser.value?.id || '101'}`;
+  const deptName = currentUser.value?.department?.title || 'Office of the Accountant-General of the Federation';
+  const designation = (currentUser.value?.designation ? currentUser.value.designation.name : null) || 'Administrative Officer';
+  const gradeLevel = currentUser.value?.grade_level || '12';
+  const todayFormatted = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const map = {
+    applicant_name: applicantName,
+    officer_name: applicantName,
+    user_name: applicantName,
+    file_number: fileNum,
+    staff_file_number: fileNum,
+    service_no: fileNum,
+    department_name: deptName,
+    department: deptName,
+    designation: designation,
+    grade_level: gradeLevel,
+    date: todayFormatted,
+    today: todayFormatted,
+    submission_date: todayFormatted,
+    ...templateFormFields.value
+  };
+
+  for (const [k, v] of Object.entries(map)) {
+    const reg = new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, 'gi');
+    html = html.replace(reg, v || `<span style="color: #d97706; background-color: #fef3c7; padding: 2px 4px; border-radius: 4px;">[${k}]</span>`);
+  }
+  return html;
+});
+
+const workflowSteps = computed(() => {
+  return selectedWorkflow.value?.steps || [];
+});
+
+const currentUser = computed(() => page.props.auth?.user || null);
+const currentUserName = computed(() => {
+  if (!currentUser.value) return 'Officer';
+  if (currentUser.value.first_name || currentUser.value.last_name) {
+    return `${currentUser.value.first_name || ''} ${currentUser.value.last_name || ''}`.trim();
+  }
+  return currentUser.value.name || 'Officer';
+});
+
+const cleanApplicationTitle = (title) => {
+  if (!title) return 'Official Application';
+  let t = title.replace(/^ADM-\d+(-\d+)?\s*/i, '').replace(/^Cross-Departmental\s*/i, '').trim();
+  if (!t.toLowerCase().includes('application') && !t.toLowerCase().includes('request') && !t.toLowerCase().includes('requisition')) {
+    t += ' Application';
+  }
+  return t;
+};
+
+const formatApplicationOption = (wf) => {
+  if (!wf || !wf.workflow) return 'Official Request';
+  const emoji = wf.workflow.emoji ? wf.workflow.emoji + ' ' : '';
+  const cleanTitle = cleanApplicationTitle(wf.workflow.title);
+  if (wf.workflow.department_id && wf.workflow.department) {
+    return `${emoji}${cleanTitle} (${wf.workflow.department.title} Directorate)`;
+  }
+  return `${emoji}${cleanTitle}`;
+};
+
+// Automatic Subject generation for Official Applications (Requirement #1)
+const autoSetApplicationSubject = (versionId) => {
+  if (!versionId || assignmentType.value !== 'workflow') return;
+  const wf = workflowsList.value.find(w => w.id === versionId);
+  if (wf && wf.workflow) {
+    const appTitle = cleanApplicationTitle(wf.workflow.title);
+    form.title = `${currentUserName.value} - ${appTitle}`;
+  }
+};
+
+const openTemplateFillModal = () => {
+  if (!attachedTemplate.value) return;
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const plus3 = new Date(today);
+  plus3.setDate(plus3.getDate() + 3);
+  const plus30 = new Date(today);
+  plus30.setDate(plus30.getDate() + 30);
+
+  templateFormFields.value = {
+    ...templateFormFields.value,
+    applicant_name: currentUserName.value,
+    file_number: currentUser.value?.ippis_no || currentUser.value?.staff_number || `FTH/EST/${currentUser.value?.id || '101'}`,
+    department_name: currentUser.value?.department?.title || 'Office of the Accountant-General of the Federation',
+    designation: (currentUser.value?.designation ? currentUser.value.designation.name : null) || 'Administrative Officer',
+    grade_level: currentUser.value?.grade_level || '12',
+    number_of_days: templateFormFields.value.number_of_days || (isAnnualLeave.value ? '30' : '3'),
+    annual_leave_days: templateFormFields.value.annual_leave_days || '30',
+    start_date: templateFormFields.value.start_date || formatDate(tomorrow),
+    end_date: templateFormFields.value.end_date || (isAnnualLeave.value ? formatDate(plus30) : formatDate(plus3)),
+    resumption_date: templateFormFields.value.resumption_date || formatDate(plus30),
+    relieving_officer: templateFormFields.value.relieving_officer || 'Mr. Audu Yakubu (GL 10)',
+    grounds: templateFormFields.value.grounds || form.description || 'Submitted in line with Public Service Rules for official consideration.',
+    contact_address: templateFormFields.value.contact_address || 'Plot 14, Gwarinpa Estate, FCT Abuja',
+    destination: templateFormFields.value.destination || 'Lagos State Treasury Liaison Office, Marina',
+    departure_date: templateFormFields.value.departure_date || formatDate(tomorrow),
+    return_date: templateFormFields.value.return_date || formatDate(plus3),
+    total_dta_amount: templateFormFields.value.total_dta_amount || '₦185,000.00',
+    purpose_of_tour: templateFormFields.value.purpose_of_tour || form.description || 'Statutory financial inspection and audit review.',
+    departure_time: templateFormFields.value.departure_time || '09:00 AM',
+    expected_return: templateFormFields.value.expected_return || '03:00 PM',
+    number_of_passengers: templateFormFields.value.number_of_passengers || '3 Officers',
+    official_purpose: templateFormFields.value.official_purpose || form.description || 'Inter-agency fiscal consultation.'
+  };
+
+  templateDialogVisible.value = true;
+};
+
+const openBlankTemplatePreview = () => {
+  openTemplateFillModal();
+  templatePreviewVisible.value = true;
+};
+
+const openGeneratedPreview = () => {
+  if (generatedTemplateDoc.value) {
+    openPreview(generatedTemplateDoc.value);
+  }
+};
+
+const removeGeneratedTemplateDoc = () => {
+  generatedTemplateDoc.value = null;
+  form.extra_files = [];
+  toast.add({
+    severity: "info",
+    summary: "Form Detached",
+    detail: "Official template form was removed from the application dossier.",
+    life: 2500
+  });
+};
+
+const removeAttachedDoc = (file, index) => {
+  if (file.is_template_generated) {
+    removeGeneratedTemplateDoc();
+  } else {
+    const idx = files.value.findIndex(f => f === file);
+    if (idx !== -1) {
+      removeFile(idx);
+    } else {
+      removeFile(index);
+    }
+  }
+};
+
+const generateTemplatePdf = async () => {
+  if (!attachedTemplate.value) return;
+  isGeneratingPdf.value = true;
+  try {
+    const response = await axios.post("/dashboard/document-templates/generate-file", {
+      template_id: attachedTemplate.value.id,
+      placeholders: templateFormFields.value,
+      title: form.title
+    });
+
+    if (response.data && response.data.success) {
+      const generatedFile = response.data.file;
+      generatedTemplateDoc.value = generatedFile;
+      form.extra_files = [generatedFile];
+
+      if (!form.description) {
+        form.description = templateFormFields.value.grounds || 
+          templateFormFields.value.purpose_of_tour || 
+          templateFormFields.value.official_purpose || 
+          "Submitted using official civil service statutory template.";
+      }
+
+      templateDialogVisible.value = false;
+      toast.add({
+        severity: "success",
+        summary: "Official Form Attached",
+        detail: `${generatedFile.original_name} generated and attached to application`,
+        life: 3500
+      });
+    }
+  } catch (err) {
+    console.error("Template PDF generation failed", err);
+    toast.add({
+      severity: "error",
+      summary: "Generation Failed",
+      detail: err.response?.data?.message || "Failed to generate official PDF document",
+      life: 4000
+    });
+  } finally {
+    isGeneratingPdf.value = false;
+  }
+};
+
+watch(() => form.workflow_version_id, (newVal) => {
+  autoSetApplicationSubject(newVal);
+  if (assignmentType.value === 'workflow') {
+    if (attachedTemplate.value) {
+      docSourceMode.value = 'template';
+      generatedTemplateDoc.value = null;
+      form.extra_files = [];
+    } else {
+      docSourceMode.value = 'upload';
+    }
+  }
+});
+
+watch(() => assignmentType.value, (newType) => {
+  if (newType === 'workflow') {
+    if (workflowsList.value.length > 0 && !form.workflow_version_id) {
+      form.workflow_version_id = workflowsList.value[0].id;
+    }
+    autoSetApplicationSubject(form.workflow_version_id);
+    if (attachedTemplate.value) {
+      docSourceMode.value = 'template';
+    }
+  } else {
+    form.workflow_version_id = '';
+    docSourceMode.value = 'upload';
+    generatedTemplateDoc.value = null;
+    form.extra_files = [];
+  }
+});
+
+const openPreview = (file) => {
+  previewFile.value = file;
+  if (file.is_template_generated) {
+    previewFileUrl.value = page.props.base + file.path;
+  } else if (file.type) {
+    previewFileUrl.value = URL.createObjectURL(file);
+  } else {
+    const extension = (file.name || file.original_name || "").split(".").pop();
+    const mimeTypes = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      pdf: "application/pdf"
+    };
+    previewFileUrl.value = URL.createObjectURL(
+      new Blob([file], { type: mimeTypes[extension] || "application/octet-stream" })
+    );
+  }
+  previewVisible.value = true;
+};
+
+const isImage = (file) => {
+  if (file.is_template_generated) return false;
+  const t = file.type || "";
+  if (t.startsWith("image/")) return true;
+  const ext = (file.name || file.original_name || file.file_name || "").split(".").pop().toLowerCase();
+  return ["jpg", "jpeg", "png", "gif"].includes(ext);
+};
+
+const isPDF = (file) => {
+  if (file.is_template_generated) return true;
+  const t = file.type || "";
+  if (t === "application/pdf") return true;
+  const ext = (file.name || file.original_name || file.file_name || "").split(".").pop().toLowerCase();
+  return ext === "pdf";
+};
+
+const downloadAttachedFile = (file) => {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const applyDirectivePreset = (preset) => {
+  if (!form.description) {
+    form.description = preset;
+  } else if (!form.description.includes(preset)) {
+    form.description = form.description + "\n" + preset;
+  }
+};
 
 const getFile = () => {
-  let file = document.getElementById('fileUpload');
-  file.click();
-}
+  const file = document.getElementById("fileUpload");
+  if (file) file.click();
+};
 
 const formatSize = (size) => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  if (!size) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
   let i = 0;
   while (size >= 1024) {
     size /= 1024;
     i++;
   }
-  return size.toFixed(2) + ' ' + units[i];
-}
+  return size.toFixed(1) + " " + units[i];
+};
 
 const handleFileUpload = (event) => {
-  files.value = Array.from(event.target.files);
-  form.files = Array.from(event.target.files);
-  //uploadFiles()
-}
+  const uploaded = Array.from(event.target.files);
+  files.value = [...files.value, ...uploaded];
+  form.files = files.value;
+};
+
+const removeFile = (index) => {
+  files.value.splice(index, 1);
+  form.files.splice(index, 1);
+};
 
 function getImageForGroup(user) {
-    if(search_type.value == 'unit'){
-      return page.props.base + "/images/unit_active.svg";
-    }else if(search_type.value == 'division'){
-      return page.props.base + "/images/division_active.svg";
-    }else if(search_type.value == 'department'){
-       return page.props.base + "/images/department_active.svg";
-    }else{
-       if(user.profile_image){
-        return page.props.base + "/" + user.profile_image;
-       }else{
-        return page.props.base + "/images/user.svg";
-       }
+  if (search_type.value === "unit") {
+    return page.props.base + "/images/unit_active.svg";
+  } else if (search_type.value === "division") {
+    return page.props.base + "/images/division_active.svg";
+  } else if (search_type.value === "department") {
+    return page.props.base + "/images/department_active.svg";
+  } else {
+    if (user.profile_image) {
+      return page.props.base + "/" + user.profile_image;
+    } else {
+      return page.props.base + "/images/user.svg";
     }
+  }
 }
 
-
 const activeButton = (event) => {
-  if (event === "") {
-    buttonSwitch.value = 1;
-  }
-  if (event === "document_only") {
-    buttonSwitch.value = 2;
-  }
-  if (event === "text_only") {
-    buttonSwitch.value = 3;
-  }
+  if (event === "") buttonSwitch.value = 1;
+  if (event === "document_only") buttonSwitch.value = 2;
+  if (event === "text_only") buttonSwitch.value = 3;
   clickedButton.value = event;
 };
 
 const getFileURL = (file) => {
   if (file.type) {
-    if (file.type == 'image/jpeg' || file.type == 'image/jpeg' || file.type == 'image/png' || file.type == 'image/gif') {
+    if (file.type.startsWith("image/")) {
       return URL.createObjectURL(file);
     }
-
-    if (file.type == 'application/pdf') {
-      return page.props.base + '/images/pdf.svg'
+    if (file.type === "application/pdf") {
+      return page.props.base + "/images/pdf.svg";
     }
-
-    if (file.type == 'application/msword' || file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      return page.props.base + '/images/word.svg'
+    if (file.type.includes("word")) {
+      return page.props.base + "/images/word.svg";
     }
-
-    if (file.type == 'application/vnd.ms-excel' || file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-      return page.props.base + '/images/excel.svg'
+    if (file.type.includes("excel") || file.type.includes("spreadsheet")) {
+      return page.props.base + "/images/excel.svg";
     }
-  } else {
-    // If type is not available, manually determine file type based on extension
-    const extension = file.name.split('.').pop();
-    const mimeTypes = {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'pdf': 'application/pdf',
-      'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'xls': 'application/vnd.ms-excel',
-      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    };
-
-    return URL.createObjectURL(new Blob([file], { type: mimeTypes[extension] || 'application/octet-stream' }));
   }
-}
-
-
-const searchUsers = debounce(() => {
-  axios.get('/dashboard/search-users', { params: { search: search.value } }).then((response) => {
-    // users.value = response.data.data
-     search_type.value = response.data.type
-    if(response.data.type == 'unit' || response.data.type == 'division' || response.data.type == 'department'){
-      branch.value = response.data.data.filter(item => 
-        !selectedUsers.value.some(selected => selected.id === item.id)
-      );
-      //clickOutside2.value = false;
-    } else {
-      users.value = response.data.data.filter(item => 
-        !selectedUsers.value.some(selected => selected.id === item.id)
-      );
-      clickOutside.value = false;
-    }
-  })
-}, 500)
-
-
-const filterRecipients = () => {
-  // const searchTerm = Users.value.toLowerCase();
-  // Suggestions.value = Recipients.value.filter((recipient) =>
-  //   recipient.name.toLowerCase().includes(searchTerm)
-  // );
-  searchUsers()
-};
-const updateUsers = (suggestion) => {
-  console.log(suggestion)
-  Assigned_by.value = suggestion.first_name + " " + suggestion.last_name;
-  assigned_by_img.value = suggestion.profile_image
-  user_ids.value = suggestion.id
-  toggleRecipient.value = false;
-  selectedUsers.value.push(suggestion)
-  console.log(suggestion)
-  if (suggestion.user && suggestion.user.length > 0) {
-    form.users.push(suggestion.user[0].id)
-  } else {
-    form.users.push(suggestion.id)
+  const extension = file.name.split(".").pop().toLowerCase();
+  if (["jpg", "jpeg", "png", "gif"].includes(extension)) {
+    return URL.createObjectURL(file);
   }
-
-  let index = users.value.findIndex((item) => item.id == suggestion.id)
-  users.value.splice(index, 1);
-  // Suggestions.value = [];
+  return page.props.base + "/images/pdf.svg";
 };
 
-const removeUser = (user) => {
-  users.value.push(user)
-  let index = selectedUsers.value.findIndex((item) => item.id == user.id)
-  selectedUsers.value.splice(index, 1)
+const fetchWorkflows = () => {
+  axios
+    .get("/dashboard/available-workflows")
+    .then((response) => {
+      workflowsList.value = response.data || [];
+      if (workflowsList.value.length > 0 && !form.workflow_version_id) {
+        assignmentType.value = "workflow";
+        form.workflow_version_id = workflowsList.value[0].id;
+        if (!form.title) {
+          autoSetApplicationSubject(form.workflow_version_id);
+        }
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to fetch workflows", err);
+    });
+};
 
-  let index2 = form.users.findIndex((item) => item.id == user.id);
-  if (index2) {
-    form.users.splice(index, 1)
-  }
-}
+const fetchRecipients = () => {
+  axios
+    .get("/dashboard/search-users", { params: { search: "" } })
+    .then((response) => {
+      search_type.value = response.data.type;
+      usersList.value = (response.data.data || []).map((item) => {
+        item.display_name = item.title || (item.first_name + " " + item.last_name);
+        return item;
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to fetch recipients", err);
+    });
+};
+
+onMounted(() => {
+  fetchRecipients();
+  fetchWorkflows();
+});
+
+const updateUsersMultiSelect = (e) => {
+  form.users = (e.value || []).map((user) => {
+    if (user.user && user.user.length >= 0) {
+      user.users = user.user;
+    }
+    return user;
+  });
+};
 
 const formatDate = (value) => {
-  // Accept either a Date object or a date-string
-  if (!value) return '';
+  if (!value) return "";
   const d = value instanceof Date ? value : new Date(value);
-  if (isNaN(d.getTime())) return '';
+  if (isNaN(d.getTime())) return "";
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -598,40 +1688,63 @@ const formatDate = (value) => {
 
 const formattedDate = computed(() => formatDate(form.due_date));
 
-// Keep form.due_date as an ISO date string (yyyy-MM-dd) for backend compatibility
-// when user selects a Date from Calendar, convert it to the yyyy-MM-dd string.
-watch(() => form.due_date, (val) => {
-  if (val instanceof Date) {
-    form.due_date = formatDate(val);
-  }
+const todayIsoString = computed(() => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 });
-const priority = ref("");
+
+const humanFormattedDate = computed(() => {
+  if (!form.due_date) return null;
+  const val = form.due_date instanceof Date ? formatDate(form.due_date) : String(form.due_date);
+  const parts = val.split("-");
+  if (parts.length !== 3) return val;
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  if (isNaN(d.getTime())) return val;
+  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+});
+
+const setQuickDate = (days) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  form.due_date = `${year}-${month}-${day}`;
+};
+
+watch(
+  () => form.due_date,
+  (val) => {
+    if (val instanceof Date) {
+      form.due_date = formatDate(val);
+    }
+  }
+);
+
+const priority = ref("Medium");
 const Priorities = ref(["Low", "Medium", "High"]);
 
 const updatePriority = (event) => {
   priority.value = event;
-  if (priority.value == 'Low') {
-    form.priority = 'low'
-  } else if (priority.value == 'Medium') {
-    form.priority = 'medium'
-  } else if (priority.value == 'High') {
-    form.priority = 'high'
+  if (priority.value === "Low") {
+    form.priority = 1;
+  } else if (priority.value === "Medium") {
+    form.priority = 2;
+  } else if (priority.value === "High") {
+    form.priority = 3;
   }
-  select_Priority.value = false
 };
 
-const type = ref([
-  'Document Upload + Text comment', 'Document Only', 'Text Only'
-])
-
-const emit = defineEmits(["update:modelValue"]);
 const visible = computed({
   get() {
     return props.modelValue;
   },
   set(value) {
     emit("update:modelValue", value);
-  },
+  }
 });
 
 const closeModal = () => {
@@ -639,62 +1752,89 @@ const closeModal = () => {
 };
 
 const submit = () => {
-  if (form.title == '') {
+  if (assignmentType.value === "workflow") {
+    form.users = []; // Strict Civil Service: no manual downward assignment in workflow mode
+  }
+  if (!form.title) {
     toast.add({
       severity: "error",
-      summary: '',
-      detail: "Title field cannot be empty",
-      life: 3000,
+      summary: "Missing Title",
+      detail: assignmentType.value === "workflow" ? "Application subject cannot be empty" : "Title field cannot be empty",
+      life: 3000
     });
     return false;
   }
-  if (form.due_date == '') {
+  if (assignmentType.value === "workflow" && !form.workflow_version_id) {
     toast.add({
       severity: "error",
-      summary: '',
-      detail: "Due date field cannot be empty",
-      life: 3000,
+      summary: "Blueprint Required",
+      detail: "Please choose a standard workflow process / blueprint",
+      life: 3000
+    });
+    return false;
+  }
+  if (!form.due_date) {
+    toast.add({
+      severity: "error",
+      summary: "Date Required",
+      detail: assignmentType.value === "workflow" ? "Please select the effective date" : "Date field cannot be empty",
+      life: 3000
+    });
+    return false;
+  }
+  if (!form.priority) {
+    form.priority = 2;
+  }
+  if (!form.approval_pin) {
+    toast.add({
+      severity: "error",
+      summary: "Signature PIN Required",
+      detail: "4-digit digital signature PIN is required to authorize submission",
+      life: 3000
     });
     return false;
   }
 
-  if (form.priority == '') {
-    toast.add({
-      severity: "error",
-      summary: '',
-      detail: "Priority field cannot be empty",
-      life: 3000,
-    });
-    return false;
+  if (generatedTemplateDoc.value) {
+    form.extra_files = [generatedTemplateDoc.value];
+  } else {
+    form.extra_files = [];
   }
 
-  form.post('/dashboard/create-task', {
-    onSuccess: page => {
-      form.reset()
-      files.value = null
-      form.files = null
+  form.post("/dashboard/create-task", {
+    onSuccess: () => {
+      form.reset();
+      files.value = [];
+      form.files = [];
+      generatedTemplateDoc.value = null;
+      form.extra_files = [];
       emit("update:modelValue", false);
       toast.add({
         severity: "success",
-        summary: '',
-        detail: "Task created successfully",
-        life: 3000,
+        summary: "Submitted Successfully",
+        detail:
+          assignmentType.value === "workflow"
+            ? "Official application submitted upward along chain of command"
+            : "Directive issued successfully",
+        life: 3000
       });
     }
-  })
-
+  });
 };
 </script>
+
 <style scoped>
-.custom-dialog .p-dialog-header {
-  display: none;
-  width: 20%;
+.custom-dialog-redesign :deep(.p-dialog-header) {
+  display: none !important;
 }
 
-.activeButton {
-  background-color: white;
-  border-radius: 5px;
-  color: black;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+.custom-dialog-redesign :deep(.p-dialog-content) {
+  padding: 0 !important;
+  border-radius: 1.5rem !important;
+}
+
+.custom-dialog-redesign :deep(.p-dialog) {
+  border-radius: 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 </style>

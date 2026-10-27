@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('draft_models', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->after('id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            if (!Schema::hasColumn('draft_models', 'user_id')) {
+                $table->foreignId('user_id')->after('id')->constrained('users')->onDelete('cascade');
+            }
         });
     }
 

@@ -20,9 +20,9 @@
                         />
                     </div>
                     <div>
-                        <h1 class="text-2xl font-medium">Track File</h1>
+                        <h1 class="text-2xl font-medium">Track File / Task</h1>
                         <p class="text-sm">
-                            Efficiently monitor file movement.
+                            Efficiently monitor file and task movement.
                         </p>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
         <section class="px-6">
             <div class="flex items-start gap-1">
                 <label class="text-[#344054] font-semibold"
-                    >Search Package</label
+                    >Search Package / Task</label
                 >
             </div>
             <div class="relative mt-4">
@@ -48,7 +48,7 @@
                         @input="TrackFile"
                         type="text"
                         class="w-96 border-0 outline-none text-gray-700"
-                        placeholder="Enter File Name / Number"
+                        placeholder="Enter File Name / Number / Task ID"
                         :value="search_text"
                     />
                 </div>
@@ -59,19 +59,21 @@
                 >
                     <div v-if="files.length > 0">
                         <div
-                            class="p-3 px-3 cursor-pointer border-b"
-                            v-for="(file, index) in files"
+                            class="p-3 px-3 cursor-pointer border-b hover:bg-gray-50 flex items-center gap-3"
+                            v-for="(item, index) in files"
                             :key="index"
-                            @click="updateFileSelection(file)"
+                            @click="updateFileSelection(item)"
                         >
-                            <div class="">
-                                <h1 class="font-normal">{{ file.name }}</h1>
+                            <div class="p-2 bg-gray-100 rounded-md">
+                                <Icon v-if="item.result_type === 'task'" icon="ph:clipboard-text" width="20" class="text-blue-500" />
+                                <Icon v-else icon="ph:folder" width="20" class="text-yellow-500" />
                             </div>
-                            <p
-                                class="mt-2 text-xs w-fit font-normal px-2 py-1 rounded-xl text-gray-500 bg-gray-50"
-                            >
-                                {{ file.doc_no }}
-                            </p>
+                            <div>
+                                <h1 class="font-normal">{{ item.result_type === 'task' ? item.title : item.name }}</h1>
+                                <p class="mt-1 text-xs w-fit font-normal px-2 py-1 rounded-xl text-gray-500 bg-gray-100">
+                                    {{ item.result_type === 'task' ? item.tracking_id : item.doc_no }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <div v-else class="flex flex-col items-center my-5">
@@ -117,6 +119,8 @@
         v-model="viewpackageModel"
         :fileMovement="file_movement"
         :file="file"
+        :task="task"
+        :taskMinutes="taskMinutes"
         :department="props.department"
         :division="props.division"
         :unit="props.unit"
@@ -216,32 +220,43 @@ const visible = computed({
 const closeModal = () => {
     emit("update:modelValue", false);
 };
-const updateFileSelection = (file) => {
-    console.log(file);
-    // Users.value = suggestion.name
-    // Suggestions.value = []
-    // toggleSuggestion.value = false
-    if (file.file_movement && file.file_movement.length > 0) {
-        selectedFile.value = file.file_movement[0];
-    }
-    search_text.value = file.name;
+const task = ref(null);
+const taskMinutes = ref(null);
+
+const updateFileSelection = (item) => {
+    selectedFile.value = item;
+    search_text.value = item.result_type === 'task' ? item.title : item.name;
     toggleSuggestion.value = false;
 };
 
 const submit = () => {
+    if (!selectedFile.value) return;
     viewpackageModel.value = true;
-    // Users.value = ''
+    
+    let params = {};
+    if (selectedFile.value.result_type === 'task') {
+        params = { type: 'task', file_id: selectedFile.value.id };
+    } else {
+        let fm_id = selectedFile.value.file_movement && selectedFile.value.file_movement.length > 0 ? selectedFile.value.file_movement[0].file_movement_id : null;
+        params = { type: 'file', file_id: selectedFile.value.id, file_movement_id: fm_id };
+    }
 
     axios
         .get("/dashboard/registry/tracked", {
-            params: {
-                file_id: selectedFile.value.file_id,
-                file_movement_id: selectedFile.value.file_movement_id,
-            },
+            params: params,
         })
         .then((response) => {
-            file.value = response.data.file;
-            file_movement.value = response.data.file_movement;
+            if (params.type === 'task') {
+                task.value = response.data.task;
+                taskMinutes.value = response.data.minutes;
+                file.value = null;
+                file_movement.value = null;
+            } else {
+                file.value = response.data.file;
+                file_movement.value = response.data.file_movement;
+                task.value = null;
+                taskMinutes.value = null;
+            }
             emit("update:modelValue", false);
         })
         .catch((error) => {

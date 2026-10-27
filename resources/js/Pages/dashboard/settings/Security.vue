@@ -12,7 +12,7 @@
   </div>
   <Divider />
   <div class="lg:pl-7 ">
-    <div class=" pr-7">
+    <div class=" pr-7" v-if="canManageOrganisationSecurity">
       <h1 class=" text-primary text-base">Organisation</h1>
       <div class=" flex items-center justify-between mt-5">
         <div>
@@ -27,24 +27,21 @@
           </a>
         </div>
       </div>
-    </div>
-    <Divider />
+      <Divider />
 
-
-    <div class=" pr-7">
       <div class=" flex items-center justify-between ">
         <div>
           <h1 class="text-2xl text-[#1D2939] font-semibold ">Back-Up Data</h1>
           <p class=" text-gray-500">Add an extra layer of security to your account.</p>
         </div>
         <div>
-          <button class=" p-2 rounded-md border border-gray-300 text-base">
+          <button class=" p-2 rounded-md border border-gray-300 text-base" @click="regenerateCode = true">
             Set-Up Recovery
           </button>
         </div>
       </div>
+      <Divider />
     </div>
-    <Divider />
 
     <div class=" pr-7">
       <h1 class=" text-primary text-base">Personal</h1>
@@ -70,16 +67,16 @@
           <p class=" text-gray-500">Add an extra layer of security to your account.</p>
         </div>
         <div>
-          <button v-if="!props.user.two_factor_secret && !props.user.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-base" @click="twofactors = true">
+          <button v-if="!currentUser?.two_factor_secret && !currentUser?.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-base" @click="twofactors = true">
             Enable 2FA
           </button>
-          <button v-if="props.user.two_factor_secret && !props.user.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-base" @click="verify2fa_auth = true">
+          <button v-if="currentUser?.two_factor_secret && !currentUser?.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-base" @click="verify2fa_auth = true">
             Verify 2FA
           </button>
-          <button v-if="props.user.two_factor_secret && props.user.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-red-500 text-base" @click="disableTwofactors = true">
+          <button v-if="currentUser?.two_factor_secret && currentUser?.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-red-500 text-base" @click="disableTwofactors = true">
             Disable 2FA
           </button>
-          <button v-if="props.user.two_factor_secret && props.user.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-black ml-2 text-base" @click="GenerateNewRecoveryCode">
+          <button v-if="currentUser?.two_factor_secret && currentUser?.two_factor_confirmed_at" class=" p-2 rounded-md border border-gray-300 text-black ml-2 text-base" @click="GenerateNewRecoveryCode">
             Generate new Recovery code
           </button>
           <!-- <span v-html="twoFactor?.svg"></span> -->
@@ -161,8 +158,8 @@
       </DataTable>
     </div>
   </div>
-  <TwoFactorsModal v-model="twofactors" @verify_2fa="verify_2fa_handler" :user="props.user" @refresh="refreshHandler" />
-  <DisableTwoFactors v-model="disableTwofactors" :user="props.user" @refresh2fa="refreshHandler2fa" @refresh="refreshHandler" />
+  <TwoFactorsModal v-model="twofactors" @verify_2fa="verify_2fa_handler" :user="currentUser" @refresh="refreshHandler" />
+  <DisableTwoFactors v-model="disableTwofactors" :user="currentUser" @refresh2fa="refreshHandler2fa" @refresh="refreshHandler" />
   <PasswordModal v-model="password" />
   <Verify2FA v-model="verify2fa_auth" @refresh2fa="refreshHandler2fa" :twoFactor="twoFactor"/>
   <DeleteSessionModal v-model="deleteSession" @refresh="refreshHandler" />
@@ -173,8 +170,9 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted, defineProps } from 'vue'
-import {router} from "@inertiajs/vue3"
+import { ref, computed, onMounted } from 'vue'
+import { router } from "@inertiajs/vue3"
+import { Icon } from '@iconify/vue'
 import TwoFactorsModal from '../../../components/Modals/TwoFactorsModal.vue'
 import DisableTwoFactors from '../../../components/Modals/DisableTwoFactorsModal.vue'
 import PasswordModal from '../../../components/Modals/PasswordModal.vue'
@@ -182,14 +180,25 @@ import DeleteSessionModal from '../../../components/Modals/DeleteSession.vue'
 import Verify2FA from '../../../components/Modals/Verify2FA.vue'
 import RegenrateRecoveryCode from '../../../components/Modals/RegenrateRecoveryCode.vue'
 import { useToast } from "primevue/usetoast";
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios'
+
+const props = defineProps(['user']);
+const emit = defineEmits(['password_policies', 'refreshUser', 'passwordPolicies']);
+
+const page = usePage();
+const currentUser = computed(() => props.user || page.props.user || {});
+
+const canManageOrganisationSecurity = computed(() => {
+  const roles = page.props.user_roles || page.props.roles || [];
+  const r = Array.isArray(roles) ? roles.map(x => String(x).toLowerCase().trim()) : [String(roles).toLowerCase().trim()];
+  return r.includes('super admin') || r.includes('admin') || r.includes('super-admin');
+});
 
 const password = ref(false)
 const twofactors = ref(false)
 const disableTwofactors = ref(false)
 const deleteSession = ref(false)
-const emit = defineEmits(['password_policies', 'refreshUser'])
-const props = defineProps(['user']);
 const twoFactor = ref(null)
 const verify2fa_auth = ref(false)
 const recoveryCodes = ref([])
@@ -316,7 +325,7 @@ const sessions = ref([
 
 onMounted(() => {
   getUserSessions();
-  if(props.user?.two_factor_secret){
+  if (currentUser.value?.two_factor_secret) {
     getTwoFactorCode()
     getUserRecoveryCode()
   }

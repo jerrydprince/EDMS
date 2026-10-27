@@ -10,7 +10,10 @@
       <div class="flex items-center justify-between w-full">
         <h1 class="font-semibold text-lg">Profesional Development</h1>
         <button
-          class="p-2 rounded-md text-xs font-semibold text-gray-700 border flex items-center gap-1 border-gray-300">
+          @click="generateReport"
+          class="p-2 rounded-md text-xs font-semibold text-gray-700 hover:bg-slate-50 border flex items-center gap-1 border-gray-300 transition-colors"
+          title="Download Report PDF"
+        >
           <Icon icon="pepicons-pop:file" />
           <p>Generate Report</p>
         </button>
@@ -195,13 +198,12 @@ const toggleModals = (event) => {
 };
 const submit = () => {
   emit("update:modelValue", false);
+};
 
-  //   toast.add({
-  //     severity: "success",
-  //     summary: '',
-  //     detail: "",
-  //     life: 3000,
-  //   });
+const generateReport = () => {
+  if (props.user?.id) {
+    window.open(`/dashboard/pms/report/user/${props.user.id}`, '_blank');
+  }
 };
 </script>
 <style scoped>

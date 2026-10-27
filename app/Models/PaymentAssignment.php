@@ -10,6 +10,7 @@ class PaymentAssignment extends Model
     use HasFactory;
 
     protected $table = 'payment_assignment';
+    protected $guarded = [];
 
     /**
      * Get the user associated with the PaymentAssignment

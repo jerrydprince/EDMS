@@ -54,7 +54,7 @@
               </div>
             </div>
           </Link>
-          <!-- <router-link to="/settings/organisation" v-if="!roles.includes('data entry')">
+          <!-- <router-link to="/settings/organisation" v-if="!roles.includes('record manager')">
             <div class=" border-b">
               <div class=" flex items-center gap-2 text-[#344054] p-3 rounded-md m-3 hover:bg-gray-100 font-semibold "
                 @click=" Profile_option = false">

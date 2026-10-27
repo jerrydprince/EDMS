@@ -133,6 +133,24 @@ class MailController extends Controller
             //'file' => 'file|nullable|mimes:jpg,png,pdf,doc,docx',
         ]);
 
+        // Dynamically set SMTP configuration
+        $configs = \App\Models\SystemConfiguration::pluck('value', 'key');
+        if (isset($configs['MAIL_HOST']) || isset($configs['mail.host'])) {
+            config([
+                'mail.default' => 'smtp',
+                'mail.mailers.smtp.host' => $configs['MAIL_HOST'] ?? $configs['mail.host'],
+                'mail.mailers.smtp.port' => $configs['MAIL_PORT'] ?? $configs['mail.port'] ?? 587,
+                'mail.mailers.smtp.encryption' => $configs['MAIL_ENCRYPTION'] ?? $configs['mail.encryption'] ?? 'tls',
+                'mail.mailers.smtp.username' => $configs['MAIL_USERNAME'] ?? $configs['mail.username'] ?? '',
+                'mail.mailers.smtp.password' => $configs['MAIL_PASSWORD'] ?? $configs['mail.password'] ?? '',
+                'mail.from.address' => $configs['MAIL_FROM_ADDRESS'] ?? $configs['mail.from.address'] ?? ($configs['MAIL_USERNAME'] ?? $configs['mail.username'] ?? 'hello@example.com'),
+                'mail.from.name' => 'EDMS System',
+            ]);
+            
+            // Force Laravel to re-read the configuration and rebuild the mailer
+            app('mail.manager')->purge('smtp');
+        }
+
         $file = [];
         if($request->hasFile('file')){
             $file = $request->file('file')[0];
@@ -145,9 +163,9 @@ class MailController extends Controller
         }
      
         if($file){
-         Mail::queue(new SendClientMail($request->except('file'), $attach_path, auth()->user()->email));
+         Mail::send(new SendClientMail($request->except('file'), $attach_path, auth()->user()->email));
         }else{
-        Mail::queue(new SendClientMailNoAttachment($request->except('file'), auth()->user()->email));
+         Mail::send(new SendClientMailNoAttachment($request->except('file'), auth()->user()->email));
         }
     
         // return Redirect::route('mails.Mails');
@@ -377,6 +395,16 @@ class MailController extends Controller
         return redirect()->back();
     }
 
+    public function markUnread($id)
+    {
+        $mail = MailsModel::where('id', $id)->first();
+        if ($mail) {
+            $mail->is_read = 0;
+            $mail->save();
+        }
+        return redirect()->back();
+    }
+
     // public function getAllMailsFolders(){
     //     $client = Client::account("default");  
     //     $client->connect();  
@@ -474,4 +502,168 @@ class MailController extends Controller
 //     return response()->json('true');
 }
 
+    public function submitToWorkflow(Request $request, $id)
+    {
+        $mail = MailsModel::findOrFail($id);
+        $user = auth()->user();
+
+        // Find the default Mail Incoming Workflow
+        $workflowVersion = \Illuminate\Support\Facades\DB::table('workflow_versions')
+            ->join('workflows', 'workflow_versions.workflow_id', '=', 'workflows.id')
+            ->where('workflows.title', 'Mail Incoming')
+            ->where('workflow_versions.is_published', true)
+            ->select('workflow_versions.id')
+            ->first();
+
+        if (!$workflowVersion) {
+            return response()->json(['message' => 'No active Mail Incoming workflow found.'], 404);
+        }
+
+        $task = new \App\Models\Task();
+        $task->title = 'Incoming Mail: ' . $mail->subject;
+        $task->workflow_version_id = $workflowVersion->id;
+        $task->mail_id = $mail->id;
+        $task->created_by = $user->id;
+        
+        if ($request->has('allow_step_splitting')) {
+            $task->allow_step_splitting = filter_var($request->allow_step_splitting, FILTER_VALIDATE_BOOLEAN);
+        }
+        
+        $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+        $task->save();
+
+        $workflowService = app(\App\Services\GenericWorkflowService::class);
+        $workflowService->start($task, $user, [$user->id]);
+
+        return redirect()->back()->with(['success' => 'Mail successfully submitted to Workflow']);
+    }
+
+    public function jacketAsFileAndSubmit(Request $request, $id)
+    {
+        $mail = MailsModel::with('attachments')->findOrFail($id);
+        $user = auth()->user();
+
+        // 1. Create a Registry File
+        $newFile = new \App\Models\File();
+        $newFile->name = $mail->subject;
+        $newFile->file_type = 'External Mail';
+        $newFile->doc_no = $mail->message_id;
+        $newFile->description = substr(strip_tags($mail->body), 0, 200);
+        $newFile->created_by = $user->id;
+        $newFile->department_id = $user->department_id;
+        $newFile->path = '';
+        $newFile->archive_id = 1;
+        $newFile->save();
+
+        // 2. Attach mail attachments to registry file
+        foreach ($mail->attachments as $attachment) {
+            $registryFile = new \App\Models\RegistryFile();
+            $registryFile->file_id = $newFile->id;
+            $registryFile->file_path = $attachment->file_path;
+            $registryFile->save();
+        }
+
+        // 3. Find the Registry Incoming Workflow
+        $workflowVersion = \Illuminate\Support\Facades\DB::table('workflow_versions')
+            ->join('workflows', 'workflow_versions.workflow_id', '=', 'workflows.id')
+            ->where('workflows.title', 'Registry Incoming')
+            ->where('workflow_versions.is_published', true)
+            ->select('workflow_versions.id')
+            ->first();
+
+        if (!$workflowVersion) {
+            return response()->json(['message' => 'No active Registry workflow found.'], 404);
+        }
+
+        // 4. Create Task
+        $task = new \App\Models\Task();
+        $task->title = 'Registry File: ' . $newFile->name;
+        $task->workflow_version_id = $workflowVersion->id;
+        $task->file_id = $newFile->id;
+        $task->created_by = $user->id;
+
+        if ($request->has('allow_step_splitting')) {
+            $task->allow_step_splitting = filter_var($request->allow_step_splitting, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        $task->due_date = \Carbon\Carbon::now()->addDays(5)->format('Y-m-d');
+        $task->save();
+
+        $workflowService = app(\App\Services\GenericWorkflowService::class);
+        $workflowService->start($task, $user, [$user->id]);
+
+        // Also submit to AGF correspondence
+        $corr = new \App\Models\Correspondence();
+        $corr->description = substr(strip_tags($mail->body ?? 'Jacked and submitted external mail'), 0, 200);
+        $corr->file_name = $mail->subject ?? 'Jacketed Mail';
+        $corr->document_number = $newFile->doc_no;
+        $corr->size = '0 KB';
+        $corr->created_by = $user->id;
+        $corr->save();
+
+        if ($mail->attachments && $mail->attachments->count() > 0) {
+            $files_corr = [];
+            foreach ($mail->attachments as $attachment) {
+                $arr = [
+                    'path' => $attachment->file_path,
+                    'correspondence_id' => $corr->id,
+                ];
+                array_push($files_corr, $arr);
+            }
+            \Illuminate\Support\Facades\DB::table('correspondence_file')->insert($files_corr);
+        }
+
+        return redirect()->back()->with(['success' => 'Mail successfully jacketed as a File and submitted to Workflow and Correspondence']);
+    }
+
+    public function forwardToAgf($emailId)
+    {
+        $mail = \App\Models\Mail::with('attachments')->findOrFail($emailId);
+
+        $corr = new \App\Models\Correspondence();
+        $corr->description = substr(strip_tags($mail->body ?? 'Forwarded external mail'), 0, 200);
+        $corr->file_name = $mail->subject ?? 'Forwarded Mail';
+        $corr->document_number = null;
+        $corr->size = '0 KB';
+        $corr->created_by = auth()->user()->id;
+        $corr->save();
+
+        if ($mail->attachments && $mail->attachments->count() > 0) {
+            $files = [];
+            foreach ($mail->attachments as $attachment) {
+                $arr = [
+                    'path' => $attachment->file_path,
+                    'correspondence_id' => $corr->id,
+                ];
+                array_push($files, $arr);
+            }
+            \Illuminate\Support\Facades\DB::table('correspondence_file')->insert($files);
+        }
+
+        $newFile = new \App\Models\File();
+        $newFile->name = $corr->file_name;
+        $newFile->file_type = 'External Mail';
+        $newFile->doc_no = $mail->message_id;
+        $newFile->description = $corr->description;
+        $newFile->created_by = auth()->user()->id;
+        $newFile->is_agf = true;
+        $newFile->path = '';
+        $newFile->archive_id = 1;
+        $newFile->save();
+
+        $agfUser = \App\Models\User::role(['Accountant-General', 'super user'])->first();
+        if ($agfUser) {
+            $fm = new \App\Models\FileMovement();
+            $fm->sent_from = auth()->user()->id;
+            $fm->sent_to = $agfUser->id;
+            $fm->file_id = $newFile->id;
+            $fm->status = "pending";
+            $fm->file_movement_id = substr(str_shuffle("0123456789"), 0, 9);
+            $fm->sent_to_branch = 'accountant general';
+            $fm->sent_to_agf = true;
+            $fm->save();
+        }
+
+        return redirect()->back()->with('success', 'Mail forwarded to AGF Correspondence successfully');
+    }
 }

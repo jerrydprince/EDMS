@@ -9,23 +9,29 @@ class TaskAssignmentComments extends Model
 {
     use HasFactory;
 
-    /**
-     * Get the user associated with the TaskAssignmentComments
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
     public function sentToUser()
     {
-        return $this->hasOne(User::class, 'id', 'sent_by');
+        return $this->belongsTo(User::class, 'sent_to', 'id');
     }
 
-    /**
-     * Get the user associated with the TaskAssignmentComments
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
     public function sentByUser()
     {
-        return $this->hasOne(User::class, 'id', 'sent_by');
+        return $this->belongsTo(User::class, 'sent_by', 'id');
+    }
+
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sent_by', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'sent_by', 'id');
+    }
+
+    public function taskAssignment()
+    {
+        return $this->belongsTo(TaskAssignment::class, 'task_assignment_id', 'id');
     }
 }
+

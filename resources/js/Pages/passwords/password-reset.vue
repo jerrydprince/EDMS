@@ -27,7 +27,7 @@
                     <div class="relative mt-4">
                         <label for="password" class=" text-gray-600 block">Password </label>
                         <div class="relative mt-1">
-                            <input type="password" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter password (Min. of 8 characters)">
+                            <input :type="showPassword ? 'text' : 'password'" v-model="form.password" name="password" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Enter password (Min. of 8 characters)">
                             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
@@ -51,7 +51,7 @@
                         
                         </label>
                         <div class="relative mt-1">
-                            <input type="password" @keydown="!isPasswordMisMatch" v-model="form.password_confirmation" name="password_confirmation" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Confirm password">
+                            <input :type="showPasswordConfirmation ? 'text' : 'password'" @keydown="!isPasswordMisMatch" v-model="form.password_confirmation" name="password_confirmation" class="peer py-3 px-4 ps-11 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-700 dark:border-transparent dark:text-gray-400 dark:focus:ring-gray-600" placeholder="Confirm password">
                             <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M5.83333 9.1665V5.83317C5.83333 4.7281 6.27232 3.66829 7.05372 2.88689C7.83512 2.10549 8.89493 1.6665 10 1.6665C11.1051 1.6665 12.1649 2.10549 12.9463 2.88689C13.7277 3.66829 14.1667 4.7281 14.1667 5.83317V9.1665M4.16667 9.1665H15.8333C16.7538 9.1665 17.5 9.9127 17.5 10.8332V16.6665C17.5 17.587 16.7538 18.3332 15.8333 18.3332H4.16667C3.24619 18.3332 2.5 17.587 2.5 16.6665V10.8332C2.5 9.9127 3.24619 9.1665 4.16667 9.1665Z" stroke="#667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
@@ -74,6 +74,8 @@
 </template>
 
 <script setup>
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
 import { ref, watch, computed, defineProps } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";

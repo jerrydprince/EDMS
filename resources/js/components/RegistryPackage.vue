@@ -5,8 +5,8 @@
       <i class="pi pi-arrow-left border px-3 py-2 rounded-md text-xs text-[#344054]"></i>
       <h1>Back</h1>
     </div>
-    <h1 class="font-medium border-r border-gray-300 pr-3">
-      Accounting Department
+    <h1 class="font-medium border-r border-gray-300 pr-3 text-gray-900">
+      {{ props.branch?.title || props.department?.title || 'Branch Registry' }}
     </h1>
 
     <div class=" flex items-center gap-3">
@@ -164,27 +164,32 @@
         </Column>
         <template #expansion="slotProps">
           <div class=" p-5">
-            <div class="flex items-center">
-              <div class="w-3 rounded-bl-md border border-r-0 border-t-0 h-14 border-gray-300"></div>
-              <div>
-                <p class="font-normal">Destination</p>
-                <div class="mt-5 flex items-center gap-2">
-                  <div class="p-3 rounded-full border w-fit">
-                    <!-- <img :src="slotProps.data.icon" alt="" v-if="slotProps.data.name">
-                    <Icon icon="fa-solid:question" v-else /> -->
-                    <img :src="unitIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'unit'">
-                                            <img :src="divisionIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'division'">
-                                            <img :src="departmentIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'department'">
-                  </div>
-                  <div>
-                    <!-- <h1 class="font-medium" v-if="slotProps.data.name">{{ slotProps.data.name }}
-                    </h1> -->
-                    <h1 class="font-medium" v-if="getDestinationBranch(slotProps.data)">{{
-                getDestinationBranch(slotProps.data) }}</h1>
-                    <h1 class="font-medium" v-else>Not set yet</h1>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-3 rounded-bl-md border border-r-0 border-t-0 h-14 border-gray-300"></div>
+                <div>
+                  <p class="font-normal">Destination</p>
+                  <div class="mt-5 flex items-center gap-2">
+                    <div class="p-3 rounded-full border w-fit">
+                      <!-- <img :src="slotProps.data.icon" alt="" v-if="slotProps.data.name">
+                      <Icon icon="fa-solid:question" v-else /> -->
+                      <img :src="unitIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'unit'">
+                                              <img :src="divisionIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'division'">
+                                              <img :src="departmentIcon" alt="" width="20" v-if="getDestinationBranchType(slotProps.data) == 'department'">
+                    </div>
+                    <div>
+                      <!-- <h1 class="font-medium" v-if="slotProps.data.name">{{ slotProps.data.name }}
+                      </h1> -->
+                      <h1 class="font-medium" v-if="getDestinationBranch(slotProps.data)">{{
+                  getDestinationBranch(slotProps.data) }}</h1>
+                      <h1 class="font-medium" v-else>Not set yet</h1>
+                    </div>
                   </div>
                 </div>
               </div>
+              <button @click="openEditModal(slotProps.data)" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 text-sm font-medium flex items-center gap-2">
+                <Icon icon="lucide:edit" width="16" /> Edit Entry
+              </button>
             </div>
             <div v-if="slotProps.data.description">
               <h1 class=" mt-2">Description</h1>
@@ -195,12 +200,14 @@
       </DataTable>
     </div>
   </div>
+  <EditEntry v-model="showEditEntry" :entry="selectedEntry" @refresh="getBranchFiles" :isAgf="true" />
 </template>
 
 <script setup>
 import { ref, computed, defineProps, onMounted, defineEmits} from "vue";
 import division from "../assets/images/Division-Icon.svg"
 import {usePage} from "@inertiajs/vue3"
+import EditEntry from './Modals/RecordManager/EditEntry.vue'
 import unitIcon from "../../../public/images/unit.svg"
 import divisionIcon from "../../../public/images/division.svg"
 import departmentIcon from "../../../public/images/department.svg"
@@ -208,6 +215,12 @@ import departmentIcon from "../../../public/images/department.svg"
 const props = defineProps(["toggleStateFunction", "data", 'branch', 'department', 'division', 'unit']);
 // const props = defineProps(["data"]);
 const files = ref([])
+const showEditEntry = ref(false);
+const selectedEntry = ref(null);
+const openEditModal = (entry) => {
+    selectedEntry.value = entry;
+    showEditEntry.value = true;
+};
 const buttonToggle = ref(1);
 const clickedButton = ref("incoming");
 const page = usePage()
@@ -363,6 +376,9 @@ const getDestinationBranchType = (data)=>{
     }
 
     if(data.sent_to_department){
+      return 'department'
+    }
+    if(data.sent_to_agf){
       return 'department'
     }
 }

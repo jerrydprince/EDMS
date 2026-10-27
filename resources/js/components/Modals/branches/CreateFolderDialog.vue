@@ -43,7 +43,7 @@
 					
 				</div>
 
-				<div v-if="page.props.roles != 'data entry' && props?.department">
+				<div v-if="page.props.roles != 'record manager' && props?.department">
 					<div class="mb-5 mt-4">
 						<p class="text-sm lg:text-base">Department</p>
 						<select name="" id="department" disabled class="w-full rounded-lg border border-gray-300 px-3 py-3" v-model="form.department">
@@ -163,7 +163,7 @@ const submitForm = () => {
 		folder_year.focus();
 		return false;
 	}
-	if(page.props.roles != 'data entry' && props.department){
+	if(page.props.roles != 'record manager' && props.department){
 		if (department.value == '') {
 			department.focus();
 			return false;
@@ -213,7 +213,7 @@ watch(()=>form.division,()=>{
 })
 
 onMounted(()=>{
-	if(page.props.roles !='data entry' && props.department){
+	if(page.props.roles !='record manager' && props.department){
 
 		axios.get(`/dashboard/get-division-with-unit`,{params:{id: props.department.id}}).then((response)=>{
 			division.value = response.data;

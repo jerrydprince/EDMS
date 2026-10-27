@@ -96,19 +96,30 @@ const closeModal = () => {
   emit("update:modelValue", false);
 };
 
-const submit = () => {
-  form.id = props.task.id
-  form.post('/dashboard/request-revision', {onSuccess:page=>{
-    emit("update:modelValue", false);
+const targetAssignment = computed(() => {
+  if (!props.task?.assignments?.length) return null;
+  return props.task.assignments.find(a => a.status === 'under review') || props.task.assignments[0];
+});
 
-  toast.add({
-    severity: "success",
-    summary: "Task Submitted",
-    detail: "You have requested for a revision of task successfully",
-    life: 3000,
+const submit = () => {
+  const target = targetAssignment.value;
+  if (target) {
+    form.assigned_to = target.assigned_to;
+    form.assigned_by = target.assigned_by;
+    form.task_assignment_id = target.id;
+  }
+  form.id = props.task.id;
+  form.post('/dashboard/request-revision', {
+    onSuccess: page => {
+      emit("update:modelValue", false);
+      toast.add({
+        severity: "success",
+        summary: "Revision Requested",
+        detail: "You have requested a revision of the task successfully",
+        life: 3000,
+      });
+    }
   });
-  }})
-  
 };
 </script>
 <style scoped>
